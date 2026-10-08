@@ -51,23 +51,17 @@ export const useBuildingForm = (
     const { isLoading: isSaving, startLoading: baseStartLoading, stopLoading: baseStopLoading } = useLoading(false);
 
     const startLoading = useCallback(() => {
-        if (typeof window !== 'undefined') {
-            const win = window as unknown as { __buildingFormIsSaving?: boolean; __isQuickDataEntrySaving?: boolean };
-            win.__buildingFormIsSaving = true;
-            win.__isQuickDataEntrySaving = true;
-        }
-        window.dispatchEvent(new CustomEvent('ntis:form-saving-state', { detail: { isSaving: true } }));
         baseStartLoading();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('ntis:form-saving-state', { detail: { isSaving: true } }));
+        }
     }, [baseStartLoading]);
 
     const stopLoading = useCallback(() => {
         baseStopLoading();
         if (typeof window !== 'undefined') {
-            const win = window as unknown as { __buildingFormIsSaving?: boolean; __isQuickDataEntrySaving?: boolean };
-            win.__buildingFormIsSaving = false;
-            win.__isQuickDataEntrySaving = false;
+            window.dispatchEvent(new CustomEvent('ntis:form-saving-state', { detail: { isSaving: false } }));
         }
-        window.dispatchEvent(new CustomEvent('ntis:form-saving-state', { detail: { isSaving: false } }));
     }, [baseStopLoading]);
 
     const {

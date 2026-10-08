@@ -8,7 +8,7 @@ import {
     updateDiscountDetailsAction,
     deletePropertySocialDetailsByHierarchyAction,
 } from "@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions";
-import { DiscountState, PropertyDiscountInfoResponseDto } from "@/types/discount.types";
+import { DiscountState, DiscountAttributeState, PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { useTranslations } from "next-intl";
 import { 
     mapApiToDiscountState, 
@@ -186,6 +186,7 @@ export const useDiscountForm = (
         setDiscountData(prev => {
             const item = prev[id];
             if (!item) return prev;
+            if (item.isInherited && !item.isOverridden) return prev;
             const isOverridden = item.isInherited ? true : item.isOverridden;
             return {
                 ...prev,
@@ -209,71 +210,128 @@ export const useDiscountForm = (
         const activeItem = discountData[id];
         if (!activeItem) return;
 
-        const isSavedOnBackend = typeof activeItem.propertySocialDetailId === "number" && activeItem.propertySocialDetailId > 0;
+        const isDirectSavedOnBackend = typeof activeItem.propertySocialDetailId === "number" && activeItem.propertySocialDetailId > 0;
+        const isInheritedSavedOnBackend = activeItem.isInherited || (options?.savedPropertyDetails || []).some(p => {
+            const attrId = p.socialAttributeId ?? p.id;
+            return attrId === id && p.isActive !== false;
+        });
+        const isSavedOnBackend = isDirectSavedOnBackend || isInheritedSavedOnBackend || activeItem.isOverridden;
 
         startDeleteLoading();
         try {
+            let deletedScope: 'Wing' | 'Apartment' | 'Unit' = 'Unit';
+
             if (isSavedOnBackend) {
                 const isSocietyMode = options?.isSociety === true && !!options?.societyDetailId;
                 const socId = options?.societyDetailId ? Number(options.societyDetailId) : undefined;
                 const wingId = options?.wingDetailId ? Number(options.wingDetailId) : undefined;
-                const docBindingId = activeItem.documentBindingId ?? undefined;
+
+                const wingRecord = (options?.savedPropertyDetails || []).find((p) => {
+                    const attrId = p.socialAttributeId ?? p.id;
+                    return (
+                        attrId === id &&
+                        (p.entityType === 'W' || (p.wingDetailId && Number(p.wingDetailId) === Number(wingId) && (!p.propertyId || Number(p.propertyId) === 0))) &&
+                        p.isActive !== false
+                    );
+                });
+
+                const apartmentRecord = (options?.savedPropertyDetails || []).find((p) => {
+                    const attrId = p.socialAttributeId ?? p.id;
+                    return (
+                        attrId === id &&
+                        (p.entityType === 'S' || (!p.wingDetailId && !p.propertyId)) &&
+                        p.isActive !== false
+                    );
+                });
+
+                const docBindingId = activeItem.documentBindingId ?? wingRecord?.documentBindingId ?? apartmentRecord?.documentBindingId ?? undefined;
 
                 const hierarchyParams: DeletePropertySocialDetailsByHierarchyParams = {
                     socialAttributeId: id,
                 };
 
+                const selectedIds = options?.propertyIds
+                    ? options.propertyIds.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0)
+                    : [];
+                const targetUnitId = options?.editingUnitId || (selectedIds.length === 1 ? selectedIds[0] : (activeItem.propertyId || undefined));
+
                 if (!isSocietyMode) {
                     // Individual Property
+                    deletedScope = 'Unit';
                     hierarchyParams.entityType = 'P';
-                    if (propertyId && !isNaN(Number(propertyId))) {
-                        hierarchyParams.propertyId = Number(propertyId);
-                        hierarchyParams.propertyIds = [Number(propertyId)];
+                    const pId = targetUnitId || (propertyId && !isNaN(Number(propertyId)) ? Number(propertyId) : undefined);
+                    if (pId) {
+                        hierarchyParams.propertyId = pId;
+                        hierarchyParams.propertyIds = [pId];
                     }
                     if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (options?.level === 'Apartment') {
-                    // Apartment Level: societyDetailsId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
-                    hierarchyParams.entityType = 'S';
-                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
-                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (options?.level === 'Wing') {
-                    // Wing Level: societyDetailsId, wingDetailId, socialAttributeId, documentBindingId (propertyId not passed or 0/null)
-                    hierarchyParams.entityType = 'W';
-                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
-                    if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
-                    if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                } else if (options?.level === 'Unit') {
-                    // Unit Level
-                    hierarchyParams.entityType = 'P';
-                    if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
-                    if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
-
-                    const selectedIds = options?.propertyIds
-                        ? options.propertyIds.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0)
-                        : [];
-
-                    const isAllUnits = options?.totalUnitCount && options?.selectedUnitCount
-                        ? options.selectedUnitCount >= options.totalUnitCount
-                        : false;
-
-                    if (isAllUnits) {
-                        // Case 2 (All units): socialAttributeId, societyDetailsId, wingDetailId, documentBindingId, propertyIds
+                } else if (activeItem.isOverridden) {
+                    // Override deletion targets the specific level
+                    if (options?.level === 'Wing') {
+                        deletedScope = 'Wing';
+                        hierarchyParams.entityType = 'W';
+                        if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                        if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
                         if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
-                        if (selectedIds.length > 0) hierarchyParams.propertyIds = selectedIds;
-                    } else {
-                        // Case 1 (Specific units): societyDetailsId, wingDetailId, socialAttributeId, propertyIds
+                    } else if (options?.level === 'Unit') {
+                        deletedScope = 'Unit';
+                        hierarchyParams.entityType = 'P';
+                        if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                        if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
                         if (selectedIds.length > 0) {
                             hierarchyParams.propertyIds = selectedIds;
-                        } else if (propertyId && !isNaN(Number(propertyId))) {
-                            hierarchyParams.propertyIds = [Number(propertyId)];
-                            hierarchyParams.propertyId = Number(propertyId);
+                            if (selectedIds.length === 1) hierarchyParams.propertyId = selectedIds[0];
+                        } else if (targetUnitId) {
+                            hierarchyParams.propertyId = targetUnitId;
+                            hierarchyParams.propertyIds = [targetUnitId];
                         }
+                        if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                     }
                 } else {
-                    hierarchyParams.entityType = 'P';
-                    if (propertyId && !isNaN(Number(propertyId))) {
-                        hierarchyParams.propertyId = Number(propertyId);
-                        hierarchyParams.propertyIds = [Number(propertyId)];
+                    // Origin-aware deletion: delete from the level where it originated
+                    const isApartmentOrigin = (activeItem.inheritedFrom || '').toUpperCase() === 'APARTMENT' ||
+                                              (activeItem.inheritanceLevel || '').toUpperCase() === 'APARTMENT' ||
+                                              ((activeItem.entityType || '').toUpperCase() === 'S' && activeItem.isInherited) ||
+                                              (options?.level === 'Apartment') ||
+                                              ((activeItem.entityType || '').toUpperCase() === 'S') ||
+                                              (!isDirectSavedOnBackend && !wingRecord && !!apartmentRecord);
+
+                    const isWingOrigin = !isApartmentOrigin && (
+                                         (activeItem.inheritedFrom || '').toUpperCase() === 'WING' ||
+                                         (activeItem.inheritanceLevel || '').toUpperCase() === 'WING' ||
+                                         ((activeItem.entityType || '').toUpperCase() === 'W' && activeItem.isInherited) ||
+                                         (options?.level === 'Wing') ||
+                                         ((activeItem.entityType || '').toUpperCase() === 'W') ||
+                                         (!isDirectSavedOnBackend && !!wingRecord));
+
+                    if (isApartmentOrigin) {
+                        deletedScope = 'Apartment';
+                        hierarchyParams.entityType = 'S';
+                        if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                        if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                    } else if (isWingOrigin) {
+                        deletedScope = 'Wing';
+                        hierarchyParams.entityType = 'W';
+                        if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                        if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
+                        if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
+                    } else {
+                        // Unit level deletion
+                        deletedScope = 'Unit';
+                        hierarchyParams.entityType = 'P';
+                        if (socId !== undefined) hierarchyParams.societyDetailsId = socId;
+                        if (wingId !== undefined) hierarchyParams.wingDetailId = wingId;
+                        if (selectedIds.length > 0) {
+                            hierarchyParams.propertyIds = selectedIds;
+                            if (selectedIds.length === 1) hierarchyParams.propertyId = selectedIds[0];
+                        } else if (targetUnitId) {
+                            hierarchyParams.propertyId = targetUnitId;
+                            hierarchyParams.propertyIds = [targetUnitId];
+                        } else if (propertyId && !isNaN(Number(propertyId))) {
+                            hierarchyParams.propertyId = Number(propertyId);
+                            hierarchyParams.propertyIds = [Number(propertyId)];
+                        }
+                        if (docBindingId !== undefined) hierarchyParams.documentBindingId = docBindingId;
                     }
                 }
 
@@ -289,27 +347,106 @@ export const useDiscountForm = (
                 }
             }
 
-            // Clear local state and disable toggle
+            // Revert or clear local state
             setDiscountData(prev => {
                 const item = prev[id];
                 if (!item) return prev;
-                const nextItem = {
-                    ...item,
-                    pendingFile: undefined,
-                    documentGuid: null,
-                    documentBindingId: null,
-                    documentUrl: null,
-                    fileName: undefined,
-                    intValue: null,
-                    decimalValue: null,
-                    textValue: null,
-                    dateValue: null,
-                    remark: "",
-                    enabled: false,
-                    bitValue: false,
-                    propertySocialDetailId: null, // Reset backend ID
-                    isOverridden: false
-                };
+
+                const wingId = options?.wingDetailId ? Number(options.wingDetailId) : undefined;
+
+                // Find wing record in savedPropertyDetails if available (only if wing was NOT what got deleted)
+                const wingRecord = deletedScope !== 'Wing' ? (options?.savedPropertyDetails || []).find((p) => {
+                    const attrId = p.socialAttributeId ?? p.id;
+                    return (
+                        attrId === id &&
+                        (p.entityType === 'W' || (p.wingDetailId && Number(p.wingDetailId) === Number(wingId) && (!p.propertyId || Number(p.propertyId) === 0))) &&
+                        p.isActive !== false
+                    );
+                }) : undefined;
+
+                // Find apartment record in savedPropertyDetails if available (only if apartment was NOT what got deleted)
+                const apartmentRecord = deletedScope !== 'Apartment' ? (options?.savedPropertyDetails || []).find((p) => {
+                    const attrId = p.socialAttributeId ?? p.id;
+                    return (
+                        attrId === id &&
+                        (p.entityType === 'S' || (!p.wingDetailId && !p.propertyId)) &&
+                        p.isActive !== false
+                    );
+                }) : undefined;
+
+                let nextItem: DiscountAttributeState;
+
+                if (options?.level === 'Unit' && wingRecord) {
+                    nextItem = {
+                        ...item,
+                        pendingFile: undefined,
+                        documentGuid: wingRecord.documentGuid || null,
+                        documentBindingId: wingRecord.documentBindingId || null,
+                        documentUrl: wingRecord.documentUrl || (wingRecord.documentGuid ? `/api/documents/${wingRecord.documentGuid}/view` : undefined),
+                        fileName: wingRecord.fileName || undefined,
+                        intValue: wingRecord.intValue != null ? String(wingRecord.intValue) : null,
+                        decimalValue: wingRecord.decimalValue != null ? String(wingRecord.decimalValue) : null,
+                        textValue: wingRecord.textValue || null,
+                        dateValue: wingRecord.dateValue ? String(wingRecord.dateValue).split("T")[0] : null,
+                        remark: wingRecord.remark || "",
+                        enabled: wingRecord.bitValue !== false,
+                        bitValue: wingRecord.bitValue ?? true,
+                        propertySocialDetailId: null,
+                        propertyId: options?.editingUnitId || item.propertyId || null,
+                        entityType: 'W',
+                        isInherited: true,
+                        inheritanceLevel: 'Wing',
+                        inheritedFrom: 'Wing',
+                        isOverridden: false,
+                    };
+                } else if ((options?.level === 'Unit' || options?.level === 'Wing') && apartmentRecord) {
+                    nextItem = {
+                        ...item,
+                        pendingFile: undefined,
+                        documentGuid: apartmentRecord.documentGuid || null,
+                        documentBindingId: apartmentRecord.documentBindingId || null,
+                        documentUrl: apartmentRecord.documentUrl || (apartmentRecord.documentGuid ? `/api/documents/${apartmentRecord.documentGuid}/view` : undefined),
+                        fileName: apartmentRecord.fileName || undefined,
+                        intValue: apartmentRecord.intValue != null ? String(apartmentRecord.intValue) : null,
+                        decimalValue: apartmentRecord.decimalValue != null ? String(apartmentRecord.decimalValue) : null,
+                        textValue: apartmentRecord.textValue || null,
+                        dateValue: apartmentRecord.dateValue ? String(apartmentRecord.dateValue).split("T")[0] : null,
+                        remark: apartmentRecord.remark || "",
+                        enabled: apartmentRecord.bitValue !== false,
+                        bitValue: apartmentRecord.bitValue ?? true,
+                        propertySocialDetailId: null,
+                        propertyId: options?.editingUnitId || item.propertyId || null,
+                        entityType: 'S',
+                        isInherited: true,
+                        inheritanceLevel: 'Apartment',
+                        inheritedFrom: 'Apartment',
+                        isOverridden: false,
+                    };
+                } else {
+                    nextItem = {
+                        ...item,
+                        pendingFile: undefined,
+                        documentGuid: null,
+                        documentBindingId: null,
+                        documentUrl: null,
+                        fileName: undefined,
+                        intValue: null,
+                        decimalValue: null,
+                        textValue: null,
+                        dateValue: null,
+                        remark: "",
+                        enabled: false,
+                        bitValue: false,
+                        propertySocialDetailId: null,
+                        propertyId: options?.editingUnitId || item.propertyId || null,
+                        entityType: options?.level === 'Apartment' ? 'S' : options?.level === 'Wing' ? 'W' : 'P',
+                        isInherited: false,
+                        inheritanceLevel: 'Self',
+                        inheritedFrom: null,
+                        isOverridden: false,
+                    };
+                }
+
                 const next = {
                     ...prev,
                     [id]: nextItem
@@ -335,9 +472,9 @@ export const useDiscountForm = (
         options?.societyDetailId,
         options?.wingDetailId,
         options?.propertyIds,
-        options?.selectedUnitCount,
-        options?.totalUnitCount,
         options?.level,
+        options?.editingUnitId,
+        options?.savedPropertyDetails,
         clearError,
         startDeleteLoading,
         stopDeleteLoading,

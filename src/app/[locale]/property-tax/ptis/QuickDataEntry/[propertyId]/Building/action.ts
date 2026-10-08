@@ -38,6 +38,23 @@ import {
   handleActionError,
 } from "@/lib/utils/action-error-helpers";
 
+export async function revalidateBuildingAndPropertyRoutes(locale: string, propertyId: string): Promise<void> {
+  const paths = [
+    `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`,
+    `/${locale}/property-tax/ptis/apartment`,
+    `/${locale}/property-tax/ptis/individual`,
+    `/${locale}/property-tax/ptis`,
+  ];
+  for (const path of paths) {
+    try {
+      revalidatePath(path, 'page');
+    } catch (err) {
+      logger.warn('revalidatePath failed', { path, err });
+    }
+  }
+}
+
+
 /**
  * Building-specific error cleaner: extends common patterns with
  * certificate-specific error messages (semicolons, prefixes, domain errors).
@@ -209,7 +226,7 @@ export async function saveCertificateAction(
     }
     const result = await saveCertificate(finalData);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return result;
   } catch (error: unknown) {
@@ -232,7 +249,7 @@ export async function replaceCertificateDocumentAction(
 
     const result = await replaceCertificateDocument(propertyCertificateId, file, propIdNum, certTypeId);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return result;
   } catch (error: unknown) {
@@ -384,7 +401,7 @@ export async function saveBuildingPermissionsAction(
     }
 
     if (!skipRevalidate) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return { success: true };
   } catch (error: unknown) {
@@ -401,7 +418,7 @@ export async function deleteCertificateDocumentAction(
   try {
     const result = await deleteCertificateDocument(documentGuid);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return result;
   } catch (error: unknown) {
@@ -420,7 +437,7 @@ export async function deletePropertyCertificateAction(
   try {
     const result = await deletePropertyCertificate(propertyId, certificateTypeId, propertyDetailsId);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${frontendPropertyIdString}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, frontendPropertyIdString);
     }
     return result;
   } catch (error: unknown) {
@@ -538,8 +555,15 @@ export async function postApartmentQcCertificateRecordAction(
 
     if (!res.success) return res;
 
+    interface CreateCertificateRecordResponseLike {
+      propertyCertificateIds?: number[];
+      PropertyCertificateIds?: number[];
+      propertyCertificateId?: number;
+      PropertyCertificateId?: number;
+    }
+
     // If a document was attached, upload it for every created/updated PropertyCertificate record
-    const rawData = res.data as unknown as Record<string, unknown> | undefined;
+    const rawData = res.data as CreateCertificateRecordResponseLike | undefined;
     let createdCertIds: number[] = [];
     if (rawData) {
       const rawIds = rawData.propertyCertificateIds ?? rawData.PropertyCertificateIds;
@@ -646,7 +670,7 @@ export async function postApartmentQcCertificateRecordAction(
       }
     }
 
-    revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+    revalidateBuildingAndPropertyRoutes(locale, propertyId);
     return {
       success: true,
       data: res.data,
@@ -721,7 +745,7 @@ export async function deletePropertyCertificateRecordAction(
       });
 
       if (qcRes.success) {
-        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+        revalidateBuildingAndPropertyRoutes(locale, propertyId);
         return {
           success: true,
           message: qcRes.message || "Certificate record deleted successfully",
@@ -759,7 +783,7 @@ export async function deletePropertyCertificateRecordAction(
       // Primary soft delete: DELETE /api/property-certificates/by-document/{documentId}
       const res = await deletePropertyCertificateByDocumentId(docId);
       if (res.success) {
-        revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+        revalidateBuildingAndPropertyRoutes(locale, propertyId);
         return {
           success: true,
           message: res.message || "Certificate and attached document deleted successfully",
@@ -792,7 +816,7 @@ export async function deletePropertyCertificateRecordAction(
       }
     }
 
-    revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+    revalidateBuildingAndPropertyRoutes(locale, propertyId);
     return {
       success: true,
       message: "Certificate deleted successfully",

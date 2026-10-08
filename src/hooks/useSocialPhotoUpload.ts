@@ -69,6 +69,7 @@ export const useSocialPhotoUpload = (
     const handlePhotoDelete = useCallback((socialAttributeId: number) => {
         const item = socialData[socialAttributeId];
         if (!item) return;
+        if (item.isInherited && !item.isOverridden) return;
 
         setFormState(prev => {
             const nextData = { ...prev.data };

@@ -100,8 +100,9 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     const effectiveSocietyDetailId = (propSocietyDetailId && Number(propSocietyDetailId) > 0 ? Number(propSocietyDetailId) : null) ?? (societyDetailId && Number(societyDetailId) > 0 ? Number(societyDetailId) : null);
     const hasSocietyDetailId = Boolean(effectiveSocietyDetailId && effectiveSocietyDetailId > 0);
 
+    const hasWingsAvailable = Array.isArray(wings) && wings.length > 0;
     const effectiveWingDetailId = (propWingDetailId && Number(propWingDetailId) > 0 ? Number(propWingDetailId) : null) ?? (initialWingDetailId && initialWingDetailId > 0 ? initialWingDetailId : null);
-    const hasWingDetailId = Boolean(effectiveWingDetailId && effectiveWingDetailId > 0);
+    const hasWingDetailId = Boolean(hasWingsAvailable && effectiveWingDetailId && effectiveWingDetailId > 0);
 
     const showApartmentTab = hasSocietyDetailId && !isWingWise;
     const showWingTab = hasWingDetailId;

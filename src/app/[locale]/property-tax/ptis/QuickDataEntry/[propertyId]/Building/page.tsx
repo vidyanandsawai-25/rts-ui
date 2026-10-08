@@ -83,7 +83,7 @@ async function BuildingFormDataLoader({
     rawSearchParams?: Record<string, string | string[] | undefined>,
     locale?: string,
 }) {
-    const targetPropId = null;
+    const targetPropId = propertyId ? Number(propertyId) : null;
     const targetWingId = searchWingDetailId ? Number(searchWingDetailId) : null;
     const targetSocId = searchSocietyId ? Number(searchSocietyId) : null;
 

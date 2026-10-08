@@ -167,10 +167,90 @@ export async function deleteDiscountDoc(documentGuid: string): Promise<ApiRespon
     }
 }
 
+import { getWingDetailsMastBySocietyDetailsMastId } from "./wingDetailsMast.services";
+import { WingDetailsMastItem } from "@/types/zone-master/properties/wingDetailsMast.types";
+import { logger } from "@/lib/utils/logger";
+
 /**
  * Get wings for a given property
  */
 export async function getDiscountWings(propertyId: string, societyId?: number | string | null): Promise<WingOption[]> {
+    const propIdNum = Number(propertyId);
+    const effectiveSocId = societyId && Number(societyId) > 0 ? Number(societyId) : undefined;
+
+    if (effectiveSocId) {
+        try {
+            const wingDetailsRes = await getWingDetailsMastBySocietyDetailsMastId(effectiveSocId);
+            const mastItems = Array.isArray(wingDetailsRes?.wingDetailsMast)
+                ? wingDetailsRes.wingDetailsMast
+                : Array.isArray((wingDetailsRes as unknown as Record<string, unknown>)?.items)
+                ? (wingDetailsRes as unknown as Record<string, unknown>).items as WingDetailsMastItem[]
+                : [];
+            
+            const seen = new Set<string>();
+            const distinctWings: WingOption[] = [];
+            for (const item of mastItems) {
+                if (!item || item.isActive === false) continue;
+                const name = (item.wingName || '').trim();
+                const key = `${item.id}-${name.toLowerCase()}`;
+                if (!seen.has(key) && name) {
+                    seen.add(key);
+                    distinctWings.push({
+                        wingDetailId: item.id,
+                        wingMasterId: item.wingMasterId,
+                        wingName: name,
+                        wingNo: name,
+                    });
+                }
+            }
+            if (distinctWings.length > 0) {
+                return distinctWings;
+            }
+        } catch (err) {
+            logger.warn('Failed to fetch from WingDetailsMast, trying property society details', { effectiveSocId, error: err instanceof Error ? err : new Error(String(err)) });
+        }
+    }
+
+    if (propIdNum > 0) {
+        try {
+            const { getSocietyDetailsByProperty } = await import("./societyDetails.services");
+            const socRes = await getSocietyDetailsByProperty(propIdNum);
+            const socItems = Array.isArray(socRes?.items) ? socRes.items : [];
+            for (const soc of socItems) {
+                if (soc?.id && soc.id !== effectiveSocId) {
+                    const wingDetailsRes = await getWingDetailsMastBySocietyDetailsMastId(soc.id);
+                    const mastItems = Array.isArray(wingDetailsRes?.wingDetailsMast)
+                        ? wingDetailsRes.wingDetailsMast
+                        : Array.isArray((wingDetailsRes as unknown as Record<string, unknown>)?.items)
+                        ? (wingDetailsRes as unknown as Record<string, unknown>).items as WingDetailsMastItem[]
+                        : [];
+                    
+                    const seen = new Set<string>();
+                    const distinctWings: WingOption[] = [];
+                    for (const item of mastItems) {
+                        if (!item || item.isActive === false) continue;
+                        const name = (item.wingName || '').trim();
+                        const key = `${item.id}-${name.toLowerCase()}`;
+                        if (!seen.has(key) && name) {
+                            seen.add(key);
+                            distinctWings.push({
+                                wingDetailId: item.id,
+                                wingMasterId: item.wingMasterId,
+                                wingName: name,
+                                wingNo: name,
+                            });
+                        }
+                    }
+                    if (distinctWings.length > 0) {
+                        return distinctWings;
+                    }
+                }
+            }
+        } catch (err) {
+            logger.warn('Failed to fetch SocietyDetails by propertyId for wings', { propIdNum, error: err instanceof Error ? err : new Error(String(err)) });
+        }
+    }
+
     let url = `/property-certificates/wings/${encodeURIComponent(propertyId)}`;
     if (societyId && String(societyId).trim() !== '') {
         url += `?societyId=${encodeURIComponent(String(societyId))}`;
@@ -178,7 +258,25 @@ export async function getDiscountWings(propertyId: string, societyId?: number | 
     const response = await apiClient.get<BackendApiResponseWrapper<WingOption[]>>(url);
     const t = await getTranslations("quickDataEntry");
     const responseData = handleApiResponse(response, t("building.errors.notFound") || "Failed to fetch wings");
-    return Array.isArray(responseData.items) ? responseData.items : (Array.isArray(responseData) ? responseData as WingOption[] : []);
+    const rawList = Array.isArray(responseData.items) ? responseData.items : (Array.isArray(responseData) ? responseData as WingOption[] : []);
+
+    const seenNames = new Set<string>();
+    const distinctWings: WingOption[] = [];
+    for (const w of rawList) {
+        if (!w) continue;
+        const name = (w.wingName || '').trim();
+        const key = name.toLowerCase();
+        if (name && !seenNames.has(key)) {
+            seenNames.add(key);
+            distinctWings.push({
+                wingDetailId: w.wingDetailId,
+                wingMasterId: w.wingMasterId,
+                wingName: name,
+                wingNo: w.wingNo || name,
+            });
+        }
+    }
+    return distinctWings;
 }
 
 /**

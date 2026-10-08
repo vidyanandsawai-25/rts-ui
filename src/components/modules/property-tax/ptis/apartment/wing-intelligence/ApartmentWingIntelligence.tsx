@@ -195,7 +195,7 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
           wardId={data?.wardId}
           wardNo={data?.wardNo}
           propertyNo={data?.propertyNo}
-          wingDetailsId={activeSection === 'building' ? undefined : activeWingDetailId}
+          wingDetailsId={activeWingDetailId}
           societyDetailId={activeSocietyDetailId}
           wingName={activeWingName}
           selectedFloor={selectedFloor}

@@ -35,6 +35,7 @@ export interface FlatSocialAttributeState {
     photoBindingId?: number | null;
     photoGuid?: string | null;
     pendingFile?: File;
+    propertyId?: number | null;
     entityType?: string | null;
     inheritedFrom?: string | null;
     inheritanceLevel?: 'Self' | 'Wing' | 'Apartment' | string | null;

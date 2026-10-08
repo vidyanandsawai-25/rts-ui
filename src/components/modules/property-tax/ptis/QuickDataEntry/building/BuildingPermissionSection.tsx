@@ -371,14 +371,55 @@ export function BuildingPermissionSection({
       issueDt = issueDt.split('T')[0];
     }
 
+    const directUnitRecord = level === 'Unit' && selectedUnitIds.size > 0
+      ? (gridItems?.unitCertificates || []).find((r) => ((r.propertyId != null && selectedUnitIds.has(r.propertyId)) || (r.propertyDetailsId != null && selectedUnitIds.has(r.propertyDetailsId))) && r.certificateTypeId === typeId && (r.hasDocument || r.documentGuid || r.certificateNumber || r.propertyCertificateId))
+      : undefined;
+
+    const matchedWingId = selectedWingDetailId || (level === 'Unit' && selectedUnitIds.size === 1 ? filteredUnits.find(u => u.propertyDetailsId === Array.from(selectedUnitIds)[0])?.wingDetailId : undefined);
+
+    const directWingRecord = (gridItems?.wingCertificates || []).find(
+      (r) => (!matchedWingId || r.wingDetailId === matchedWingId) && r.certificateTypeId === typeId && (r.hasDocument || r.documentGuid || r.certificateNumber || r.propertyCertificateId)
+    );
+
+    const directAptRecord = (gridItems?.societyCertificates || []).find(
+      (r) => r.certificateTypeId === typeId && (r.hasDocument || r.documentGuid || r.certificateNumber || r.propertyCertificateId)
+    );
+
+    let originLevel: ApplicationLevel = level;
+    if (level === 'Apartment') {
+      originLevel = 'Apartment';
+    } else if (level === 'Wing') {
+      if (directWingRecord) {
+        originLevel = 'Wing';
+      } else if (directAptRecord) {
+        originLevel = 'Apartment';
+      } else {
+        originLevel = 'Wing';
+      }
+    } else if (level === 'Unit') {
+      if (selectedUnitIds.size === 1) {
+        if (directUnitRecord) {
+          originLevel = 'Unit';
+        } else if (directWingRecord) {
+          originLevel = 'Wing';
+        } else if (directAptRecord) {
+          originLevel = 'Apartment';
+        } else {
+          originLevel = 'Unit';
+        }
+      } else {
+        originLevel = 'Unit';
+      }
+    }
+
     const detailsLines: string[] = [];
-    if (level === 'Unit') {
+    if (originLevel === 'Unit') {
       const unitLabel = selectedUnitNamesSummary || 'Selected Unit';
       detailsLines.push(`Unit: ${unitLabel}`);
-    } else if (level === 'Wing') {
-      const selectedWing = activeWings.find((w) => w.wingDetailId === selectedWingDetailId);
-      detailsLines.push(`Wing: ${selectedWing?.wingName || selectedWingDetailId || ''}`);
-    } else if (level === 'Apartment') {
+    } else if (originLevel === 'Wing') {
+      const selectedWing = activeWings.find((w) => w.wingDetailId === matchedWingId);
+      detailsLines.push(`Wing: ${selectedWing?.wingName || matchedWingId || ''}`);
+    } else if (originLevel === 'Apartment') {
       detailsLines.push(`Scope: Apartment Level`);
     }
 
@@ -431,9 +472,9 @@ export function BuildingPermissionSection({
               certificateTypeId: typeId,
               documentGuid: docGuid,
               propertyCertificateId: certId,
-              level,
-              selectedWingDetailId,
-              selectedUnitIds: resolvedSelectedPropertyIds,
+              level: originLevel,
+              selectedWingDetailId: originLevel === 'Wing' ? matchedWingId : undefined,
+              selectedUnitIds: originLevel === 'Unit' ? resolvedSelectedPropertyIds : undefined,
               societyDetailId: societyId ? Number(societyId) : null,
             });
             if (res && typeof res === 'object' && (res as { success?: boolean }).success === false) {
@@ -693,14 +734,55 @@ export function BuildingPermissionSection({
       issueDt = issueDt.split('T')[0];
     }
 
+    const directUnitRecord = level === 'Unit' && selectedUnitIds.size > 0
+      ? (gridItems?.unitCertificates || []).find((r) => ((r.propertyId != null && selectedUnitIds.has(r.propertyId)) || (r.propertyDetailsId != null && selectedUnitIds.has(r.propertyDetailsId))) && r.certificateTypeId === selectedTypeId && (r.hasDocument || r.documentGuid || r.certificateNumber || r.propertyCertificateId))
+      : undefined;
+
+    const matchedWingId = selectedWingDetailId || (level === 'Unit' && selectedUnitIds.size === 1 ? filteredUnits.find(u => u.propertyDetailsId === Array.from(selectedUnitIds)[0])?.wingDetailId : undefined);
+
+    const directWingRecord = (gridItems?.wingCertificates || []).find(
+      (r) => (!matchedWingId || r.wingDetailId === matchedWingId) && r.certificateTypeId === selectedTypeId && (r.hasDocument || r.documentGuid || r.certificateNumber || r.propertyCertificateId)
+    );
+
+    const directAptRecord = (gridItems?.societyCertificates || []).find(
+      (r) => r.certificateTypeId === selectedTypeId && (r.hasDocument || r.documentGuid || r.certificateNumber || r.propertyCertificateId)
+    );
+
+    let originLevel: ApplicationLevel = level;
+    if (level === 'Apartment') {
+      originLevel = 'Apartment';
+    } else if (level === 'Wing') {
+      if (directWingRecord) {
+        originLevel = 'Wing';
+      } else if (directAptRecord) {
+        originLevel = 'Apartment';
+      } else {
+        originLevel = 'Wing';
+      }
+    } else if (level === 'Unit') {
+      if (selectedUnitIds.size === 1) {
+        if (directUnitRecord) {
+          originLevel = 'Unit';
+        } else if (directWingRecord) {
+          originLevel = 'Wing';
+        } else if (directAptRecord) {
+          originLevel = 'Apartment';
+        } else {
+          originLevel = 'Unit';
+        }
+      } else {
+        originLevel = 'Unit';
+      }
+    }
+
     const detailsLines: string[] = [];
-    if (level === 'Unit') {
+    if (originLevel === 'Unit') {
       const unitLabel = selectedUnitNamesSummary || 'Selected Unit';
       detailsLines.push(`Unit: ${unitLabel}`);
-    } else if (level === 'Wing') {
-      const selectedWing = activeWings.find((w) => w.wingDetailId === selectedWingDetailId);
-      detailsLines.push(`Wing: ${selectedWing?.wingName || selectedWingDetailId || ''}`);
-    } else if (level === 'Apartment') {
+    } else if (originLevel === 'Wing') {
+      const selectedWing = activeWings.find((w) => w.wingDetailId === matchedWingId);
+      detailsLines.push(`Wing: ${selectedWing?.wingName || matchedWingId || ''}`);
+    } else if (originLevel === 'Apartment') {
       detailsLines.push(`Scope: Apartment Level`);
     }
 
@@ -742,9 +824,9 @@ export function BuildingPermissionSection({
               certificateTypeId: selectedTypeId,
               documentGuid: docGuid,
               propertyCertificateId: certId,
-              level,
-              selectedWingDetailId,
-              selectedUnitIds: resolvedSelectedPropertyIds,
+              level: originLevel,
+              selectedWingDetailId: originLevel === 'Wing' ? matchedWingId : undefined,
+              selectedUnitIds: originLevel === 'Unit' ? resolvedSelectedPropertyIds : undefined,
               societyDetailId: societyId ? Number(societyId) : null,
             });
             if (res && typeof res === 'object' && (res as { success?: boolean }).success === false) {

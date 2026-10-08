@@ -171,6 +171,91 @@ export async function getWingsByProperty(
     societyId?: number | string | null
 ): Promise<ApiResponse<unknown[]>> {
     try {
+        const propIdNum = Number(propertyId);
+        const socIdNum = societyId ? Number(societyId) : null;
+        if (socIdNum && socIdNum > 0) {
+            try {
+                const { getWingDetailsMastBySocietyDetailsMastId } = await import("./wingDetailsMast.services");
+                const wingDetailsRes = await getWingDetailsMastBySocietyDetailsMastId(socIdNum);
+                const mastItems = Array.isArray(wingDetailsRes?.wingDetailsMast)
+                    ? wingDetailsRes.wingDetailsMast
+                    : Array.isArray((wingDetailsRes as unknown as Record<string, unknown>)?.items)
+                    ? (wingDetailsRes as unknown as Record<string, unknown>).items as Array<{ id: number; wingMasterId?: number; wingName: string; isActive?: boolean }>
+                    : [];
+                
+                const seen = new Set<string>();
+                const distinctWings: Array<{ wingDetailId: number; wingMasterId?: number; wingName: string; wingNo?: string }> = [];
+                for (const item of mastItems) {
+                    if (!item || item.isActive === false) continue;
+                    const name = (item.wingName || '').trim();
+                    const key = `${item.id}-${name.toLowerCase()}`;
+                    if (!seen.has(key) && name) {
+                        seen.add(key);
+                        distinctWings.push({
+                            wingDetailId: item.id,
+                            wingMasterId: item.wingMasterId,
+                            wingName: name,
+                            wingNo: name,
+                        });
+                    }
+                }
+                if (distinctWings.length > 0) {
+                    return {
+                        success: true,
+                        statusCode: 200,
+                        data: distinctWings,
+                    };
+                }
+            } catch {
+                // Try societyDetails lookup by propertyId
+            }
+        }
+
+        if (propIdNum > 0) {
+            try {
+                const { getSocietyDetailsByProperty } = await import("./societyDetails.services");
+                const socRes = await getSocietyDetailsByProperty(propIdNum);
+                const socItems = Array.isArray(socRes?.items) ? socRes.items : [];
+                for (const soc of socItems) {
+                    if (soc?.id && soc.id !== socIdNum) {
+                        const { getWingDetailsMastBySocietyDetailsMastId } = await import("./wingDetailsMast.services");
+                        const wingDetailsRes = await getWingDetailsMastBySocietyDetailsMastId(soc.id);
+                        const mastItems = Array.isArray(wingDetailsRes?.wingDetailsMast)
+                            ? wingDetailsRes.wingDetailsMast
+                            : Array.isArray((wingDetailsRes as unknown as Record<string, unknown>)?.items)
+                            ? (wingDetailsRes as unknown as Record<string, unknown>).items as Array<{ id: number; wingMasterId?: number; wingName: string; isActive?: boolean }>
+                            : [];
+                        
+                        const seen = new Set<string>();
+                        const distinctWings: Array<{ wingDetailId: number; wingMasterId?: number; wingName: string; wingNo?: string }> = [];
+                        for (const item of mastItems) {
+                            if (!item || item.isActive === false) continue;
+                            const name = (item.wingName || '').trim();
+                            const key = `${item.id}-${name.toLowerCase()}`;
+                            if (!seen.has(key) && name) {
+                                seen.add(key);
+                                distinctWings.push({
+                                    wingDetailId: item.id,
+                                    wingMasterId: item.wingMasterId,
+                                    wingName: name,
+                                    wingNo: name,
+                                });
+                            }
+                        }
+                        if (distinctWings.length > 0) {
+                            return {
+                                success: true,
+                                statusCode: 200,
+                                data: distinctWings,
+                            };
+                        }
+                    }
+                }
+            } catch {
+                // Fall back to /property-certificates/wings
+            }
+        }
+
         let url = `/property-certificates/wings/${encodeURIComponent(propertyId)}`;
         if (societyId && String(societyId).trim() !== '') {
             url += `?societyId=${encodeURIComponent(String(societyId))}`;
@@ -185,10 +270,31 @@ export async function getWingsByProperty(
                 : Array.isArray(response.data)
                 ? (response.data as unknown[])
                 : [];
+            
+            const seenNames = new Set<string>();
+            const distinctWings: Array<{ wingDetailId: number; wingMasterId?: number; wingName: string; wingNo?: string }> = [];
+            for (const item of items) {
+                const w = item as Record<string, unknown>;
+                if (!w) continue;
+                const wName = String(w.wingName || w.WingName || '').trim();
+                const wDetailId = Number(w.wingDetailId ?? w.WingDetailId ?? w.id ?? w.Id ?? 0);
+                const wMasterId = w.wingMasterId != null ? Number(w.wingMasterId) : undefined;
+                const key = wName.toLowerCase();
+                if (!seenNames.has(key) && wName) {
+                    seenNames.add(key);
+                    distinctWings.push({
+                        wingDetailId: wDetailId,
+                        wingMasterId: wMasterId,
+                        wingName: wName,
+                        wingNo: String(w.wingNo || w.WingNo || wName),
+                    });
+                }
+            }
+
             return {
                 success: true,
                 statusCode: response.statusCode,
-                data: items,
+                data: distinctWings,
                 message: rawData.message ? String(rawData.message) : response.message
             };
         }

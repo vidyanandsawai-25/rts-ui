@@ -86,29 +86,65 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
     const isDiscountFilled = React.useMemo(() => {
         if (!data) return false;
+        if (data.isInherited && data.enabled) return true;
         const hasFile = !!(data.documentGuid || data.fileName || data.pendingFile);
         const isBitType = data.dataType?.toUpperCase() === "BIT";
         if (isBitType) {
-            return hasFile || !!data.remark?.trim();
+            return hasFile || !!data.remark?.trim() || data.bitValue === true || data.enabled === true;
         }
         const hasVal = !!(
             data.intValue !== null && data.intValue !== undefined ||
             data.decimalValue !== null && data.decimalValue !== undefined ||
             data.textValue?.trim() || data.dateValue?.trim()
         );
-        return hasFile || hasVal || !!data.remark?.trim();
+        return hasFile || hasVal || !!data.remark?.trim() || data.enabled === true;
     }, [data]);
 
     const isUpdateCase = React.useMemo(() => {
         if (!data) return false;
-        return typeof data.propertySocialDetailId === "number" && data.propertySocialDetailId > 0;
+        return (
+            (typeof data.propertySocialDetailId === "number" && data.propertySocialDetailId > 0) ||
+            (data.isInherited && data.enabled) ||
+            data.isOverridden
+        );
     }, [data]);
 
     const handleDeleteDiscountWithConfirm = () => {
         if (onDeleteDiscount && data) {
+            let title = t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data";
+            let description = `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`;
+
+            if (data.isOverridden) {
+                title = t("discount.confirmDeleteOverrideTitle") || "Delete Level Override";
+                description = `${displayName}\n\n${t("discount.confirmDeleteOverrideDesc") || "You have modified this inherited attribute. Deleting this will remove the custom override for this level and revert back to inherited settings.\n\nAre you sure you want to delete this override?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'WING' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'WING' ||
+                ((data.entityType || '').toUpperCase() === 'W' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteWingDesc") || "This discount is applied at Wing Level.\n\nDeleting it will remove this discount from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level discount?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'APARTMENT' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'APARTMENT' ||
+                ((data.entityType || '').toUpperCase() === 'S' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteApartmentDesc") || "This discount is applied at Apartment Level.\n\nDeleting it will remove this discount from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level discount?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'W') {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteWingDesc") || "This discount is applied at Wing Level.\n\nDeleting it will remove this discount from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level discount?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'S') {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteApartmentDesc") || "This discount is applied at Apartment Level.\n\nDeleting it will remove this discount from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level discount?"}`;
+            } else {
+                title = t("discount.confirmDeleteUnitTitle") || "Delete Unit Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteUnitDesc") || "This discount is applied at Unit Level.\n\nDeleting it will remove this discount for the selected unit(s).\n\nAre you sure you want to delete this Unit Level discount?"}`;
+            }
+
             confirm({
-                title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                title,
+                description,
                 confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
                 variant: "delete",
@@ -174,6 +210,8 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
             : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
     }`;
 
+    const canDelete = !isDisabled && !isDeleteDisabled;
+
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
             <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
@@ -238,7 +276,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
-                        onFileDelete={handleFileDeleteWithConfirm}
+                        onFileDelete={canDelete && (data.documentGuid || data.documentBindingId || data.pendingFile) ? handleFileDeleteWithConfirm : undefined}
                         t={t}
                         label={displayName}
                         pendingFile={data.pendingFile}
@@ -290,10 +328,10 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && !isDeleteDisabled && (
+                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && canDelete && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving || isDeleting || isDeleteDisabled}
+                            disabled={isDisabled || isSaving || isDeleting || !canDelete}
                             onClick={handleDeleteDiscountWithConfirm}
                             className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

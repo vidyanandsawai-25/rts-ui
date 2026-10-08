@@ -224,11 +224,13 @@ export const SocialDetailsForm: React.FC<SocialDetailsFormProps> = ({
             }
         };
 
-        const isSaved = (socialData[id]?.id ?? 0) > 0 || (socialData[id]?.documentBindingId ?? 0) > 0;
+        const item = socialData[id];
+        const isInheritedItem = Boolean(item?.isInherited && !item?.isOverridden);
+        const isSaved = !isInheritedItem && ((item?.id ?? 0) > 0 || (item?.documentBindingId ?? 0) > 0);
         if (!checked && isSaved) {
             confirm({
                 title: t("discount.confirmDeleteAttributeTitle") || "Delete Social Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have an active social data with details:"}\n${socialData[id].socialAttributeName || ''}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social data?"}`,
+                description: `${t("discount.confirmToggleOffWarning") || "You have an active social data with details:"}\n${item?.socialAttributeName || ''}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social data?"}`,
                 confirmText: t("discount.confirmDeleteAttributeOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteAttributeCancel") || "No, Cancel",
                 variant: "delete",

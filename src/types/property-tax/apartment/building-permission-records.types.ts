@@ -205,32 +205,19 @@ export function mapToBuildingPermissionRecords(
     for (let index = 0; index < candidates.length; index++) {
       const { item, source } = candidates[index];
 
-      const permitNo = String(
-        item.certificateNumber ??
-        item.CertificateNumber ??
-        item.certificateNo ??
-        item.CertificateNo ??
-        item.certificateTypeCode ??
-        item.CertificateTypeCode ??
-        item.certificateTypeName ??
-        item.CertificateTypeName ??
-        ''
-      ).trim();
-
-      if (!permitNo) continue;
-
       const certTypeId = Number(item.certificateTypeId ?? item.CertificateTypeId ?? 0);
       const certId = Number(item.propertyCertificateId ?? item.PropertyCertificateId ?? item.id ?? item.Id);
       const docGuid = (item.documentGuid ?? item.DocumentGuid) as string | null | undefined;
       const wingId = Number(item.wingDetailId ?? item.WingDetailId ?? 0);
       const propId = Number(item.propertyId ?? item.PropertyId ?? 0);
 
-      // Build deduplication key:
-      const dedupeKey = `${source}_${certTypeId}_${wingId}_${propId}_${permitNo.toLowerCase()}`;
-      if (seenRecords.has(dedupeKey)) {
-        continue;
-      }
-      seenRecords.add(dedupeKey);
+      const rawPermitNo = String(
+        item.certificateNumber ??
+        item.CertificateNumber ??
+        item.certificateNo ??
+        item.CertificateNo ??
+        ''
+      ).trim();
 
       // Resolve certificate type details from API grid item or dynamic API master map
       const typeMaster = dynamicTypeMap.get(certTypeId);
@@ -246,6 +233,19 @@ export function mapToBuildingPermissionRecords(
         typeMaster?.name ??
         ''
       ).trim();
+
+      const permitNo = rawPermitNo || certTypeCode || certTypeName || (certTypeId > 0 ? `Certificate #${certTypeId}` : (certId > 0 ? `Certificate #${certId}` : '—'));
+
+      if (!permitNo && !certTypeId && !certId) continue;
+
+      // Build deduplication key:
+      const dedupeKey = certId > 0
+        ? `${source}_cert_${certId}`
+        : `${source}_${certTypeId}_${wingId}_${propId}_${permitNo.toLowerCase()}`;
+      if (seenRecords.has(dedupeKey)) {
+        continue;
+      }
+      seenRecords.add(dedupeKey);
 
       let dateStr = '—';
       const rawDate = item.certificateDate ?? item.CertificateDate ?? item.issueDate ?? item.IssueDate;

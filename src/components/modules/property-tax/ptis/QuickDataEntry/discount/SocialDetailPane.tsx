@@ -55,10 +55,11 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     const isSocialDetailFilled = React.useMemo(() => {
         if (!data) return false;
-        const hasFile = !!(data.documentGuid || data.documentUrl || data.pendingFile);
+        if (data.isInherited && data.bitValue) return true;
+        const hasFile = !!(data.documentGuid || data.documentUrl || data.photoGuid || data.documentBindingId || data.photoBindingId || data.pendingFile);
         const isBitType = data.dataType?.toUpperCase() === "BIT";
         if (isBitType) {
-            return hasFile || !!data.remark?.trim();
+            return hasFile || !!data.remark?.trim() || data.bitValue === true;
         }
         const hasVal = !!(
             data.intValue !== null && data.intValue !== undefined ||
@@ -70,7 +71,11 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     const isUpdateCase = React.useMemo(() => {
         if (!data) return false;
-        return typeof data.id === "number" && data.id > 0;
+        return (
+            (typeof data.id === "number" && data.id > 0) ||
+            (data.isInherited && data.bitValue !== false) ||
+            data.isOverridden
+        );
     }, [data]);
 
     const isSpecialToggle = React.useMemo(() => {
@@ -124,9 +129,40 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     const handleDeleteSocialDetailWithConfirm = () => {
         if (onDeleteSocialDetail && data) {
+            let title = t("discount.confirmDeleteAttributeTitle") || "Delete Social Detail & Data";
+            let description = `${t("discount.confirmToggleOffWarning") || "You have an active attribute with details:"}\n${displayName}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social detail and all its associated data?"}`;
+
+            if (data.isOverridden) {
+                title = t("discount.confirmDeleteOverrideTitle") || "Delete Level Override";
+                description = `${displayName}\n\n${t("discount.confirmDeleteOverrideDesc") || "You have modified this inherited attribute. Deleting this will remove the custom override for this level and revert back to inherited settings.\n\nAre you sure you want to delete this override?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'WING' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'WING' ||
+                ((data.entityType || '').toUpperCase() === 'W' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialWingDesc") || "This social attribute is applied at Wing Level.\n\nDeleting it will remove this attribute from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level attribute?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'APARTMENT' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'APARTMENT' ||
+                ((data.entityType || '').toUpperCase() === 'S' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialApartmentDesc") || "This social attribute is applied at Apartment Level.\n\nDeleting it will remove this attribute from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level attribute?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'W') {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialWingDesc") || "This social attribute is applied at Wing Level.\n\nDeleting it will remove this attribute from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level attribute?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'S') {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialApartmentDesc") || "This social attribute is applied at Apartment Level.\n\nDeleting it will remove this attribute from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level attribute?"}`;
+            } else {
+                title = t("discount.confirmDeleteUnitTitle") || "Delete Unit Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialUnitDesc") || "This social attribute is applied at Unit Level.\n\nDeleting it will remove this attribute for the selected unit(s).\n\nAre you sure you want to delete this Unit Level attribute?"}`;
+            }
+
             confirm({
-                title: t("discount.confirmDeleteAttributeTitle") || "Delete Social Detail & Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have an active attribute with details:"}\n${displayName}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social detail and all its associated data?"}`,
+                title,
+                description,
                 confirmText: t("discount.confirmDeleteAttributeOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteAttributeCancel") || "No, Cancel",
                 variant: "delete",
@@ -176,6 +212,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     }
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
     const isDisabled = !isAttributeEnabled(data);
+    const canDelete = !isDisabled && !isDeleteDisabled;
 
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
@@ -265,7 +302,7 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                         isDisabled={isDisabled}
                         isDocumentInvalid={isPhotoInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
-                        onFileDelete={handlePhotoDeleteWithConfirm}
+                        onFileDelete={canDelete && (data.documentGuid || data.documentBindingId || data.photoBindingId || data.pendingFile) ? handlePhotoDeleteWithConfirm : undefined}
                         t={t as (key: string, values?: Record<string, string | number>) => string}
                         label={displayName}
                         pendingFile={data.pendingFile}
@@ -321,10 +358,10 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDeleteDisabled && (
+                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && canDelete && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving || isDeleting || isDeleteDisabled}
+                            disabled={isDisabled || isSaving || isDeleting || !canDelete}
                             onClick={handleDeleteSocialDetailWithConfirm}
                             className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

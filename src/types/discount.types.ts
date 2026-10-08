@@ -37,6 +37,7 @@ export interface DiscountAttributeDto {
     isPhotoRequired?: boolean;
     isDocumentRequired?: boolean;
     isActive?: boolean;
+    propertyId?: number | null;
     entityType?: string | null;
     inheritedFrom?: string | null;
     inheritanceLevel?: 'Self' | 'Wing' | 'Apartment' | string | null;

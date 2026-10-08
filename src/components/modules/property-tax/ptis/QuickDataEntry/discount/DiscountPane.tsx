@@ -153,11 +153,13 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         selectedId={activeSelectedId}
                         onSelect={setSelectedId}
                         onToggleEnabled={(id, checked) => {
-                            const isSaved = (discountData[id]?.propertySocialDetailId ?? 0) > 0 || (discountData[id]?.documentBindingId ?? 0) > 0;
+                            const item = discountData[id];
+                            const isInheritedItem = Boolean(item?.isInherited && !item?.isOverridden);
+                            const isSaved = !isInheritedItem && ((item?.propertySocialDetailId ?? 0) > 0 || (item?.documentBindingId ?? 0) > 0);
                             if (!checked && isSaved) {
                                 confirm({
                                     title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
-                                    description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${discountData[id].socialAttributeName || ''}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                                    description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${item?.socialAttributeName || ''}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
                                     confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
                                     cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
                                     variant: "delete",

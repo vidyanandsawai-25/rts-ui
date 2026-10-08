@@ -380,16 +380,17 @@ export async function loadApartmentPageData(
 
   const [certGridRes, masterTypesRes, societySocialRes, wingSocialResults, socialMasterRes] =
     await Promise.all([
+      // Fetch apartment QC certificates with proper scoping hierarchy:
+      // Note: Society-level certificates have PropertyId=NULL in DB, so passing
+      // propertyId ensures the API accurately filters and associates certificates
+      // across Society, Wing, and Unit levels.
       currentSocietyDetailId || (finalWardId && propertyNo) || resolvedPropertyId
         ? fetchApartmentQcCertificateGrid({
             societyId: currentSocietyDetailId,
-            // Only pass wingDetailsId when no societyId (matches client-side behavior)
-            wingDetailsId: currentSocietyDetailId ? undefined : undefined,
+            wingDetailsId: resolvedSearchParams?.wingDetailId ? Number(resolvedSearchParams.wingDetailId) : undefined,
             ward: finalWardId || undefined,
             propertyNo: propertyNo || undefined,
-            // Do NOT pass propertyId when societyId is available — society-level certificates
-            // have PropertyId=NULL in the DB, so filtering by propertyId would exclude them.
-            propertyId: currentSocietyDetailId ? undefined : resolvedPropertyId || undefined,
+            propertyId: resolvedPropertyId || undefined,
           }).catch(() => null)
         : Promise.resolve(null),
       getCertificateTypeMaster().catch(() => null),

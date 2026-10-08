@@ -29,10 +29,27 @@ export function useDiscountLevelState({
   units = [],
   savedPropertyDetails: _savedPropertyDetails = []
 }: UseDiscountLevelStateProps) {
-  const [level, setLevel] = useState<ApplicationLevel>(initialLevel);
-  const dynamicWings = useMemo(() => (Array.isArray(wings) ? wings : []), [wings]);
+  const dynamicWings = useMemo(() => {
+    if (!Array.isArray(wings)) return [];
+    const seen = new Set<string>();
+    const unique: WingOption[] = [];
+    wings.forEach((w) => {
+      if (!w) return;
+      const key = `${w.wingDetailId ?? ''}-${(w.wingName || '').trim().toLowerCase()}`;
+      if (!seen.has(key) && (w.wingName || '').trim()) {
+        seen.add(key);
+        unique.push({
+          ...w,
+          wingName: (w.wingName || '').trim(),
+          wingNo: w.wingNo || (w.wingName || '').trim(),
+        });
+      }
+    });
+    return unique;
+  }, [wings]);
   const dynamicUnits = useMemo(() => (Array.isArray(units) ? units : []), [units]);
 
+  const [level, setLevel] = useState<ApplicationLevel>(initialLevel);
   const [explicitSelectedWingDetailId, setExplicitSelectedWingDetailId] = useState<number | null>(initialWingDetailId);
 
   const selectedWingDetailId = explicitSelectedWingDetailId ?? (dynamicWings.length > 0 ? dynamicWings[0].wingDetailId : null);
