@@ -35,6 +35,7 @@
     "AssetTypeOfUse_TypeOfUseCode_MaxLength": "Type of Use Code maximum length is 10 characters",
     "AssetSubTypeOfUse_Description_Duplicate": "Sub-Type Description already exists",
     "AssetTypeOfUseGroup_GroupCode_Duplicate": "Group Code already exists",
+    "AssetTypeOfUseGroup_GroupName_Duplicate": "Group Name already exists",
     "notFound": "Record not found",
     "operationFailed": "Operation failed",
     "TypeOfUseGroup_Code_Required": "Group Code is required",
@@ -53,13 +54,34 @@
     "AssetSubTypeOfUse_TypeOfUseId_Required": "Type of Use is required",
     "AssetSubTypeOfUse_Description_Required": "Sub-Type Description is required",
     "AssetSubTypeOfUse_Description_MaxLen_100": "Sub-Type Description maximum length is 100 characters",
-    "Cannot deactivate/delete this TypeOfUseGroupMaster because it is referenced in: Asset Type Of Use Master": "Cannot deactivate or delete this Use Group because it is referenced in Asset Type of Use Master.",
-    "Cannot deactivate/delete this AssetTypeOfUseMaster because it is referenced in: Asset Sub Type Of Use Master": "Cannot deactivate or delete this Type of Use because it is referenced in Asset Sub Type of Use Master.",
-    "inUseGroup": "Cannot deactivate or delete this Use Group because it is referenced in other records.",
-    "inUseType": "Cannot deactivate or delete this Type of Use because it is referenced in other records.",
-    "inUseSubType": "Cannot deactivate or delete this Sub-Type of Use because it is referenced in other records.",
-    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}.",
-    "inUse": "Cannot delete this record because it is referenced in other tables."
+    "inUse": "Cannot delete this record because it is referenced in other tables.",
+    "referenceBlocked": {
+      "typeOfUseGroup": {
+        "deleteInUse": "This Type Of Use Group cannot be deleted because it is in use.",
+        "deactivateInUse": "This Type Of Use Group cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Type Of Use Group cannot be deleted because it has {masters}. Please delete all {masters} for this Type Of Use Group first.",
+        "deactivateHasMasters": "This Type Of Use Group cannot be deactivated because it has {masters}. Please delete all {masters} for this Type Of Use Group first."
+      },
+      "typeOfUse": {
+        "deleteInUse": "This Type Of Use cannot be deleted because it is in use.",
+        "deactivateInUse": "This Type Of Use cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Type Of Use cannot be deleted because it has {masters}. Please delete all {masters} for this Type Of Use first.",
+        "deactivateHasMasters": "This Type Of Use cannot be deactivated because it has {masters}. Please delete all {masters} for this Type Of Use first."
+      },
+      "subTypeOfUse": {
+        "deleteInUse": "This Sub Type Of Use cannot be deleted because it is in use.",
+        "deactivateInUse": "This Sub Type Of Use cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Sub Type Of Use cannot be deleted because it has {masters}. Please delete all {masters} for this Sub Type Of Use first.",
+        "deactivateHasMasters": "This Sub Type Of Use cannot be deactivated because it has {masters}. Please delete all {masters} for this Sub Type Of Use first."
+      }
+    },
+    "referenceMasters": {
+      "typeOfUses": "Type Of Uses",
+      "cvRates": "CV Rates",
+      "subTypeOfUses": "Sub Type Of Uses",
+      "useFactors": "Use Factors",
+      "and": "and"
+    }
   },
   "messages": {
     "addingTo": "Adding to {name}",

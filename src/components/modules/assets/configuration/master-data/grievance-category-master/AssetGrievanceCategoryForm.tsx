@@ -29,7 +29,6 @@ export default function AssetGrievanceCategoryForm({
     handleBlur,
     handleSubmit,
     handleToggleStatus,
-    handleToggleFieldCorrection,
     handleCancel,
     showError,
     t,
@@ -145,7 +144,6 @@ export default function AssetGrievanceCategoryForm({
           showError={showError}
           handleChange={handleChange}
           handleBlur={handleBlur}
-          handleToggleFieldCorrection={handleToggleFieldCorrection}
           t={t}
           tCommon={tCommon}
         />

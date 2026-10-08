@@ -160,13 +160,23 @@
     "tryAgain": "Retry"
   },
   "apiErrors": {
-    "duplicateRecord": "Please check Category Name - duplicates not allowed.",
+    "duplicateRecord": "Asset Grievance Category already exists. Duplicates not allowed.",
     "AssetGrievanceCategory_CategoryName_Duplicate": "Category Name already exists.",
+    "AssetGrievanceCategory_GrievanceTypeCode_Duplicate": "Grievance Type Code already exists.",
     "validationError": "Invalid data provided. Please check all fields.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "notFound": "Asset grievance category not found.",
     "inUse": "Cannot deactivate/delete this Asset Grievance Category because it is referenced by other records.",
     "operationFailed": "Operation failed. Please try again later.",
-    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
+    "referenceBlocked": {
+      "grievanceCategory": {
+        "deleteHasMasters": "This Grievance Category cannot be deleted because it has {masters}. Please delete all {masters} for this Grievance Category first.",
+        "deactivateHasMasters": "This Grievance Category cannot be deactivated because it has {masters}. Please delete all {masters} for this Grievance Category first."
+      }
+    },
+    "referenceMasters": {
+      "grievanceRemarks": "Grievance Remarks",
+      "and": "and"
+    }
   }
 }

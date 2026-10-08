@@ -72,6 +72,11 @@ export function useGstMasterFormHandlers({
     setErrors((p) => ({ ...p, [name]: "" }));
   }, [setFormData, setErrors]);
 
+  const handleStatusToggle = useCallback(() => {
+    setFormData((p) => ({ ...p, isActive: !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
+  }, [setFormData, setErrors]);
+
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const fieldName = name as keyof GstMasterFormModel;
@@ -155,6 +160,7 @@ export function useGstMasterFormHandlers({
 
   return {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

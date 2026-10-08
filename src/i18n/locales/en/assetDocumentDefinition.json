@@ -31,8 +31,7 @@
     "duplicateDocumentName": "Document Name already exists for this Asset Category and Type",
     "duplicate": "Document definition already exists for this Asset Category and Type",
     "invalidAssetCategory": "Selected Asset Category is invalid or inactive",
-    "invalidAssetType": "Selected Asset Type is invalid or does not belong to the selected Category",
-    "cannotDeactivateReferenced": "Cannot deactivate/delete this Document Definition because it is referenced in: {tables}"
+    "invalidAssetType": "Selected Asset Type is invalid or does not belong to the selected Category"
   },
   "form": {
     "addTitle": "Add Asset Document Definition",
@@ -108,8 +107,13 @@
     "duplicateRecord": "Please check Document Code - duplicates not allowed.",
     "AssetDocumentDefinition_DocumentCode_Duplicate": "Asset Document Definition Code already exists",
     "notFound": "Asset document definition not found.",
-    "inUse": "Cannot deactivate/delete this Document Definition because it is referenced by asset documents.",
-    "operationFailed": "Operation failed. Please try again later."
+    "operationFailed": "Operation failed. Please try again later.",
+    "referenceBlocked": {
+      "assetDocumentDefinition": {
+        "deleteInUse": "This Asset Document Definition cannot be deleted because it is in use.",
+        "deactivateInUse": "This Asset Document Definition cannot be deactivated because it is in use."
+      }
+    }
   },
   "success": {
     "created": "New asset document definition created successfully: {code}",

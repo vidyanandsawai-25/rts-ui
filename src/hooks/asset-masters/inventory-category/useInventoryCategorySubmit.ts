@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveInventoryCategoryAction } from "@/app/[locale]/assets/configuration/master-data/inventory-category/actions";
 import type { InventoryCategoryFormModel } from "@/types/asset-masters/inventory-category.types";
-import { mapInventoryCategoryApiError } from "./validation";
+import { mapInventoryCategoryApiError, isDeactivateBlocked } from "./validation";
 import { getSafeMessage } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 
 interface UseInventoryCategorySubmitProps {
@@ -88,25 +88,37 @@ export function useInventoryCategorySubmit({
       }
 
       if (res && !res.ok) {
-        toast.error(mapInventoryCategoryApiError(res, t, tCommon));
-        const dupMsg = t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Already exists";
+        const genericDupMsg = t("validation.duplicateRecord") || t("errors.duplicateRecord") || "This record already exists";
+        const codeDupMsg = t("errors.codeDuplicate") || t("errors.duplicateCode") || genericDupMsg;
+        const nameDupMsg = t("errors.nameDuplicate") || t("errors.duplicateName") || genericDupMsg;
+
         if (res.error === "duplicate_code") {
-          setErrors({ code: dupMsg });
+          toast.error(codeDupMsg);
+          setErrors({ code: codeDupMsg });
         } else if (res.error === "duplicate_name") {
-          setErrors({ name: dupMsg });
+          toast.error(nameDupMsg);
+          setErrors({ name: nameDupMsg });
         } else if (res.error === "duplicate") {
+          toast.error(mapInventoryCategoryApiError(res, t, tCommon));
           setErrors({
-            code: dupMsg,
-            name: dupMsg,
+            code: codeDupMsg,
+            name: nameDupMsg,
           });
+        } else {
+          const errorMessage = mapInventoryCategoryApiError(res, t, tCommon);
+          // Deactivating a record that is still in use: show the reason under the status toggle.
+          if (isDeactivateBlocked(res)) {
+            setErrors({ isActive: errorMessage });
+          }
+          toast.error(errorMessage);
         }
         return;
       }
 
-      toast.error(t("messages.error"));
+      toast.error(t("messages.error") || tCommon("errors.generic"));
     } catch (err: unknown) {
       const error = err as Error;
-      toast.error(error?.message ?? t("messages.error"));
+      toast.error(error?.message ?? tCommon("errors.generic"));
     } finally {
       setIsSubmitting(false);
     }

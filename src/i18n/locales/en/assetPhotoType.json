@@ -99,6 +99,7 @@
   "apiErrors": {
     "duplicateRecord": "Please check Photo Type Code - duplicates not allowed.",
     "AssetPhotoType_PhotoTypeCode_Duplicate": "Asset Photo Type Code already exists",
+    "AssetPhotoType_PhotoTypeName_Duplicate": "Asset Photo Type Name already exists",
     "AssetPhotoType_AssetCategoryId_Invalid": "Invalid Asset Category selected",
     "AssetPhotoType_AssetTypeId_Invalid": "Invalid Asset Type selected",
     "A record with the same details already exists": "A record with the same details already exists.",
@@ -107,7 +108,12 @@
     "notFound": "Asset photo type not found.",
     "inUse": "Cannot deactivate/delete this Asset Photo Type because it is referenced by other asset records.",
     "operationFailed": "Operation failed. Please try again later.",
-    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
+    "referenceBlocked": {
+      "assetPhotoType": {
+        "deleteInUse": "This Asset Photo Type cannot be deleted because it is in use.",
+        "deactivateInUse": "This Asset Photo Type cannot be deactivated because it is in use."
+      }
+    }
   },
   "success": {
     "created": "New asset photo type created successfully: {code}",

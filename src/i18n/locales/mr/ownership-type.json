@@ -88,5 +88,13 @@
   },
   "masterNames": {
     "ownership-type-master": "मालकी प्रकार"
+  },
+  "apiErrors": {
+    "referenceBlocked": {
+      "ownershipType": {
+        "deleteInUse": "हा मालकी प्रकार वापरात असल्यामुळे डिलीट करता येत नाही.",
+        "deactivateInUse": "हा मालकी प्रकार वापरात असल्यामुळे निष्क्रिय करता येत नाही."
+      }
+    }
   }
 }

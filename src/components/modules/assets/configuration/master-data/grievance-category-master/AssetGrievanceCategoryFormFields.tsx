@@ -1,5 +1,5 @@
 import React from "react";
-import { Input, TextArea, ValidationMessage, ToggleSwitch } from "@/components/common";
+import { Input, TextArea, ValidationMessage } from "@/components/common";
 import { AssetGrievanceCategoryFormModel } from "@/types/asset-masters/asset-grievance-category.types";
 
 interface AssetGrievanceCategoryFormFieldsProps {
@@ -11,7 +11,7 @@ interface AssetGrievanceCategoryFormFieldsProps {
   showError: (field: keyof AssetGrievanceCategoryFormModel) => boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleToggleFieldCorrection: (checked: boolean) => void;
+
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon?: (key: string) => string;
 }
@@ -25,7 +25,7 @@ export function AssetGrievanceCategoryFormFields({
   showError,
   handleChange,
   handleBlur,
-  handleToggleFieldCorrection,
+
   t,
 }: AssetGrievanceCategoryFormFieldsProps) {
   return (
@@ -68,7 +68,6 @@ export function AssetGrievanceCategoryFormFields({
       <Input
         name="grievanceTypeNameLocal"
         label={t("form.fields.nameLocal")}
-        required
         placeholder={t("form.fields.nameLocalPlaceholder")}
         value={formData.grievanceTypeNameLocal ?? ""}
         onChange={handleChange}
@@ -149,6 +148,11 @@ export function AssetGrievanceCategoryFormFields({
         value={formData.targetTableName ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
+        onKeyDown={(e) => {
+          if (/[0-9]/.test(e.key)) {
+            e.preventDefault();
+          }
+        }}
         maxLength={100}
         fullWidth
         className="text-gray-700"
@@ -158,35 +162,11 @@ export function AssetGrievanceCategoryFormFields({
         visible={showError("targetTableName")}
       />
 
-      <div className="rounded-lg border border-slate-200 bg-white p-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <div id="requires-field-correction-label" className="text-sm font-medium text-gray-800">
-              {t("form.fields.requiresFieldCorrection")} <span className="text-red-500">*</span>
-            </div>
-            <div id="requires-field-correction-desc" className="text-xs text-gray-500">
-              {t("form.fields.requiresFieldCorrectionDesc")}
-            </div>
-          </div>
-          <ToggleSwitch
-            id="requiresFieldCorrection"
-            checked={formData.requiresFieldCorrection}
-            onChange={handleToggleFieldCorrection}
-            showPopup={false}
-            activeLabel={t("form.fields.requiresFieldCorrection")}
-            inactiveLabel={t("form.fields.requiresFieldCorrection")}
-          />
-        </div>
-        <ValidationMessage
-          message={errors.requiresFieldCorrection}
-          visible={showError("requiresFieldCorrection")}
-        />
-      </div>
+
 
       <TextArea
         name="description"
         label={t("form.fields.description")}
-        required
         placeholder={t("form.fields.descPlaceholder")}
         value={formData.description ?? ""}
         onChange={handleChange}

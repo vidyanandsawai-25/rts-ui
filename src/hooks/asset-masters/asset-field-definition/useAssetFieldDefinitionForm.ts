@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
+import { parseReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 import {
   createAssetFieldDefinitionAction,
   updateAssetFieldDefinitionAction,
@@ -221,6 +222,9 @@ export function useAssetFieldDefinitionForm({
           tCommon
         );
         toast.error(toastMessage);
+        if (parseReferenceBlockedMessage(res.message)?.operation === "deactivate") {
+          setErrors((prev) => ({ ...prev, isActive: toastMessage }));
+        }
         if (fieldError) {
           setErrors((prev) => ({ ...prev, [fieldError.field]: fieldError.message }));
           setTouched((prev) => ({ ...prev, [fieldError.field]: true }));
@@ -239,6 +243,7 @@ export function useAssetFieldDefinitionForm({
   const handleToggleStatus = useCallback((checked: boolean) => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   const handleToggleRequired = useCallback((checked: boolean) => {

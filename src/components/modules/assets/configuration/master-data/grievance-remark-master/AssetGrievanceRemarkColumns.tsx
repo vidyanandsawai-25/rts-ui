@@ -63,12 +63,8 @@ export function getAssetGrievanceRemarkColumns(
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<AssetGrievanceRemark>[] {
-  // NOTE: "grievanceCategoryName" is mapped to "grievanceCategoryId" for sorting.
-  // The "description" and "isActive" columns are present in the table but are marked
-  // as non-sortable because the backend API does not support sorting on these fields.
   const sortableColumns: Record<string, string> = {
     remark: "remark",
-    grievanceCategoryName: "grievanceCategoryId",
   };
 
   const createSortableLabel = (label: string, key: string) => {
@@ -109,7 +105,7 @@ export function getAssetGrievanceRemarkColumns(
     },
     {
       key: "grievanceCategoryName",
-      label: createSortableLabel(t("table.columns.remarkType"), "grievanceCategoryName"),
+      label: t("table.columns.remarkType"),
       width: "20%",
       align: "center",
       headerClassName: "whitespace-nowrap",

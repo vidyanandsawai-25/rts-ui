@@ -3,6 +3,7 @@ import type { Column } from "@/components/common/MasterTable";
 import type { AssetFieldDefinition } from "@/types/asset-masters/asset-field-definition.types";
 import { SortAscButton, SortDescButton, SortDefaultButton, ViewButton } from "@/components/common/ActionButtons";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { TruncatedText } from "@/components/common/TruncatedText";
 
 function SortableHeader({
   label,
@@ -89,8 +90,10 @@ export function getAssetFieldDefinitionColumns(
       width: "15%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-words max-w-[180px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" ? value : ""} maxLength={20} />
+      ),
     },
     {
       key: "fieldName",
@@ -98,8 +101,10 @@ export function getAssetFieldDefinitionColumns(
       width: "15%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-words max-w-[180px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" ? value : ""} maxLength={20} />
+      ),
     },
     {
       key: "fieldLabel",
@@ -107,8 +112,10 @@ export function getAssetFieldDefinitionColumns(
       width: "15%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-words max-w-[200px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" ? value : ""} maxLength={25} />
+      ),
     },
     {
       key: "fieldType",
@@ -116,8 +123,10 @@ export function getAssetFieldDefinitionColumns(
       width: "10%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-words max-w-[120px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" ? value : ""} maxLength={15} />
+      ),
     },
     {
       key: "fieldGroup",
@@ -125,8 +134,10 @@ export function getAssetFieldDefinitionColumns(
       width: "15%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" && value ? value : "-"),
+      cellClassName: "break-words max-w-[180px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={20} />
+      ),
     },
     {
       key: "displayOrder",

@@ -64,7 +64,7 @@ describe('useAssetCategorySubmit', () => {
     });
 
     expect(baseProps.setErrors).toHaveBeenCalledWith({
-      code: 'validation.duplicateRecord',
+      code: 'validation.codeDuplicate',
     });
     expect(toast.error).toHaveBeenCalled();
   });
@@ -83,7 +83,7 @@ describe('useAssetCategorySubmit', () => {
     });
 
     expect(baseProps.setErrors).toHaveBeenCalledWith({
-      name: 'validation.duplicateRecord',
+      name: 'validation.nameDuplicate',
     });
     expect(toast.error).toHaveBeenCalled();
   });
@@ -102,8 +102,8 @@ describe('useAssetCategorySubmit', () => {
     });
 
     expect(baseProps.setErrors).toHaveBeenCalledWith({
-      code: 'validation.duplicateRecord',
-      name: 'validation.duplicateRecord',
+      code: 'validation.codeDuplicate',
+      name: 'validation.nameDuplicate',
     });
     expect(toast.error).toHaveBeenCalled();
   });

@@ -101,6 +101,20 @@
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Inventory Condition"
   },
+  "apiErrors": {
+    "referenceBlocked": {
+      "inventoryName": {
+        "deleteInUse": "This Inventory Name cannot be deleted because it is in use.",
+        "deactivateInUse": "This Inventory Name cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Inventory Name cannot be deleted because it has {masters}. Please delete all {masters} for this Inventory Name first.",
+        "deactivateHasMasters": "This Inventory Name cannot be deactivated because it has {masters}. Please delete all {masters} for this Inventory Name first."
+      }
+    },
+    "referenceMasters": {
+      "inventoryModels": "Inventory Models",
+      "and": "and"
+    }
+  },
   "pageTitle": "Inventory Item Name",
   "pageSubtitle": "Centralized Master Data Management System",
   "addInventoryName": "Add New Inventory Item Name",

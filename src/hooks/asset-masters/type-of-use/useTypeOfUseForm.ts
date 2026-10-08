@@ -10,7 +10,7 @@ import {
 } from "@/app/[locale]/assets/configuration/master-data/type-of-use/action";
 import { AssetTypeOfUseFormModel, AssetTypeOfUse } from "@/types/asset-masters/type-of-use.types";
 import { validateTypeOfUseForm, sanitizeTypeOfUseFieldValue } from "./validation";
-import { getErrorMessage } from "./error-mapping";
+import { getErrorMessage, isDeactivateBlockedMessage } from "./error-mapping";
 
 
 interface UseTypeOfUseFormProps {
@@ -172,24 +172,32 @@ export function useTypeOfUseForm({
         const apiErrorText = [
           result.message ?? "",
           ...Object.values(result.validationErrors ?? {}).map((value) =>
-            Array.isArray(value) ? value.join(" ") : value
+            Array.isArray(value) ? value.join(" ") : String(value)
           ),
         ].join(" ");
-        const duplicateName =
-          /AssetTypeOfUse_Description_Duplicate/i.test(apiErrorText) ||
-          (result.statusCode === 409 &&
-            /same details already exists|already exists/i.test(apiErrorText));
 
-        if (duplicateName) {
-          const nameError = t("apiErrors.AssetTypeOfUse_Description_Duplicate", {
-            default: "Type of Use Name already exists",
-          });
-          setErrors((previous) => ({ ...previous, description: nameError }));
+        let handled = false;
+        const isAmbiguousDuplicate = result.statusCode === 409 && /same details already exists/i.test(apiErrorText);
+
+        if (/AssetTypeOfUse_TypeOfUseCode_Duplicate/i.test(apiErrorText) || (/code/i.test(apiErrorText) && /already exist/i.test(apiErrorText)) || isAmbiguousDuplicate) {
+          setErrors((previous) => ({ ...previous, typeOfUseCode: t("apiErrors.AssetTypeOfUse_TypeOfUseCode_Duplicate", { default: "Type of Use Code already exists" }) }));
+          setTouched((previous) => ({ ...previous, typeOfUseCode: true }));
+          handled = true;
+        }
+        
+        if (/AssetTypeOfUse_Description_Duplicate/i.test(apiErrorText) || (/name|description/i.test(apiErrorText) && /already exist/i.test(apiErrorText)) || isAmbiguousDuplicate) {
+          setErrors((previous) => ({ ...previous, description: t("apiErrors.AssetTypeOfUse_Description_Duplicate", { default: "Type of Use Name already exists" }) }));
           setTouched((previous) => ({ ...previous, description: true }));
-          return;
+          handled = true;
         }
 
-        toast.error(mapApiError(result));
+        if (handled) return;
+
+        const errorMessage = mapApiError(result);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
@@ -207,6 +215,7 @@ export function useTypeOfUseForm({
   const handleToggleStatus = useCallback((checked: boolean): void => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {

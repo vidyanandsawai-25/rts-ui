@@ -1,4 +1,9 @@
-import { mapSharedApiError, SharedErrorMapOptions } from "@/lib/utils/asset-utils/shared-error-mapping";
+import {
+  mapSharedApiError,
+  parseReferenceBlockedMessage,
+  SharedErrorMapOptions,
+  translateReferenceBlockedMessage,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
 import type { OwningDepartmentFormModel } from "@/types/asset-masters/owning-department.types";
 
 /**
@@ -34,6 +39,16 @@ export function getOwningDepartmentErrorMessage(
     }
   }
 
+  // Reference check (DELETE, or PUT with isActive: false):
+  //   "This Owning Department cannot be deleted because it has Designations. Please delete all Designations for this Owning Department first."
+  //   "This Owning Department cannot be deleted because it is in use."
+  const referenceBlocked = translateReferenceBlockedMessage(rawMsg, t, {
+    entities: { "Owning Department": "apiErrors.referenceBlocked.owningDepartment" },
+    masters: { Designations: "apiErrors.referenceMasters.designations" },
+    andKey: "apiErrors.referenceMasters.and",
+  });
+  if (referenceBlocked) return referenceBlocked;
+
   const lowerMsg = rawMsg.toLowerCase();
 
   if (
@@ -43,6 +58,27 @@ export function getOwningDepartmentErrorMessage(
     lowerMsg.includes("owningdepartment_duplicate") ||
     statusCode === 409
   ) {
+    const hasNameDup =
+      lowerMsg.includes("name") ||
+      lowerMsg.includes("department") ||
+      lowerMsg.includes("owningdepartment") ||
+      lowerMsg.includes("owningdepartment_duplicate");
+
+    if (hasNameDup) {
+      try {
+        const deptDup = t("apiErrors.OwningDepartment_Duplicate");
+        if (deptDup && deptDup !== "apiErrors.OwningDepartment_Duplicate" && !deptDup.includes("apiErrors")) {
+          return deptDup;
+        }
+      } catch {}
+      try {
+        const nameDup = t("form.validation.departmentNameDuplicate");
+        if (nameDup && nameDup !== "form.validation.departmentNameDuplicate" && !nameDup.includes("form.validation")) {
+          return nameDup;
+        }
+      } catch {}
+    }
+
     try {
       const formDup = t("form.messages.duplicate");
       if (formDup && formDup !== "form.messages.duplicate" && !formDup.includes("form.messages.duplicate")) {
@@ -69,7 +105,6 @@ export function getOwningDepartmentErrorMessage(
     t: t as SharedErrorMapOptions["t"],
     tCommon: tCommon as SharedErrorMapOptions["tCommon"],
     fallbackEntityName: fallbackEntityName || t("title"),
-    entityMatchers: [{ test: /(owning|department)/i, labelKey: "title" }],
   });
 }
 
@@ -88,6 +123,12 @@ export function parseOwningDepartmentApiErrors(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): OwningDepartmentApiErrorResult {
   const globalMessage = getOwningDepartmentErrorMessage(message, statusCode, t, tCommon);
+
+  // Deactivating an Owning Department that is in use: show the reason under the status toggle.
+  if (parseReferenceBlockedMessage(message)?.operation === "deactivate") {
+    return { fieldErrors: { isActive: globalMessage }, globalMessage };
+  }
+
   const fieldErrors: Partial<Record<keyof OwningDepartmentFormModel, string>> = {};
 
   const rawMsg = (message || "").trim();

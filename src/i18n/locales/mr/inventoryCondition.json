@@ -114,6 +114,14 @@
       }
     }
   },
+  "apiErrors": {
+    "referenceBlocked": {
+      "condition": {
+        "deleteInUse": "ही स्थिती वापरात असल्यामुळे डिलीट करता येत नाही.",
+        "deactivateInUse": "ही स्थिती वापरात असल्यामुळे निष्क्रिय करता येत नाही."
+      }
+    }
+  },
   "masterNames": {
     "asset-type-master": "मालमत्ता प्रकार",
     "asset-category-master": "मालमत्ता श्रेणी",

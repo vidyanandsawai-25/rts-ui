@@ -13,6 +13,8 @@ import {
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
 
+type MutationResponseData = { success?: boolean; message?: string; error?: string };
+
 function normalizeSearchSequence<T extends { searchSequence: number | "" }>(data: T) {
   return {
     ...data,
@@ -140,12 +142,12 @@ export async function createTypeOfUseGroup(data: CreateTypeOfUseGroupPayload): P
       isActive: data.isActive,
       createdBy: data.createdBy,
     };
-    const response = await apiClient.post<{ message?: string }>("/asset-management/type-of-use-group", payload);
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    const response = await apiClient.post<MutationResponseData>("/asset-management/type-of-use-group", payload);
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Create Type of Use Group failed",
         "Create Group failed"
       );
@@ -173,15 +175,15 @@ export async function updateTypeOfUseGroup(data: UpdateTypeOfUseGroupPayload): P
       isActive: data.isActive,
       updatedBy: data.updatedBy,
     };
-    const response = await apiClient.put<{ message?: string }>(
+    const response = await apiClient.put<MutationResponseData>(
       `/asset-management/type-of-use-group/${encodeURIComponent(String(data.id))}`,
       payload
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Update Type of Use Group failed",
         "Update Group failed"
       );
@@ -267,15 +269,15 @@ export async function getAssetTypeOfUseById(id: number): Promise<AssetTypeOfUse 
 
 export async function createAssetTypeOfUse(data: CreateAssetTypeOfUsePayload): Promise<string | undefined> {
   try {
-    const response = await apiClient.post<{ message?: string }>(
+    const response = await apiClient.post<MutationResponseData>(
       "/asset-management/asset-type-of-use",
       normalizeSearchSequence(data)
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Create Asset Type of Use failed",
         "Create Type failed"
       );
@@ -292,7 +294,7 @@ export async function updateAssetTypeOfUse(data: UpdateAssetTypeOfUsePayload): P
     if (typeof data.id !== "number" || data.id <= 0 || !Number.isFinite(data.id)) {
       throw new ApiError(400, "Valid Type of Use ID is required", "Validation failed");
     }
-    const response = await apiClient.put<{ message?: string }>(
+    const response = await apiClient.put<MutationResponseData>(
       `/asset-management/asset-type-of-use/${encodeURIComponent(String(data.id))}`,
       normalizeSearchSequence({
         assetCategoryId: data.assetCategoryId,
@@ -306,11 +308,11 @@ export async function updateAssetTypeOfUse(data: UpdateAssetTypeOfUsePayload): P
         updatedBy: data.updatedBy,
       })
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Update Asset Type of Use failed",
         "Update Type failed"
       );
@@ -399,15 +401,15 @@ export async function getAssetSubTypeOfUseById(id: number): Promise<AssetSubType
 
 export async function createAssetSubTypeOfUse(data: CreateAssetSubTypeOfUsePayload): Promise<string | undefined> {
   try {
-    const response = await apiClient.post<{ message?: string }>(
+    const response = await apiClient.post<MutationResponseData>(
       "/asset-management/asset-sub-type-of-use",
       normalizeSearchSequence(data)
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Create Asset Sub-Type of Use failed",
         "Create Sub-Type failed"
       );
@@ -424,7 +426,7 @@ export async function updateAssetSubTypeOfUse(data: UpdateAssetSubTypeOfUsePaylo
     if (typeof data.id !== "number" || data.id <= 0 || !Number.isFinite(data.id)) {
       throw new ApiError(400, "Valid Sub-Type of Use ID is required", "Validation failed");
     }
-    const response = await apiClient.put<{ message?: string }>(
+    const response = await apiClient.put<MutationResponseData>(
       `/asset-management/asset-sub-type-of-use/${encodeURIComponent(String(data.id))}`,
       normalizeSearchSequence({
         typeOfUseId: data.typeOfUseId,
@@ -434,11 +436,11 @@ export async function updateAssetSubTypeOfUse(data: UpdateAssetSubTypeOfUsePaylo
         updatedBy: data.updatedBy,
       })
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Update Asset Sub-Type of Use failed",
         "Update Sub-Type failed"
       );

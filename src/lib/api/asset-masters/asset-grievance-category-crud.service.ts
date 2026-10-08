@@ -96,7 +96,7 @@ export async function createAssetGrievanceCategory(
       grievanceTypeNameLocal: data.grievanceTypeNameLocal?.trim() || null,
       description: data.description?.trim() || null,
       targetTableName: data.targetTableName?.trim() || null,
-      requiresFieldCorrection: parseBoolean(data.requiresFieldCorrection),
+
       slaDays: data.slaDays != null && !isNaN(Number(data.slaDays)) ? Number(data.slaDays) : null,
       codeFormat: data.codeFormat.trim(),
       displaySequence: Number(data.displaySequence) || 0,
@@ -135,7 +135,7 @@ export async function updateAssetGrievanceCategory(
       grievanceTypeNameLocal: data.grievanceTypeNameLocal?.trim() || null,
       description: data.description?.trim() || null,
       targetTableName: data.targetTableName?.trim() || null,
-      requiresFieldCorrection: parseBoolean(data.requiresFieldCorrection),
+
       slaDays: data.slaDays != null && !isNaN(Number(data.slaDays)) ? Number(data.slaDays) : null,
       codeFormat: data.codeFormat.trim(),
       displaySequence: Number(data.displaySequence) || 0,

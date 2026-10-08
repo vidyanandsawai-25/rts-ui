@@ -169,4 +169,70 @@ describe("useAssetPhotoForm", () => {
 
     expect(result.current.formData.assetTypeId).toBeNull();
   });
+
+  it("puts the deactivate reference error on isActive and clears it when the status toggles", async () => {
+    vi.mocked(actions.updateAssetPhotoAction).mockResolvedValue({
+      success: false,
+      message: "This Asset Photo Type cannot be deactivated because it is in use.",
+      statusCode: 400,
+    });
+    const initialData = {
+      id: 5,
+      photoTypeCode: "CODE5",
+      photoTypeName: "Name 5",
+      description: "Desc 5",
+      displayOrder: 5,
+      isActive: true,
+      assetCategoryId: 1,
+      assetTypeId: 2,
+      isRequired: true,
+    } as AssetPhotoType;
+
+    const { result } = renderHook(() => useAssetPhotoForm({ ...mockProps, id: 5, initialData }));
+
+    act(() => {
+      result.current.handleToggleStatus(false);
+    });
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
+    });
+
+    const expected = "apiErrors.referenceBlocked.assetPhotoType.deactivateInUse";
+    expect(actions.updateAssetPhotoAction).toHaveBeenCalled();
+    expect(result.current.errors.isActive).toBe(expected);
+    expect(toast.error).toHaveBeenCalledWith(expected);
+
+    act(() => {
+      result.current.handleToggleStatus(true);
+    });
+    expect(result.current.errors.isActive).toBeFalsy();
+  });
+
+  it("does not put the delete reference error on isActive", async () => {
+    vi.mocked(actions.updateAssetPhotoAction).mockResolvedValue({
+      success: false,
+      message: "This Asset Photo Type cannot be deleted because it is in use.",
+      statusCode: 400,
+    });
+    const initialData = {
+      id: 5,
+      photoTypeCode: "CODE5",
+      photoTypeName: "Name 5",
+      description: "Desc 5",
+      displayOrder: 5,
+      isActive: true,
+      assetCategoryId: 1,
+      assetTypeId: 2,
+      isRequired: true,
+    } as AssetPhotoType;
+
+    const { result } = renderHook(() => useAssetPhotoForm({ ...mockProps, id: 5, initialData }));
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
+    });
+
+    expect(result.current.errors.isActive).toBeFalsy();
+    expect(toast.error).toHaveBeenCalledWith("apiErrors.referenceBlocked.assetPhotoType.deleteInUse");
+  });
 });

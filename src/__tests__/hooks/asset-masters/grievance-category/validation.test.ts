@@ -17,7 +17,6 @@ describe('validateGrievanceCategoryForm', () => {
     codeFormat: 'WTR-{YYYY}-{SEQ}',
     displaySequence: 1,
     targetTableName: 'tbl_water',
-    requiresFieldCorrection: false,
     slaDays: 3,
     description: 'Water distribution problem',
     isActive: true,
@@ -50,10 +49,6 @@ describe('validateGrievanceCategoryForm', () => {
     expect(errors.grievanceTypeName).toBe('form.errors.typeNameMaxLength');
   });
 
-  test('requires grievanceTypeNameLocal', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeNameLocal: '' }, t, false);
-    expect(errors.grievanceTypeNameLocal).toBe('form.errors.typeNameLocalReq');
-  });
 
   test('requires codeFormat', () => {
     const errors = validateGrievanceCategoryForm({ ...baseModel, codeFormat: '' }, t, false);
@@ -78,15 +73,8 @@ describe('validateGrievanceCategoryForm', () => {
     expect(errorsMax.slaDays).toBe('form.errors.slaMaxDays');
   });
 
-  test('requires description', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel, description: '' }, t, false);
-    expect(errors.description).toBe('form.errors.descReq');
-  });
 
-  test('requires requiresFieldCorrection', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel, requiresFieldCorrection: undefined as unknown as boolean }, t, false);
-    expect(errors.requiresFieldCorrection).toBe('form.errors.requiresFieldCorrectionReq');
-  });
+
 
   test('isActive required on create', () => {
     const errors = validateGrievanceCategoryForm({ ...baseModel, isActive: false }, t, false);
@@ -101,7 +89,6 @@ describe('validateGrievanceCategoryForm', () => {
       codeFormat: 'WTR-{YYYY}-{SEQ}',
       displaySequence: 1,
       targetTableName: 'tbl_water',
-      requiresFieldCorrection: false,
       slaDays: 3,
       description: 'Water distribution problem',
       isActive: true,

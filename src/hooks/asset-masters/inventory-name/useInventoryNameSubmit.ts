@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createInventoryNameAction, updateInventoryNameAction } from "@/app/[locale]/assets/configuration/master-data/inventory-name/actions";
 import type { InventoryNameFormModel } from "@/types/asset-masters/inventory-name.types";
-import { mapInventoryNameApiError } from "./validation";
+import { mapInventoryNameApiError, isDeactivateBlocked } from "./validation";
 
 interface UseInventoryNameSubmitProps {
   isEdit: boolean;
@@ -71,7 +71,12 @@ export function useInventoryNameSubmit({
         router.refresh();
         return;
       } else {
-        toast.error(mapInventoryNameApiError(res, t, tCommon));
+        const errorMessage = mapInventoryNameApiError(res, t, tCommon);
+        // Deactivating a record that is still in use: show the reason under the status toggle.
+        if (isDeactivateBlocked(res)) {
+          setErrors({ isActive: errorMessage });
+        }
+        toast.error(errorMessage);
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));

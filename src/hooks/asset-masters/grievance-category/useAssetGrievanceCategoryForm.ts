@@ -13,6 +13,7 @@ import {
   sanitizeCategoryField,
   validateGrievanceCategoryForm,
   mapGrievanceCategoryApiError,
+  isDeactivateBlockedMessage,
   translateCategoryValidationError,
 } from "./validation";
 
@@ -44,7 +45,6 @@ export function useAssetGrievanceCategoryForm({
     grievanceTypeNameLocal: initialData?.grievanceTypeNameLocal ?? "",
     description: initialData?.description ?? "",
     targetTableName: initialData?.targetTableName ?? "",
-    requiresFieldCorrection: initialData?.requiresFieldCorrection ?? false,
     slaDays: initialData?.slaDays ?? null,
     codeFormat: initialData?.codeFormat ?? "",
     // Use null (not 0) as the sentinel for "not yet entered" so the required validator fires
@@ -157,7 +157,38 @@ export function useAssetGrievanceCategoryForm({
           toast.error(Object.values(fieldErrors)[0] ?? mapGrievanceCategoryApiError(res, t, tCommon));
           return;
         }
-        toast.error(mapGrievanceCategoryApiError(res, t, tCommon));
+        const mappedError = mapGrievanceCategoryApiError(res, t, tCommon);
+
+        const isDuplicate = res.statusCode === 409 || res.message?.toLowerCase().includes("already exists") || res.message?.toLowerCase().includes("duplicate");
+        if (isDuplicate) {
+          const lowerMsg = res.message?.toLowerCase() || "";
+          const isCodeDupe = lowerMsg.includes("code");
+          const isNameDupe = lowerMsg.includes("name");
+          
+          const codeSpecificMsg = t("apiErrors.AssetGrievanceCategory_GrievanceTypeCode_Duplicate") || t("form.errors.duplicateRecord") || "Record already exists";
+          const nameSpecificMsg = t("apiErrors.AssetGrievanceCategory_CategoryName_Duplicate") || t("form.errors.duplicateName") || "Record already exists";
+
+          if (isCodeDupe && !isNameDupe) {
+            toast.error(codeSpecificMsg);
+            setErrors(prev => ({ ...prev, grievanceTypeCode: codeSpecificMsg }));
+          } else if (isNameDupe && !isCodeDupe) {
+            toast.error(nameSpecificMsg);
+            setErrors(prev => ({ ...prev, grievanceTypeName: nameSpecificMsg }));
+          } else {
+            toast.error(mappedError);
+            setErrors(prev => ({
+              ...prev,
+              grievanceTypeCode: codeSpecificMsg,
+              grievanceTypeName: nameSpecificMsg,
+            }));
+          }
+          return;
+        }
+
+        if (isDeactivateBlockedMessage(res.message)) {
+          setErrors(prev => ({ ...prev, isActive: mappedError }));
+        }
+        toast.error(mappedError);
         return;
       }
       const successMessage = t(isEdit ? "master.toast.updateSuccess" : "master.toast.createSuccess");
@@ -172,11 +203,10 @@ export function useAssetGrievanceCategoryForm({
   const handleToggleStatus = useCallback((checked: boolean) => {
     setIsActive(checked);
     setFormData(p => ({ ...p, isActive: checked }));
+    setErrors(prev => ({ ...prev, isActive: "" }));
   }, []);
 
-  const handleToggleFieldCorrection = useCallback((checked: boolean) => {
-    setFormData(p => ({ ...p, requiresFieldCorrection: checked }));
-  }, []);
+
 
   return {
     formData,
@@ -191,7 +221,7 @@ export function useAssetGrievanceCategoryForm({
     handleBlur,
     handleSubmit,
     handleToggleStatus,
-    handleToggleFieldCorrection,
+
     handleCancel,
     showError,
     t,

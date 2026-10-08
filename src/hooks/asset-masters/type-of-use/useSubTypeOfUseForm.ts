@@ -11,7 +11,7 @@ import {
 import { AssetSubTypeOfUseFormModel, AssetSubTypeOfUse } from "@/types/asset-masters/type-of-use.types";
 
 import { validateSubTypeOfUseForm, sanitizeSubTypeOfUseFieldValue } from "./validation";
-import { getErrorMessage } from "./error-mapping";
+import { getErrorMessage, isDeactivateBlockedMessage } from "./error-mapping";
 
 
 interface UseSubTypeOfUseFormProps {
@@ -160,7 +160,30 @@ export function useSubTypeOfUseForm({
         : await createAssetSubTypeOfUseAction(formData);
 
       if (!result.success) {
-        toast.error(mapApiError(result));
+        const apiErrorText = [
+          result.message ?? "",
+          ...Object.values(result.validationErrors ?? {}).map((value) =>
+            Array.isArray(value) ? value.join(" ") : String(value)
+          ),
+        ].join(" ");
+
+        let handled = false;
+        if (/AssetSubTypeOfUse_Description_Duplicate/i.test(apiErrorText) || (/name|description/i.test(apiErrorText) && /already exist/i.test(apiErrorText)) || /same details already exists/i.test(apiErrorText)) {
+          setErrors((p) => ({ ...p, description: t("apiErrors.AssetSubTypeOfUse_Description_Duplicate", { default: "Sub-Type Name already exists" }) }));
+          setTouched((p) => ({ ...p, description: true }));
+          handled = true;
+        }
+
+        if (handled) {
+          toast.error(t("apiErrors.AssetSubTypeOfUse_Description_Duplicate", { default: "Sub-Type Name already exists" }));
+          return;
+        }
+
+        const errorMessage = mapApiError(result);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
@@ -178,6 +201,7 @@ export function useSubTypeOfUseForm({
   const handleToggleStatus = useCallback((checked: boolean): void => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {

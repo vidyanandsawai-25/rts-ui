@@ -45,7 +45,7 @@ export const validateGrievanceRemarkForm = (
     },
     description: (val: unknown) => {
       const strVal = String(val ?? "").trim();
-      if (!strVal) return t("form.validation.descriptionRequired");
+      if (!strVal) return undefined;
       if (strVal.length > DESCRIPTION_MAX) return t("form.validation.descriptionMaxLength");
       if (isAllZeros(strVal) || !DESCRIPTION_REGEX.test(strVal)) return t("form.validation.remarkFormat");
       return undefined;
@@ -87,6 +87,15 @@ export const mapGrievanceRemarkApiError = (
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const lowerMsg = (result.message || "").toLowerCase();
+  if (result.statusCode === 409 || lowerMsg.includes("duplicate") || lowerMsg.includes("already exists")) {
+    try {
+      const dup = t("apiErrors.duplicateRecord");
+      if (dup && !dup.includes("apiErrors")) return dup;
+    } catch {}
+    return "This remark already exists for the selected Grievance Category.";
+  }
+
   return mapSharedApiError({
     message: result.message,
     statusCode: result.statusCode,
@@ -125,7 +134,7 @@ export const REMARK_VALIDATION_ERROR_KEYS = new Set([
   "form.validation.remarkMinLength",
   "form.validation.remarkMaxLength",
   "form.validation.remarkFormat",
-  "form.validation.descriptionRequired",
+
   "form.validation.descriptionMaxLength",
   "form.validation.remarkTypeRequired",
   "form.validation.mustBeActive",

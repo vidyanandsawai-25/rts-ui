@@ -27,7 +27,7 @@ export async function fetchAssetGrievanceRemarkPagedServerAction(
   sortBy?: string,
   sortOrder?: string
 ): Promise<PagedResponse<AssetGrievanceRemark>> {
-  const allowedSortColumns = ["remark", "grievanceCategoryId"];
+  const allowedSortColumns = ["remark"];
   const validSortBy = sortBy && allowedSortColumns.includes(sortBy) ? sortBy : undefined;
   const validSortOrder = sortOrder && ["asc", "desc"].includes(sortOrder.toLowerCase()) ? sortOrder.toLowerCase() : undefined;
 

@@ -61,7 +61,6 @@ export function AssetGrievanceRemarkFormFields({
       <TextArea
         name="description"
         label={t("form.description") || "Description"}
-        required
         placeholder={t("form.descriptionPlaceholder")} // fallback placeholder
         value={formData.description}
         onChange={handleChange}

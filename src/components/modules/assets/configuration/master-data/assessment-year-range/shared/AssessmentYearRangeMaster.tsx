@@ -16,6 +16,7 @@ import {
 } from "@/types/asset-masters/assessment-year-range.types";
 import { getAssessmentYearRangeColumns } from "./AssessmentYearRangeColumns";
 import { useAssessmentYearRangePagination } from "@/hooks/asset-masters/assessmentYearRange/useAssessmentYearRangePagination";
+import { translateAssessmentYearRangeReferenceError } from "@/hooks/asset-masters/assessmentYearRange/useAssessmentYearRangeForm";
 
 interface AssessmentYearRangeMasterComponentProps<T extends AssessmentYearRange>
   extends AssessmentYearRangeMasterProps<T> {
@@ -90,6 +91,11 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
             toast.success(t("success.deleted", { fromYear, toYear }));
             startTransition(() => router.refresh());
           } else {
+            const referenceMessage = translateAssessmentYearRangeReferenceError(result.message, t);
+            if (referenceMessage) {
+              toast.error(referenceMessage);
+              return;
+            }
             const isForeignKeyOrUseError =
               result.statusCode === 409 ||
               result.statusCode === 500 ||

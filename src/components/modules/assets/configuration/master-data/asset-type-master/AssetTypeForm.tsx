@@ -105,9 +105,9 @@ export default function AssetTypeForm({ initialData, groups }: AssetTypeFormProp
                   {isActive ? <CheckCircle2 size={18} /> : <X size={18} />}
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">{t("labels.status")}</div>
+                  <div className="font-medium text-gray-900">{t("labels.activeStatus")}</div>
                   <div className="text-sm text-gray-500">
-                    {isActive ? ` ${t("labels.active")}` : ` ${t("labels.inactive")}`}
+                    {isActive ? t("labels.assetTypeActiveDescription") : t("labels.assetTypeInactiveDescription")}
                   </div>
                 </div>
               </div>

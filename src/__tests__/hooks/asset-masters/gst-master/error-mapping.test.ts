@@ -8,7 +8,8 @@ describe("GST Master error-mapping getGstMasterErrorMessage", () => {
       "form.messages.duplicate": "This record already exists",
       "apiErrors.duplicateRecord": "This record already exists",
       "apiErrors.GST_TaxCode_Duplicate": "GST Tax Code already exists",
-      "apiErrors.inUse": "Record is in use",
+      "apiErrors.deleteBlockedInUse": "This GST cannot be deleted because it is in use.",
+      "apiErrors.deactivateBlockedInUse": "This GST cannot be deactivated because it is in use.",
       "apiErrors.operationFailed": "Operation failed",
     };
     return translations[key] || key;
@@ -51,11 +52,14 @@ describe("GST Master error-mapping getGstMasterErrorMessage", () => {
     expect(result).toBe("This record already exists");
   });
 
-  it("should return reference deletion message when entity is referenced in tables", () => {
-    const refError = "Cannot deactivate/delete this GST Master because it is referenced in: LeaseRentBillTransaction";
-    const result = getGstMasterErrorMessage(refError, 400, mockT, mockTCommon);
-    expect(result).toContain("GST Master");
-    expect(result).toContain("LeaseRentBillTransaction");
+  it("should return the localized delete reference error", () => {
+    const result = getGstMasterErrorMessage("This GST cannot be deleted because it is in use.", 400, mockT, mockTCommon);
+    expect(result).toBe("This GST cannot be deleted because it is in use.");
+  });
+
+  it("should return the localized deactivate reference error", () => {
+    const result = getGstMasterErrorMessage("This GST cannot be deactivated because it is in use.", 400, mockT, mockTCommon);
+    expect(result).toBe("This GST cannot be deactivated because it is in use.");
   });
 
   it("should return raw error message as fallback if no duplicate or reference match", () => {
@@ -72,11 +76,18 @@ describe("GST Master parseGstMasterApiErrors", () => {
       "form.messages.duplicate": "This record already exists",
       "form.validation.taxCodeDuplicate": "Tax code already exists",
       "form.validation.taxNameDuplicate": "Tax name already exists",
+      "apiErrors.deactivateBlockedInUse": "This GST cannot be deactivated because it is in use.",
     };
     return translations[key] || key;
   });
 
   const mockTCommon = vi.fn((key: string) => key);
+
+  it("should bind the deactivate reference error to the status toggle", () => {
+    const result = parseGstMasterApiErrors("This GST cannot be deactivated because it is in use.", 400, mockT, mockTCommon);
+    expect(result.fieldErrors).toEqual({ isActive: "This GST cannot be deactivated because it is in use." });
+    expect(result.globalMessage).toBe("This GST cannot be deactivated because it is in use.");
+  });
 
   it("should parse fieldErrors and map taxCode duplicate error correctly", () => {
     const jsonMsg = JSON.stringify({

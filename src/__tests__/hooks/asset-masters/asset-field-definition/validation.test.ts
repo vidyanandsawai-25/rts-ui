@@ -10,7 +10,11 @@ import {
   GROUP_MAX,
   OPTIONS_MAX,
 } from "@/hooks/asset-masters/asset-field-definition/validation";
+import { createTranslator } from "next-intl";
+import assetFieldDefinitionEn from "@/i18n/locales/en/assetFieldDefinition.json";
 import { AssetFieldDefinitionFormModel } from "@/types/asset-masters/asset-field-definition.types";
+
+const tEn = createTranslator({ locale: "en", messages: { assetFieldDefinition: assetFieldDefinitionEn }, namespace: "assetFieldDefinition" });
 
 const mockT = (key: string, values?: Record<string, string | number | Date>): string => {
   if (values?.count) return `${key} max ${values.count}`;
@@ -300,13 +304,13 @@ describe("Asset Field Definition - Validation", () => {
       expect(result.fieldError).toEqual({ field: "fieldName", message: "errors.duplicateFieldName" });
     });
 
-    it("handles reference validation error when entity is referenced elsewhere", () => {
-      const result = resolveFieldDefinitionBackendError(
-        "Cannot deactivate/delete this AssetFieldDefinition because it is referenced in: Asset Form",
-        mockT,
-        (k) => k
-      );
-      expect(result.toastMessage).toBe("errors.cannotDeactivateReferenced");
+    it.each([
+      "This Asset Field Definition cannot be deleted because it is in use.",
+      "This Asset Field Definition cannot be deactivated because it is in use.",
+    ])("translates the backend reference message %s", (message) => {
+      const result = resolveFieldDefinitionBackendError(message, tEn as never, (k) => k);
+      expect(result.toastMessage).toBe(message);
+      expect(result.fieldError).toBeUndefined();
     });
   });
 });

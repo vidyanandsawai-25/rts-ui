@@ -13,7 +13,7 @@ import { FormFieldsSection } from "./FormFieldsSection";
 import type { OwnershipTypeFormModel } from "@/types/asset-masters/ownership-type.types";
 import { validateOwnershipTypeForm } from "@/lib/validations/ownership-type-form.validation";
 import { useOwnershipTypeSubmit } from "@/hooks/asset-masters/ownership-type/useOwnershipTypeSubmit";
-import { ASSET_MASTER_TEXT_SANITIZE, NAME_ONLY_SANITIZE } from "@/lib/utils/validation-rules";
+import { DESCRIPTION_SANITIZE, NAME_ONLY_SANITIZE } from "@/lib/utils/asset-validation-rules";
 import { cn } from "@/lib/utils/cn";
 
 export function OwnershipTypeForm({ id, initialData }: { id?: number; initialData?: import("@/types/asset-masters/ownership-type.types").OwnershipTypeFormModel | null; }) {
@@ -64,34 +64,39 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
 
   const showError = (field: string) => touched[field] && !!errors[field];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const sanitizeField = (name: string, value: string) => {
     let newValue = value;
-
     if (name === "ownershipTypeName") {
       newValue = newValue.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      if (newValue.length > 0) {
+        newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
+      }
     }
-    
     if (name === "description") {
-      newValue = newValue.replace(ASSET_MASTER_TEXT_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      newValue = newValue.replace(DESCRIPTION_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
       if (newValue.length > 100) {
         newValue = newValue.substring(0, 100);
       }
     }
-    
-    if (typeof newValue === "string" && newValue.length > 0 && ["ownershipTypeName", "description"].includes(name)) {
-      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
-    }
+    return newValue;
+  };
 
-    setFormData((p) => ({ ...p, [name]: newValue }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const sanitizedValue = sanitizeField(name, value);
+
+    setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
+    
+    const sanitizedValue = sanitizeField(name, value);
+    setFormData((p) => ({ ...p, [name]: sanitizedValue }));
 
-    const fieldErrors = validate({ ...formData, [name]: value });
+    const fieldErrors = validate({ ...formData, [name]: sanitizedValue });
     setErrors((p) => ({ ...p, [name]: fieldErrors[name] }));
   };
 
@@ -103,11 +108,13 @@ export function OwnershipTypeForm({ id, initialData }: { id?: number; initialDat
     setErrors,
     setTouched,
     setOpen,
+    t,
     tCommon,
   });
 
   const handleToggleStatus = () => {
     setFormData((p) => ({ ...p, isActive: !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   };
 
   return (

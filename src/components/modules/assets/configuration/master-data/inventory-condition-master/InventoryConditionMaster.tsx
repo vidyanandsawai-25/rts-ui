@@ -11,6 +11,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryConditionColumns } from "./InventoryConditionColumns";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryConditionAction } from "@/app/[locale]/assets/configuration/master-data/inventory-condition/actions";
+import { mapInventoryConditionApiError } from "@/hooks/asset-masters/inventory-condition/validation";
 import type {
   InventoryConditionProps,
   InventoryCondition,
@@ -99,7 +100,7 @@ export function InventoryConditionMaster({
           const result = await deleteInventoryConditionAction(String(row.id));
 
           if (!result.success) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryConditionApiError(result, t, tCommon));
             return;
           }
 
@@ -110,7 +111,7 @@ export function InventoryConditionMaster({
         }
       },
     });
-  }, [confirm, router, tCommon]);
+  }, [confirm, router, t, tCommon]);
 
   return (
     <div className="space-y-6">

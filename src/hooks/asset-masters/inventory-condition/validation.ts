@@ -1,12 +1,17 @@
 import { validateForm } from "@/lib/utils/validation";
 import {
-  ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
   ASSET_MASTER_TEXT_SANITIZE,
   DESCRIPTION_REGEX,
 } from "@/lib/utils/asset-validation-rules";
 import { createSafeMasterTranslator } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 import type { InventoryConditionFormModel } from "@/types/asset-masters/inventory-condition.types";
+import {
+  parseReferenceBlockedMessage,
+  translateReferenceBlockedMessage,
+  type ReferenceBlockedTranslationOptions,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const NAME_MAX = 50;
 export const DESCRIPTION_MAX = 500;
@@ -19,7 +24,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "conditionName") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -76,7 +81,7 @@ export const validateInventoryConditionForm = (
       if (!str) return safeT('nameRequired');
       if (str.length > NAME_MAX) return safeT('nameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return safeT('nameAllZeros');
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return safeT('nameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return safeT('nameFormat');
       return undefined;
     },
     conditionFactor: (val: unknown) => {
@@ -153,7 +158,7 @@ export function validateInventoryConditionServerInput(
     errors.conditionName = `Condition name cannot exceed ${NAME_MAX} characters.`;
   } else if (/^0+$/.test(conditionName)) {
     errors.conditionName = "Condition name cannot be all zeros.";
-  } else if (!ASSET_MASTER_NAME_REGEX.test(conditionName)) {
+  } else if (!NAME_ONLY_REGEX.test(conditionName)) {
     errors.conditionName = "Condition name contains invalid characters.";
   }
 
@@ -221,24 +226,24 @@ export function validateInventoryConditionServerInput(
   };
 }
 
+// Reference check (DELETE, or PUT with isActive: false): "This Condition cannot be deleted because it is in use."
+const REFERENCE_BLOCKED_OPTIONS: ReferenceBlockedTranslationOptions = {
+  entities: { "Condition": "apiErrors.referenceBlocked.condition" },
+};
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlocked(result: { message?: string; error?: string; success?: boolean }): boolean {
+  return parseReferenceBlockedMessage(result.message || result.error)?.operation === "deactivate";
+}
+
 export const mapInventoryConditionApiError = (
   result: { statusCode?: number; message?: string; error?: string; success?: boolean },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   const rawMsg = (result.message || result.error || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = t("masterNames.inventory-condition-master") || "Inventory Condition";
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlockedMessage(result.message || result.error, t, REFERENCE_BLOCKED_OPTIONS);
+  if (referenceBlocked) return referenceBlocked;
 
   if (result.error === "duplicate" || rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
     return t("configuration.masterData.form.validation.duplicateRecord") || "Record already exists.";
@@ -261,23 +266,11 @@ export const mapInventoryConditionApiError = (
 export function getErrorMessage(
   message: string | undefined,
   statusCode: number | undefined,
-  t: (key: string, values?: Record<string, string>) => string,
-  tCommon: (key: string) => string,
-  fallbackEntityName: string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string) => string
 ): string {
-  const rawMsg = (message || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = fallbackEntityName;
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlockedMessage(message, t, REFERENCE_BLOCKED_OPTIONS);
+  if (referenceBlocked) return referenceBlocked;
 
   return statusCode === 409
     ? (t("apiErrors.duplicateRecord") || "Record is in use.")

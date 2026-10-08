@@ -4,14 +4,14 @@ import {
 import {
   CODE_SANITIZE,
   DESCRIPTION_SANITIZE,
-  ALPHANUMERIC_WITH_SPACES_REGEX,
-  ALPHANUMERIC_WITH_SPACES_SANITIZE,
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE,
   CODE_REGEX,
   DESCRIPTION_REGEX,
   isAllZeros
 } from "@/lib/utils/asset-validation-rules";
 import { AssetRoomTypeFormModel } from "@/types/asset-masters/asset-room-type.types";
-import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
+import { mapSharedApiError, translateReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 20;
 export const NAME_MAX = 100;
@@ -25,7 +25,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "roomTypeName") {
-    sanitizedValue = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -56,8 +56,8 @@ export const validateAssetRoomForm = (
       const str = String(val ?? '').trim();
       if (!str) return t('form.validation.roomTypeNameRequired');
       if (str.length > NAME_MAX) return t('form.validation.roomTypeNameMaxLength', { count: NAME_MAX });
-      if (/^0+$/.test(str)) return t('form.validation.roomTypeNameFormat');
-      if (!ALPHANUMERIC_WITH_SPACES_REGEX.test(str)) return t('form.validation.roomTypeNameFormat');
+      if (isAllZeros(str)) return t('form.validation.roomTypeNameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return t('form.validation.roomTypeNameFormat');
       return undefined;
     },
     description: (val: unknown) => {
@@ -92,18 +92,30 @@ export const validateAssetRoomForm = (
   return validateForm(data, schema);
 };
 
+// Reference check (DELETE, or PUT with isActive: false):
+//   "This Asset Room Type cannot be deleted|deactivated because it is in use."
+const translateReferenceBlocked = (
+  message: string | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string | undefined =>
+  translateReferenceBlockedMessage(message, t, {
+    entities: { "Asset Room Type": "apiErrors.referenceBlocked.assetRoomType" },
+  });
+
 export const mapAssetRoomApiError = (
   result: { statusCode?: number; message?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const referenceBlocked = translateReferenceBlocked(result.message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message: result.message,
     statusCode: result.statusCode,
     t,
     tCommon,
     fallbackEntityName: t("list.title"),
-    entityMatchers: [{ test: /room/i, labelKey: "list.title" }],
     customStatusCodes: {
       409: t("apiErrors.duplicateRecord"),
       404: t("apiErrors.notFound"),
@@ -121,12 +133,14 @@ export function getErrorMessage(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
   fallbackEntityName: string
 ): string {
+  const referenceBlocked = translateReferenceBlocked(message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message,
     statusCode,
     t,
     tCommon,
     fallbackEntityName,
-    entityMatchers: [{ test: /room/i, labelKey: "list.title" }]
   });
 }

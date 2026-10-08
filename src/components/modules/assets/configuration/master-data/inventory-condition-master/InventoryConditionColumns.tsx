@@ -66,7 +66,7 @@ export function getInventoryConditionColumns(
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<InventoryCondition>[] {
-  const sortableColumns = ["conditionCategory", "categoryId", "conditionName", "displayOrder"];
+  const sortableColumns = ["conditionCategory", "categoryName", "conditionName", "displayOrder"];
 
   const createSortableLabel = (label: string, key: string, justify: "start" | "center" | "end" = "start") => {
     if (onSort && sortableColumns.includes(key)) {
@@ -98,7 +98,7 @@ export function getInventoryConditionColumns(
     },
     {
       key: "categoryName",
-      label: createSortableLabel(t("configuration.masterData.form.labels.categoryName"), "categoryId", "center"),
+      label: createSortableLabel(t("configuration.masterData.form.labels.categoryName"), "categoryName", "center"),
       width: "18%",
       align: "center",
       render: (value) => <div className="text-sm font-medium text-slate-700">{typeof value === "string" && value ? value : "-"}</div>,

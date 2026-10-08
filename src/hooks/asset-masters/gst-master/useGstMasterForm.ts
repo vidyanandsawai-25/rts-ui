@@ -40,6 +40,7 @@ export function useGstMasterForm({ initialData }: UseGstMasterFormProps) {
 
   const {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,
@@ -67,6 +68,7 @@ export function useGstMasterForm({ initialData }: UseGstMasterFormProps) {
     open,
     isEdit,
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

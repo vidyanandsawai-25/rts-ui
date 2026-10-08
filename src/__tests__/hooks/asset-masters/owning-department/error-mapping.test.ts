@@ -22,12 +22,12 @@ describe("Owning Department Master error-mapping getOwningDepartmentErrorMessage
 
   it("should return localized duplicate message when message contains OwningDepartment_Duplicate", () => {
     const result = getOwningDepartmentErrorMessage("OwningDepartment_Duplicate", 400, mockT, mockTCommon);
-    expect(result).toBe("This record already exists");
+    expect(result).toBe("Owning department name already exists");
   });
 
   it("should return localized duplicate message when message contains 'Create Owning Department failed: OwningDepartment_Duplicate'", () => {
     const result = getOwningDepartmentErrorMessage("Create Owning Department failed: OwningDepartment_Duplicate", 400, mockT, mockTCommon);
-    expect(result).toBe("This record already exists");
+    expect(result).toBe("Owning department name already exists");
   });
 
   it("should return localized duplicate message when statusCode is 409", () => {
@@ -41,14 +41,7 @@ describe("Owning Department Master error-mapping getOwningDepartmentErrorMessage
       errors: { OwningDepartmentName: ["OwningDepartment_Duplicate"] }
     });
     const result = getOwningDepartmentErrorMessage(jsonMsg, 400, mockT, mockTCommon);
-    expect(result).toBe("This record already exists");
-  });
-
-  it("should return reference deletion message when entity is referenced in tables", () => {
-    const refError = "Cannot deactivate/delete this Owning Department Master because it is referenced in: AssetMaster";
-    const result = getOwningDepartmentErrorMessage(refError, 400, mockT, mockTCommon);
-    expect(result).toContain("Owning Department Master");
-    expect(result).toContain("AssetMaster");
+    expect(result).toBe("Owning department name already exists");
   });
 });
 

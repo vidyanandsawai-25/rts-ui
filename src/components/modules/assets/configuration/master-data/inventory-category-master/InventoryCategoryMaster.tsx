@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryCategoryColumns } from "./InventoryCategoryColumn";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryCategoryAction } from "@/app/[locale]/assets/configuration/master-data/inventory-category/actions";
+import { mapInventoryCategoryApiError } from "@/hooks/asset-masters/inventory-category/validation";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 import type { InventoryCategoryMasterProps } from "@/types/asset-masters/inventory-category.types";
 
@@ -26,6 +27,7 @@ export default function InventoryCategoryMaster({
   const [isPending, startTransition] = useTransition();
 
   const t = useTranslations("inventoryCategory.configuration.masterData.form");
+  const tRoot = useTranslations("inventoryCategory");
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
@@ -89,7 +91,7 @@ export default function InventoryCategoryMaster({
           const result = await deleteInventoryCategoryAction(fd);
 
           if (!result.ok) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryCategoryApiError(result, tRoot, tCommon));
             return;
           }
 
@@ -100,7 +102,7 @@ export default function InventoryCategoryMaster({
         }
       },
     });
-  }, [confirm, locale, tCommon, router]);
+  }, [confirm, locale, tRoot, tCommon, router]);
 
   return (
     <div className="space-y-6">

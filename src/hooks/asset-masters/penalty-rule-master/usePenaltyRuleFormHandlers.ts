@@ -77,6 +77,11 @@ export function usePenaltyRuleFormHandlers({
     setErrors((p) => ({ ...p, [name]: "" }));
   }, [formData.calculationType, formData.penaltyValue, setFormData, setErrors]);
 
+  const handleStatusToggle = useCallback(() => {
+    setFormData((p) => ({ ...p, isActive: !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
+  }, [setFormData, setErrors]);
+
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const fieldName = name as keyof PenaltyRuleFormModel;
@@ -160,6 +165,7 @@ export function usePenaltyRuleFormHandlers({
 
   return {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

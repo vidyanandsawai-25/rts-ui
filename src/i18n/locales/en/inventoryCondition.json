@@ -115,6 +115,14 @@
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Asset Condition Master"
   },
+  "apiErrors": {
+    "referenceBlocked": {
+      "condition": {
+        "deleteInUse": "This Condition cannot be deleted because it is in use.",
+        "deactivateInUse": "This Condition cannot be deactivated because it is in use."
+      }
+    }
+  },
   "list": {
     "title": "Inventory Condition",
     "subtitle": "CardinalMind Master Data Management System",

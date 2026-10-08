@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryModelColumns } from "./InventoryModelColumn";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryModelAction } from "@/app/[locale]/assets/configuration/master-data/inventory-model/actions";
+import { mapInventoryModelApiError } from "@/hooks/asset-masters/inventory-model/validation";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 import type { InventoryModelMasterProps } from "@/types/asset-masters/inventory-model.types";
 
@@ -26,6 +27,7 @@ export default function InventoryModelMaster({
   const [isPending, startTransition] = useTransition();
 
   const t = useTranslations("inventoryModel.configuration.masterData.form");
+  const tRoot = useTranslations("inventoryModel");
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
@@ -89,7 +91,7 @@ export default function InventoryModelMaster({
           const result = await deleteInventoryModelAction(fd);
 
           if (!result.ok) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryModelApiError(result, tRoot, tCommon));
             return;
           }
 
@@ -100,7 +102,7 @@ export default function InventoryModelMaster({
         }
       },
     });
-  }, [confirm, locale, tCommon, router]);
+  }, [confirm, locale, tRoot, tCommon, router]);
 
   return (
     <div className="space-y-6">

@@ -48,7 +48,6 @@ describe("Asset Grievance Category Server Actions", () => {
         slaDays: 3,
         description: "Test description",
         displaySequence: 1,
-        requiresFieldCorrection: false,
         isActive: true,
       });
 
@@ -69,7 +68,6 @@ describe("Asset Grievance Category Server Actions", () => {
         slaDays: 3,
         description: "Water pipe leakage problem",
         displaySequence: 1,
-        requiresFieldCorrection: false,
         isActive: true,
       };
 
@@ -94,7 +92,6 @@ describe("Asset Grievance Category Server Actions", () => {
         slaDays: null,
         description: "",
         displaySequence: 0,
-        requiresFieldCorrection: false,
         isActive: true,
       });
 
@@ -119,7 +116,6 @@ describe("Asset Grievance Category Server Actions", () => {
         slaDays: 5,
         description: "Road repair grievance",
         displaySequence: 2,
-        requiresFieldCorrection: true,
         isActive: true,
       };
 

@@ -117,6 +117,7 @@ export function FormFieldsSection({
         <Input
           name="displayOrder"
           label={t("configuration.masterData.form.labels.displayOrder")}
+          required
           type="number"
           min={1}
           step={1}

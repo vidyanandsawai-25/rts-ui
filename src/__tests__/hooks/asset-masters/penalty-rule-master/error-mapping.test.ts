@@ -8,6 +8,8 @@ describe("Penalty Rule Master error-mapping getPenaltyRuleErrorMessage", () => {
       "form.messages.duplicate": "This record already exists",
       "apiErrors.duplicateRecord": "This record already exists",
       "apiErrors.Penaltyrule_Code_Duplicate": "Penalty Rule Code already exists",
+      "apiErrors.Penaltyrule_Name_Duplicate": "Penalty Rule Name already exists",
+      "apiErrors.Penaltyrule_Both_Duplicate": "Penalty Rule Code and Name already exist",
     };
     return translations[key] || key;
   });
@@ -22,12 +24,27 @@ describe("Penalty Rule Master error-mapping getPenaltyRuleErrorMessage", () => {
 
   it("should return localized duplicate message when message contains Penaltyrule_Code_Duplicate", () => {
     const result = getPenaltyRuleErrorMessage("Penaltyrule_Code_Duplicate", 400, mockT, mockTCommon);
-    expect(result).toBe("This record already exists");
+    expect(result).toBe("Penalty Rule Code already exists");
   });
 
   it("should return localized duplicate message when message contains 'Create Penalty rule failed: Penaltyrule_Code_Duplicate'", () => {
     const result = getPenaltyRuleErrorMessage("Create Penalty rule failed: Penaltyrule_Code_Duplicate", 400, mockT, mockTCommon);
-    expect(result).toBe("This record already exists");
+    expect(result).toBe("Penalty Rule Code already exists");
+  });
+
+  it("should return localized duplicate message when message contains Penalty Name already exists", () => {
+    const result = getPenaltyRuleErrorMessage("Penalty Name 'Late Fee' already exists.", 400, mockT, mockTCommon);
+    expect(result).toBe("Penalty Rule Name already exists");
+  });
+
+  it("should return localized combined duplicate message when both Penalty Code and Penalty Name already exist", () => {
+    const result = getPenaltyRuleErrorMessage(
+      "Penalty Code 'PEN_LATEPCT' already exists. Penalty Name 'rent' already exists.",
+      400,
+      mockT,
+      mockTCommon
+    );
+    expect(result).toBe("Penalty Rule Code and Name already exist");
   });
 
   it("should return localized duplicate message when statusCode is 409", () => {
@@ -41,14 +58,7 @@ describe("Penalty Rule Master error-mapping getPenaltyRuleErrorMessage", () => {
       errors: { PenaltyCode: ["Penaltyrule_Code_Duplicate"] }
     });
     const result = getPenaltyRuleErrorMessage(jsonMsg, 400, mockT, mockTCommon);
-    expect(result).toBe("This record already exists");
-  });
-
-  it("should return reference deletion message when entity is referenced in tables", () => {
-    const refError = "Cannot deactivate/delete this Penalty Rule Master because it is referenced in: LeaseRentDemand";
-    const result = getPenaltyRuleErrorMessage(refError, 400, mockT, mockTCommon);
-    expect(result).toContain("Penalty Rule Master");
-    expect(result).toContain("LeaseRentDemand");
+    expect(result).toBe("Penalty Rule Code already exists");
   });
 });
 
@@ -91,6 +101,24 @@ describe("Penalty Rule Master parsePenaltyRuleApiErrors", () => {
     const result = parsePenaltyRuleApiErrors("Penalty code LATE_01 already exists", 400, mockT, mockTCommon);
     expect(result.fieldErrors.penaltyCode).toBe("Penalty code already exists");
     expect(result.fieldErrors.penaltyName).toBeUndefined();
+  });
+
+  it("should parse both penaltyCode and penaltyName fieldErrors simultaneously when both are duplicate in plain text", () => {
+    const result = parsePenaltyRuleApiErrors("Penalty Code 'PEN_LATEPCT' already exists. Penalty Name 'rent' already exists.", 400, mockT, mockTCommon);
+    expect(result.fieldErrors.penaltyCode).toBe("Penalty code already exists");
+    expect(result.fieldErrors.penaltyName).toBe("Penalty name already exists");
+  });
+
+  it("should parse both penaltyCode and penaltyName fieldErrors simultaneously when both are in JSON errors payload", () => {
+    const jsonMsg = JSON.stringify({
+      errors: {
+        PenaltyCode: ["Penalty Code 'PEN_LATEPCT' already exists."],
+        PenaltyName: ["Penalty Name 'rent' already exists."]
+      }
+    });
+    const result = parsePenaltyRuleApiErrors(jsonMsg, 400, mockT, mockTCommon);
+    expect(result.fieldErrors.penaltyCode).toBe("Penalty code already exists");
+    expect(result.fieldErrors.penaltyName).toBe("Penalty name already exists");
   });
 
   it("should parse fieldErrors for penaltyValue, calculationType, and gracePeriodDays correctly", () => {

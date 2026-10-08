@@ -214,4 +214,40 @@ describe("useTypeOfUseForm", () => {
     expect(toast.success).toHaveBeenCalledWith("Type updated successfully");
     expect(mockProps.onSuccess).toHaveBeenCalled();
   });
+
+  it("shows the deactivate reference error on the status field and clears it on toggle", async () => {
+    vi.mocked(updateAssetTypeOfUseAction).mockResolvedValueOnce({
+      success: false,
+      statusCode: 400,
+      message:
+        "This Type Of Use cannot be deactivated because it has Sub Type Of Uses and Use Factors. Please delete all Sub Type Of Uses and Use Factors for this Type Of Use first.",
+    });
+
+    const initialData = {
+      id: 17,
+      isActive: true,
+      assetCategoryId: 5,
+      assetTypeId: 8,
+      typeOfUseGroupId: 12,
+      typeOfUseCode: "RES",
+      description: "Residential",
+      type: "R",
+      searchSequence: 4,
+    } as unknown as AssetTypeOfUse;
+
+    const { result } = renderHook(() =>
+      useTypeOfUseForm({ ...mockProps, id: 17, initialData })
+    );
+
+    act(() => result.current.handleToggleStatus(false));
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(result.current.errors.isActive).toBe("apiErrors.referenceBlocked.typeOfUse.deactivateHasMasters");
+    expect(toast.error).toHaveBeenCalledWith("apiErrors.referenceBlocked.typeOfUse.deactivateHasMasters");
+
+    act(() => result.current.handleToggleStatus(true));
+    expect(result.current.errors.isActive).toBe("");
+  });
 });

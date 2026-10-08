@@ -32,8 +32,7 @@
   "errors": {
     "duplicateFieldCode": "Field Code already exists for this Asset Category and Type",
     "duplicateFieldName": "Field Name already exists for this Asset Category and Type",
-    "duplicate": "Field definition already exists for this Asset Category and Type",
-    "cannotDeactivateReferenced": "Cannot deactivate/delete this Field Definition because it is referenced in: {tables}"
+    "duplicate": "Field definition already exists for this Asset Category and Type"
   },
   "optionsDrawer": {
     "title": "Field Options",
@@ -150,8 +149,13 @@
     "AssetFieldDefinition_FieldCode_Duplicate": "Asset Field Definition Code already exists",
     "AssetFieldDefinition_FieldCode_Invalid": "Field Code contains invalid characters",
     "notFound": "Asset field definition not found.",
-    "inUse": "Cannot deactivate/delete this Field Definition because it is referenced in asset records.",
-    "operationFailed": "Operation failed. Please try again later."
+    "operationFailed": "Operation failed. Please try again later.",
+    "referenceBlocked": {
+      "assetFieldDefinition": {
+        "deleteInUse": "This Asset Field Definition cannot be deleted because it is in use.",
+        "deactivateInUse": "This Asset Field Definition cannot be deactivated because it is in use."
+      }
+    }
   },
   "success": {
     "created": "New asset field definition created successfully: {code}",

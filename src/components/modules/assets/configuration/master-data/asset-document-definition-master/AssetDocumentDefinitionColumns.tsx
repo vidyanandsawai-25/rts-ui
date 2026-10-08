@@ -3,6 +3,7 @@ import type { Column } from "@/components/common/MasterTable";
 import type { AssetDocumentDefinition } from "@/types/asset-masters/asset-document-definition.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { TruncatedText } from "@/components/common/TruncatedText";
 
 function SortableHeader({
   label,
@@ -88,8 +89,10 @@ export function getAssetDocumentDefinitionColumns(
       width: "20%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-words max-w-[200px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" ? value : ""} maxLength={25} />
+      ),
     },
     {
       key: "documentName",
@@ -97,8 +100,10 @@ export function getAssetDocumentDefinitionColumns(
       width: "20%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" ? value : ""),
+      cellClassName: "break-words max-w-[220px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" ? value : ""} maxLength={30} />
+      ),
     },
     {
       key: "description",
@@ -106,8 +111,10 @@ export function getAssetDocumentDefinitionColumns(
       width: "25%",
       align: "center",
       headerClassName: "whitespace-nowrap",
-      cellClassName: "break-words",
-      render: (value) => (typeof value === "string" && value ? value : "-"),
+      cellClassName: "break-words max-w-[280px]",
+      render: (value) => (
+        <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={35} />
+      ),
     },
     {
       key: "displayOrder",

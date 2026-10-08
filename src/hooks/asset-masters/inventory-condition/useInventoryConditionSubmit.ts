@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createInventoryConditionAction, updateInventoryConditionAction } from "@/app/[locale]/assets/configuration/master-data/inventory-condition/actions";
 import type { InventoryConditionFormModel } from "@/types/asset-masters/inventory-condition.types";
-import { mapInventoryConditionApiError } from "./validation";
+import { mapInventoryConditionApiError, isDeactivateBlocked } from "./validation";
 
 interface UseInventoryConditionSubmitProps {
   isEdit: boolean;
@@ -37,14 +37,10 @@ export function useInventoryConditionSubmit({
     e.preventDefault();
     if (setSubmittedOnce) setSubmittedOnce(true);
 
-    const usesLegacyFields = !!formData.conditionType;
     const submissionData: InventoryConditionFormModel = {
       ...formData,
       conditionCategory: formData.conditionCategory || formData.conditionType || "",
       categoryId: formData.categoryId ?? formData.inventoryItemCategoryId,
-      ...(usesLegacyFields && (formData.displayOrder === undefined || formData.displayOrder === null || formData.displayOrder === "")
-        ? { displayOrder: 1 }
-        : {}),
     };
 
     setTouched({
@@ -84,7 +80,12 @@ export function useInventoryConditionSubmit({
         router.refresh();
         return;
       } else {
-        toast.error(mapInventoryConditionApiError(res, t, tCommon));
+        const errorMessage = mapInventoryConditionApiError(res, t, tCommon);
+        // Deactivating a record that is still in use: show the reason under the status toggle.
+        if (isDeactivateBlocked(res)) {
+          setErrors({ isActive: errorMessage });
+        }
+        toast.error(errorMessage);
       }
     } catch (error: unknown) {
       toast.error((error as Error)?.message ?? tCommon("errors.generic"));

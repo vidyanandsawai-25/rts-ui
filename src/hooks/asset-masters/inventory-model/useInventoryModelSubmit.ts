@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveInventoryModelAction } from "@/app/[locale]/assets/configuration/master-data/inventory-model/actions";
 import type { InventoryModelFormModel } from "@/types/asset-masters/inventory-model.types";
-import { mapInventoryModelApiError } from "./validation";
+import { mapInventoryModelApiError, isDeactivateBlocked } from "./validation";
 
 interface UseInventoryModelSubmitProps {
   isEdit: boolean;
@@ -75,7 +75,12 @@ export function useInventoryModelSubmit({
       }
 
       if (res && !res.ok) {
-        toast.error(mapInventoryModelApiError(res, t, tCommon));
+        const errorMessage = mapInventoryModelApiError(res, t, tCommon);
+        // Deactivating a record that is still in use: show the reason under the status toggle.
+        if (isDeactivateBlocked(res)) {
+          setErrors({ isActive: errorMessage });
+        }
+        toast.error(errorMessage);
         if (res.error === "duplicate") {
           setErrors({
             name: t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Already exists",

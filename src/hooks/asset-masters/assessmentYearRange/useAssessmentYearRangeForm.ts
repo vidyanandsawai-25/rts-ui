@@ -20,6 +20,28 @@ interface UseAssessmentYearRangeFormProps {
 }
 
 import { validateAssessmentYearRangeForm } from "@/lib/validations/assessment-year-range-form.validation";
+import { cleanErrorMessage } from "@/lib/utils/api-error-handler";
+import {
+  parseReferenceBlockedMessage,
+  translateReferenceBlockedMessage,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
+
+type Translate = (key: string, values?: Record<string, string | number | Date>) => string;
+
+/** Translates the backend reference-check message (delete/deactivate blocked by child masters). */
+export function translateAssessmentYearRangeReferenceError(message: string | undefined, t: Translate): string | undefined {
+  return translateReferenceBlockedMessage(message, t, {
+    entities: { "Assessment Year Range": "apiErrors.referenceBlocked.assessmentYearRange" },
+    masters: {
+      "Age Factors": "apiErrors.referenceMasters.ageFactors",
+      "Nature Factors": "apiErrors.referenceMasters.natureFactors",
+      "Use Factors": "apiErrors.referenceMasters.useFactors",
+      "Floor Factors": "apiErrors.referenceMasters.floorFactors",
+      "CV Rates": "apiErrors.referenceMasters.cvRates",
+    },
+    andKey: "apiErrors.referenceMasters.and",
+  });
+}
 
 export function useAssessmentYearRangeForm({
   config,
@@ -125,6 +147,10 @@ export function useAssessmentYearRangeForm({
 
   const mapApiError = useCallback(
     (result: { statusCode?: number; message?: string }) => {
+      const referenceMessage = translateAssessmentYearRangeReferenceError(result.message, t);
+      if (referenceMessage) return referenceMessage;
+
+      const rawMsg = (result.message || "").replace(/\.$/, "");
       const errorMap: Record<number, string> = {
         409: t("apiErrors.duplicateRecord"),
         404: t("apiErrors.notFound"),
@@ -144,7 +170,8 @@ export function useAssessmentYearRangeForm({
       }
 
       if (code >= 500) return tCommon("errors.serverError");
-      return result.message || t("apiErrors.operationFailed");
+      const cleaned = cleanErrorMessage(rawMsg, "");
+      return cleaned || result.message || t("apiErrors.operationFailed");
     },
     [t, tCommon]
   );
@@ -237,7 +264,11 @@ export function useAssessmentYearRangeForm({
           }
         }
         
-        toast.error(mapApiError(result));
+        const errorMessage = mapApiError(result);
+        if (parseReferenceBlockedMessage(result.message)?.operation === "deactivate") {
+          setErrors((prev) => ({ ...prev, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
@@ -261,6 +292,12 @@ export function useAssessmentYearRangeForm({
       const newValue = !prev;
       setFormData((p) => ({ ...p, isActive: newValue }));
       return newValue;
+    });
+    setErrors((prev) => {
+      if (!prev.isActive) return prev;
+      const next = { ...prev };
+      delete next.isActive;
+      return next;
     });
   }, []);
 

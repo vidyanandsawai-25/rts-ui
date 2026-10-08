@@ -154,7 +154,7 @@ describe("useSubTypeOfUseForm", () => {
     });
 
     expect(createAssetSubTypeOfUseAction).toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalledWith("Sub-Type Description already exists");
+    expect(toast.error).toHaveBeenCalledWith("Sub-Type Name already exists");
   });
 
   it("handles successful form submission on edit", async () => {
@@ -182,5 +182,37 @@ describe("useSubTypeOfUseForm", () => {
     expect(updateAssetSubTypeOfUseAction).toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalledWith("Sub-Type updated successfully");
     expect(mockProps.onSuccess).toHaveBeenCalled();
+  });
+
+  it("shows the deactivate reference error on the status field and clears it on toggle", async () => {
+    vi.mocked(updateAssetSubTypeOfUseAction).mockResolvedValueOnce({
+      success: false,
+      statusCode: 400,
+      message:
+        "This Sub Type Of Use cannot be deactivated because it has Use Factors. Please delete all Use Factors for this Sub Type Of Use first.",
+    });
+
+    const initialData = {
+      id: 31,
+      isActive: true,
+      typeOfUseId: 14,
+      description: "Apartment",
+      searchSequence: 2,
+    } as unknown as AssetSubTypeOfUse;
+
+    const { result } = renderHook(() =>
+      useSubTypeOfUseForm({ ...mockProps, id: 31, initialData })
+    );
+
+    act(() => result.current.handleToggleStatus(false));
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(result.current.errors.isActive).toBe("apiErrors.referenceBlocked.subTypeOfUse.deactivateHasMasters");
+    expect(toast.error).toHaveBeenCalledWith("apiErrors.referenceBlocked.subTypeOfUse.deactivateHasMasters");
+
+    act(() => result.current.handleToggleStatus(true));
+    expect(result.current.errors.isActive).toBe("");
   });
 });

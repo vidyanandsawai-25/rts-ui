@@ -1,4 +1,68 @@
- 
+
+export type ReferenceBlockedMessage = {
+  /** The backend's display name for the blocked record, e.g. "Mouja" or "Sub Zone". */
+  entity: string;
+  operation: "delete" | "deactivate";
+  /** Child masters the backend named, e.g. "Asset Types and Asset Room Types"; absent for "it is in use". */
+  masters?: string;
+};
+
+const IN_USE_PATTERN = /^This (.+?) cannot be (deleted|deactivated) because it is in use\.?$/i;
+const HAS_MASTERS_PATTERN = /^This (.+?) cannot be (deleted|deactivated) because it has (.+?)\. Please delete all .+ first\.?$/i;
+
+/**
+ * Recognises the AMS backend's reference-check message (ReferenceValidationService), returned as a 400 on
+ * DELETE /{id} and on PUT /{id} with isActive: false:
+ *   "This {Entity} cannot be deleted because it is in use."
+ *   "This {Entity} cannot be deleted because it has {Masters}. Please delete all {Masters} for this {Entity} first."
+ * ("deactivated" instead of "deleted" for the PUT.)
+ */
+export function parseReferenceBlockedMessage(message: string | undefined): ReferenceBlockedMessage | null {
+  const msg = (message || "").trim();
+  const toOperation = (verb: string) => (verb.toLowerCase() === "deactivated" ? "deactivate" : "delete");
+
+  const hasMasters = msg.match(HAS_MASTERS_PATTERN);
+  if (hasMasters) return { entity: hasMasters[1], operation: toOperation(hasMasters[2]), masters: hasMasters[3] };
+
+  const inUse = msg.match(IN_USE_PATTERN);
+  if (inUse) return { entity: inUse[1], operation: toOperation(inUse[2]) };
+
+  return null;
+}
+
+export type ReferenceBlockedTranslationOptions = {
+  /** Backend display name -> translation key prefix, e.g. { "Asset Type": "apiErrors.referenceBlocked.assetType" }. */
+  entities: Record<string, string>;
+  /** Backend child-master name -> translation key, e.g. { "Asset Room Types": "apiErrors.referenceMasters.assetRoomTypes" }. */
+  masters?: Record<string, string>;
+  /** Translation key for the word joining the last two child masters ("A, B and C"), e.g. "apiErrors.referenceMasters.and". */
+  andKey?: string;
+};
+
+/**
+ * Translates the backend reference-check message for the given entities. Keys under each entity prefix:
+ * deleteInUse, deactivateInUse, deleteHasMasters, deactivateHasMasters ({masters} = the translated child names).
+ * Returns undefined when the message is not a reference-check message for one of these entities.
+ */
+export function translateReferenceBlockedMessage(
+  message: string | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  { entities, masters = {}, andKey }: ReferenceBlockedTranslationOptions
+): string | undefined {
+  const blocked = parseReferenceBlockedMessage(message);
+  const prefix = blocked && entities[blocked.entity];
+  if (!blocked || !prefix) return undefined;
+
+  if (!blocked.masters) return t(`${prefix}.${blocked.operation}InUse`);
+
+  // Same shape as the backend's JoinWithAnd: "A", "A and B", "A, B and C".
+  const names = blocked.masters.split(/, | and /).map((name) => t(masters[name]));
+  const joined = names.length === 1 || !andKey
+    ? names.join(", ")
+    : `${names.slice(0, -1).join(", ")} ${t(andKey)} ${names[names.length - 1]}`;
+  return t(`${prefix}.${blocked.operation}HasMasters`, { masters: joined });
+}
+
 export type SharedErrorMapOptions = {
   message?: string;
   statusCode?: number;

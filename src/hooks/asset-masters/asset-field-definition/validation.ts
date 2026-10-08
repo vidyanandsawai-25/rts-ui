@@ -9,6 +9,7 @@ import {
 } from "@/lib/utils/asset-validation-rules";
 import { AssetFieldDefinitionFormModel } from "@/types/asset-masters/asset-field-definition.types";
 import { getCleanErrorMessage, translateBackendMessage } from "@/lib/utils/backend-error-detection";
+import { translateReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 50;
 export const NAME_MAX = 100;
@@ -160,20 +161,15 @@ export function resolveFieldDefinitionBackendError(
 ): { toastMessage: string; fieldError?: { field: keyof AssetFieldDefinitionFormModel; message: string } } {
   if (!message) return { toastMessage: tCommon("operationFailed") };
 
+  // Reference check (DELETE, or PUT with isActive: false):
+  //   "This Asset Field Definition cannot be deleted|deactivated because it is in use."
+  const referenceBlocked = translateReferenceBlockedMessage(message, t, {
+    entities: { "Asset Field Definition": "apiErrors.referenceBlocked.assetFieldDefinition" },
+  });
+  if (referenceBlocked) return { toastMessage: referenceBlocked };
+
   const clean = getCleanErrorMessage(message);
   const lower = clean.toLowerCase();
-
-  // Reference validation error (e.g. "Cannot deactivate/delete this AssetFieldDefinition because it is referenced in: ...")
-  if (
-    lower.includes("cannot deactivate") ||
-    lower.includes("cannot delete") ||
-    lower.includes("referenced in")
-  ) {
-    const match = clean.match(/referenced in:\s*(.+)$/i);
-    const tables = match && match[1] ? match[1].trim() : "";
-    const msg = t("errors.cannotDeactivateReferenced", { tables });
-    return { toastMessage: msg };
-  }
 
   const isFieldCodeDuplicate =
     clean === "AssetFieldDefinition_FieldCode_Duplicate" ||

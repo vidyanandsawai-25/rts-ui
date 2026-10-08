@@ -28,7 +28,7 @@ describe("Grievance Category API Service", () => {
       const mockApiResponse = {
         success: true,
         data: {
-          items: [{ id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, requiresFieldCorrection: false, slaDays: 3, isActive: true }],
+          items: [{ id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, slaDays: 3, isActive: true }],
         },
       };
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
@@ -44,7 +44,7 @@ describe("Grievance Category API Service", () => {
       const mockApiResponse = {
         success: true,
         data: {
-          items: [{ id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, requiresFieldCorrection: false, slaDays: 3, isActive: true }],
+          items: [{ id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, slaDays: 3, isActive: true }],
           totalCount: 1,
           pageNumber: 1,
           pageSize: 10,
@@ -65,7 +65,7 @@ describe("Grievance Category API Service", () => {
     it("should fetch category details successfully", async () => {
       const mockApiResponse = {
         success: true,
-        data: { id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, requiresFieldCorrection: false, slaDays: 3, isActive: true },
+        data: { id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, slaDays: 3, isActive: true },
       };
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
@@ -89,7 +89,6 @@ describe("Grievance Category API Service", () => {
         grievanceTypeNameLocal: "पाणी पुरवठा",
         description: "Pipe issue",
         targetTableName: "tbl_water",
-        requiresFieldCorrection: false,
         slaDays: 3,
         codeFormat: "WTR-{YYYY}-{SEQ}",
         displaySequence: 1,
@@ -103,7 +102,6 @@ describe("Grievance Category API Service", () => {
         grievanceTypeNameLocal: "पाणी पुरवठा",
         description: "Pipe issue",
         targetTableName: "tbl_water",
-        requiresFieldCorrection: false,
         slaDays: 3,
         codeFormat: "WTR-{YYYY}-{SEQ}",
         displaySequence: 1,
@@ -111,66 +109,6 @@ describe("Grievance Category API Service", () => {
         createdBy: 1042,
       });
       expect(result).toBe("Grievance category created successfully");
-    });
-
-    it("should correctly handle string 'false' for requiresFieldCorrection without truthy coercion", async () => {
-      const mockApiResponse = {
-        success: true,
-        data: { message: "Grievance category created successfully" },
-      };
-      vi.mocked(apiClient.post).mockResolvedValue(mockApiResponse);
-
-      const formModel = {
-        grievanceTypeCode: "GRV_STREET_LIGHT",
-        grievanceTypeName: "Street Light Fault",
-        grievanceTypeNameLocal: "स्ट्रीट लाइट",
-        description: "Light not working",
-        targetTableName: "tbl_street_light",
-        slaDays: 2,
-        codeFormat: "SL-{YYYY}-{SEQ}",
-        displaySequence: 1,
-        requiresFieldCorrection: "false" as unknown as boolean,
-        isActive: "false" as unknown as boolean,
-      };
-
-      await createAssetGrievanceCategory({ ...formModel, createdBy: 1042 });
-      expect(apiClient.post).toHaveBeenCalledWith(
-        "/asset-management/asset-grievance-category",
-        expect.objectContaining({
-          requiresFieldCorrection: false,
-          isActive: false,
-        })
-      );
-    });
-
-    it("should correctly handle string 'true' for requiresFieldCorrection", async () => {
-      const mockApiResponse = {
-        success: true,
-        data: { message: "Grievance category created successfully" },
-      };
-      vi.mocked(apiClient.post).mockResolvedValue(mockApiResponse);
-
-      const formModel = {
-        grievanceTypeCode: "GRV_STREET_LIGHT",
-        grievanceTypeName: "Street Light Fault",
-        grievanceTypeNameLocal: "स्ट्रीट लाइट",
-        description: "Light not working",
-        targetTableName: "tbl_street_light",
-        slaDays: 2,
-        codeFormat: "SL-{YYYY}-{SEQ}",
-        displaySequence: 1,
-        requiresFieldCorrection: "true" as unknown as boolean,
-        isActive: "true" as unknown as boolean,
-      };
-
-      await createAssetGrievanceCategory({ ...formModel, createdBy: 1042 });
-      expect(apiClient.post).toHaveBeenCalledWith(
-        "/asset-management/asset-grievance-category",
-        expect.objectContaining({
-          requiresFieldCorrection: true,
-          isActive: true,
-        })
-      );
     });
   });
 
@@ -189,7 +127,6 @@ describe("Grievance Category API Service", () => {
         grievanceTypeNameLocal: "रस्ता दुरुस्ती",
         description: "Road repair details",
         targetTableName: "tbl_road",
-        requiresFieldCorrection: true,
         slaDays: 5,
         codeFormat: "ROAD-{YYYY}-{SEQ}",
         displaySequence: 2,
@@ -204,7 +141,6 @@ describe("Grievance Category API Service", () => {
         grievanceTypeNameLocal: "रस्ता दुरुस्ती",
         description: "Road repair details",
         targetTableName: "tbl_road",
-        requiresFieldCorrection: true,
         slaDays: 5,
         codeFormat: "ROAD-{YYYY}-{SEQ}",
         displaySequence: 2,

@@ -171,4 +171,36 @@ describe("usePenaltyRuleForm", () => {
       expect(result.current.showError("penaltyCode")).toBeTruthy();
     });
   });
+
+  describe("Reference check", () => {
+    it("shows the deactivate reference error under the status toggle and clears it on toggle", async () => {
+      vi.mocked(actions.savePenaltyRule).mockResolvedValue({
+        ok: false,
+        error: "api_error",
+        message: "This Penalty Rule cannot be deactivated because it is in use.",
+        statusCode: 400,
+      });
+      const initialData: PenaltyRule = {
+        id: 1,
+        penaltyCode: "LATE_RENT",
+        penaltyName: "Late Rent",
+        calculationType: "Percentage",
+        penaltyValue: 10,
+        gracePeriodDays: 5,
+        isActive: true,
+      };
+      const { result } = renderHook(() => usePenaltyRuleForm({ initialData }));
+
+      act(() => result.current.handleStatusToggle());
+      await act(async () => {
+        await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
+      });
+
+      expect(result.current.errors.isActive).toBe("apiErrors.referenceBlocked.penaltyRule.deactivateInUse");
+
+      act(() => result.current.handleStatusToggle());
+      expect(result.current.formData.isActive).toBe(true);
+      expect(result.current.errors.isActive).toBe("");
+    });
+  });
 });

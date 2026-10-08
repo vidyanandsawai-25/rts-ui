@@ -69,7 +69,7 @@ export function getInventoryModelColumns(
   sortOrder?: SortDirection,
   onSort?: (field: string) => void
 ): Column<MasterDataRecord>[] {
-  const sortableColumns = ["modelName", "isActive"];
+  const sortableColumns = ["modelName", "inventoryItemName", "isActive"];
 
   const createSortableLabel = (label: string, key: string, justify: "start" | "center" | "end" = "start") => {
     if (onSort && sortableColumns.includes(key)) {
@@ -89,8 +89,18 @@ export function getInventoryModelColumns(
 
   return [
     {
+      key: "inventoryItemName",
+      width: "20%",
+      label: createSortableLabel(t("labels.itemName"), "inventoryItemName"),
+      render: (_, r) => (
+        <div className="font-semibold text-sm text-slate-800 break-all whitespace-normal">
+          {r.inventoryItemName || (r as Record<string, unknown>).InventoryItemName as string || "-"}
+        </div>
+      ),
+    },
+    {
       key: "name",
-      width: "30%",
+      width: "20%",
       label: createSortableLabel(t("labels.name"), "modelName"),
       render: (_, r) => (
         <div className="font-semibold text-sm text-slate-800 break-all whitespace-normal">
@@ -100,7 +110,7 @@ export function getInventoryModelColumns(
     },
     {
       key: "description",
-      width: "40%",
+      width: "35%",
       label: t("labels.description"),
       render: (_, r) => (
         <div className="text-sm text-slate-600 line-clamp-2 break-all whitespace-normal">
@@ -110,7 +120,7 @@ export function getInventoryModelColumns(
     },
     {
       key: "displayOrder",
-      width: "15%",
+      width: "12%",
       label: t("labels.displayOrder"),
       align: "center",
       render: (_, r) => (
@@ -121,7 +131,7 @@ export function getInventoryModelColumns(
     },
     {
       key: "status",
-      width: "15%",
+      width: "13%",
       label: createSortableLabel(t("labels.status"), "isActive"),
       render: (_, r) => <StatusBadge value={r.status} />,
     },

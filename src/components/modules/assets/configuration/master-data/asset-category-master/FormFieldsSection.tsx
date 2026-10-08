@@ -86,14 +86,14 @@ export function FormFieldsSection({
         <h3 className="font-medium text-slate-800 text-sm">{t("labels.categoryConfiguration")}</h3>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className={`rounded-xl p-3 border flex items-center justify-between ${!formData.hasFloorDetails ? "border-gray-200 bg-gray-50" : "border-gray-100 bg-gray-50/50 opacity-60"}`}>
             <div className="font-medium text-slate-900 text-sm">{t("labels.isMovable")}</div>
-            <Checkbox checked={!!formData.isMovable} onCheckedChange={(v) => onCheckboxChange("isMovable", !!v)} disabled={isPending} className={!!formData.isMovable ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
+            <Checkbox checked={!!formData.isMovable} onCheckedChange={(v) => onCheckboxChange("isMovable", !!v)} disabled={isPending || !!formData.hasFloorDetails} className={!!formData.isMovable ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
 
-          <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div className={`rounded-xl p-3 border flex items-center justify-between ${!formData.isMovable ? "border-gray-200 bg-gray-50" : "border-gray-100 bg-gray-50/50 opacity-60"}`}>
             <div className="font-medium text-slate-900 text-sm">{t("labels.hasFloorDetails")}</div>
-            <Checkbox checked={!!formData.hasFloorDetails} onCheckedChange={(v) => onCheckboxChange("hasFloorDetails", !!v)} disabled={isPending} className={!!formData.hasFloorDetails ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
+            <Checkbox checked={!!formData.hasFloorDetails} onCheckedChange={(v) => onCheckboxChange("hasFloorDetails", !!v)} disabled={isPending || !!formData.isMovable} className={!!formData.hasFloorDetails ? "bg-slate-800 border-slate-800 text-white [&_svg]:stroke-[3] [&_svg]:text-white" : ""} />
           </div>
 
           <div className="rounded-xl p-3 border border-gray-200 bg-gray-50 flex items-center justify-between">

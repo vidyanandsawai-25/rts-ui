@@ -62,11 +62,15 @@ export async function saveInventoryCategoryAction(id: string, formData: FormData
     const rawMessage = error instanceof ApiError ? (error.error || error.responseText || error.message) : error instanceof Error ? error.message : String(error);
     const errMessage = deduplicateErrorMessage(cleanErrorMessage(rawMessage, "Failed to save inventory category"));
     const lower = (rawMessage + " " + errMessage).toLowerCase();
-    if (lower.includes("typename") || lower.includes("type_name") || lower.includes("name_duplicate")) {
-      return { ok: false, error: "duplicate_name" };
-    }
-    if (lower.includes("typecode") || lower.includes("type_code") || lower.includes("code_duplicate")) {
+
+    const isCodeDupe = lower.includes("code") && (lower.includes("duplicate") || lower.includes("already exists"));
+    const isNameDupe = lower.includes("name") && (lower.includes("duplicate") || lower.includes("already exists"));
+
+    if (isCodeDupe && !isNameDupe) {
       return { ok: false, error: "duplicate_code" };
+    }
+    if (isNameDupe && !isCodeDupe) {
+      return { ok: false, error: "duplicate_name" };
     }
     if (lower.includes("duplicate") || lower.includes("already exists")) {
       return { ok: false, error: "duplicate" };

@@ -61,7 +61,18 @@
   "apiErrors": {
     "OwningDepartment_Duplicate": "Owning department name already exists",
     "duplicateRecord": "This owning department name already exists",
-    "inUse": "Cannot delete this owning department as it is referenced in other records."
+    "referenceBlocked": {
+      "owningDepartment": {
+        "deleteInUse": "This Owning Department cannot be deleted because it is in use.",
+        "deactivateInUse": "This Owning Department cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Owning Department cannot be deleted because it has {masters}. Please delete all {masters} for this Owning Department first.",
+        "deactivateHasMasters": "This Owning Department cannot be deactivated because it has {masters}. Please delete all {masters} for this Owning Department first."
+      }
+    },
+    "referenceMasters": {
+      "designations": "Designations",
+      "and": "and"
+    }
   },
   "error": {
     "title": "Failed to load owning department data",

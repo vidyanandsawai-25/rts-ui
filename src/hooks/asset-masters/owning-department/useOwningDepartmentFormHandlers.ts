@@ -72,6 +72,11 @@ export function useOwningDepartmentFormHandlers({
     setErrors((p) => ({ ...p, [name]: "" }));
   }, [setFormData, setErrors]);
 
+  const handleStatusToggle = useCallback(() => {
+    setFormData((p) => ({ ...p, isActive: !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
+  }, [setFormData, setErrors]);
+
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const fieldName = name as keyof OwningDepartmentFormModel;
@@ -152,6 +157,7 @@ export function useOwningDepartmentFormHandlers({
 
   return {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

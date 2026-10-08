@@ -50,12 +50,52 @@ export async function saveAssetTypeAction(id: string, formData: FormData) {
     const rawMsg = error instanceof ApiError
       ? (error.responseText || error.message)
       : (error instanceof Error ? error.message : String(error));
-    if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
-      return { ok: false, error: "duplicate" };
-    }
+
     if (rawMsg.toLowerCase().includes("assettype_typenamelocal_invalid")) {
       return { ok: false, error: "AssetType_TypeNameLocal_Invalid", field: "typeNameLocal" };
     }
+
+    let parsed: { message?: string; errors?: Record<string, string> } | null = null;
+    try {
+      parsed = JSON.parse(rawMsg);
+    } catch {
+      // rawMsg was not JSON
+    }
+
+    const errorsObj = parsed?.errors || {};
+    const messageStr = parsed?.message || rawMsg;
+
+    const hasTypeCodeErr =
+      !!errorsObj.TypeCode ||
+      !!errorsObj.typeCode ||
+      (typeof messageStr === "string" && (messageStr.includes("Asset Type Code") || messageStr.includes("TypeCode")));
+
+    const hasTypeNameErr =
+      !!errorsObj.TypeName ||
+      !!errorsObj.typeName ||
+      (typeof messageStr === "string" && (messageStr.includes("Asset Type Name") || messageStr.includes("TypeName")));
+
+    if (
+      hasTypeCodeErr ||
+      hasTypeNameErr ||
+      messageStr.toLowerCase().includes("duplicate") ||
+      messageStr.toLowerCase().includes("already exists")
+    ) {
+      const codeErrMsg = errorsObj.TypeCode || errorsObj.typeCode || (hasTypeCodeErr ? messageStr : null);
+      const nameErrMsg = errorsObj.TypeName || errorsObj.typeName || (hasTypeNameErr ? messageStr : null);
+
+      return {
+        ok: false,
+        error: "duplicate",
+        message: messageStr,
+        field: (hasTypeCodeErr && !hasTypeNameErr) ? "code" : (hasTypeNameErr && !hasTypeCodeErr ? "name" : "both"),
+        duplicateFields: {
+          code: hasTypeCodeErr ? codeErrMsg : (!hasTypeCodeErr && !hasTypeNameErr ? true : null),
+          name: hasTypeNameErr ? nameErrMsg : (!hasTypeCodeErr && !hasTypeNameErr ? true : null),
+        },
+      };
+    }
+
     return { ok: false, error: cleanErrorMessage(rawMsg, "Failed to save asset type") };
   }
 }
@@ -77,7 +117,9 @@ export async function deleteAssetTypeAction(formData: FormData) {
 
     return { ok: true };
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? error.message : String(error);
+    const errMessage = error instanceof ApiError
+      ? (error.responseText || error.message)
+      : (error instanceof Error ? error.message : String(error));
     return { ok: false, error: cleanErrorMessage(errMessage, "Failed to delete asset type") };
   }
 }

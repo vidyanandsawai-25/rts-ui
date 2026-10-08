@@ -23,14 +23,10 @@ import type { InventoryCategoryItem } from '@/types/asset-masters/inventory-cate
 const logger = createLogger('InventoryConditionActions');
 
 function normalizeInventoryConditionFormData(formData: InventoryConditionFormModel): InventoryConditionFormModel {
-  const usesLegacyFields = !!formData.conditionType;
   return {
     ...formData,
     conditionCategory: formData.conditionCategory || formData.conditionType || "",
     categoryId: formData.categoryId ?? formData.inventoryItemCategoryId,
-    ...(usesLegacyFields && (formData.displayOrder === undefined || formData.displayOrder === null || formData.displayOrder === '')
-      ? { displayOrder: 1 }
-      : {}),
   };
 }
 

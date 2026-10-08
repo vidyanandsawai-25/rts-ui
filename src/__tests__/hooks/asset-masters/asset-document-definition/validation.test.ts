@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { createTranslator } from "next-intl";
+import assetDocumentDefinitionEn from "@/i18n/locales/en/assetDocumentDefinition.json";
 import {
   sanitizeFieldValue,
   validateAssetDocumentDefinitionForm,
@@ -8,6 +10,8 @@ import {
   DESCRIPTION_MAX,
 } from "@/hooks/asset-masters/asset-document-definition/validation";
 import { AssetDocumentDefinitionFormModel } from "@/types/asset-masters/asset-document-definition.types";
+
+const tEn = createTranslator({ locale: "en", messages: { assetDocumentDefinition: assetDocumentDefinitionEn }, namespace: "assetDocumentDefinition" });
 
 const mockT = (key: string, values?: Record<string, string | number | Date>): string => {
   if (values?.count) return `${key} max ${values.count}`;
@@ -184,13 +188,13 @@ describe("Asset Document Definition - Validation", () => {
       expect(result.fieldError).toEqual({ field: "documentName", message: "errors.duplicateDocumentName" });
     });
 
-    it("handles reference validation error when entity is referenced elsewhere", () => {
-      const result = resolveDocumentDefinitionBackendError(
-        "Cannot deactivate/delete this AssetDocumentDefinition because it is referenced in: Asset Document",
-        mockT,
-        (k) => k
-      );
-      expect(result.toastMessage).toBe("errors.cannotDeactivateReferenced");
+    it.each([
+      "This Asset Document Definition cannot be deleted because it is in use.",
+      "This Asset Document Definition cannot be deactivated because it is in use.",
+    ])("translates the backend reference message %s", (message) => {
+      const result = resolveDocumentDefinitionBackendError(message, tEn as never, (k) => k);
+      expect(result.toastMessage).toBe(message);
+      expect(result.fieldError).toBeUndefined();
     });
 
     it("handles invalid asset category or type error code", () => {

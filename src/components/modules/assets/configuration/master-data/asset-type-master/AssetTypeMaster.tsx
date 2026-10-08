@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useTransition } from "react";
+import { useMemo, useCallback, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { MasterTable, type Column } from "@/components/common/MasterTable";
@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getAssetTypeColumns } from "./AssetTypeColumn";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteAssetTypeAction } from "@/app/[locale]/assets/configuration/master-data/asset-type/actions";
+import { mapAssetTypeApiError } from "@/hooks/asset-masters/asset-type/validation";
 import type { AssetTypeMasterProps } from "@/types/asset-masters/asset-type.types";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 
@@ -31,16 +32,47 @@ export default function AssetTypeMaster({
 
   const base = `/${locale}/assets/configuration/master-data/asset-type`;
 
-
   const searchParams = useSearchParams();
   const sortBy = searchParams.get("sortBy") || undefined;
   const sortOrder = (searchParams.get("sortOrder") as SortDirection) || undefined;
+
+  useEffect(() => {
+    const allowed = [5, 10, 20, 50];
+    let newPageSize = pageSize;
+    let hasChanged = false;
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (!allowed.includes(pageSize)) {
+      newPageSize = allowed.reduce((prev, curr) =>
+        Math.abs(curr - pageSize) < Math.abs(prev - pageSize) ? curr : prev
+      );
+      params.set("pageSize", String(newPageSize));
+      hasChanged = true;
+    }
+
+    const rawPageStr = params.get("page");
+    if (rawPageStr !== null) {
+      const rawPage = parseInt(rawPageStr, 10);
+      if (!Number.isFinite(rawPage) || rawPage < 1) {
+        params.set("page", "1");
+        hasChanged = true;
+      } else if (totalPages > 0 && rawPage > totalPages) {
+        params.set("page", String(totalPages));
+        hasChanged = true;
+      }
+    }
+
+    if (hasChanged) {
+      router.replace(`${base}?${params.toString()}`);
+    }
+  }, [pageNumber, pageSize, totalPages, locale, router, base, searchParams]);
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";
     const params = new URLSearchParams(searchParams.toString());
     params.set("sortBy", field);
     params.set("sortOrder", newOrder);
+    params.set("page", "1");
     startTransition(() => {
       router.push(`${base}?${params.toString()}`);
     });
@@ -90,7 +122,7 @@ export default function AssetTypeMaster({
           const result = await deleteAssetTypeAction(fd);
 
           if (!result.ok) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapAssetTypeApiError({ message: result.error }, t, tCommon) || result.error || tCommon("errors.deleteError"));
             return;
           }
 
@@ -101,7 +133,7 @@ export default function AssetTypeMaster({
         }
       },
     });
-  }, [confirm, locale, tCommon, router]);
+  }, [confirm, locale, t, tCommon, router]);
 
   return (
     <div className="space-y-6">

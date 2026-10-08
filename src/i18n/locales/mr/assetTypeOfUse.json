@@ -35,6 +35,7 @@
     "AssetTypeOfUse_TypeOfUseCode_MaxLength": "वापर प्रकार कोडची कमाल लांबी १० अक्षरे आहे",
     "AssetSubTypeOfUse_Description_Duplicate": "उप-प्रकार वर्णन आधीपासूनच अस्तित्वात आहे",
     "AssetTypeOfUseGroup_GroupCode_Duplicate": "गट कोड आधीपासूनच अस्तित्वात आहे",
+    "AssetTypeOfUseGroup_GroupName_Duplicate": "गटाचे नाव आधीपासूनच अस्तित्वात आहे",
     "notFound": "रेकॉर्ड सापडला नाही",
     "operationFailed": "क्रिया अयशस्वी झाली",
     "TypeOfUseGroup_Code_Required": "गट कोड आवश्यक आहे",
@@ -53,13 +54,34 @@
     "AssetSubTypeOfUse_TypeOfUseId_Required": "वापर प्रकार आवश्यक आहे",
     "AssetSubTypeOfUse_Description_Required": "उप-प्रकार वर्णन आवश्यक आहे",
     "AssetSubTypeOfUse_Description_MaxLen_100": "उप-प्रकार वर्णनाची कमाल लांबी १०० अक्षरे आहे",
-    "Cannot deactivate/delete this TypeOfUseGroupMaster because it is referenced in: Asset Type Of Use Master": "वापर प्रकार तक्त्यात (Asset Type Of Use Master) वापरलेले असल्याने हा वापर गट निष्क्रिय किंवा डिलीट करता येत नाही.",
-    "Cannot deactivate/delete this AssetTypeOfUseMaster because it is referenced in: Asset Sub Type Of Use Master": "उप-वापर प्रकार तक्त्यात (Asset Sub Type Of Use Master) वापरलेले असल्याने हा वापर प्रकार निष्क्रिय किंवा डिलीट करता येत नाही.",
-    "inUseGroup": "इतर रेकॉर्ड्समध्ये वापरलेले असल्याने हा वापर गट निष्क्रिय किंवा डिलीट करता येत नाही.",
-    "inUseType": "इतर रेकॉर्ड्समध्ये वापरलेले असल्याने हा वापर प्रकार निष्क्रिय किंवा डिलीट करता येत नाही.",
-    "inUseSubType": "इतर रेकॉर्ड्समध्ये वापरलेले असल्याने हा उप-वापर प्रकार निष्क्रिय किंवा डिलीट करता येत नाही.",
-    "referencedIn": "{tables} तक्त्यात वापरलेले असल्याने हा {entity} निष्क्रिय किंवा डिलीट करता येत नाही.",
-    "inUse": "इतर तक्त्यांमध्ये वापरलेले असल्याने हा रेकॉर्ड डिलीट करता येत नाही."
+    "inUse": "इतर तक्त्यांमध्ये वापरलेले असल्याने हा रेकॉर्ड डिलीट करता येत नाही.",
+    "referenceBlocked": {
+      "typeOfUseGroup": {
+        "deleteInUse": "हा वापर गट वापरात असल्याने डिलीट करता येत नाही.",
+        "deactivateInUse": "हा वापर गट वापरात असल्याने निष्क्रिय करता येत नाही.",
+        "deleteHasMasters": "हा वापर गट डिलीट करता येत नाही कारण त्यामध्ये {masters} आहेत. कृपया प्रथम या वापर गट चे सर्व {masters} डिलीट करा.",
+        "deactivateHasMasters": "हा वापर गट निष्क्रिय करता येत नाही कारण त्यामध्ये {masters} आहेत. कृपया प्रथम या वापर गट चे सर्व {masters} डिलीट करा."
+      },
+      "typeOfUse": {
+        "deleteInUse": "हा वापर प्रकार वापरात असल्याने डिलीट करता येत नाही.",
+        "deactivateInUse": "हा वापर प्रकार वापरात असल्याने निष्क्रिय करता येत नाही.",
+        "deleteHasMasters": "हा वापर प्रकार डिलीट करता येत नाही कारण त्यामध्ये {masters} आहेत. कृपया प्रथम या वापर प्रकार चे सर्व {masters} डिलीट करा.",
+        "deactivateHasMasters": "हा वापर प्रकार निष्क्रिय करता येत नाही कारण त्यामध्ये {masters} आहेत. कृपया प्रथम या वापर प्रकार चे सर्व {masters} डिलीट करा."
+      },
+      "subTypeOfUse": {
+        "deleteInUse": "हा उप-वापर प्रकार वापरात असल्याने डिलीट करता येत नाही.",
+        "deactivateInUse": "हा उप-वापर प्रकार वापरात असल्याने निष्क्रिय करता येत नाही.",
+        "deleteHasMasters": "हा उप-वापर प्रकार डिलीट करता येत नाही कारण त्यामध्ये {masters} आहेत. कृपया प्रथम या उप-वापर प्रकार चे सर्व {masters} डिलीट करा.",
+        "deactivateHasMasters": "हा उप-वापर प्रकार निष्क्रिय करता येत नाही कारण त्यामध्ये {masters} आहेत. कृपया प्रथम या उप-वापर प्रकार चे सर्व {masters} डिलीट करा."
+      }
+    },
+    "referenceMasters": {
+      "typeOfUses": "वापर प्रकार",
+      "cvRates": "CV दर",
+      "subTypeOfUses": "उप-वापर प्रकार",
+      "useFactors": "वापर गुणांक",
+      "and": "आणि"
+    }
   },
   "messages": {
     "addingTo": "{name} मध्ये जोडत आहे",

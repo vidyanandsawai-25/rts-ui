@@ -73,6 +73,12 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
       if (name === "hasInventory" && !checked) {
         updated.isInventoryMandatory = false;
       }
+      if (name === "isMovable" && checked) {
+        updated.hasFloorDetails = false;
+      }
+      if (name === "hasFloorDetails" && checked) {
+        updated.isMovable = false;
+      }
       return updated;
     });
   }, []);
@@ -109,6 +115,7 @@ export function useAssetCategoryForm({ initialData }: UseAssetCategoryFormProps)
 
   const handleToggleStatus = useCallback((checked?: boolean) => {
     setFormData((p) => ({ ...p, isActive: checked !== undefined ? checked : !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {

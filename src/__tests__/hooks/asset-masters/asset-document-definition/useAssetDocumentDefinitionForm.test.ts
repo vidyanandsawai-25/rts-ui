@@ -287,4 +287,59 @@ describe("useAssetDocumentDefinitionForm Hook", () => {
     expect(mockPush).toHaveBeenCalledWith("/en/assets/configuration/master-data/asset-document-definition");
     vi.useRealTimers();
   });
+
+  it("puts the deactivate reference error on isActive and clears it when the status toggles", async () => {
+    vi.mocked(updateAssetDocumentDefinitionAction).mockResolvedValueOnce({
+      success: false,
+      message: "This Asset Document Definition cannot be deactivated because it is in use.",
+    });
+
+    const { result } = renderHook(() =>
+      useAssetDocumentDefinitionForm({
+        id: 1,
+        initialData: validInitialData,
+        categories: mockCategories,
+        types: mockTypes,
+      })
+    );
+
+    act(() => {
+      result.current.handleToggleStatus(false);
+    });
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+    });
+
+    const expected = "apiErrors.referenceBlocked.assetDocumentDefinition.deactivateInUse";
+    expect(result.current.errors.isActive).toBe(expected);
+    expect(toast.error).toHaveBeenCalledWith(expected);
+
+    act(() => {
+      result.current.handleToggleStatus(true);
+    });
+    expect(result.current.errors.isActive).toBeFalsy();
+  });
+
+  it("does not put the delete reference error on isActive", async () => {
+    vi.mocked(updateAssetDocumentDefinitionAction).mockResolvedValueOnce({
+      success: false,
+      message: "This Asset Document Definition cannot be deleted because it is in use.",
+    });
+
+    const { result } = renderHook(() =>
+      useAssetDocumentDefinitionForm({
+        id: 1,
+        initialData: validInitialData,
+        categories: mockCategories,
+        types: mockTypes,
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+    });
+
+    expect(result.current.errors.isActive).toBeFalsy();
+    expect(toast.error).toHaveBeenCalledWith("apiErrors.referenceBlocked.assetDocumentDefinition.deleteInUse");
+  });
 });

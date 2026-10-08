@@ -19,7 +19,6 @@ export interface AssetGrievanceCategoryFormModel {
   grievanceTypeNameLocal: string;
   description: string;
   targetTableName: string;
-  requiresFieldCorrection: boolean;
   slaDays: number | null;
   codeFormat: string;
   displaySequence: number;
@@ -34,7 +33,6 @@ export interface AssetGrievanceCategory {
   grievanceTypeNameLocal?: string | null;
   description: string | null;
   targetTableName?: string | null;
-  requiresFieldCorrection: boolean;
   slaDays: number | null;
   codeFormat: string;
   displaySequence: number;

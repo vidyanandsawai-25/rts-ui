@@ -115,11 +115,8 @@ describe('validateDesignationForm', () => {
     expect(errorsEdit).toEqual({});
   });
 
-  test('designationName rejects Marathi characters and designationLocal accepts Marathi characters', () => {
-    const errorsNameMarathi = validateDesignationForm({ ...baseModel, designationCode: 'CODE1', designationName: 'मराठी पद' }, t, false);
-    expect(errorsNameMarathi.designationName).toBe('form.validation.designationNameFormat');
-
-    const validLocalModel: DesignationFormModel = {
+  test('designationName and designationLocal accept Unicode letters and spaces', () => {
+    const validModel: DesignationFormModel = {
       ...baseModel,
       designationCode: 'CODE1',
       designationName: 'Manager',
@@ -127,18 +124,19 @@ describe('validateDesignationForm', () => {
       owningDepartmentId: 1,
       isActive: true,
     };
-    const errorsLocal = validateDesignationForm(validLocalModel, t, false);
-    expect(errorsLocal.designationLocal).toBeUndefined();
+    const errors = validateDesignationForm(validModel, t, false);
+    expect(errors.designationName).toBeUndefined();
+    expect(errors.designationLocal).toBeUndefined();
   });
 });
 
 describe('sanitizeFieldValue for Designation', () => {
-  test('sanitizes designationName by removing Marathi / non-English characters', () => {
-    expect(sanitizeFieldValue('designationName', 'Manager123मराठी')).toBe('Manager123');
+  test('sanitizes designationName using NAME_ONLY (removing numbers & special chars)', () => {
+    expect(sanitizeFieldValue('designationName', 'Manager123!')).toBe('Manager');
     expect(sanitizeFieldValue('designationName', 'Senior   Engineer')).toBe('Senior Engineer');
   });
 
-  test('sanitizes designationLocal keeping Marathi characters', () => {
-    expect(sanitizeFieldValue('designationLocal', 'व्यवस्थापक 123')).toBe('व्यवस्थापक 123');
+  test('sanitizes designationLocal using NAME_ONLY (removing numbers & special chars)', () => {
+    expect(sanitizeFieldValue('designationLocal', 'व्यवस्थापक 123!')).toBe('व्यवस्थापक ');
   });
 });

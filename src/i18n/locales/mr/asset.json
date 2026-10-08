@@ -250,6 +250,7 @@
         "active": "सक्रिय"
       },
       "form": {
+        "title": "मालमत्ता श्रेणी",
         "addTitle": "नवीन {name} जोडा",
         "editTitle": "{name} संपादित करा",
         "createSubtitle": "नवीन रेकॉर्ड तयार करा",
@@ -262,8 +263,13 @@
           "categoryName": "श्रेणीचे नाव",
           "description": "वर्णन",
           "status": "स्थिती",
+          "activeStatus": "सक्रिय स्थिती",
           "active": "सक्रिय",
           "inactive": "निष्क्रिय",
+          "activeDescription": "मालमत्ता श्रेणी सध्या सक्रिय आहे",
+          "inactiveDescription": "मालमत्ता श्रेणी सध्या निष्क्रिय आहे",
+          "assetTypeActiveDescription": "मालमत्ता प्रकार सध्या सक्रिय आहे",
+          "assetTypeInactiveDescription": "मालमत्ता प्रकार सध्या निष्क्रिय आहे",
           "deactivate": "हटवा",
           "confirmDeactivateTitle": "हटवण्याची पुष्टी करा",
           "confirmDeactivateDesc": "तुम्ही हे रेकॉर्ड हटवू इच्छिता याची तुम्हाला खात्री आहे का?",
@@ -315,7 +321,11 @@
           "duplicateRecord": "हा रेकॉर्ड आधीपासून अस्तित्वात आहे",
           "duplicateError": "डुप्लिकेट रेकॉर्ड सापडला",
           "registrationTypeRequired": "नोंदणी प्रकार आवश्यक आहे",
-          "typeNameLocalInvalid": "स्थानिक नाव अमान्य आहे"
+          "typeNameLocalInvalid": "स्थानिक नाव अमान्य आहे",
+          "typeNameLocalFormat": "स्थानिक नावासाठी अवैध स्वरूप",
+          "codeDuplicate": "हा कोड आधीपासून अस्तित्वात आहे",
+          "nameDuplicate": "हे नाव आधीपासून अस्तित्वात आहे",
+          "codeAndNameDuplicate": "हा कोड आणि नाव आधीपासून अस्तित्वात आहे"
         },
         "messages": {
           "createSuccess": "नोंद यशस्वीरित्या तयार केली",
@@ -357,16 +367,34 @@
           "gracePeriodDaysRequired": "सवलत कालावधी (दिवस) आवश्यक आहे",
           "gracePeriodDaysRange": "सवलत कालावधी 0 किंवा अधिक असणे आवश्यक आहे",
           "notFound": "रेकॉर्ड सापडला नाही."
+        },
+        "apiErrors": {
+          "referenceBlocked": {
+            "assetCategory": {
+              "deleteInUse": "ही मालमत्ता श्रेणी वापरात असल्यामुळे ती डिलीट करता येत नाही.",
+              "deactivateInUse": "ही मालमत्ता श्रेणी वापरात असल्यामुळे ती निष्क्रिय करता येत नाही.",
+              "deleteHasMasters": "या मालमत्ता श्रेणीमध्ये {masters} असल्यामुळे ती डिलीट करता येत नाही. कृपया आधी या मालमत्ता श्रेणीचे सर्व {masters} डिलीट करा.",
+              "deactivateHasMasters": "या मालमत्ता श्रेणीमध्ये {masters} असल्यामुळे ती निष्क्रिय करता येत नाही. कृपया आधी या मालमत्ता श्रेणीचे सर्व {masters} डिलीट करा."
+            },
+            "assetType": {
+              "deleteInUse": "हा मालमत्ता प्रकार वापरात असल्यामुळे तो डिलीट करता येत नाही.",
+              "deactivateInUse": "हा मालमत्ता प्रकार वापरात असल्यामुळे तो निष्क्रिय करता येत नाही.",
+              "deleteHasMasters": "या मालमत्ता प्रकारामध्ये {masters} असल्यामुळे तो डिलीट करता येत नाही. कृपया आधी या मालमत्ता प्रकाराचे सर्व {masters} डिलीट करा.",
+              "deactivateHasMasters": "या मालमत्ता प्रकारामध्ये {masters} असल्यामुळे तो निष्क्रिय करता येत नाही. कृपया आधी या मालमत्ता प्रकाराचे सर्व {masters} डिलीट करा."
+            }
+          },
+          "referenceMasters": {
+            "and": "आणि",
+            "assetTypes": "मालमत्ता प्रकार",
+            "assetDocumentDefinitions": "मालमत्ता दस्तऐवज व्याख्या",
+            "assetFieldDefinitions": "मालमत्ता फील्ड व्याख्या",
+            "typeOfUses": "वापर प्रकार",
+            "assetPhotoTypes": "मालमत्ता फोटो प्रकार",
+            "assetRoomTypes": "खोली प्रकार",
+            "inventoryCategories": "इन्व्हेंटरी श्रेणी",
+            "assetConditions": "मालमत्ता स्थिती"
+          }
         }
-      },
-      "messages": {
-        "saveSuccess": "रेकॉर्ड यशस्वीरित्या जतन केले",
-        "saveFailed": "रेकॉर्ड जतन करण्यात अयशस्वी",
-        "deleteSuccess": "यशस्वीरित्या हटवले",
-        "deleteFailed": "रेकॉर्ड हटविण्यात अयशस्वी",
-        "unexpectedError": "एक अनपेक्षित त्रुटी आली",
-        "cannotDeleteCategoryReferenced": "या मालमत्ता श्रेणीचा मालमत्ता प्रकारात संदर्भ असल्याने ती हटवता येत नाही.",
-        "cannotDeleteTypeReferenced": "इतर रेकॉर्डमध्ये संदर्भ असल्याने हा मालमत्ता प्रकार हटवता येत नाही."
       },
       "pagination": {
         "previous": "मागील",

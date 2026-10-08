@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { createMoujaAction, updateMoujaAction } from "@/app/[locale]/assets/configuration/master-data/mouja-subzone/action";
 import { MoujaFormModel, Mouja } from "@/types/asset-masters/mouja-subzone.types";
-import { sanitizeMoujaFieldValue, validateMoujaForm, getErrorMessage } from "./validation";
+import { sanitizeMoujaFieldValue, validateMoujaForm, getErrorMessage, isDeactivateBlockedMessage } from "./validation";
 
 interface UseMoujaFormProps {
   id: number | null;
@@ -135,7 +135,11 @@ export function useMoujaForm({
         : await createMoujaAction(formData);
 
       if (!result.success) {
-        toast.error(mapApiError(result));
+        const errorMessage = mapApiError(result);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
@@ -154,6 +158,7 @@ export function useMoujaForm({
   const handleToggleStatus = useCallback((checked: boolean): void => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {

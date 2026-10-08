@@ -67,11 +67,50 @@ export async function saveAssetCategoryAction(id: string, formData: FormData) {
     const rawMsg = error instanceof ApiError
       ? (error.responseText || error.message)
       : (error instanceof Error ? error.message : String(error));
-    if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
-      const isCodeDup = rawMsg.includes("CategoryCode") || rawMsg.toLowerCase().includes("categorycode");
-      const isNameDup = rawMsg.includes("CategoryName") || rawMsg.toLowerCase().includes("categoryname");
-      const field = (isCodeDup && !isNameDup) ? "code" : (isNameDup && !isCodeDup ? "name" : "both");
-      return { ok: false, error: "duplicate", field, message: rawMsg };
+
+    let parsed: { message?: string; errors?: Record<string, string> } | null = null;
+    try {
+      parsed = JSON.parse(rawMsg);
+    } catch {
+      // rawMsg was not JSON
+    }
+
+    const errorsObj = parsed?.errors || {};
+    const messageStr = parsed?.message || rawMsg;
+
+    const hasCodeErr =
+      !!errorsObj.CategoryCode ||
+      !!errorsObj.categoryCode ||
+      !!errorsObj.Code ||
+      !!errorsObj.code ||
+      (typeof messageStr === "string" && (messageStr.includes("Category Code") || messageStr.includes("CategoryCode")));
+
+    const hasNameErr =
+      !!errorsObj.CategoryName ||
+      !!errorsObj.categoryName ||
+      !!errorsObj.Name ||
+      !!errorsObj.name ||
+      (typeof messageStr === "string" && (messageStr.includes("Category Name") || messageStr.includes("CategoryName")));
+
+    if (
+      hasCodeErr ||
+      hasNameErr ||
+      messageStr.toLowerCase().includes("duplicate") ||
+      messageStr.toLowerCase().includes("already exists")
+    ) {
+      const codeErrMsg = errorsObj.CategoryCode || errorsObj.categoryCode || (hasCodeErr ? messageStr : null);
+      const nameErrMsg = errorsObj.CategoryName || errorsObj.categoryName || (hasNameErr ? messageStr : null);
+
+      return {
+        ok: false,
+        error: "duplicate",
+        message: messageStr,
+        duplicateFields: {
+          code: hasCodeErr ? codeErrMsg : (!hasCodeErr && !hasNameErr ? true : null),
+          name: hasNameErr ? nameErrMsg : (!hasCodeErr && !hasNameErr ? true : null),
+        },
+        field: (hasCodeErr && !hasNameErr) ? "code" : (hasNameErr && !hasCodeErr ? "name" : "both"),
+      };
     }
     if (rawMsg.includes("ValuationType_MaxLengthExceeded_20") || (rawMsg.toLowerCase().includes("valuationtype") && rawMsg.toLowerCase().includes("maxlength"))) {
       return { ok: false, error: "Valuation type cannot exceed 20 characters", field: "valuationType" };
@@ -97,7 +136,9 @@ export async function deleteAssetCategoryAction(formData: FormData) {
 
     return { ok: true };
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? error.message : String(error);
+    const errMessage = error instanceof ApiError
+      ? (error.responseText || error.message)
+      : (error instanceof Error ? error.message : String(error));
     return { ok: false, error: cleanErrorMessage(errMessage, "Failed to delete asset category") };
   }
 }

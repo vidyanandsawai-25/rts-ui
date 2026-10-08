@@ -114,6 +114,14 @@
       }
     }
   },
+  "apiErrors": {
+    "referenceBlocked": {
+      "condition": {
+        "deleteInUse": "यह स्थिति उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह स्थिति उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।"
+      }
+    }
+  },
   "masterNames": {
     "asset-type-master": "एसेट प्रकार",
     "asset-category-master": "एसेट श्रेणी",

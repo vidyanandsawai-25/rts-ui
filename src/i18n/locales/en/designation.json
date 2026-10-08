@@ -79,7 +79,12 @@
     "inUse": "Cannot deactivate/delete this Designation because it is referenced by other records.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "operationFailed": "Operation failed. Please try again later.",
-    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
+    "referenceBlocked": {
+      "designation": {
+        "deleteInUse": "This Designation cannot be deleted because it is in use.",
+        "deactivateInUse": "This Designation cannot be deactivated because it is in use."
+      }
+    }
   },
   "success": {
     "created": "New designation created successfully: {code}",

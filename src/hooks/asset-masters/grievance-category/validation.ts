@@ -12,7 +12,11 @@ import {
   TEXT_SANITIZE
 } from "@/lib/utils/asset-validation-rules";
 import { AssetGrievanceCategoryFormModel } from "@/types/asset-masters/asset-grievance-category.types";
-import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
+import {
+  mapSharedApiError,
+  parseReferenceBlockedMessage,
+  translateReferenceBlockedMessage,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 20;
 export const NAME_MAX = 50;
@@ -22,7 +26,7 @@ export const CODE_FORMAT_MAX = 50;
 export const DESCRIPTION_MAX = 200;
 
 export const CODE_FORMAT_REGEX = /^[A-Za-z0-9\-/_.{}#]+$/;
-export const TARGET_TABLE_REGEX = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/;
+export const TARGET_TABLE_REGEX = /^(?!.*[_\-.]{2,})[A-Za-z](?:[A-Za-z_\-.]*[A-Za-z])?$/;
 
 export const sanitizeCategoryField = (name: string, value: string): string => {
   let sanitizedValue = value;
@@ -53,7 +57,7 @@ export const sanitizeCategoryField = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, CODE_FORMAT_MAX);
     }
   } else if (name === "targetTableName") {
-    sanitizedValue = value.replace(/[^A-Za-z0-9_.]/g, "").trimStart().replace(/\s+/g, "");
+    sanitizedValue = value.replace(/[^A-Za-z_\-.]/g, "").replace(/^[_\-.]+/, "");
     if (sanitizedValue.length > TARGET_TABLE_MAX) {
       sanitizedValue = sanitizedValue.substring(0, TARGET_TABLE_MAX);
     }
@@ -85,7 +89,7 @@ export const validateGrievanceCategoryForm = (
     },
     grievanceTypeNameLocal: (val: unknown) => {
       const strVal = String(val ?? "").trim();
-      if (!strVal) return t("form.errors.typeNameLocalReq");
+      if (!strVal) return undefined;
       if (strVal.length > LOCAL_NAME_MAX) return t("form.errors.typeNameLocalMaxLength");
       if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) return t("form.errors.invalidFormat");
       return undefined;
@@ -108,12 +112,7 @@ export const validateGrievanceCategoryForm = (
       }
       return undefined;
     },
-    requiresFieldCorrection: (val: unknown) => {
-      if (val === null || val === undefined || typeof val !== "boolean") {
-        return t("form.errors.requiresFieldCorrectionReq");
-      }
-      return undefined;
-    },
+
     slaDays: (val: unknown) => {
       if (val === null || val === undefined || val === "") {
         return t("form.errors.slaReq");
@@ -142,7 +141,7 @@ export const validateGrievanceCategoryForm = (
     },
     description: (val: unknown) => {
       const strVal = String(val ?? "").trim();
-      if (!strVal) return t("form.errors.descReq");
+      if (!strVal) return undefined;
       if (strVal.length > DESCRIPTION_MAX) return t("form.errors.descMaxLength");
       if (isAllZeros(strVal) || !DESCRIPTION_REGEX.test(strVal)) return t("form.errors.invalidFormat");
       return undefined;
@@ -172,18 +171,62 @@ export const validateGrievanceCategoryServerAction = (
   };
 };
 
+// Reference check (DELETE, or PUT with isActive: false):
+//   "This Grievance Category cannot be deleted because it has Grievance Remarks. Please delete all Grievance Remarks for this Grievance Category first."
+function translateGrievanceCategoryReferenceBlocked(
+  message: string | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string | undefined {
+  return translateReferenceBlockedMessage(message, t, {
+    entities: { "Grievance Category": "apiErrors.referenceBlocked.grievanceCategory" },
+    masters: { "Grievance Remarks": "apiErrors.referenceMasters.grievanceRemarks" },
+    andKey: "apiErrors.referenceMasters.and",
+  });
+}
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlockedMessage(message: string | undefined): boolean {
+  return parseReferenceBlockedMessage(message)?.operation === "deactivate";
+}
+
 export const mapGrievanceCategoryApiError = (
   result: { statusCode?: number; message?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const referenceBlocked = translateGrievanceCategoryReferenceBlocked(result.message, t);
+  if (referenceBlocked) return referenceBlocked;
+
+  if (result.message === "AssetGrievanceCategory_GrievanceTypeCode_Duplicate") {
+    try {
+      const trans = t("apiErrors.AssetGrievanceCategory_GrievanceTypeCode_Duplicate");
+      if (trans && trans !== "apiErrors.AssetGrievanceCategory_GrievanceTypeCode_Duplicate") return trans;
+    } catch {}
+  }
+  if (result.message === "AssetGrievanceCategory_CategoryName_Duplicate") {
+    try {
+      const trans = t("apiErrors.AssetGrievanceCategory_CategoryName_Duplicate");
+      if (trans && trans !== "apiErrors.AssetGrievanceCategory_CategoryName_Duplicate") return trans;
+    } catch {}
+  }
+
+  // Prevent dynamic duplicate messages (like "Code 'DFGH' already exists") from hitting
+  // mapSharedApiError, which tries to translate the exact string and throws warnings.
+  const lowerMsg = (result.message || "").toLowerCase();
+  if (result.statusCode === 409 || lowerMsg.includes("duplicate") || lowerMsg.includes("already exists")) {
+    try {
+      const dup = t("apiErrors.duplicateRecord") || t("form.errors.duplicateRecord") || t("form.errors.duplicateName");
+      if (dup && !dup.includes("apiErrors") && !dup.includes("form.errors")) return dup;
+    } catch {}
+    return "Record already exists.";
+  }
+
   return mapSharedApiError({
     message: result.message,
     statusCode: result.statusCode,
     t,
     tCommon,
     fallbackEntityName: t("master.title"),
-    entityMatchers: [{ test: /category/i, labelKey: "master.title" }],
     customStatusCodes: {
       409: t("form.errors.duplicateRecord") || t("form.errors.duplicateName"),
       404: t("form.errors.recordNotFound"),
@@ -200,13 +243,15 @@ export function getCategoryErrorMessage(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
   fallbackEntityName: string
 ): string {
+  const referenceBlocked = translateGrievanceCategoryReferenceBlocked(message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message,
     statusCode,
     t,
     tCommon,
     fallbackEntityName,
-    entityMatchers: [{ test: /category/i, labelKey: "master.title" }]
   });
 }
 
@@ -224,14 +269,14 @@ export const CATEGORY_VALIDATION_ERROR_KEYS = new Set([
   "form.errors.targetTableNameReq",
   "form.errors.targetTableNameMaxLength",
   "form.errors.targetTableNameInvalidFormat",
-  "form.errors.requiresFieldCorrectionReq",
+
   "form.errors.slaReq",
   "form.errors.slaPositiveInteger",
   "form.errors.slaMustBeNonNegative",
   "form.errors.slaMaxDays",
   "form.errors.displaySequenceReq",
   "form.errors.displaySequenceInvalid",
-  "form.errors.descReq",
+
   "form.errors.descMaxLength",
   "form.errors.invalidFormat",
   "form.errors.mustBeActive",

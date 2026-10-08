@@ -117,4 +117,35 @@ describe("useOwningDepartmentForm", () => {
       expect(actions.saveOwningDepartment).toHaveBeenCalled();
     });
   });
+
+  describe("Reference check", () => {
+    it("shows the deactivate reference error under the status toggle and clears it on toggle", async () => {
+      vi.mocked(actions.saveOwningDepartment).mockResolvedValue({
+        ok: false,
+        error: "api_error",
+        message: "This Owning Department cannot be deactivated because it has Designations. Please delete all Designations for this Owning Department first.",
+        statusCode: 400,
+      });
+      const initialData: OwningDepartment = {
+        id: 1,
+        owningDepartmentName: "General Admin",
+        description: "General administration",
+        isActive: true,
+        createdDate: null,
+        updatedDate: null,
+      };
+      const { result } = renderHook(() => useOwningDepartmentForm({ initialData }));
+
+      act(() => result.current.handleStatusToggle());
+      await act(async () => {
+        await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
+      });
+
+      expect(result.current.errors.isActive).toBe("apiErrors.referenceBlocked.owningDepartment.deactivateHasMasters");
+
+      act(() => result.current.handleStatusToggle());
+      expect(result.current.formData.isActive).toBe(true);
+      expect(result.current.errors.isActive).toBe("");
+    });
+  });
 });

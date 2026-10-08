@@ -82,7 +82,8 @@
   "apiErrors": {
     "GST_TaxCode_Duplicate": "GST Tax Code already exists",
     "duplicateRecord": "This record already exists",
-    "inUse": "Cannot delete this GST record as it is referenced in other records."
+    "deleteBlockedInUse": "This GST cannot be deleted because it is in use.",
+    "deactivateBlockedInUse": "This GST cannot be deactivated because it is in use."
   },
   "deleteConfirm": "Are you sure you want to delete this GST record?",
   "error": {

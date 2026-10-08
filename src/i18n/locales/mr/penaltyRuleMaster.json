@@ -35,7 +35,7 @@
       },
       "description": {
         "label": "दंड नाव",
-        "placeholder": "उदा. Late Rent Flat Fee"
+        "placeholder": "उदा. विलंब भाडे फ्लॅट शुल्क"
       },
       "calculationType": {
         "label": "गणना प्रकार",
@@ -52,7 +52,7 @@
       },
       "gracePeriod": {
         "label": "वाढीव कालावधी दिवस",
-        "placeholder": "उदा. ५"
+        "placeholder": "उदा. 5"
       }
     },
     "status": {
@@ -92,8 +92,15 @@
   },
   "apiErrors": {
     "Penaltyrule_Code_Duplicate": "दंड नियम कोड आधीपासूनच अस्तित्वात आहे",
+    "Penaltyrule_Name_Duplicate": "दंड नियमाचे नाव आधीपासूनच अस्तित्वात आहे",
+    "Penaltyrule_Both_Duplicate": "दंड नियम कोड आणि नाव आधीपासूनच अस्तित्वात आहे",
     "duplicateRecord": "हा रेकॉर्ड आधीपासूनच अस्तित्वात आहे",
-    "inUse": "हा दंड नियम इतर नोंदींमध्ये वापरला गेला असल्यामुळे हटवता येत नाही."
+    "referenceBlocked": {
+      "penaltyRule": {
+        "deleteInUse": "हा दंड नियम वापरात असल्यामुळे डिलीट करता येत नाही.",
+        "deactivateInUse": "हा दंड नियम वापरात असल्यामुळे निष्क्रिय करता येत नाही."
+      }
+    }
   },
   "deleteConfirm": "आपण नक्की हा दंड नियम रेकॉर्ड डिलीट करू इच्छिता?",
   "error": {

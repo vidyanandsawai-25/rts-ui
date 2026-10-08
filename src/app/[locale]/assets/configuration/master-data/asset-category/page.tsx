@@ -37,8 +37,8 @@ export default async function Page({ params, searchParams }: PageProps): Promise
     pageNumber,
     pageSize,
     searchTerm || "",
-    sortBy || "categoryName",
-    sortOrder || "asc"
+    sortBy || "",
+    sortOrder
   );
 
   if (!response.success || !response.data) {

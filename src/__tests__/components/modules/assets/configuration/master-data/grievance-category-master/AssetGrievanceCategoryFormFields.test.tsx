@@ -40,7 +40,6 @@ describe("AssetGrievanceCategoryFormFields", () => {
       slaDays: null,
       displaySequence: 0,
       targetTableName: "",
-      requiresFieldCorrection: false,
       description: "",
       isActive: true,
     },
@@ -83,9 +82,5 @@ describe("AssetGrievanceCategoryFormFields", () => {
     expect(defaultProps.handleChange).toHaveBeenCalled();
   });
 
-  it("renders field-correction switch with accessible name", () => {
-    render(<AssetGrievanceCategoryFormFields {...defaultProps} />);
-    const switchElement = screen.getByRole("switch", { name: "Requires Field Correction" });
-    expect(switchElement).toBeInTheDocument();
-  });
+
 });

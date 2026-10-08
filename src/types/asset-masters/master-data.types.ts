@@ -46,6 +46,8 @@ export type MasterDataRecord = {
   assetCategoryId?: number;
   assetCategoryName?: string;
   categoryName?: string;
+  inventoryItemNameId?: number;
+  inventoryItemName?: string;
   isMovable?: boolean;
   hasFloorDetails?: boolean;
   hasInventory?: boolean;

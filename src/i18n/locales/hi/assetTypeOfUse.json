@@ -35,6 +35,7 @@
     "AssetTypeOfUse_TypeOfUseCode_MaxLength": "उपयोग प्रकार कोड की अधिकतम लंबाई 10 वर्ण है",
     "AssetSubTypeOfUse_Description_Duplicate": "उप-प्रकार वर्णन पहले से मौजूद है",
     "AssetTypeOfUseGroup_GroupCode_Duplicate": "समूह कोड पहले से मौजूद है",
+    "AssetTypeOfUseGroup_GroupName_Duplicate": "समूह का नाम पहले से मौजूद है",
     "notFound": "रिकॉर्ड नहीं मिला",
     "operationFailed": "ऑपरेशन विफल रहा",
     "TypeOfUseGroup_Code_Required": "समूह कोड आवश्यक है",
@@ -53,13 +54,34 @@
     "AssetSubTypeOfUse_TypeOfUseId_Required": "उपयोग प्रकार आवश्यक है",
     "AssetSubTypeOfUse_Description_Required": "उप-प्रकार विवरण आवश्यक है",
     "AssetSubTypeOfUse_Description_MaxLen_100": "उप-प्रकार विवरण की अधिकतम लंबाई 100 वर्ण है",
-    "Cannot deactivate/delete this TypeOfUseGroupMaster because it is referenced in: Asset Type Of Use Master": "उपयोग प्रकार तालिका (Asset Type Of Use Master) में संदर्भित होने के कारण इस उपयोग समूह को निष्क्रिय या हटाया नहीं जा सकता।",
-    "Cannot deactivate/delete this AssetTypeOfUseMaster because it is referenced in: Asset Sub Type Of Use Master": "उप-उपयोग प्रकार तालिका (Asset Sub Type Of Use Master) में संदर्भित होने के कारण इस उपयोग प्रकार को निष्क्रिय या हटाया नहीं जा सकता।",
-    "inUseGroup": "अन्य अभिलेखों में संदर्भित होने के कारण इस उपयोग समूह को निष्क्रिय या हटाया नहीं जा सकता।",
-    "inUseType": "अन्य अभिलेखों में संदर्भित होने के कारण इस उपयोग प्रकार को निष्क्रिय या हटाया नहीं जा सकता।",
-    "inUseSubType": "अन्य अभिलेखों में संदर्भित होने के कारण इस उप-उपयोग प्रकार को निष्क्रिय या हटाया नहीं जा सकता।",
-    "referencedIn": "{tables} तालिका में संदर्भित होने के कारण इस {entity} को निष्‍क्र‍िय या हटाया नहीं जा सकता।",
-    "inUse": "अन्य तालिकाओं में संदर्भित होने के कारण इस रिकॉर्ड को हटाया नहीं जा सकता।"
+    "inUse": "अन्य तालिकाओं में संदर्भित होने के कारण इस रिकॉर्ड को हटाया नहीं जा सकता।",
+    "referenceBlocked": {
+      "typeOfUseGroup": {
+        "deleteInUse": "यह उपयोग समूह उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह उपयोग समूह उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।",
+        "deleteHasMasters": "इस उपयोग समूह को हटाया नहीं जा सकता क्योंकि इसमें {masters} मौजूद हैं। कृपया पहले इस उपयोग समूह के सभी {masters} हटाएं।",
+        "deactivateHasMasters": "इस उपयोग समूह को निष्क्रिय नहीं किया जा सकता क्योंकि इसमें {masters} मौजूद हैं। कृपया पहले इस उपयोग समूह के सभी {masters} हटाएं।"
+      },
+      "typeOfUse": {
+        "deleteInUse": "यह उपयोग प्रकार उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह उपयोग प्रकार उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।",
+        "deleteHasMasters": "इस उपयोग प्रकार को हटाया नहीं जा सकता क्योंकि इसमें {masters} मौजूद हैं। कृपया पहले इस उपयोग प्रकार के सभी {masters} हटाएं।",
+        "deactivateHasMasters": "इस उपयोग प्रकार को निष्क्रिय नहीं किया जा सकता क्योंकि इसमें {masters} मौजूद हैं। कृपया पहले इस उपयोग प्रकार के सभी {masters} हटाएं।"
+      },
+      "subTypeOfUse": {
+        "deleteInUse": "यह उप-उपयोग प्रकार उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह उप-उपयोग प्रकार उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।",
+        "deleteHasMasters": "इस उप-उपयोग प्रकार को हटाया नहीं जा सकता क्योंकि इसमें {masters} मौजूद हैं। कृपया पहले इस उप-उपयोग प्रकार के सभी {masters} हटाएं।",
+        "deactivateHasMasters": "इस उप-उपयोग प्रकार को निष्क्रिय नहीं किया जा सकता क्योंकि इसमें {masters} मौजूद हैं। कृपया पहले इस उप-उपयोग प्रकार के सभी {masters} हटाएं।"
+      }
+    },
+    "referenceMasters": {
+      "typeOfUses": "उपयोग प्रकार",
+      "cvRates": "CV दरें",
+      "subTypeOfUses": "उप-उपयोग प्रकार",
+      "useFactors": "उपयोग कारक",
+      "and": "और"
+    }
   },
   "messages": {
     "addingTo": "{name} में जोड़ रहे हैं",

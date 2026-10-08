@@ -148,6 +148,7 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
 
   const handleToggleStatus = useCallback((checked?: boolean) => {
     setFormData((p) => ({ ...p, isActive: checked !== undefined ? checked : !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   const handleToggleSubUnit = useCallback((checked: boolean) => {

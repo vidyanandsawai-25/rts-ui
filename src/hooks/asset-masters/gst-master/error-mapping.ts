@@ -1,4 +1,4 @@
-import { mapSharedApiError, SharedErrorMapOptions } from "@/lib/utils/asset-utils/shared-error-mapping";
+import { mapSharedApiError, parseReferenceBlockedMessage, SharedErrorMapOptions } from "@/lib/utils/asset-utils/shared-error-mapping";
 import type { GstMasterFormModel } from "@/types/asset-masters/gst-master.types";
 
 /**
@@ -35,6 +35,10 @@ export function getGstMasterErrorMessage(
     }
   }
 
+  // Reference check (DELETE, or PUT with isActive: false): "This GST cannot be deleted/deactivated because it is in use."
+  const blocked = parseReferenceBlockedMessage(rawMsg);
+  if (blocked) return t(`apiErrors.${blocked.operation}BlockedInUse`);
+
   const lowerMsg = rawMsg.toLowerCase();
 
   // 2. Duplicate detection (GST_TaxCode_Duplicate, GST_TaxName_Duplicate, "already exist", "duplicate", or HTTP 409)
@@ -66,14 +70,13 @@ export function getGstMasterErrorMessage(
     } catch {}
   }
 
-  // 3. Fallback to mapSharedApiError for reference check errors or standard status code errors
+  // 3. Fallback to mapSharedApiError for standard status code errors
   return mapSharedApiError({
     message: rawMsg || message,
     statusCode,
     t: t as SharedErrorMapOptions["t"],
     tCommon: tCommon as SharedErrorMapOptions["tCommon"],
     fallbackEntityName: fallbackEntityName || t("title"),
-    entityMatchers: [{ test: /gst/i, labelKey: "title" }],
   });
 }
 
@@ -92,6 +95,12 @@ export function parseGstMasterApiErrors(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): GstMasterApiErrorResult {
   const globalMessage = getGstMasterErrorMessage(message, statusCode, t, tCommon);
+
+  // Deactivating a GST that is in use: show the reason under the status toggle.
+  if (parseReferenceBlockedMessage(message)?.operation === "deactivate") {
+    return { fieldErrors: { isActive: globalMessage }, globalMessage };
+  }
+
   const fieldErrors: Partial<Record<keyof GstMasterFormModel, string>> = {};
 
   const rawMsg = (message || "").trim();
@@ -137,9 +146,11 @@ export function parseGstMasterApiErrors(
     ) {
       if (lowerMsg.includes("code") || lowerMsg.includes("taxcode")) {
         fieldErrors.taxCode = getDuplicateErrorMessageForField("taxcode", t);
-      } else if (lowerMsg.includes("name") || lowerMsg.includes("taxname") || lowerMsg.includes("description")) {
+      }
+      if (lowerMsg.includes("name") || lowerMsg.includes("taxname") || lowerMsg.includes("description")) {
         fieldErrors.taxName = getDuplicateErrorMessageForField("taxname", t);
-      } else {
+      }
+      if (Object.keys(fieldErrors).length === 0) {
         // Generic duplicate message (e.g. "This record already exists"):
         // Assign to taxName because when user retains existing name and submits a new code,
         // taxName is the conflicting existing field.

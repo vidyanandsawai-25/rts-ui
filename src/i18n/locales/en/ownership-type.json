@@ -88,5 +88,13 @@
   },
   "masterNames": {
     "ownership-type-master": "Ownership Type"
+  },
+  "apiErrors": {
+    "referenceBlocked": {
+      "ownershipType": {
+        "deleteInUse": "This Ownership Type cannot be deleted because it is in use.",
+        "deactivateInUse": "This Ownership Type cannot be deactivated because it is in use."
+      }
+    }
   }
 }

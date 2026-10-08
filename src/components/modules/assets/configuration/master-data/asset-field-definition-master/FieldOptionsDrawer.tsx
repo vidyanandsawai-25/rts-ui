@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { ListFilter, Tag, Hash, FileText, CheckCircle2 } from "lucide-react";
 import { Drawer } from "@/components/common/Drawer";
 import { CancelButton } from "@/components/common";
+import { TruncatedText } from "@/components/common/TruncatedText";
 import { AssetFieldDefinition } from "@/types/asset-masters/asset-field-definition.types";
 
 export function parseOptionsList(optionsJson?: string | null): string[] {
@@ -67,9 +68,6 @@ export function FieldOptionsDrawer({
             <div className="text-lg font-bold text-slate-900">
               {t("optionsDrawer.title")}
             </div>
-            <div className="text-xs text-slate-500 font-normal">
-              {fieldDefinition.fieldName || fieldDefinition.fieldCode}
-            </div>
           </div>
         </div>
       }
@@ -89,27 +87,27 @@ export function FieldOptionsDrawer({
             {t("form.sections.generalConfig") || "Field Overview"}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-            <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 min-w-0">
               <div className="flex items-center gap-1.5 text-slate-400 font-medium mb-1">
                 <Hash className="w-3.5 h-3.5 text-blue-500" />
                 <span>{t("list.table.fieldCode") || "Field Code"}</span>
               </div>
               <div className="font-semibold text-slate-800 font-mono text-sm break-all">
-                {fieldDefinition.fieldCode}
+                <TruncatedText text={fieldDefinition.fieldCode} maxLength={25} />
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5">
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 min-w-0">
               <div className="flex items-center gap-1.5 text-slate-400 font-medium mb-1">
                 <FileText className="w-3.5 h-3.5 text-indigo-500" />
                 <span>{t("list.table.fieldName") || "Field Name"}</span>
               </div>
               <div className="font-semibold text-slate-800 text-sm truncate">
-                {fieldDefinition.fieldName}
+                <TruncatedText text={fieldDefinition.fieldName} maxLength={25} />
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 col-span-2 md:col-span-1">
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 col-span-2 md:col-span-1 min-w-0">
               <div className="flex items-center gap-1.5 text-slate-400 font-medium mb-1">
                 <Tag className="w-3.5 h-3.5 text-emerald-500" />
                 <span>{t("list.table.fieldType") || "Field Type"}</span>
@@ -162,7 +160,7 @@ export function FieldOptionsDrawer({
                         {index + 1}
                       </td>
                       <td className="px-4 py-2.5 font-medium text-slate-800 break-all">
-                        {opt}
+                        <TruncatedText text={opt} maxLength={50} />
                       </td>
                     </tr>
                   ))}

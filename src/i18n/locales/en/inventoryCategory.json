@@ -69,7 +69,7 @@
           "descriptionAllZeros": "Description cannot be all zeros",
           "descriptionFormat": "Invalid format for description",
           "fixErrors": "Please fix all validation errors before submitting",
-          "duplicateRecord": "This record already exists",
+          "duplicateRecord": "Inventory Category already exists. Duplicates not allowed.",
           "duplicateError": "A duplicate record was found"
         },
         "messages": {
@@ -78,15 +78,30 @@
           "invalidIdError": "Invalid record ID",
           "error": "An unexpected error occurred"
         },
+        "apiErrors": {
+          "referenceBlocked": {
+            "inventoryCategory": {
+              "deleteInUse": "This Inventory Category cannot be deleted because it is in use.",
+              "deactivateInUse": "This Inventory Category cannot be deactivated because it is in use.",
+              "deleteHasMasters": "This Inventory Category cannot be deleted because it has {masters}. Please delete all {masters} for this Inventory Category first.",
+              "deactivateHasMasters": "This Inventory Category cannot be deactivated because it has {masters}. Please delete all {masters} for this Inventory Category first."
+            }
+          },
+          "referenceMasters": {
+            "inventoryNames": "Inventory Names",
+            "inventoryConditions": "Inventory Conditions",
+            "and": "and"
+          }
+        },
         "errors": {
-          "duplicateRecord": "This record already exists",
+          "duplicateRecord": "Inventory Category already exists. Duplicates not allowed.",
           "fillRequired": "Please fill in all required fields.",
           "group": "Asset Category is required.",
           "codeRequired": "Code is required.",
           "codeFormat": "Code may contain only letters, numbers, and hyphens (-).",
-          "duplicateCode": "Code must be unique.",
+          "duplicateCode": "Inventory Category Code already exists.",
           "nameRequired": "Category name is required.",
-          "duplicateName": "Category name must be unique.",
+          "duplicateName": "Inventory Category Name already exists.",
           "englishOnly": "Please enter Category Name in English only.",
           "noSpecialCharacters": "Please use only letters, numbers, and spaces for Category Name.",
           "descriptionRequired": "Description is required.",
@@ -103,13 +118,13 @@
           "codeMax": "Code exceeds maximum length",
           "codeTooLong15": "Code cannot exceed 15 characters",
           "codeInvalidChars": "Code contains invalid characters",
-          "codeDuplicate": "This code already exists",
+          "codeDuplicate": "Inventory Category Code already exists.",
           "nameAllZeros": "Name cannot be all zeros",
           "nameMax": "Name exceeds maximum length",
           "nameFormat": "Invalid format for name",
           "nameTooLong50": "Name cannot exceed 50 characters",
           "nameInvalidChars": "Name contains invalid characters",
-          "nameDuplicate": "This name already exists",
+          "nameDuplicate": "Inventory Category Name already exists.",
           "descriptionAllZeros": "Description cannot be all zeros",
           "descriptionFormat": "Invalid format for description",
           "descriptionTooLong": "Description cannot exceed 500 characters",
@@ -136,6 +151,21 @@
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Inventory Condition"
+  },
+  "apiErrors": {
+    "referenceBlocked": {
+      "inventoryCategory": {
+        "deleteInUse": "This Inventory Category cannot be deleted because it is in use.",
+        "deactivateInUse": "This Inventory Category cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Inventory Category cannot be deleted because it has {masters}. Please delete all {masters} for this Inventory Category first.",
+        "deactivateHasMasters": "This Inventory Category cannot be deactivated because it has {masters}. Please delete all {masters} for this Inventory Category first."
+      }
+    },
+    "referenceMasters": {
+      "inventoryNames": "Inventory Names",
+      "inventoryConditions": "Inventory Conditions",
+      "and": "and"
+    }
   },
   "pageTitle": "Inventory Category",
   "pageSubtitle": "Manage and organize inventory categories",

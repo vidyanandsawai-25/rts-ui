@@ -115,6 +115,15 @@ export function useAssetGrievanceRemarkForm({
           toast.error(Object.values(fieldErrors)[0] ?? mapGrievanceRemarkApiError(res, t, tCommon));
           return;
         }
+        
+        const lowerMsg = (res.message || "").toLowerCase();
+        if (res.statusCode === 409 || lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
+           const dupMsg = t("apiErrors.AssetGrievanceRemark_Remark_Duplicate") || t("apiErrors.duplicateRecord") || "Remark already exists.";
+           toast.error(dupMsg);
+           setErrors(prev => ({ ...prev, remark: dupMsg }));
+           return;
+        }
+
         toast.error(mapGrievanceRemarkApiError(res, t, tCommon));
         return;
       }

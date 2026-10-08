@@ -13,6 +13,7 @@ import {
   sanitizeFieldValue,
   validateDesignationForm,
   mapDesignationApiError,
+  isDeactivateBlockedMessage,
 } from "./validation";
 
 interface UseDesignationFormProps {
@@ -128,7 +129,11 @@ export function useDesignationForm({
         : await createDesignationAction(formData);
 
       if (!result.success) {
-        toast.error(mapDesignationApiError(result, t, tCommon));
+        const errorMessage = mapDesignationApiError(result, t, tCommon);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
@@ -147,6 +152,7 @@ export function useDesignationForm({
   const handleToggleStatus = useCallback((checked: boolean) => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string): void => {

@@ -139,7 +139,7 @@ describe("GstMaster List Component", () => {
 
   test("triggers confirmation dialog on Delete click and displays error message from backend when deletion fails", async () => {
     const { deleteGstMasterAction } = await import("@/app/[locale]/assets/configuration/master-data/gst-master/action");
-    const errorMessage = "Cannot delete GST record as it is associated with active assets.";
+    const errorMessage = "Cannot delete GST record as it is associated with active assets";
     vi.mocked(deleteGstMasterAction).mockResolvedValue({ success: false, message: errorMessage });
 
     render(

@@ -88,5 +88,13 @@
   },
   "masterNames": {
     "ownership-type-master": "स्वामित्व प्रकार"
+  },
+  "apiErrors": {
+    "referenceBlocked": {
+      "ownershipType": {
+        "deleteInUse": "यह स्वामित्व प्रकार उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह स्वामित्व प्रकार उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।"
+      }
+    }
   }
 }

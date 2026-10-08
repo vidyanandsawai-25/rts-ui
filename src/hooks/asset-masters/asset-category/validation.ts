@@ -9,6 +9,7 @@ import {
   DESCRIPTION_REGEX,
   isAllZeros,
 } from "@/lib/utils/asset-validation-rules";
+import { parseReferenceBlockedMessage, translateReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 import { createSafeMasterTranslator } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 import type { AssetCategoryFormModel } from "@/types/asset-masters/asset-category.types";
 
@@ -92,26 +93,70 @@ export const validateAssetCategoryForm = (
   return validateForm(data, schema);
 };
 
+// Reference check (DELETE, or PUT with isActive: false) from ReferenceValidationService (DisplayAs "Asset Category"), e.g.
+//   "This Asset Category cannot be deleted because it has Asset Room Types. Please delete all Asset Room Types for this Asset Category first."
+const REFERENCE_MASTERS: Record<string, string> = {
+  "Asset Types": "apiErrors.referenceMasters.assetTypes",
+  "Asset Document Definitions": "apiErrors.referenceMasters.assetDocumentDefinitions",
+  "Asset Field Definitions": "apiErrors.referenceMasters.assetFieldDefinitions",
+  "Type Of Uses": "apiErrors.referenceMasters.typeOfUses",
+  "Asset Photo Types": "apiErrors.referenceMasters.assetPhotoTypes",
+  "Asset Room Types": "apiErrors.referenceMasters.assetRoomTypes",
+  "Inventory Categories": "apiErrors.referenceMasters.inventoryCategories",
+  "Asset Conditions": "apiErrors.referenceMasters.assetConditions",
+};
+
+function translateReferenceBlocked(
+  message: string | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string | undefined {
+  return translateReferenceBlockedMessage(message, t, {
+    entities: { "Asset Category": "apiErrors.referenceBlocked.assetCategory" },
+    masters: REFERENCE_MASTERS,
+    andKey: "apiErrors.referenceMasters.and",
+  });
+}
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlockedMessage(message: string | undefined): boolean {
+  return parseReferenceBlockedMessage(message)?.operation === "deactivate";
+}
+
 export const mapAssetCategoryApiError = (
-  result: { statusCode?: number; message?: string; error?: string },
+  result: { statusCode?: number; message?: string; error?: string; duplicateFields?: { code?: string | boolean | null; name?: string | boolean | null }; field?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const referenceBlocked = translateReferenceBlocked(result.message || result.error, t);
+  if (referenceBlocked) return referenceBlocked;
+
   const rawMsg = (result.message || result.error || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = t("title") || "Asset Category";
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
 
   if (result.error === "duplicate" || rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
+    const hasCode = !!(result.duplicateFields?.code || result.field === "code" || rawMsg.includes("Category Code") || rawMsg.includes("CategoryCode"));
+    const hasName = !!(result.duplicateFields?.name || result.field === "name" || rawMsg.includes("Category Name") || rawMsg.includes("CategoryName"));
+
+    if (hasCode && hasName) {
+      return (
+        t("validation.codeAndNameDuplicate") ||
+        t("validation.duplicateRecord") ||
+        "Code and Name already exist."
+      );
+    }
+    if (hasCode) {
+      return (
+        t("validation.codeDuplicate") ||
+        t("errors.codeDuplicate") ||
+        "Code already exists."
+      );
+    }
+    if (hasName) {
+      return (
+        t("validation.nameDuplicate") ||
+        t("errors.nameDuplicate") ||
+        "Name already exists."
+      );
+    }
     return t("validation.duplicateError") || t("validation.duplicateRecord") || "Record already exists.";
   }
 
@@ -134,23 +179,11 @@ export const mapAssetCategoryApiError = (
 export function getErrorMessage(
   message: string | undefined,
   statusCode: number | undefined,
-  t: (key: string, values?: Record<string, string>) => string,
-  tCommon: (key: string) => string,
-  fallbackEntityName: string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string) => string
 ): string {
-  const rawMsg = (message || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = fallbackEntityName;
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlocked(message, t);
+  if (referenceBlocked) return referenceBlocked;
 
   return statusCode === 409
     ? (t("validation.duplicateRecord") || "Record is in use.")

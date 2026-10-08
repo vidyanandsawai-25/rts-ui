@@ -7,6 +7,11 @@ import {
 } from "@/lib/utils/asset-validation-rules";
 import { createSafeMasterTranslator } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 import type { InventoryModelFormModel } from "@/types/asset-masters/inventory-model.types";
+import {
+  parseReferenceBlockedMessage,
+  translateReferenceBlockedMessage,
+  type ReferenceBlockedTranslationOptions,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const NAME_MAX = 50;
 export const DESCRIPTION_MAX = 500;
@@ -78,24 +83,24 @@ export const validateInventoryModelForm = (
   return validateForm(data, schema);
 };
 
+// Reference check (DELETE, or PUT with isActive: false): "This Inventory Model cannot be deleted because it is in use."
+const REFERENCE_BLOCKED_OPTIONS: ReferenceBlockedTranslationOptions = {
+  entities: { "Inventory Model": "apiErrors.referenceBlocked.inventoryModel" },
+};
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlocked(result: { message?: string; error?: string; success?: boolean }): boolean {
+  return parseReferenceBlockedMessage(result.message || result.error)?.operation === "deactivate";
+}
+
 export const mapInventoryModelApiError = (
   result: { statusCode?: number; message?: string; error?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   const rawMsg = (result.message || result.error || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = t("title") || "Inventory Model";
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlockedMessage(result.message || result.error, t, REFERENCE_BLOCKED_OPTIONS);
+  if (referenceBlocked) return referenceBlocked;
 
   if (result.error === "duplicate" || rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
     return t("validation.duplicateRecord") || t("validation.duplicateError") || t("errors.duplicateRecord") || "Record already exists.";
@@ -118,23 +123,11 @@ export const mapInventoryModelApiError = (
 export function getErrorMessage(
   message: string | undefined,
   statusCode: number | undefined,
-  t: (key: string, values?: Record<string, string>) => string,
-  tCommon: (key: string) => string,
-  fallbackEntityName: string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string) => string
 ): string {
-  const rawMsg = (message || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = fallbackEntityName;
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlockedMessage(message, t, REFERENCE_BLOCKED_OPTIONS);
+  if (referenceBlocked) return referenceBlocked;
 
   return statusCode === 409
     ? (t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Record is in use.")

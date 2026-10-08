@@ -9,6 +9,11 @@ import {
 } from "@/lib/utils/asset-validation-rules";
 import { createSafeMasterTranslator } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 import type { InventoryCategoryFormModel } from "@/types/asset-masters/inventory-category.types";
+import {
+  parseReferenceBlockedMessage,
+  translateReferenceBlockedMessage,
+  type ReferenceBlockedTranslationOptions,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 15;
 export const NAME_MAX = 50;
@@ -112,24 +117,30 @@ export const validateInventoryCategoryForm = (
   return validateForm(data, schema);
 };
 
+// Reference check (DELETE, or PUT with isActive: false), e.g.
+//   "This Inventory Category cannot be deleted because it has Inventory Names and Inventory Conditions. Please delete all ... first."
+const REFERENCE_BLOCKED_OPTIONS: ReferenceBlockedTranslationOptions = {
+  entities: { "Inventory Category": "apiErrors.referenceBlocked.inventoryCategory" },
+  masters: {
+    "Inventory Names": "apiErrors.referenceMasters.inventoryNames",
+    "Inventory Conditions": "apiErrors.referenceMasters.inventoryConditions",
+  },
+  andKey: "apiErrors.referenceMasters.and",
+};
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlocked(result: { message?: string; error?: string; success?: boolean }): boolean {
+  return parseReferenceBlockedMessage(result.message || result.error)?.operation === "deactivate";
+}
+
 export const mapInventoryCategoryApiError = (
   result: { statusCode?: number; message?: string; error?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   const rawMsg = (result.message || result.error || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = t("title") || "Inventory Category";
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlockedMessage(result.message || result.error, t, REFERENCE_BLOCKED_OPTIONS);
+  if (referenceBlocked) return referenceBlocked;
 
   if (result.error === "duplicate" || result.error === "duplicate_name" || result.error === "duplicate_code" || rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("already exists")) {
     return t("validation.duplicateRecord") || t("validation.duplicateError") || t("errors.duplicateRecord") || "Record already exists.";
@@ -152,23 +163,11 @@ export const mapInventoryCategoryApiError = (
 export function getErrorMessage(
   message: string | undefined,
   statusCode: number | undefined,
-  t: (key: string, values?: Record<string, string>) => string,
-  tCommon: (key: string) => string,
-  fallbackEntityName: string
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  tCommon: (key: string) => string
 ): string {
-  const rawMsg = (message || "").replace(/\.$/, "");
-  const match = rawMsg.match(/Cannot deactivate\/delete this (.*?) because it is referenced in:\s*(.*)/i);
-  if (match) {
-    const entityName = fallbackEntityName;
-    const tables = match[2];
-    try {
-      const translation = t("apiErrors.referencedIn", { entity: entityName, tables });
-      if (translation && translation !== "apiErrors.referencedIn") {
-        return translation;
-      }
-    } catch {}
-    return `Cannot deactivate or delete this ${entityName} because it is referenced in: ${tables}.`;
-  }
+  const referenceBlocked = translateReferenceBlockedMessage(message, t, REFERENCE_BLOCKED_OPTIONS);
+  if (referenceBlocked) return referenceBlocked;
 
   return statusCode === 409
     ? (t("validation.duplicateRecord") || t("errors.duplicateRecord") || "Record is in use.")

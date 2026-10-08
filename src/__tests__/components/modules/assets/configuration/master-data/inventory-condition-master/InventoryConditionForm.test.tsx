@@ -35,6 +35,7 @@ vi.mock("@/components/modules/assets/configuration/master-data/inventory-conditi
       <input data-testid="category-input" name="inventoryItemCategoryId" value={formData.inventoryItemCategoryId || ""} onChange={(e) => onSelectChange("inventoryItemCategoryId", e.target.value)} />
       <input data-testid="name-input" name="conditionName" value={formData.conditionName || ""} onChange={onChange} />
       <input data-testid="factor-input" name="conditionFactor" value={formData.conditionFactor || ""} onChange={onChange} />
+      <input data-testid="display-order-input" name="displayOrder" value={formData.displayOrder ?? ""} onChange={onChange} />
     </div>
   ),
 }));
@@ -63,6 +64,7 @@ describe("InventoryConditionForm", () => {
     fireEvent.change(screen.getByTestId("category-input"), { target: { value: "1" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "conditionName", value: "Good" } });
     fireEvent.change(screen.getByTestId("factor-input"), { target: { name: "conditionFactor", value: "0.5" } });
+    fireEvent.change(screen.getByTestId("display-order-input"), { target: { name: "displayOrder", value: "1" } });
 
     fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
 

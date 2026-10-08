@@ -66,9 +66,21 @@
         "invalidData": "Invalid data provided. Please check all fields.",
         "notFound": "Assessment year range not found.",
         "inUse": "Cannot delete this year range as it is in use.",
-        "referredInYearRange": "Cannot delete this Assessment Year Range CV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
-        "cannotDeactivateYearRange": "Cannot deactivate this Assessment Year Range CV because it is referenced in Age Factor CV Master, Floor Factor CV Master, Nature Factor CV Master",
-        "operationFailed": "Operation failed. Please try again later."
+        "operationFailed": "Operation failed. Please try again later.",
+        "referenceBlocked": {
+          "assessmentYearRange": {
+            "deleteHasMasters": "This Assessment Year Range cannot be deleted because it has {masters}. Please delete all {masters} for this Assessment Year Range first.",
+            "deactivateHasMasters": "This Assessment Year Range cannot be deactivated because it has {masters}. Please delete all {masters} for this Assessment Year Range first."
+          }
+        },
+        "referenceMasters": {
+          "ageFactors": "Age Factors",
+          "natureFactors": "Nature Factors",
+          "useFactors": "Use Factors",
+          "floorFactors": "Floor Factors",
+          "cvRates": "CV Rates",
+          "and": "and"
+        }
       },
       "success": {
         "created": "Year range {fromYear}-{toYear} created successfully",

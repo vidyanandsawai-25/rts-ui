@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { createSubZoneAction, updateSubZoneAction } from "@/app/[locale]/assets/configuration/master-data/mouja-subzone/action";
 import { SubZoneFormModel, SubZoneDetails } from "@/types/asset-masters/mouja-subzone.types";
-import { sanitizeSubZoneFieldValue, validateSubZoneForm, getErrorMessage } from "./validation";
+import { sanitizeSubZoneFieldValue, validateSubZoneForm, getErrorMessage, isDeactivateBlockedMessage } from "./validation";
 
 interface UseSubZoneFormProps {
   id: number | null;
@@ -105,7 +105,11 @@ export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = (
     try {
       const res = isEdit ? await updateSubZoneAction(formData) : await createSubZoneAction(formData);
       if (!res.success) {
-        toast.error(mapApiError(res));
+        const errorMessage = mapApiError(res);
+        if (isDeactivateBlockedMessage(res.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
       const successMessage = isEdit ? t("success.subZoneUpdated") : t("success.subZoneCreated");
@@ -120,6 +124,7 @@ export function useSubZoneForm({ id, initialData, selectedMoujaId, onSuccess = (
   const handleToggleStatus = useCallback((checked: boolean) => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string) => {
