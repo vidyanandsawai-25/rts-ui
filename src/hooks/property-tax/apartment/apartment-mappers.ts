@@ -91,7 +91,10 @@ export function mapSurveyDetailToUnit(
   if (propNo) parts.push(propNo);
   if (partitionNo && partitionNo !== propNo) parts.push(partitionNo);
   if (flatNo && flatNo !== '-' && flatNo !== partitionNo && flatNo !== propNo) parts.push(flatNo);
-  const prop = parts.length > 0 ? parts.join(' - ') : '-';
+  const propFull = parts.length > 0 ? parts.join(' - ') : '-';
+  // The survey table shows the partition (the wing, or the partition of a unit) as PROP NO and the flat in its own column: the main
+  // property number is the same on every unit. The old assessment keeps its own old property number.
+  const prop = variant !== 'existing' ? (partitionNo || propNo || '-') : propFull;
 
   const floorStr = (detail.floor || '').trim();
   // The table column shows only the short floor code (G, 1, 2 ...), no wing; the full description stays in `flr` for filters.
@@ -100,20 +103,16 @@ export function mapSurveyDetailToUnit(
   const aptType = (detail.apartmentType || '').trim();
   const propTypeName = (detail.propertyTypeName || '').trim();
   const fallbackType = (detail.type || detail.partType || '').trim();
-  let type = '-';
-  if (aptType && propTypeName && aptType.toLowerCase() !== propTypeName.toLowerCase()) {
-    type = `${aptType} / ${propTypeName}`;
-  } else if (aptType) {
-    type = aptType;
-  } else if (propTypeName) {
-    type = propTypeName;
-  } else if (fallbackType) {
-    type = fallbackType;
-  }
+  // Product decision: the TYPE column is PropertyMast.Type, the apartment / society type that plans are drawn and shown by.
+  // The property type name (and its code) is only context for the tooltip.
+  // An old survey row has no PropertyMast.Type: its old property type name is shown instead.
+  const type = aptType || (detail.oldPropertyTypeName || '').trim() || '-';
+  const typeFull = [aptType, propTypeName || (detail.oldPropertyTypeName || '').trim() || fallbackType].filter((v, i, a) => v && a.indexOf(v) === i).join(' / ') || type;
 
   const cty = (detail.constructionCode || detail.constructionType || detail.oldConstructionType || '').trim() || '-';
-  const ayr = (detail.assessmentYear || detail.oldAssessmentYear || '').trim() || '-';
-  const cyr = (detail.constructionYear || detail.oldConstructionYear || '').trim() || '-';
+  // The API can send a year as a number; a year is shown as text either way.
+  const ayr = String(detail.assessmentYear || detail.oldAssessmentYear || '').trim() || '-';
+  const cyr = String(detail.constructionYear || detail.oldConstructionYear || '').trim() || '-';
   const use = (detail.typeOfUseCode || detail.typeOfUse || detail.subTypeOfUse || detail.oldUseType || '').trim() || '-';
 
   const cptFt = detail.carpetASqFt ?? (detail.constructionArea ?? detail.oldConstructionArea ?? null);
@@ -214,12 +213,12 @@ export function mapSurveyDetailToUnit(
     null;
 
   return {
-    id: fallbackId, prop, propertyNo: propNo || undefined, oldPropertyNo: detail.oldPropertyNo || undefined,
+    id: fallbackId, prop, propFull, propertyNo: propNo || undefined, oldPropertyNo: detail.oldPropertyNo || undefined,
     partitionNo: partitionNo || undefined,
     flatNo: flatNo || undefined,
     propertyId: resolvedPropertyId ?? undefined,
     oldPropertyId: resolvedOldPropertyId ?? undefined,
-    wgFl, type, cty, ayr, cyr, use, cpt, cptMtr, cptDisplay,
+    wgFl, type, typeFull, cty, ayr, cyr, use, cpt, cptMtr, cptDisplay,
     bua, buaMtr, buaDisplay, ocNo, occdt, rntr, rentDisplay, rent, appliedOn,
     rateDisplay, rate, yrv, depr, alv, mr, rv, rvDisplay, tax, taxDisplay, cv, cvDisplay, rttx, pen: 0,
     owner: detail.ownerName || detail.ownerNameEnglish || '-',

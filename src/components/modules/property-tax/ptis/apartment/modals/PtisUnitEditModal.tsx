@@ -49,7 +49,7 @@ const EditForm: React.FC<{
       open={true}
       onClose={onClose}
       title="Edit Survey Details"
-      subtitle={`Property #${formData.prop} (${formData.wgFl})`}
+      subtitle={`Property #${formData.propFull ?? formData.prop} (${formData.wgFl})`}
       maxWidth="md"
       footer={footer}
     >

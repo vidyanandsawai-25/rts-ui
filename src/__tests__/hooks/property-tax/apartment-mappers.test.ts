@@ -95,18 +95,20 @@ describe('apartment-mappers — parseApartmentItemNodes property ID resolution',
 
     const { newUnits, oldUnits } = parseApartmentItemNodes(rawItems);
 
-    // With partition and flat: "116 - 1 - 202"
-    expect(newUnits[0].prop).toBe('116 - 1 - 202');
+    // The survey table shows the partition as PROP NO (the flat has its own column); the whole number stays in propFull
+    expect(newUnits[0].prop).toBe('1');
+    expect(newUnits[0].propFull).toBe('116 - 1 - 202');
     expect(newUnits[0].partitionNo).toBe('1');
     expect(newUnits[0].flatNo).toBe('202');
 
-    // With partition 0 and flat: "8071629 - 0 - 101"
+    // The old assessment keeps its own old property number: "8071629 - 0 - 101"
     expect(oldUnits[0].prop).toBe('8071629 - 0 - 101');
     expect(oldUnits[0].partitionNo).toBe('0');
     expect(oldUnits[0].flatNo).toBe('101');
 
-    // With partition only: "116 - 2"
-    expect(newUnits[1].prop).toBe('116 - 2');
+    // With partition only
+    expect(newUnits[1].prop).toBe('2');
+    expect(newUnits[1].propFull).toBe('116 - 2');
     expect(newUnits[1].partitionNo).toBe('2');
 
     // Without partition: "8071630"
@@ -171,3 +173,24 @@ describe('apartment-mappers — parseApartmentItemNodes property ID resolution',
 function pUnitResolved(unit: { propertyId?: number | null }) {
   return unit.propertyId;
 }
+
+describe('apartment-mappers — Type column is PropertyMast.Type', () => {
+  const unitOf = (newSurvey: Record<string, unknown>) =>
+    parseApartmentItemNodes([{ newSurvey: { id: 1, propertyNo: '132', ...newSurvey } }], 1).newUnits[0];
+
+  it('shows the apartment / society Type of the unit, not the property type name', () => {
+    const unit = unitOf({ apartmentType: '2', propertyTypeName: 'निवासी', partType: 'R' });
+    expect(unit.type).toBe('2');
+    expect(unit.typeFull).toBe('2 / निवासी');
+  });
+
+  it('shows a dash when the unit has no Type yet and keeps the property type name for the tooltip', () => {
+    const unit = unitOf({ propertyTypeName: 'माहिती व तंत्रज्ञान उद्योग', partType: 'I' });
+    expect(unit.type).toBe('-');
+    expect(unit.typeFull).toBe('माहिती व तंत्रज्ञान उद्योग');
+  });
+
+  it('trims the Type', () => {
+    expect(unitOf({ apartmentType: ' 5 ' }).type).toBe('5');
+  });
+});

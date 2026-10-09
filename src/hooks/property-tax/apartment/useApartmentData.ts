@@ -46,7 +46,7 @@ export function useApartmentData(
       }
       return;
     }
-    const filterKey = `${activeFilters.propertyId}_${activeFilters.wingDetailId}_${activeFilters.wingId}_${activeFilters.pageNumber}_${activeFilters.pageSize}`;
+    const filterKey = `${activeFilters.propertyId}_${activeFilters.wingDetailId}_${activeFilters.wingId}_${activeFilters.pageNumber}_${activeFilters.pageSize}_${activeFilters.sortBy ?? ""}_${activeFilters.sortOrder ?? ""}`;
     if (!isAppend && lastFetchedKeyRef.current === filterKey) {
       return;
     }

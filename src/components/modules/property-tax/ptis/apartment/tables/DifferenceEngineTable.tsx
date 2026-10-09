@@ -4,11 +4,14 @@ import React from 'react';
 import { UnitDifference, PtisTaxMode } from '@/types/property-tax/apartment';
 import { cn } from '@/lib/utils/cn';
 import { DifferenceEngineTableHeader } from './DifferenceEngineTableHeader';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
 import { DifferenceEngineTableRow } from './DifferenceEngineTableRow';
 import { PtisTableSkeleton } from './PtisTableSkeleton';
 import { PtisEmptyTableState } from './PtisEmptyTableState';
 
 interface DifferenceEngineTableProps {
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
   differences: UnitDifference[];
   totalDeltas?: {
     carpetDelta?: number;
@@ -41,6 +44,8 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
   taxMode,
   isLoading = false,
   isFullscreen = false,
+  sort,
+  onSort,
 }) => {
   const t = useTranslations('ptisRedesign.subTables');
   const showRv = taxMode !== 'capital';
@@ -60,7 +65,7 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
       )}
     >
       <table className="w-full text-left border-collapse min-w-max">
-        <DifferenceEngineTableHeader taxMode={taxMode} />
+        <DifferenceEngineTableHeader taxMode={taxMode} sort={sort} onSort={onSort} />
         <tbody className="divide-y divide-zinc-200 text-zinc-800 font-medium">
           {isLoading && <PtisTableSkeleton columnCount={totalCols} rowCount={8} />}
           {!isLoading &&

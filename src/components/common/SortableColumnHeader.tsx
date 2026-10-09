@@ -18,6 +18,8 @@ export interface SortableColumnHeaderProps {
   className?: string;
   /** Size variant */
   size?: "xs" | "sm" | "md";
+  /** "box" (default) is a grey button; "plain" has no box and takes the colour of the table header it sits in */
+  variant?: "box" | "plain";
 }
 
 /**
@@ -41,6 +43,7 @@ export function SortableColumnHeader({
   sortable = true,
   className,
   size = "xs",
+  variant = "box",
 }: SortableColumnHeaderProps) {
   const sizeStyles = {
     xs: "px-2 py-1 text-[10px]",
@@ -84,15 +87,15 @@ export function SortableColumnHeader({
       onClick={onSort}
       className={cn(
         "inline-flex items-center gap-1 font-semibold whitespace-nowrap",
-        "bg-gray-100 border border-gray-300 rounded",
-        "hover:bg-gray-200 transition-colors",
-        "focus:outline-none focus:ring-1 focus:ring-blue-500",
-        sizeStyles[size],
+        variant === "plain"
+          ? "rounded cursor-pointer uppercase tracking-wider hover:opacity-75 focus:outline-none focus-visible:ring-1 focus-visible:ring-current"
+          : "bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500",
+        variant === "box" && sizeStyles[size],
         className
       )}
     >
       {label}
-      <IconComponent className={cn(iconSizes[size], "text-gray-500")} />
+      <IconComponent className={cn(iconSizes[size], variant === "plain" ? (sortDirection ? "opacity-100" : "opacity-35") : "text-gray-500")} />
     </button>
   );
 }

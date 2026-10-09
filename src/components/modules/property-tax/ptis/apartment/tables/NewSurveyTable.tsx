@@ -4,11 +4,15 @@ import React from 'react';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
 import { cn } from '@/lib/utils/cn';
 import { NewSurveyTableHeader } from './NewSurveyTableHeader';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
 import { NewSurveyTableRow } from './NewSurveyTableRow';
 import { PtisTableSkeleton } from './PtisTableSkeleton';
 import { PtisEmptyTableState } from './PtisEmptyTableState';
 
 interface NewSurveyTableProps {
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
+  onClearSort?: () => void;
   units: AssessmentUnit[];
   hoveredUnitId: string | null;
   expandedUnitIds: string[];
@@ -40,6 +44,9 @@ export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
   taxMode,
   isLoading = false,
   isFullscreen = false,
+  sort,
+  onSort,
+  onClearSort,
 }) => {
   const t = useTranslations('ptisRedesign.subTables');
   const showRv = taxMode !== 'capital';
@@ -59,7 +66,7 @@ export const NewSurveyTable: React.FC<NewSurveyTableProps> = ({
       )}
     >
       <table className="w-full text-left border-collapse min-w-max">
-        <NewSurveyTableHeader taxMode={taxMode} />
+        <NewSurveyTableHeader taxMode={taxMode} sort={sort} onSort={onSort} onClearSort={onClearSort} />
         <tbody className="divide-y divide-zinc-200 text-zinc-800 font-medium">
           {isLoading && <PtisTableSkeleton columnCount={totalCols} rowCount={8} />}
           {!isLoading &&

@@ -1,21 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Tooltip } from '@/components/common/Tooltip';
-import { cn } from '@/lib/utils/cn';
 import { PtisTaxMode } from '@/types/property-tax/apartment';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
+import { PtisTableHeader, type PtisColumnDef } from './PtisTableHeader';
 import { useTranslations } from 'next-intl';
 
-interface ColumnDef {
-  key: string;
-  labelKey: string;
-  titleKey: string;
-  defaultLabel: string;
-  defaultTitle: string;
-  className: string;
-}
 
-const DIFFERENCE_COLUMNS: ColumnDef[] = [
+const DIFFERENCE_COLUMNS: PtisColumnDef[] = [
   { key: 'carpetFt', labelKey: 'carpetFt', titleKey: 'carpetFtTitle', defaultLabel: 'CARPET (sq.ft)', defaultTitle: 'Carpet Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
   { key: 'carpetMtr', labelKey: 'carpetMtr', titleKey: 'carpetMtrTitle', defaultLabel: 'CARPET (sq.mt)', defaultTitle: 'Carpet Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
   { key: 'buaFt', labelKey: 'buaFt', titleKey: 'buaFtTitle', defaultLabel: 'BUA (sq.ft)', defaultTitle: 'Built-up Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
@@ -26,7 +18,13 @@ const DIFFERENCE_COLUMNS: ColumnDef[] = [
   { key: 'rtTax', labelKey: 'retroTax', titleKey: 'retroTaxTitle', defaultLabel: 'RETRO TAX', defaultTitle: 'Retrospective Tax Difference', className: 'px-3 py-2 text-right min-w-[100px]' },
 ];
 
-export const DifferenceEngineTableHeader: React.FC<{ taxMode?: PtisTaxMode }> = ({ taxMode }) => {
+interface DifferenceEngineTableHeaderProps {
+  taxMode?: PtisTaxMode;
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
+}
+
+export const DifferenceEngineTableHeader: React.FC<DifferenceEngineTableHeaderProps> = ({ taxMode, sort, onSort }) => {
   const t = useTranslations('ptisRedesign.differenceColumns');
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
@@ -37,24 +35,14 @@ export const DifferenceEngineTableHeader: React.FC<{ taxMode?: PtisTaxMode }> = 
   });
 
   return (
-    <thead className="sticky top-0 z-20 shadow-xs bg-amber-50/95 border-b border-amber-200">
-      <tr className="border-b border-amber-200 text-amber-950 font-bold uppercase tracking-wider text-[10px] h-10">
-        {visibleColumns.map((col) => {
-          const label = t(col.labelKey) || col.defaultLabel;
-          const title = t(col.titleKey) || col.defaultTitle;
-          return (
-            <th
-              key={col.key}
-              className={cn('whitespace-nowrap', col.className)}
-            >
-              <Tooltip content={title} placement="top">
-                <span className="cursor-help inline-block">{label}</span>
-              </Tooltip>
-            </th>
-          );
-        })}
-      </tr>
-    </thead>
+    <PtisTableHeader
+      panel="difference"
+      columns={visibleColumns}
+      translate={(key) => t(key)}
+      theadClassName="sticky top-0 z-20 shadow-xs bg-amber-50/95 border-b border-amber-200"
+      rowClassName="border-b border-amber-200 text-amber-950 font-bold uppercase tracking-wider text-[10px] h-10"
+      sort={sort}
+      onSort={onSort}
+    />
   );
 };
-

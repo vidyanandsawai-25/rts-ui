@@ -4,11 +4,15 @@ import React from 'react';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
 import { cn } from '@/lib/utils/cn';
 import { ExistingAssessmentTableHeader } from './ExistingAssessmentTableHeader';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
 import { ExistingAssessmentTableRow } from './ExistingAssessmentTableRow';
 import { PtisTableSkeleton } from './PtisTableSkeleton';
 import { PtisEmptyTableState } from './PtisEmptyTableState';
 
 interface ExistingAssessmentTableProps {
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
+  onClearSort?: () => void;
   units: AssessmentUnit[];
   hoveredUnitId: string | null;
   expandedUnitIds: string[];
@@ -38,6 +42,9 @@ export const ExistingAssessmentTable: React.FC<ExistingAssessmentTableProps> = (
   taxMode,
   isLoading = false,
   isFullscreen = false,
+  sort,
+  onSort,
+  onClearSort,
 }) => {
   const t = useTranslations('ptisRedesign.subTables');
   const showRv = taxMode !== 'capital';
@@ -57,7 +64,7 @@ export const ExistingAssessmentTable: React.FC<ExistingAssessmentTableProps> = (
       )}
     >
       <table className="w-full text-left border-collapse min-w-max">
-        <ExistingAssessmentTableHeader taxMode={taxMode} />
+        <ExistingAssessmentTableHeader taxMode={taxMode} sort={sort} onSort={onSort} onClearSort={onClearSort} />
         <tbody className="divide-y divide-zinc-200 text-zinc-800 font-medium">
           {isLoading && <PtisTableSkeleton columnCount={totalCols} rowCount={8} />}
           {!isLoading &&

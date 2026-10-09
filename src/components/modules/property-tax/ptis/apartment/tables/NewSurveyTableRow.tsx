@@ -6,7 +6,8 @@ import { useLocale } from 'next-intl';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
 import { ChevronRight, ChevronDown, Eye, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
+import { UnitMediaIconButton } from './UnitMediaIconButton';
+import { partitionKindOf } from '@/lib/utils/apartment-partition';
 import { MappedPropertiesExpandedRow } from './MappedPropertiesExpandedRow';
 
 import { useTranslations } from 'next-intl';
@@ -40,10 +41,17 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   const searchParams = useSearchParams();
   const locale = useLocale();
   const t = useTranslations('ptisRedesign.subTables');
+  const tc = useTranslations('ptisRedesign.columns');
 
   const raw = unit.rawSurvey;
-  const propPhotoGuid = raw?.propertyPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PROPERTY_PHOTO')?.documentGuid || null;
-  const planPhotoGuid = raw?.planPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PLAN_PHOTO')?.documentGuid || null;
+  // Hover text of PROP NO: "Wing: A" on the wing row, "Partition No: A1" on the partition of a unit.
+  const partitionKind = partitionKindOf(unit);
+  const propTitle = partitionKind
+    ? `${partitionKind === 'wing' ? tc('wingLabel') : tc('partitionLabel')}: ${unit.partitionNo}`
+    : `${tc('propNo')}: ${unit.propertyNo || '-'}`;
+  const photoOfType = (...codes: string[]) => raw?.photos?.find((p) => codes.includes(p.photoTypeCode ?? ''))?.documentGuid || null;
+  const propPhotoGuid = raw?.propertyPhotoDocumentGuid || photoOfType('PROPERTY_PHOTO', 'PROPERTY_FRONT');
+  const planPhotoGuid = raw?.planPhotoDocumentGuid || photoOfType('PLAN_PHOTO', 'PROPERTY_PLAN');
   const rawAny = raw as Record<string, unknown> | undefined;
   const taxDetailOldId = raw?.oldTaxDetails?.find((t) => t.propertyMastOldId)?.propertyMastOldId;
   const oldPropertyId =
@@ -111,6 +119,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
   const getSignedColorClass = (val: string | number | null | undefined, defaultClass = '') => {
     if (val == null) return defaultClass;
     const s = String(val).trim();
+    if (s === '-' || s === '') return defaultClass; // an empty value, not a negative one
     if (s.startsWith('-') || s.startsWith('₹-') || s.startsWith('-₹')) {
       return 'text-rose-600 font-bold';
     }
@@ -159,9 +168,10 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
             <span className="font-semibold text-zinc-600 text-xs min-w-[14px] text-center">{idx + 1}</span>
           </div>
         </td>
-        <td className="px-2.5 py-1.5 font-bold text-zinc-900 whitespace-nowrap w-28 min-w-[100px] max-w-[125px]" title={`Property No: ${unit.propertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'}`}>{unit.prop}</td>
+        <td className="px-2.5 py-1.5 font-bold text-zinc-900 whitespace-nowrap w-28 min-w-[100px] max-w-[125px]" title={propTitle}>{unit.prop}</td>
+        <td className="px-3 py-1.5 font-bold text-zinc-900 whitespace-nowrap" title={unit.flatNo ? `${tc('flatNo')}: ${unit.flatNo}` : undefined}>{unit.flatNo || '-'}</td>
         <td className="px-3 py-1.5 text-blue-700 font-bold whitespace-nowrap" title={unit.wgFl}>{unit.wgFl}</td>
-        <td className="px-3 py-1.5 whitespace-nowrap" title={unit.type}>{unit.type}</td>
+        <td className="px-3 py-1.5 whitespace-nowrap" title={unit.typeFull || unit.type}>{unit.type}</td>
         <td className="px-3 py-1.5 whitespace-nowrap" title={unit.cty}>{unit.cty}</td>
         <td className="px-3 py-1.5 text-center whitespace-nowrap">{unit.ayr}</td>
         <td className="px-3 py-1.5 text-center whitespace-nowrap">{unit.cyr}</td>
@@ -184,18 +194,20 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
         <td className={cn("px-3 py-1.5 text-right font-bold font-mono whitespace-nowrap", getSignedColorClass(unit.taxDisplay, "text-blue-900"))}>{unit.taxDisplay || '-'}</td>
 
         <td className="px-1 py-1 text-center whitespace-nowrap">
-          {propPhotoGuid ? (
-            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(propPhotoGuid, `Unit ${unit.prop} - Property Photo`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-sky-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title={t('viewPropPhoto') || 'Click to view Property Photo'}>
-              <ImageWithFallback src="" documentGuid={propPhotoGuid} alt="Property" className="w-full h-full object-cover" />
-            </div>
-          ) : <span className="text-zinc-300">-</span>}
+          <UnitMediaIconButton
+            documentGuid={propPhotoGuid}
+            kind="photo"
+            title={`Unit ${unit.propFull ?? unit.prop} - Property Photo`}
+            tooltip={t('viewPropPhoto') || 'Click to view Property Photo'}
+          />
         </td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
-          {planPhotoGuid ? (
-            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(planPhotoGuid, `Unit ${unit.prop} - Floor Plan`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-sky-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title={t('viewFloorPlan') || 'Click to view Floor Plan'}>
-              <ImageWithFallback src="" documentGuid={planPhotoGuid} alt="Plan" className="w-full h-full object-cover" />
-            </div>
-          ) : <span className="text-zinc-300">-</span>}
+          <UnitMediaIconButton
+            documentGuid={planPhotoGuid}
+            kind="plan"
+            title={`Unit ${unit.propFull ?? unit.prop} - Floor Plan`}
+            tooltip={t('viewFloorPlan') || 'Click to view Floor Plan'}
+          />
         </td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
           <div className="flex items-center justify-center">
@@ -208,7 +220,7 @@ export const NewSurveyTableRow: React.FC<NewSurveyTableRowProps> = ({
 
       {isExpanded && hasMappedProperties && (
         <tr className="bg-sky-50/40 border-b border-sky-200 transition-all">
-          <td colSpan={showRv && showCv ? 21 : (showRv || showCv ? 20 : 19)} className="p-1.5 text-zinc-700 font-sans align-middle">
+          <td colSpan={showRv && showCv ? 22 : (showRv || showCv ? 21 : 20)} className="p-1.5 text-zinc-700 font-sans align-middle">
             <MappedPropertiesExpandedRow
               oldPropertyId={oldPropertyId}
               propertyId={unit.propertyId ?? (raw?.id ? Number(raw.id) : null)}

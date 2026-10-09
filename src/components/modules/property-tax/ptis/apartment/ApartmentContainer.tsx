@@ -206,6 +206,7 @@ export const ApartmentContainer: React.FC<ApartmentContainerProps> = ({
         onEditUnit={actions.handleActionQuickDataEntry} onViewDocument={actions.handleViewDocument} onViewRules={actions.handleViewRules} onToggleHidePanel={apt.togglePanelVisibility} onToggleExpandPanel={actions.toggleExpandPanel}
         surveyScrollRef={surveyScrollRef} differenceScrollRef={differenceScrollRef} existingScrollRef={existingScrollRef} onSyncScroll={handleSyncScroll} taxMode={actions.taxMode} isFullscreen={isFullscreen} onToggleFullscreen={toggleFullscreen}
         onRestoreAll={apt.restoreAllPanels} hiddenPanelsCount={apt.hiddenPanels.length + (actions.expandedPanel !== null ? 2 : 0)} isLoading={apt.isLoading || isSearching} isLoadingMore={apt.isLoadingMore}
+        sort={apt.sort} onSort={apt.handleSort} onClearSort={apt.clearSort}
       />
 
       <ApartmentTaxDetailsSection taxDetails={initialApartmentTaxDetails} wardId={urlState.wardId || initialWardId || (rawData?.wardId ? String(rawData.wardId) : null)} propertyNo={urlState.propertyNo || initialData?.propertyDetails?.propertyNo} taxMode={actions.taxMode} isLoading={isSearching} />

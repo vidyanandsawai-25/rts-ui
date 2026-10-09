@@ -6,6 +6,8 @@ import type { SurveyDetailDto, DifferenceDetailDto } from './apartment.types';
 export interface AssessmentUnit {
   id: string;
   prop: string;
+  /** The whole number (property - partition - flat); `prop` leaves out the main property number on the survey table. */
+  propFull?: string;
   propertyNo?: string;
   oldPropertyNo?: string;
   oldPropertyId?: number | null;
@@ -14,6 +16,8 @@ export interface AssessmentUnit {
   flatNo?: string;
   wgFl: string;
   type: string;
+  /** Full apartment type / property type text for the cell tooltip (the cell shows the short code). */
+  typeFull?: string;
   cty: string;
   ayr: string;
   cyr: string | number;

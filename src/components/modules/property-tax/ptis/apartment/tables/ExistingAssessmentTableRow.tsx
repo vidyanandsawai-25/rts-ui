@@ -4,7 +4,7 @@ import React from 'react';
 import { AssessmentUnit, PtisTaxMode } from '@/types/property-tax/apartment';
 import { ChevronRight, ChevronDown, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
+import { UnitMediaIconButton } from './UnitMediaIconButton';
 import { MappedOldPropertiesExpandedRow } from './MappedOldPropertiesExpandedRow';
 
 interface ExistingAssessmentTableRowProps {
@@ -28,7 +28,6 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
   isExpanded,
   onHoverUnit,
   onToggleExpandRow,
-  onViewDocument,
   onViewRules,
   taxMode,
 }) => {
@@ -36,8 +35,9 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
   const raw = unit.rawSurvey;
-  const propPhotoGuid = raw?.propertyPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PROPERTY_PHOTO')?.documentGuid || null;
-  const planPhotoGuid = raw?.planPhotoDocumentGuid || raw?.photos?.find((p) => p.photoTypeCode === 'PLAN_PHOTO')?.documentGuid || null;
+  const photoOfType = (...codes: string[]) => raw?.photos?.find((p) => codes.includes(p.photoTypeCode ?? ''))?.documentGuid || null;
+  const propPhotoGuid = raw?.propertyPhotoDocumentGuid || photoOfType('PROPERTY_PHOTO', 'PROPERTY_FRONT');
+  const planPhotoGuid = raw?.planPhotoDocumentGuid || photoOfType('PLAN_PHOTO', 'PROPERTY_PLAN');
   const rawAny = raw as Record<string, unknown> | undefined;
 
   // propertyId = the old property record's own ID (from the old survey DTO).
@@ -52,6 +52,7 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
   const getSignedColorClass = (val: string | number | null | undefined, defaultClass = '') => {
     if (val == null) return defaultClass;
     const s = String(val).trim();
+    if (s === '-' || s === '') return defaultClass; // an empty value, not a negative one
     if (s.startsWith('-') || s.startsWith('₹-') || s.startsWith('-₹')) {
       return 'text-rose-600 font-bold';
     }
@@ -93,7 +94,7 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
         </td>
         <td className="px-1.5 py-1 font-bold text-zinc-900 whitespace-nowrap w-28 min-w-[100px] max-w-[125px]" title={`Property No: ${unit.propertyNo || unit.oldPropertyNo || '-'} | Partition: ${unit.partitionNo || '-'} | Flat No: ${unit.flatNo || '-'} | Owner: ${unit.owner || '-'}`}>{unit.prop}</td>
         <td className="px-1 py-1 text-emerald-700 font-semibold whitespace-nowrap">{unit.wgFl}</td>
-        <td className="px-1 py-1 whitespace-nowrap">{unit.type}</td>
+        <td className="px-1 py-1 whitespace-nowrap" title={unit.typeFull || unit.type}>{unit.type}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.cty}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.ayr}</td>
         <td className="px-1 py-1 whitespace-nowrap">{unit.cyr}</td>
@@ -109,18 +110,20 @@ export const ExistingAssessmentTableRow: React.FC<ExistingAssessmentTableRowProp
         {showCv && <td className={cn("px-1 py-1 text-right font-mono font-bold whitespace-nowrap", getSignedColorClass(unit.cvDisplay || unit.cv))}>{unit.cvDisplay || '-'}</td>}
         <td className={cn("px-1 py-1 text-right font-mono font-bold whitespace-nowrap", getSignedColorClass(unit.taxDisplay, "text-emerald-950"))}>{unit.taxDisplay}</td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
-          {propPhotoGuid ? (
-            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(propPhotoGuid, `Unit ${unit.prop} - Property Photo`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-emerald-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title={t('viewPropPhoto') || 'Click to view Property Photo'}>
-              <ImageWithFallback src="" documentGuid={propPhotoGuid} alt="Prop" className="w-full h-full object-cover" />
-            </div>
-          ) : <span className="text-zinc-300">-</span>}
+          <UnitMediaIconButton
+            documentGuid={propPhotoGuid}
+            kind="photo"
+            title={`Unit ${unit.prop} - Property Photo`}
+            tooltip={t('viewPropPhoto') || 'Click to view Property Photo'}
+          />
         </td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
-          {planPhotoGuid ? (
-            <div onClick={(e) => { e.stopPropagation(); onViewDocument?.(planPhotoGuid, `Unit ${unit.prop} - Floor Plan`); }} className="w-7 h-7 mx-auto rounded border border-zinc-300 overflow-hidden shadow-2xs cursor-pointer hover:border-emerald-500 hover:scale-105 transition-all bg-zinc-100 flex items-center justify-center" title={t('viewFloorPlan') || 'Click to view Floor Plan'}>
-              <ImageWithFallback src="" documentGuid={planPhotoGuid} alt="Plan" className="w-full h-full object-cover" />
-            </div>
-          ) : <span className="text-zinc-300">-</span>}
+          <UnitMediaIconButton
+            documentGuid={planPhotoGuid}
+            kind="plan"
+            title={`Unit ${unit.prop} - Floor Plan`}
+            tooltip={t('viewFloorPlan') || 'Click to view Floor Plan'}
+          />
         </td>
         <td className="px-1 py-1 text-center whitespace-nowrap">
           <div className="flex items-center justify-center">

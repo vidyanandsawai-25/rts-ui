@@ -70,6 +70,9 @@ export interface SurveyDetailDto {
   oldAssessmentYear?: string | null;
   oldAssessmentDate?: string | null;
   oldPropertyTypeId?: number | null;
+  /** Name and short code (R, C, I, N) of the old property type. */
+  oldPropertyTypeName?: string | null;
+  oldPropertyTypeCode?: string | null;
   oldPartitionNo?: string | null;
   oldEgovNo?: string | null;
   oldPlotNo?: string | null;
