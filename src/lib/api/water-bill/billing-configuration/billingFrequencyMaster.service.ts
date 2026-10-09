@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { apiClient } from "@/services/api.service";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { ApiResponse } from "@/types/common.types";
 import type {
   BillingFrequencyMaster,
@@ -93,7 +95,14 @@ export async function createBillingFrequency(
   dto: CreateBillingFrequencyMasterDto
 ): Promise<ApiResponse<BillingFrequencyMaster>> {
   try {
-    return await apiClient.post<BillingFrequencyMaster>(BASE_ENDPOINT, dto);
+    const cookieStore = await cookies();
+    const cookieUserId = getUserIdFromCookies(cookieStore);
+    const userId = dto.createdBy ?? (cookieUserId && cookieUserId > 0 ? cookieUserId : 1);
+    const payload = {
+      ...dto,
+      createdBy: userId,
+    };
+    return await apiClient.post<BillingFrequencyMaster>(BASE_ENDPOINT, payload);
   } catch (err: unknown) {
     const t = await getTranslations("billingFrequencyMaster");
     return {
@@ -112,7 +121,14 @@ export async function updateBillingFrequency(
   dto: UpdateBillingFrequencyMasterDto
 ): Promise<ApiResponse<BillingFrequencyMaster>> {
   try {
-    return await apiClient.put<BillingFrequencyMaster>(`${BASE_ENDPOINT}/${id}`, dto);
+    const cookieStore = await cookies();
+    const cookieUserId = getUserIdFromCookies(cookieStore);
+    const userId = dto.updatedBy ?? (cookieUserId && cookieUserId > 0 ? cookieUserId : 1);
+    const payload = {
+      ...dto,
+      updatedBy: userId,
+    };
+    return await apiClient.put<BillingFrequencyMaster>(`${BASE_ENDPOINT}/${id}`, payload);
   } catch (err: unknown) {
     const t = await getTranslations("billingFrequencyMaster");
     return {

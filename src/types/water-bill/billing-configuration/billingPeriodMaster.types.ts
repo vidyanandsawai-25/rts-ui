@@ -39,6 +39,7 @@ export interface CreateBillingPeriodDto {
   pendingPenaltyStartDate?: string | null;
   pendingPenaltyEndDate?: string | null;
   isActive: boolean;
+  createdBy?: number;
 }
 
 export interface UpdateBillingPeriodDto {
@@ -57,6 +58,7 @@ export interface UpdateBillingPeriodDto {
   pendingPenaltyStartDate?: string | null;
   pendingPenaltyEndDate?: string | null;
   isActive: boolean;
+  updatedBy?: number;
 }
 
 export interface BillingPeriodQueryParameters {
@@ -107,6 +109,8 @@ export interface BillingPeriodInput {
   pendingPenaltyStartDate?: string | null;
   pendingPenaltyEndDate?: string | null;
   isActive?: boolean | string;
+  createdBy?: number | string;
+  updatedBy?: number | string;
 }
 
 export type BillingPeriodTranslator = (key: string, values?: Record<string, string | number | Date>) => string;

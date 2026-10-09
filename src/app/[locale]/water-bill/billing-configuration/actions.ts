@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
+import { getLoggedInUserId } from '@/lib/utils/cookie.server';
 
 // ==========================================
 // Billing Frequency Imports
@@ -184,7 +185,9 @@ export async function createBillingFrequencyAction(
   }
 
   try {
-    const dto = mapToCreateBillingFrequencyDto(input);
+    const userId = await getLoggedInUserId();
+    const effectiveUserId = userId > 0 ? userId : 1;
+    const dto = mapToCreateBillingFrequencyDto(input, effectiveUserId);
     const response = await createBillingFrequency(dto);
 
     if (!response.success) {
@@ -233,7 +236,9 @@ export async function updateBillingFrequencyAction(
   }
 
   try {
-    const dto = mapToUpdateBillingFrequencyDto(id, input);
+    const userId = await getLoggedInUserId();
+    const effectiveUserId = userId > 0 ? userId : 1;
+    const dto = mapToUpdateBillingFrequencyDto(id, input, effectiveUserId);
     const response = await updateBillingFrequency(id, dto);
 
     if (!response.success) {
@@ -358,7 +363,9 @@ export async function createBillingPeriodAction(
   }
 
   try {
-    const dto = mapToCreateBillingPeriodDto(input);
+    const userId = await getLoggedInUserId();
+    const effectiveUserId = userId > 0 ? userId : 1;
+    const dto = mapToCreateBillingPeriodDto(input, effectiveUserId);
     const response = await createBillingPeriod(dto);
 
     if (!response.success) {
@@ -398,7 +405,9 @@ export async function updateBillingPeriodAction(
   }
 
   try {
-    const dto = mapToUpdateBillingPeriodDto(id, input);
+    const userId = await getLoggedInUserId();
+    const effectiveUserId = userId > 0 ? userId : 1;
+    const dto = mapToUpdateBillingPeriodDto(id, input, effectiveUserId);
     const response = await updateBillingPeriod(id, dto);
 
     if (!response.success) {

@@ -76,7 +76,10 @@ export function validateBillingFrequencyInput(
 /**
  * Server-side hook logic for mapping and sanitizing Create DTO
  */
-export function mapToCreateBillingFrequencyDto(input: BillingFrequencyInput): CreateBillingFrequencyMasterDto {
+export function mapToCreateBillingFrequencyDto(
+  input: BillingFrequencyInput,
+  userId?: number
+): CreateBillingFrequencyMasterDto {
   const autoCode = (input.billingFrequencyCode || input.billingFrequency || "")
     .trim()
     .toUpperCase()
@@ -85,6 +88,13 @@ export function mapToCreateBillingFrequencyDto(input: BillingFrequencyInput): Cr
   const periods = typeof input.periodsPerYear === "number"
     ? input.periodsPerYear
     : parseInt(String(input.periodsPerYear || "1"), 10);
+
+  const effectiveUserId =
+    userId !== undefined && userId !== null
+      ? Number(userId)
+      : input.createdBy !== undefined && input.createdBy !== null && String(input.createdBy).trim() !== ""
+        ? Number(input.createdBy)
+        : undefined;
 
   return {
     billingFrequencyCode: autoCode,
@@ -93,13 +103,20 @@ export function mapToCreateBillingFrequencyDto(input: BillingFrequencyInput): Cr
     description: input.description?.trim() || undefined,
     sequenceNo: input.sequenceNo ? Number(input.sequenceNo) : undefined,
     isActive: typeof input.isActive === "boolean" ? input.isActive : input.isActive === "true" || input.isActive === undefined,
+    ...(effectiveUserId !== undefined && !isNaN(effectiveUserId)
+      ? { createdBy: effectiveUserId }
+      : {}),
   };
 }
 
 /**
  * Server-side hook logic for mapping and sanitizing Update DTO
  */
-export function mapToUpdateBillingFrequencyDto(id: number, input: BillingFrequencyInput): UpdateBillingFrequencyMasterDto {
+export function mapToUpdateBillingFrequencyDto(
+  id: number,
+  input: BillingFrequencyInput,
+  userId?: number
+): UpdateBillingFrequencyMasterDto {
   const autoCode = (input.billingFrequencyCode || input.billingFrequency || "")
     .trim()
     .toUpperCase()
@@ -108,6 +125,13 @@ export function mapToUpdateBillingFrequencyDto(id: number, input: BillingFrequen
   const periods = typeof input.periodsPerYear === "number"
     ? input.periodsPerYear
     : parseInt(String(input.periodsPerYear || "1"), 10);
+
+  const effectiveUserId =
+    userId !== undefined && userId !== null
+      ? Number(userId)
+      : input.updatedBy !== undefined && input.updatedBy !== null && String(input.updatedBy).trim() !== ""
+        ? Number(input.updatedBy)
+        : undefined;
 
   return {
     id,
@@ -117,5 +141,8 @@ export function mapToUpdateBillingFrequencyDto(id: number, input: BillingFrequen
     description: input.description?.trim() || undefined,
     sequenceNo: input.sequenceNo ? Number(input.sequenceNo) : undefined,
     isActive: typeof input.isActive === "boolean" ? input.isActive : input.isActive === "true" || input.isActive === undefined,
+    ...(effectiveUserId !== undefined && !isNaN(effectiveUserId)
+      ? { updatedBy: effectiveUserId}
+      : {}),
   };
 }

@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { apiClient } from "@/services/api.service";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 import type { ApiResponse } from "@/types/common.types";
 import type {
   BillingPeriodMaster,
@@ -118,7 +120,14 @@ export async function createBillingPeriod(
   dto: CreateBillingPeriodDto
 ): Promise<ApiResponse<BillingPeriodMaster>> {
   try {
-    return await apiClient.post<BillingPeriodMaster>(BASE_ENDPOINT, dto);
+    const cookieStore = await cookies();
+    const cookieUserId = getUserIdFromCookies(cookieStore);
+    const userId = dto.createdBy ?? (cookieUserId && cookieUserId > 0 ? cookieUserId : 1);
+    const payload = {
+      ...dto,
+      createdBy: userId,
+    };
+    return await apiClient.post<BillingPeriodMaster>(BASE_ENDPOINT, payload);
   } catch (err: unknown) {
     const t = await getTranslations("billingPeriodMaster");
     return {
@@ -137,7 +146,14 @@ export async function updateBillingPeriod(
   dto: UpdateBillingPeriodDto
 ): Promise<ApiResponse<BillingPeriodMaster>> {
   try {
-    return await apiClient.put<BillingPeriodMaster>(`${BASE_ENDPOINT}/${id}`, dto);
+    const cookieStore = await cookies();
+    const cookieUserId = getUserIdFromCookies(cookieStore);
+    const userId = dto.updatedBy ?? (cookieUserId && cookieUserId > 0 ? cookieUserId : 1);
+    const payload = {
+      ...dto,
+      updatedBy: userId,
+    };
+    return await apiClient.put<BillingPeriodMaster>(`${BASE_ENDPOINT}/${id}`, payload);
   } catch (err: unknown) {
     const t = await getTranslations("billingPeriodMaster");
     return {

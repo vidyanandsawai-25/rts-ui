@@ -19,6 +19,7 @@ export interface CreateBillingFrequencyMasterDto {
   description?: string;
   sequenceNo?: number;
   isActive: boolean;
+  createdBy?: number;
 }
 
 export interface UpdateBillingFrequencyMasterDto {
@@ -29,6 +30,7 @@ export interface UpdateBillingFrequencyMasterDto {
   description?: string;
   sequenceNo?: number;
   isActive: boolean;
+  updatedBy?: number;
 }
 
 export interface BillingFrequencyMasterQueryParameters {
@@ -78,6 +80,8 @@ export interface BillingFrequencyInput {
   description?: string;
   sequenceNo?: number | string;
   isActive?: boolean | string;
+  createdBy?: number | string;
+  updatedBy?: number | string;
 }
 
 export type BillingFrequencyTranslator = (key: string, values?: Record<string, string | number | Date>) => string;

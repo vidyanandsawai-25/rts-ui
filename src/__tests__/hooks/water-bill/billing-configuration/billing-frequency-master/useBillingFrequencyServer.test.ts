@@ -153,6 +153,16 @@ describe("useBillingFrequencyServer - Unit Tests", () => {
       expect(dto.periodsPerYear).toBe(12);
       expect(dto.isActive).toBe(true);
     });
+
+    it("should include createdBy and CreatedBy when userId is passed", () => {
+      const input: BillingFrequencyInput = {
+        billingFrequency: "Quarterly",
+        periodsPerYear: 4,
+      };
+
+      const dto = mapToCreateBillingFrequencyDto(input, 42);
+      expect(dto.createdBy).toBe(42);
+    });
   });
 
   describe("mapToUpdateBillingFrequencyDto", () => {
@@ -171,6 +181,17 @@ describe("useBillingFrequencyServer - Unit Tests", () => {
       expect(dto.billingFrequency).toBe("Monthly bf");
       expect(dto.periodsPerYear).toBe(12);
       expect(dto.isActive).toBe(true);
+    });
+
+    it("should include updatedBy and UpdatedBy when userId is passed", () => {
+      const input: BillingFrequencyInput = {
+        id: 5,
+        billingFrequency: "Quarterly",
+        periodsPerYear: 4,
+      };
+
+      const dto = mapToUpdateBillingFrequencyDto(5, input, 42);
+      expect(dto.updatedBy).toBe(42);
     });
   });
 });

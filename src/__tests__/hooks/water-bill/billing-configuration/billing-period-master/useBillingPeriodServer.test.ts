@@ -221,6 +221,18 @@ describe("useBillingPeriodServer - Unit Tests", () => {
       expect(dto.billingPeriodCode).toBe("EXISTING-CODE");
       expect(dto.sequenceNo).toBe(1);
     });
+
+    it("should include createdBy and CreatedBy when userId is passed", () => {
+      const input: BillingPeriodInput = {
+        financialYearId: 1,
+        billingFrequencyId: 1,
+        periodFromDate: "2026-04-01",
+        periodToDate: "2026-04-30",
+      };
+
+      const dto = mapToCreateBillingPeriodDto(input, 99);
+      expect(dto.createdBy).toBe(99);
+    });
   });
 
   describe("mapToUpdateBillingPeriodDto", () => {
@@ -241,6 +253,19 @@ describe("useBillingPeriodServer - Unit Tests", () => {
       expect(dto.billingPeriodCode).toBe("BP-UPDATE");
       expect(dto.sequenceNo).toBe(2);
       expect(dto.isActive).toBe(true);
+    });
+
+    it("should include updatedBy and UpdatedBy when userId is passed", () => {
+      const input: BillingPeriodInput = {
+        id: 10,
+        financialYearId: 1,
+        billingFrequencyId: 1,
+        periodFromDate: "2026-04-01",
+        periodToDate: "2026-04-30",
+      };
+
+      const dto = mapToUpdateBillingPeriodDto(10, input, 99);
+      expect(dto.updatedBy).toBe(99);
     });
   });
 });

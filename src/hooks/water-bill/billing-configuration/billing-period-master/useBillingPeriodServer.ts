@@ -156,7 +156,10 @@ export function validateBillingPeriodInput(
 /**
  * Server-side hook logic for mapping and sanitizing Create DTO
  */
-export function mapToCreateBillingPeriodDto(input: BillingPeriodInput): CreateBillingPeriodDto {
+export function mapToCreateBillingPeriodDto(
+  input: BillingPeriodInput,
+  userId?: number
+): CreateBillingPeriodDto {
   const fyId = typeof input.financialYearId === "number"
     ? input.financialYearId
     : parseInt(String(input.financialYearId || "0"), 10);
@@ -180,6 +183,13 @@ export function mapToCreateBillingPeriodDto(input: BillingPeriodInput): CreateBi
   const defaultCode = validSeq ? `BP-${fyId}-${bfId}-${validSeq}` : `BP-${fyId}-${bfId}`;
   const code = (input.billingPeriodCode || defaultCode).trim().toUpperCase();
 
+  const effectiveUserId =
+    userId !== undefined && userId !== null
+      ? Number(userId)
+      : input.createdBy !== undefined && input.createdBy !== null && String(input.createdBy).trim() !== ""
+        ? Number(input.createdBy)
+        : undefined;
+
   return {
     billingPeriodCode: code,
     financialYearId: fyId,
@@ -197,16 +207,33 @@ export function mapToCreateBillingPeriodDto(input: BillingPeriodInput): CreateBi
     isActive: typeof input.isActive === "boolean"
       ? input.isActive
       : input.isActive === "true" || input.isActive === undefined,
+    ...(effectiveUserId !== undefined && !isNaN(effectiveUserId)
+      ? { createdBy: effectiveUserId }
+      : {}),
   };
 }
 
 /**
  * Server-side hook logic for mapping and sanitizing Update DTO
  */
-export function mapToUpdateBillingPeriodDto(id: number, input: BillingPeriodInput): UpdateBillingPeriodDto {
-  const createDto = mapToCreateBillingPeriodDto(input);
+export function mapToUpdateBillingPeriodDto(
+  id: number,
+  input: BillingPeriodInput,
+  userId?: number
+): UpdateBillingPeriodDto {
+  const createDto = mapToCreateBillingPeriodDto(input, userId);
+  const effectiveUserId =
+    userId !== undefined && userId !== null
+      ? Number(userId)
+      : input.updatedBy !== undefined && input.updatedBy !== null && String(input.updatedBy).trim() !== ""
+        ? Number(input.updatedBy)
+        : undefined;
+
   return {
     id,
     ...createDto,
+    ...(effectiveUserId !== undefined && !isNaN(effectiveUserId)
+      ? { updatedBy: effectiveUserId }
+      : {}),
   };
 }
