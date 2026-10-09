@@ -73,7 +73,11 @@ export default function middleware(request: NextRequest) {
   }
 
   // Citizen portal check
-  const isCitizenRoute = pathWithoutLocale === '/service' || pathWithoutLocale.startsWith('/service/');
+  const isCitizenRoute =
+    pathWithoutLocale === '/service' ||
+    pathWithoutLocale.startsWith('/service/') ||
+    pathWithoutLocale === '/aaple-sarkar-dashboard' ||
+    pathWithoutLocale === '/AapleSarkarDashboard';
   const isCitizenLogin = pathWithoutLocale === '/service/login' || pathWithoutLocale.startsWith('/service/login/');
   const isCitizenDashboard = pathWithoutLocale === '/service/dashboard' || pathWithoutLocale.startsWith('/service/dashboard/');
 

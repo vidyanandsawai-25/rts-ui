@@ -33,7 +33,13 @@ export function useIsAuthPage(initialValue = false) {
     ? segments[1]
     : segments[0];
 
-  const noShellSegments = ["login", "home", "service"];
+  const noShellSegments = [
+    "login",
+    "home",
+    "service",
+    "aaple-sarkar-dashboard",
+    "AapleSarkarDashboard",
+  ];
 
   return noShellSegments.includes(firstRealSegment);
 }
