@@ -67,11 +67,13 @@ export function LeaseRentReceiptView({
     return `01/${fm}/${fy} ते ${lastDay}/${lm}/${ly}`;
   };
 
+  // ULB branding must come only from the current tenant's cookies.
+  // Never fall back to another ULB's name or logo.
   const ulbDisplayName = locale !== 'en'
-    ? (ulbData?.ulbNameLocal || ulbData?.ulbName || 'अकोला महानगरपालिका, अकोला')
-    : (ulbData?.ulbName || 'Akola Municipal Corporation');
+    ? (ulbData?.ulbNameLocal || ulbData?.ulbName || '—')
+    : (ulbData?.ulbName || '—');
 
-  const logoSrc = ulbData?.ulbLogo || '/assets/akola-logo.png';
+  const logoSrc = ulbData?.ulbLogo?.trim() || '';
   const watermarkSrc = logoSrc;
 
   const paidAmountVal = Number(data.paidAmount ?? data.amountPaid ?? 0);
@@ -265,26 +267,32 @@ export function LeaseRentReceiptView({
         >
         <div className="border-[0.45mm] border-[#1f4e9b] rounded-lg p-[2.8mm] min-h-[calc(297mm-9.2mm)] box-border relative z-10 flex flex-col print:min-h-[calc(297mm-9.2mm)]">
           <div className="absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] opacity-[0.07] pointer-events-none -z-10 flex items-center justify-center [print-color-adjust:exact]">
-            <Image
-              src={watermarkSrc}
-              alt="Watermark Logo"
-              width={520}
-              height={520}
-              className="w-full h-full object-contain"
-              priority
-              unoptimized={watermarkSrc.startsWith('http') || watermarkSrc.startsWith('data:')}
-            />
+            {watermarkSrc ? (
+              <Image
+                src={watermarkSrc}
+                alt="Watermark Logo"
+                width={520}
+                height={520}
+                className="w-full h-full object-contain"
+                priority
+                unoptimized={watermarkSrc.startsWith('http') || watermarkSrc.startsWith('data:')}
+              />
+            ) : null}
           </div>
           <header className="grid grid-cols-[28mm_1fr_28mm] items-center gap-[2.8mm] mb-[2mm]">
             <div className="flex justify-center shrink-0">
-              <Image
-                src={logoSrc}
-                alt={ulbDisplayName}
-                width={98}
-                height={98}
-                priority
-                unoptimized={logoSrc.startsWith('http') || logoSrc.startsWith('data:')}
-              />
+              {logoSrc ? (
+                <Image
+                  src={logoSrc}
+                  alt={ulbDisplayName}
+                  width={98}
+                  height={98}
+                  priority
+                  unoptimized={logoSrc.startsWith('http') || logoSrc.startsWith('data:')}
+                />
+              ) : (
+                <div className="w-[98px] h-[98px]" aria-hidden="true" />
+              )}
             </div>
 
             <div className="text-center w-full">
