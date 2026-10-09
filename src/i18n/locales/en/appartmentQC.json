@@ -495,6 +495,7 @@
     "oldCurrentTax": "Old Current Tax"
   },
   "stats": {
+    "oldCurrentTax": "Old Current Tax",
     "currentTax": "Current Tax",
     "retroTax": "Retro Tax",
     "retroTaxTooltip": "Retro Tax (Arrears)",

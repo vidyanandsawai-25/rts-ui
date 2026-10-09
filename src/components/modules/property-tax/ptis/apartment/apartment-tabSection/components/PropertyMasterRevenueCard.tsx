@@ -46,7 +46,7 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
   }, [performance]);
 
   return (
-    <div className="w-full lg:w-[215px] xl:w-[240px] 2xl:w-[315px] bg-white rounded-xl border border-slate-200/90 px-1.5 xl:px-2 pt-1.5 pb-2 shadow-2xs shrink-0 flex flex-col justify-between gap-1 xl:gap-1.5 min-w-0 overflow-hidden">
+    <div className="w-full lg:w-[275px] xl:w-[315px] 2xl:w-[380px] bg-white rounded-xl border border-slate-200/90 px-1.5 xl:px-2 pt-1.5 pb-2 shadow-2xs shrink-0 flex flex-col justify-between gap-1 xl:gap-1.5 min-w-0 overflow-hidden">
       {/* Top: Header Row with DESC */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-1 gap-1 min-w-0">
         <div className="flex items-center gap-1 xl:gap-1.5 shrink-0">
@@ -61,7 +61,7 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
           </span>
           <span
             title={descriptionRegional || '-'}
-            className="inline-flex items-center justify-center px-1.5 xl:px-2 py-0.5 rounded-md border-2 border-red-500 bg-red-100 text-red-700 font-black text-[10px] xl:text-[11px] 2xl:text-[12px] leading-normal tracking-tight truncate max-w-[85px] xl:max-w-[105px] 2xl:max-w-[145px] shadow-xs"
+            className="inline-flex items-center justify-center px-1.5 xl:px-2 py-0.5 rounded-md border-2 border-red-500 bg-red-100 text-red-700 font-black text-[10px] xl:text-[11px] 2xl:text-[12px] leading-normal tracking-tight truncate max-w-[110px] xl:max-w-[130px] 2xl:max-w-[170px] shadow-xs"
           >
             {descriptionRegional || '-'}
           </span>
@@ -96,7 +96,7 @@ export const PropertyMasterRevenueCard: React.FC<PropertyMasterRevenueCardProps>
         </div>
       </div>
 
-      {/* Bottom: 6 Grid Mini Cards */}
+      {/* Bottom: 8 Grid Mini Cards (4x2) */}
       <PropertyMasterRevenueStats performance={performance} />
     </div>
   );

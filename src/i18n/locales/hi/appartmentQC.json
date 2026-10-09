@@ -489,6 +489,7 @@
     "oldCurrentTax": "पुराना वर्तमान कर"
   },
   "stats": {
+    "oldCurrentTax": "पुराना वर्तमान कर",
     "currentTax": "वर्तमान कर",
     "retroTax": "बकाया कर",
     "retroTaxTooltip": "बकाया कर (पिछला)",

@@ -43,7 +43,7 @@ export const PropertyMasterCardSkeleton: React.FC = () => {
       </div>
 
       {/* 2. RIGHT: REVENUE & TAX METRICS SKELETON */}
-      <div className="w-full lg:w-[280px] xl:w-[310px] 2xl:w-[330px] bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2 xl:p-2.5 shrink-0 flex flex-col justify-between gap-2">
+      <div className="w-full lg:w-[275px] xl:w-[315px] 2xl:w-[380px] bg-white rounded-xl border border-slate-200/90 shadow-2xs p-2 xl:p-2.5 shrink-0 flex flex-col justify-between gap-2">
         <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
           <div className="h-4 w-28 bg-blue-100/70 rounded" />
           <div className="h-4 w-12 bg-slate-200 rounded-full" />

@@ -489,6 +489,7 @@
     "oldCurrentTax": "जुना चालू कर"
   },
   "stats": {
+    "oldCurrentTax": "जुना चालू कर",
     "currentTax": "चालू कर",
     "retroTax": "मागील कर",
     "retroTaxTooltip": "मागील कर (थकबाकी)",
