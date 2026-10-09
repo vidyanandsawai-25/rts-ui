@@ -4,7 +4,7 @@ import { ChargeHeads } from "@/components/modules/water-bill/charge-heads/Charge
 import type {
   ChargeHead,
   ChargeHeadsPagedResponse,
-} from "@/types/waterBill/chargeHeads.types";
+} from "@/types/water-bill/chargeHeads.types";
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -22,6 +22,7 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
     refresh: mockRefresh,
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("next-intl", () => ({
@@ -42,22 +43,22 @@ describe("ChargeHeads Component Tests", () => {
   const sampleRecords: ChargeHead[] = [
     {
       id: 1,
-      code: "WTR_CHG",
-      name: "Water Supply Charge",
+      chargeHeadCode: "WTR_CHG",
+      chargeHeadName: "Water Supply Charge",
       chargeType: "Charge",
-      isTax: false,
-      isPenalty: false,
+      sequenceNo: 1,
       isRefundable: false,
+      isRegularPay: false,
       isActive: true,
     },
     {
       id: 2,
-      code: "WTR_TAX",
-      name: "Water Conservation Tax",
+      chargeHeadCode: "WTR_TAX",
+      chargeHeadName: "Water Conservation Tax",
       chargeType: "Tax",
-      isTax: true,
-      isPenalty: false,
+      sequenceNo: 2,
       isRefundable: false,
+      isRegularPay: false,
       isActive: true,
     },
   ];

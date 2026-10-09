@@ -1,6 +1,7 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+import { revalidatePath } from 'next/cache';
 import {
   getChargeHeadsPaged,
   getChargeHeadById,
@@ -11,7 +12,6 @@ import {
 } from '@/lib/api/water-bill/chargeHeads.service';
 import { validateChargeHeadInput } from '@/lib/api/water-bill/chargeHeads.schema';
 import { logger } from '@/lib/utils/server-logger';
-import { verifyServerActionAccess } from '@/lib/utils/server-access-guard';
 import { revalidateModulePaths } from '@/lib/server/revalidation-helper';
 import type {
   ChargeHead,
@@ -19,7 +19,7 @@ import type {
   ChargeHeadFormState,
   ChargeHeadsPagedResponse,
   ChargeHeadsQueryParameters,
-} from '@/types/waterBill/chargeHeads.types';
+} from '@/types/water-bill/chargeHeads.types';
 
 const BASE_PATH = '/[locale]/water-bill/charge-heads';
 
@@ -64,18 +64,60 @@ function getSafeActionError(
   return t(defaultKey);
 }
 
+export async function getChargeHeadsPagedAction(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+  sortBy?: string,
+  sortOrder?: 'asc' | 'desc'
+): Promise<ChargeHeadsPagedResponse> {
+  try {
+    const res = await getChargeHeadsPaged({
+      pageNumber,
+      pageSize,
+      searchTerm,
+      sortBy,
+      sortOrder,
+    });
+    if (res.success && res.data) {
+      return res.data;
+    }
+    return {
+      items: [],
+      pageNumber: 1,
+      pageSize,
+      totalCount: 0,
+      totalPages: 0,
+      hasPreviousPage: false,
+      hasNextPage: false,
+    };
+  } catch (_error) {
+    return {
+      items: [],
+      pageNumber: 1,
+      pageSize,
+      totalCount: 0,
+      totalPages: 0,
+      hasPreviousPage: false,
+      hasNextPage: false,
+    };
+  }
+}
+
+export async function getChargeHeadByIdAction(id: number): Promise<ChargeHead | null> {
+  try {
+    const res = await getChargeHeadById(id);
+    return res.success && res.data ? res.data : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
 export async function createChargeHeadAction(
   _prevState: ChargeHeadFormState,
   input: CreateChargeHeadDto
 ): Promise<ChargeHeadFormState> {
   const t = await getTranslations('chargeHeads');
-  const hasAccess = await verifyServerActionAccess('WATERBILL.CHARGEHEADMASTER', 'edit');
-  if (!hasAccess) {
-    return {
-      success: false,
-      message: t('errors.forbidden'),
-    };
-  }
 
   const validation = validateChargeHeadInput(
     input,
@@ -94,6 +136,7 @@ export async function createChargeHeadAction(
 
     if (response.success && response.data) {
       const norm = normalizeChargeHead(response.data);
+      revalidatePath('/', 'layout');
       revalidateModulePaths(BASE_PATH);
       return {
         success: true,
@@ -126,13 +169,6 @@ export async function updateChargeHeadAction(
   input: CreateChargeHeadDto
 ): Promise<ChargeHeadFormState> {
   const t = await getTranslations('chargeHeads');
-  const hasAccess = await verifyServerActionAccess('WATERBILL.CHARGEHEADMASTER', 'edit');
-  if (!hasAccess) {
-    return {
-      success: false,
-      message: t('errors.forbidden'),
-    };
-  }
 
   const validation = validateChargeHeadInput(
     input,
@@ -151,6 +187,7 @@ export async function updateChargeHeadAction(
 
     if (response.success && response.data) {
       const norm = normalizeChargeHead(response.data);
+      revalidatePath('/', 'layout');
       revalidateModulePaths(BASE_PATH);
       return {
         success: true,
@@ -182,19 +219,13 @@ export async function deleteChargeHeadAction(
   id: number
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   const t = await getTranslations('chargeHeads');
-  const hasAccess = await verifyServerActionAccess('WATERBILL.CHARGEHEADMASTER', 'delete');
-  if (!hasAccess) {
-    return {
-      success: false,
-      message: t('errors.noDeleteAction'),
-    };
-  }
   const targetId = Number(id);
 
   try {
     const response = await deleteChargeHead(targetId);
 
     if (response.success) {
+      revalidatePath('/', 'layout');
       revalidateModulePaths(BASE_PATH);
       return {
         success: true,

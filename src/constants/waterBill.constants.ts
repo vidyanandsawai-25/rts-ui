@@ -1,5 +1,5 @@
 export const WATER_BILL_ENUMS = {
-  CHARGE_TYPES: ["Tax", "Interest", "Penalty", "Charge", "Fee"] as const,
+  CHARGE_TYPES: ["Deposit", "Fee", "Tax", "Charge", "Penalty"] as const,
   BILLING_METHODS: ["Metered", "Flat Rate", "Slab Metered"] as const,
   STATUSES: ["Draft", "Published"] as const,
 } as const;

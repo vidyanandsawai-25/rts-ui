@@ -27,12 +27,12 @@ describe("chargeHeads.service Tests", () => {
     items: [
       {
         id: 1,
-        code: "WTR_CHG",
-        name: "Water Charge",
+        chargeHeadCode: "WTR_CHG",
+        chargeHeadName: "Water Charge",
         chargeType: "Charge",
-        isTax: false,
-        isPenalty: false,
         isRefundable: false,
+        sequenceNo: 1,
+        isRegularPay: false,
         isActive: true,
       },
     ],
@@ -110,12 +110,12 @@ describe("chargeHeads.service Tests", () => {
 
   it("should send POST request when creating a new charge head", async () => {
     const dto = {
-      code: "WTR_FEE",
-      name: "Water Connection Fee",
+      chargeHeadCode: "WTR_FEE",
+      chargeHeadName: "Water Connection Fee",
       chargeType: "Fee",
-      isTax: false,
-      isPenalty: false,
       isRefundable: false,
+      sequenceNo: 1,
+      isRegularPay: false,
       isActive: true,
     };
 
@@ -135,12 +135,12 @@ describe("chargeHeads.service Tests", () => {
   it("should send PUT request when updating an existing charge head", async () => {
     const dto = {
       id: 1,
-      code: "WTR_CHG_UPD",
-      name: "Water Charge Updated",
+      chargeHeadCode: "WTR_CHG_UPD",
+      chargeHeadName: "Water Charge Updated",
       chargeType: "Charge",
-      isTax: false,
-      isPenalty: false,
       isRefundable: false,
+      sequenceNo: 1,
+      isRegularPay: false,
       isActive: true,
     };
 
@@ -164,7 +164,7 @@ describe("chargeHeads.service Tests", () => {
 
     const response = await deleteChargeHead(1);
 
-    expect(apiClient.delete).toHaveBeenCalledWith("/ChargeHeadMaster/1");
+    expect(apiClient.delete).toHaveBeenCalledWith("/ChargeHeadMaster/1/purge");
     expect(response.success).toBe(true);
   });
 
@@ -176,7 +176,7 @@ describe("chargeHeads.service Tests", () => {
 
     const response = await purgeChargeHead(1);
 
-    expect(apiClient.delete).toHaveBeenCalledWith("/ChargeHeadMaster/1");
+    expect(apiClient.delete).toHaveBeenCalledWith("/ChargeHeadMaster/1/purge");
     expect(response.success).toBe(true);
   });
 
@@ -185,12 +185,12 @@ describe("chargeHeads.service Tests", () => {
       Items: [
         {
           Id: 10,
-          Code: "WTR_TAX",
-          Name: "Water Tax",
+          ChargeHeadCode: "WTR_TAX",
+          ChargeHeadName: "Water Tax",
           ChargeType: "Tax",
-          IsTax: true,
-          IsPenalty: false,
           IsRefundable: true,
+          SequenceNo: 1,
+          IsRegularPay: false,
           IsActive: true,
         },
       ],
@@ -215,11 +215,9 @@ describe("chargeHeads.service Tests", () => {
 
     const item = response.data?.items[0];
     expect(item?.id).toBe(10);
-    expect(item?.code).toBe("WTR_TAX");
-    expect(item?.name).toBe("Water Tax");
+    expect(item?.chargeHeadCode).toBe("WTR_TAX");
+    expect(item?.chargeHeadName).toBe("Water Tax");
     expect(item?.chargeType).toBe("Tax");
-    expect(item?.isTax).toBe(true);
-    expect(item?.isPenalty).toBe(false);
     expect(item?.isRefundable).toBe(true);
     expect(item?.isActive).toBe(true);
   });

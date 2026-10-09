@@ -1,11 +1,11 @@
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { ChargeHeads } from '@/components/modules/water-bill/charge-heads';
-import type { EditChargeHeadPageProps } from '@/types/waterBill/chargeHeads.types';
+import type { EditChargeHeadPageProps } from '@/types/water-bill/chargeHeads.types';
 import { parsePagedSearchParams } from '@/lib/utils/search-params-helper';
 import {
-  fetchChargeHeadsServer,
-  fetchChargeHeadByIdServer,
+  getChargeHeadsPagedAction,
+  getChargeHeadByIdAction,
   createChargeHeadAction,
   updateChargeHeadAction,
   deleteChargeHeadAction,
@@ -24,14 +24,14 @@ export default async function EditChargeHeadPage({ params, searchParams }: EditC
   const { pageNumber, pageSize, searchTerm, sortBy, sortOrder } = parsePagedSearchParams(sParams);
 
   const [pagedData, fetchedData] = await Promise.all([
-    fetchChargeHeadsServer({
+    getChargeHeadsPagedAction(
       pageNumber,
       pageSize,
       searchTerm,
       sortBy,
-      sortOrder,
-    }),
-    fetchChargeHeadByIdServer(id),
+      sortOrder
+    ),
+    getChargeHeadByIdAction(id),
   ]);
 
   const editingData = fetchedData && Number(fetchedData.id) === Number(id) ? fetchedData : null;
@@ -55,3 +55,4 @@ export default async function EditChargeHeadPage({ params, searchParams }: EditC
     />
   );
 }
+

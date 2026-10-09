@@ -74,33 +74,52 @@
         "label": "Name",
         "placeholder": "Enter Name"
       },
+      "nameLocal": {
+        "label": "Name (Local)",
+        "placeholder": "Enter Local Name"
+      },
+      "sequenceNo": {
+        "label": "Sequence No",
+        "placeholder": "Enter Sequence No"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Enter Description"
+      },
       "chargeType": {
         "label": "Charge Type",
+        "deposit": "Deposit",
+        "fee": "Fee",
         "tax": "Tax",
-        "interest": "Interest",
-        "penalty": "Penalty",
         "charge": "Charge",
-        "fee": "Fee"
+        "penalty": "Penalty"
       },
       "tax": "Tax",
       "penalty": "Penalty",
       "refundable": "Refundable",
+      "regularPay": "Regular Pay",
       "active": "Active",
       "validation": {
         "codeRequired": "Code is required",
         "codeMaxLength": "Code cannot exceed {count} characters",
         "nameRequired": "Name is required",
         "nameMaxLength": "Name cannot exceed {count} characters",
-        "chargeTypeRequired": "Charge type is required"
+        "nameLocalMaxLength": "Local name cannot exceed {count} characters",
+        "chargeTypeRequired": "Charge type is required",
+        "sequenceNoRequired": "Sequence number is required",
+        "sequenceNoMin": "Sequence number must be at least {count}",
+        "descriptionMaxLength": "Description cannot exceed {count} characters"
       }
     },
     "table": {
-      "code": "Code",
+      "code": "Charge Head Code",
       "name": "Name",
+      "description": "Description",
       "chargeType": "Charge Type",
       "tax": "Tax",
       "penalty": "Penalty",
       "refundable": "Refundable",
+      "regularPay": "Regular Pay",
       "active": "Active",
       "actions": "Actions"
     }

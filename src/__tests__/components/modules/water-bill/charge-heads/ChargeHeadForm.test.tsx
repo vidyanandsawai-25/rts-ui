@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ChargeHeadForm } from "@/components/modules/water-bill/charge-heads/ChargeHeadForm";
-import type { ChargeHead } from "@/types/waterBill/chargeHeads.types";
+import type { ChargeHead } from "@/types/water-bill/chargeHeads.types";
 
 vi.mock("next-intl", () => ({
   useTranslations: (ns: string) => (key: string) => `${ns}.${key}`,
@@ -14,12 +14,12 @@ describe("ChargeHeadForm Component Tests", () => {
 
   const sampleEditingData: ChargeHead = {
     id: 1,
-    code: "WTR_CHG",
-    name: "Water Charge",
+    chargeHeadCode: "WTR_CHG",
+    chargeHeadName: "Water Charge",
     chargeType: "Charge",
-    isTax: true,
-    isPenalty: false,
+    sequenceNo: 1,
     isRefundable: false,
+    isRegularPay: false,
     isActive: true,
   };
 
@@ -59,7 +59,7 @@ describe("ChargeHeadForm Component Tests", () => {
     expect(codeInput).toHaveValue("WTR_FEE");
   });
 
-  it("should support selecting Charge Type options (Tax, Interest, Penalty, Charge, Fee)", () => {
+  it("should support selecting Charge Type options (Tax, Penalty, Charge, Fee, Deposit)", () => {
     render(<ChargeHeadForm open={true} onClose={mockOnClose} onSubmit={mockOnSubmit} />);
 
     const select = screen.getByRole("combobox");
@@ -70,11 +70,11 @@ describe("ChargeHeadForm Component Tests", () => {
     fireEvent.click(penaltyOption);
   });
 
-  it("should toggle boolean fields (IsTax, IsPenalty, IsRefundable, IsActive)", () => {
+  it("should toggle boolean fields (IsRefundable, IsRegularPay, IsActive)", () => {
     render(<ChargeHeadForm open={true} onClose={mockOnClose} onSubmit={mockOnSubmit} />);
 
     const toggles = screen.getAllByRole("switch");
-    expect(toggles.length).toBe(4);
+    expect(toggles.length).toBe(3);
 
     fireEvent.click(toggles[0]);
     expect(toggles[0]).toHaveAttribute("aria-checked", "true");
@@ -107,8 +107,8 @@ describe("ChargeHeadForm Component Tests", () => {
 
     expect(mockOnSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        code: "WTR_NEW",
-        name: "New Water Connection Fee",
+        chargeHeadCode: "WTR_NEW",
+        chargeHeadName: "New Water Connection Fee",
       })
     );
   });

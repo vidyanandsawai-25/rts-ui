@@ -70,33 +70,52 @@
         "label": "नाम",
         "placeholder": "नाम दर्ज करें"
       },
+      "nameLocal": {
+        "label": "स्थानीय नाम",
+        "placeholder": "स्थानीय नाम दर्ज करें"
+      },
+      "sequenceNo": {
+        "label": "अनुक्रम संख्या",
+        "placeholder": "अनुक्रम संख्या दर्ज करें"
+      },
+      "description": {
+        "label": "विवरण",
+        "placeholder": "विवरण दर्ज करें"
+      },
       "chargeType": {
         "label": "शुल्क प्रकार",
-        "tax": "कर",
-        "interest": "ब्याज",
-        "penalty": "जुर्माना",
-        "charge": "शुल्क",
-        "fee": "फीस"
+        "deposit": "अमानत (Deposit)",
+        "fee": "फीस (Fee)",
+        "tax": "कर (Tax)",
+        "charge": "शुल्क (Charge)",
+        "penalty": "जुर्माना (Penalty)"
       },
       "tax": "कर",
       "penalty": "जुर्माना",
       "refundable": "वापसी योग्य",
+      "regularPay": "नियमित भुगतान",
       "active": "सक्रिय",
       "validation": {
         "codeRequired": "कोड आवश्यक है",
         "codeMaxLength": "कोड {count} वर्णों से अधिक नहीं हो सकता",
         "nameRequired": "नाम आवश्यक है",
         "nameMaxLength": "नाम {count} वर्णों से अधिक नहीं हो सकता",
-        "chargeTypeRequired": "शुल्क प्रकार आवश्यक है"
+        "nameLocalMaxLength": "स्थानीय नाम {count} वर्णों से अधिक नहीं हो सकता",
+        "chargeTypeRequired": "शुल्क प्रकार आवश्यक है",
+        "sequenceNoRequired": "अनुक्रम संख्या आवश्यक है",
+        "sequenceNoMin": "अनुक्रम संख्या कम से कम {count} होनी चाहिए",
+        "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता"
       }
     },
     "table": {
-      "code": "कोड",
+      "code": "चार्ज हेड कोड",
       "name": "नाम",
+      "description": "विवरण",
       "chargeType": "शुल्क प्रकार",
       "tax": "कर",
       "penalty": "जुर्माना",
       "refundable": "वापसी योग्य",
+      "regularPay": "नियमित भुगतान",
       "active": "सक्रिय",
       "actions": "कार्रवाई"
     }

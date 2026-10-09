@@ -1,15 +1,18 @@
 import { useMemo, useState, useEffect, useRef, useTransition, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useToast, useConfirm } from "@/components/common";
-import { useDebounce } from "@/hooks/useDebounce";
 import { getChargeHeadColumns } from "@/components/modules/water-bill/charge-heads/chargeHeadColumns";
+import { TEXT_SANITIZE } from "@/lib/utils/validation";
+
+const getChargeHeadsUrl = (locale: string, queryString = "") =>
+  `/${locale}/water-bill/charge-heads${queryString}`;
 import type {
   ChargeHead,
   CreateChargeHeadDto,
   UseChargeHeadsProps,
   ChargeHeadFormState,
-} from "@/types/waterBill/chargeHeads.types";
+} from "@/types/water-bill/chargeHeads.types";
 
 export function useChargeHeads({
   pagedData,
@@ -17,15 +20,18 @@ export function useChargeHeads({
   locale,
   drawer = null,
   initialEditingData = null,
-  initialSortBy,
-  initialSortOrder,
+  initialSortBy: _initialSortBy,
+  initialSortOrder: _initialSortOrder,
   initialSearchTerm,
   createAction,
   updateAction,
   deleteAction,
 }: UseChargeHeadsProps) {
   const router = useRouter();
-  const { confirm } = useConfirm();
+  const navSearchParams = useSearchParams();
+  const searchParams = navSearchParams;
+  const confirmObj = useConfirm();
+  const confirm = confirmObj?.confirm || ((opts: { onConfirm?: () => void }) => opts.onConfirm?.());
   const toast = useToast();
   const t = useTranslations("chargeHeads");
   const tCommon = useTranslations("common");
@@ -50,14 +56,27 @@ export function useChargeHeads({
     }
   }
 
-  const [search, setSearch] = useState(initialSearchTerm || "");
-  const debouncedSearch = useDebounce(search, 1000);
-  const isFirstMount = useRef(true);
+  const currentSearchTerm =
+    searchParams?.get("q") ?? searchParams?.get("searchTerm") ?? initialSearchTerm ?? "";
+  const [search, setSearch] = useState<string>(currentSearchTerm);
 
-  const [sortBy] = useState<string | undefined>(initialSortBy);
-  const [sortOrder] = useState<"asc" | "desc" | undefined>(initialSortOrder);
+  const searchParamsRef = useRef(searchParams);
+  const currentSearchTermRef = useRef(currentSearchTerm);
 
-  // Server data is the single source of truth - no stale row merge
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+    currentSearchTermRef.current = currentSearchTerm;
+  }, [searchParams, currentSearchTerm]);
+
+  const lastSetByEffect = useRef<string>(currentSearchTerm);
+
+  useEffect(() => {
+    if (lastSetByEffect.current !== currentSearchTerm) {
+      setSearch(currentSearchTerm);
+      lastSetByEffect.current = currentSearchTerm;
+    }
+  }, [currentSearchTerm]);
+
   const records = useMemo(
     () => pagedData?.items ?? initialData ?? [],
     [pagedData, initialData]
@@ -71,69 +90,51 @@ export function useChargeHeads({
       ? pagedData.totalPages
       : Math.ceil(totalCount / (pageSize || 1)) || 1;
 
-  const navigateWithParams = useCallback(
-    (
-      newPage: number,
-      newPageSize: number,
-      newSearch?: string,
-      newSortBy?: string,
-      newSortOrder?: "asc" | "desc"
-    ) => {
-      const params = new URLSearchParams();
-      params.set("pageNumber", String(newPage));
-      params.set("pageSize", String(newPageSize));
+  useEffect(() => {
+    if (search === currentSearchTermRef.current) return;
 
-      if (newSearch) params.set("searchTerm", newSearch);
-
-      const activeSortBy = newSortBy !== undefined ? newSortBy : sortBy;
-      const activeSortOrder =
-        newSortOrder !== undefined ? newSortOrder : sortOrder;
-
-      if (activeSortBy) params.set("sortBy", activeSortBy);
-      if (activeSortOrder) params.set("sortOrder", activeSortOrder);
-
+    const timer = setTimeout(() => {
+      const rawParams = searchParamsRef.current ? searchParamsRef.current.toString() : "";
+      const params = new URLSearchParams(rawParams);
+      params.set("pageNumber", "1");
+      params.set("page", "1");
+      if (search.trim()) {
+        params.set("q", search.trim());
+        params.set("searchTerm", search.trim());
+      } else {
+        params.delete("q");
+        params.delete("searchTerm");
+      }
       startTransition(() => {
         router.push(`/${locale}/water-bill/charge-heads?${params.toString()}`);
       });
-    },
-    [locale, router, sortBy, sortOrder]
-  );
+    }, 400);
 
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
+    return () => clearTimeout(timer);
+  }, [search, router, locale]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    const sanitized = value.replace(TEXT_SANITIZE, "");
+    setSearch(sanitized);
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    const trimmed = search.trim();
+    const rawParams = searchParamsRef.current ? searchParamsRef.current.toString() : "";
+    const params = new URLSearchParams(rawParams);
+    params.set("pageNumber", "1");
+    params.set("page", "1");
+    if (trimmed) {
+      params.set("q", trimmed);
+      params.set("searchTerm", trimmed);
+    } else {
+      params.delete("q");
+      params.delete("searchTerm");
     }
-
-    const trimmedDebounced = debouncedSearch.trim();
-    const currentTrimmed = (initialSearchTerm || "").trim();
-
-    if (trimmedDebounced !== currentTrimmed) {
-      navigateWithParams(
-        1,
-        pageSize,
-        trimmedDebounced || undefined
-      );
-    }
-  }, [
-    debouncedSearch,
-    initialSearchTerm,
-    navigateWithParams,
-    pageSize,
-  ]);
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-  };
-
-  const handleSearchSubmit = () => {
-    const trimmedSearch = search.trim();
-    navigateWithParams(
-      1,
-      pageSize,
-      trimmedSearch || undefined
-    );
-  };
+    startTransition(() => {
+      router.push(getChargeHeadsUrl(locale, `?${params.toString()}`));
+    });
+  }, [search, router, locale, startTransition]);
 
   const columns = useMemo(
     () => getChargeHeadColumns(t, tCommon),
@@ -141,34 +142,42 @@ export function useChargeHeads({
   );
 
   const handlePageChange = (p: number) => {
-    navigateWithParams(
-      p,
-      pageSize,
-      search.trim() || undefined
-    );
+    const rawParams = searchParamsRef.current ? searchParamsRef.current.toString() : "";
+    const params = new URLSearchParams(rawParams);
+    params.set("pageNumber", String(p));
+    params.set("page", String(p));
+    params.set("pageSize", String(pageSize));
+    if (search.trim()) {
+      params.set("q", search.trim());
+      params.set("searchTerm", search.trim());
+    }
+    startTransition(() => {
+      router.push(getChargeHeadsUrl(locale, `?${params.toString()}`));
+    });
   };
 
   const handlePageSizeChange = (size: number) => {
-    navigateWithParams(
-      1,
-      size,
-      search.trim() || undefined
-    );
+    const rawParams = searchParamsRef.current ? searchParamsRef.current.toString() : "";
+    const params = new URLSearchParams(rawParams);
+    params.set("pageNumber", "1");
+    params.set("page", "1");
+    params.set("pageSize", String(size));
+    if (search.trim()) {
+      params.set("q", search.trim());
+      params.set("searchTerm", search.trim());
+    }
+    startTransition(() => {
+      router.push(getChargeHeadsUrl(locale, `?${params.toString()}`));
+    });
   };
 
   const handleAdd = () => {
-    setActiveDrawer("add");
-    setEditingData(null);
-
     startTransition(() => {
       router.push(`/${locale}/water-bill/charge-heads/add`);
     });
   };
 
   const handleEdit = (row: ChargeHead) => {
-    setActiveDrawer("edit");
-    setEditingData(row);
-
     startTransition(() => {
       router.push(`/${locale}/water-bill/charge-heads/edit/${row.id}`);
     });
@@ -209,7 +218,7 @@ export function useChargeHeads({
 
       if (result.success) {
         toast.success(
-          result.message ||
+          (result.message as string | undefined) ||
           (activeMode === "edit"
             ? t("messages.updateSuccess")
             : t("messages.createSuccess"))
@@ -224,7 +233,7 @@ export function useChargeHeads({
         });
       } else {
         toast.error(
-          result.message || tCommon("errors.unexpectedError")
+          (result.message as string | undefined) || tCommon("errors.unexpectedError")
         );
       }
     } catch (err: unknown) {
@@ -243,7 +252,7 @@ export function useChargeHeads({
       variant: "delete",
       title: t("confirm.deleteTitle"),
       description: t("confirm.deleteDescription"),
-      meta: { name: row.name, id: row.id },
+      meta: { name: String(row.chargeHeadName || row.name || ""), id: row.id },
 
       onConfirm: async () => {
         if (!deleteAction) {

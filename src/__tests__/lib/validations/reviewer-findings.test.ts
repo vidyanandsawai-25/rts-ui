@@ -34,23 +34,24 @@ describe("Reviewer Findings Fixes Verification", () => {
       const schema = createChargeHeadSchema(mockT);
 
       const emptyResult = schema.safeParse({
-        code: "",
-        name: "",
+        chargeHeadCode: "",
+        chargeHeadName: "",
         chargeType: "Tax",
       });
       expect(emptyResult.success).toBe(false);
 
       const whitespaceResult = schema.safeParse({
-        code: "   ",
-        name: "   ",
+        chargeHeadCode: "   ",
+        chargeHeadName: "   ",
         chargeType: "   ",
       });
       expect(whitespaceResult.success).toBe(false);
 
       const validResult = schema.safeParse({
-        code: "CH001",
-        name: "Water Tax",
+        chargeHeadCode: "CH001",
+        chargeHeadName: "Water Tax",
         chargeType: "Tax",
+        sequenceNo: 1,
       });
       expect(validResult.success).toBe(true);
     });

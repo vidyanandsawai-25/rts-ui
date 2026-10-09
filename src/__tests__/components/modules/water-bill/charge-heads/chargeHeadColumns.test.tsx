@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { getChargeHeadColumns } from "@/components/modules/water-bill/charge-heads/chargeHeadColumns";
-import type { ChargeHead } from "@/types/waterBill/chargeHeads.types";
+import type { ChargeHead } from "@/types/water-bill/chargeHeads.types";
 
 describe("chargeHeadColumns Tests", () => {
   const mockT = (key: string) => key;
@@ -9,12 +9,12 @@ describe("chargeHeadColumns Tests", () => {
 
   const sampleRow: ChargeHead = {
     id: 1,
-    code: "WTR_CHG",
-    name: "Water Supply Charge",
-    chargeType: "Charge",
-    isTax: true,
-    isPenalty: false,
+    chargeHeadCode: "WTR_CHG",
+    chargeHeadName: "Water Supply Charge",
+    chargeType: "Tax",
+    sequenceNo: 1,
     isRefundable: true,
+    isRegularPay: false,
     isActive: true,
   };
 
@@ -23,32 +23,31 @@ describe("chargeHeadColumns Tests", () => {
     expect(columns.length).toBe(7);
   });
 
-  it("should render code, name, and chargeType cell values", () => {
+  it("should render chargeHeadCode, chargeHeadName, description, and chargeType cell values", () => {
     const columns = getChargeHeadColumns(mockT, mockTCommon);
 
-    expect(columns[0].key).toBe("code");
-    expect(columns[1].key).toBe("name");
-    expect(columns[2].key).toBe("chargeType");
+    expect(columns[0].key).toBe("chargeHeadCode");
+    expect(columns[1].key).toBe("chargeHeadName");
+    expect(columns[2].key).toBe("description");
+    expect(columns[3].key).toBe("chargeType");
   });
 
-  it("should format boolean flags (isTax, isPenalty, isRefundable) using StatusBadge", () => {
+  it("should format boolean flags (isRefundable, isRegularPay) using StatusBadge", () => {
     const columns = getChargeHeadColumns(mockT, mockTCommon);
 
-    const taxCol = columns.find((c) => c.key === "isTax");
-    const penaltyCol = columns.find((c) => c.key === "isPenalty");
     const refundableCol = columns.find((c) => c.key === "isRefundable");
+    const regularPayCol = columns.find((c) => c.key === "isRegularPay");
 
-    expect(taxCol?.render).toBeDefined();
-    expect(penaltyCol?.render).toBeDefined();
     expect(refundableCol?.render).toBeDefined();
+    expect(regularPayCol?.render).toBeDefined();
 
-    if (taxCol?.render) {
-      const { container } = render(<>{taxCol.render(true, sampleRow, 0)}</>);
+    if (refundableCol?.render) {
+      const { container } = render(<>{refundableCol.render(true, sampleRow, 0)}</>);
       expect(container.firstChild).toBeInTheDocument();
     }
 
-    if (penaltyCol?.render) {
-      const { container } = render(<>{penaltyCol.render(false, sampleRow, 0)}</>);
+    if (regularPayCol?.render) {
+      const { container } = render(<>{regularPayCol.render(false, sampleRow, 0)}</>);
       expect(container.firstChild).toBeInTheDocument();
     }
   });
@@ -56,7 +55,8 @@ describe("chargeHeadColumns Tests", () => {
   it("should work correctly without translation functions", () => {
     const columns = getChargeHeadColumns();
     expect(columns.length).toBe(7);
-    expect(columns[0].label).toBe("Code");
+    expect(columns[0].label).toBe("Charge Head Code");
     expect(columns[1].label).toBe("Name");
+    expect(columns[2].label).toBe("Description");
   });
 });

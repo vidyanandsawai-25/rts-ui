@@ -70,33 +70,52 @@
         "label": "नाव",
         "placeholder": "नाव प्रविष्ट करा"
       },
+      "nameLocal": {
+        "label": "स्थानिक नाव",
+        "placeholder": "स्थानिक नाव प्रविष्ट करा"
+      },
+      "sequenceNo": {
+        "label": "अनुक्रम क्रमांक",
+        "placeholder": "अनुक्रम क्रमांक प्रविष्ट करा"
+      },
+      "description": {
+        "label": "वर्णन",
+        "placeholder": "वर्णन प्रविष्ट करा"
+      },
       "chargeType": {
         "label": "शुल्क प्रकार",
-        "tax": "कर",
-        "interest": "ब्याज",
-        "penalty": "दंड",
-        "charge": "शुल्क",
-        "fee": "फी"
+        "deposit": "अनामत (Deposit)",
+        "fee": "फी (Fee)",
+        "tax": "कर (Tax)",
+        "charge": "शुल्क (Charge)",
+        "penalty": "दंड (Penalty)"
       },
       "tax": "कर",
       "penalty": "दंड",
       "refundable": "परतावा योग्य",
+      "regularPay": "नियमित भरणा",
       "active": "सक्रिय",
       "validation": {
         "codeRequired": "कोड आवश्यक आहे",
         "codeMaxLength": "कोड {count} अक्षरांपेक्षा जास्त असू शकत नाही",
         "nameRequired": "नाव आवश्यक आहे",
         "nameMaxLength": "नाव {count} अक्षरांपेक्षा जास्त असू शकत नाही",
-        "chargeTypeRequired": "शुल्क प्रकार आवश्यक आहे"
+        "nameLocalMaxLength": "स्थानिक नाव {count} अक्षरांपेक्षा जास्त असू शकत नाही",
+        "chargeTypeRequired": "शुल्क प्रकार आवश्यक आहे",
+        "sequenceNoRequired": "अनुक्रम क्रमांक आवश्यक आहे",
+        "sequenceNoMin": "अनुक्रम क्रमांक किमान {count} असणे आवश्यक आहे",
+        "descriptionMaxLength": "वर्णन {count} अक्षरांपेक्षा जास्त असू शकत नाही"
       }
     },
     "table": {
-      "code": "कोड",
+      "code": "चार्ज हेड कोड",
       "name": "नाव",
+      "description": "वर्णन",
       "chargeType": "शुल्क प्रकार",
       "tax": "कर",
       "penalty": "दंड",
       "refundable": "परतावा योग्य",
+      "regularPay": "नियमित भरणा",
       "active": "सक्रिय",
       "actions": "कृती"
     }

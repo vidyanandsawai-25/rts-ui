@@ -5,7 +5,7 @@ import type {
   ChargeHead,
   ChargeHeadsPagedResponse,
   CreateChargeHeadDto,
-} from "@/types/waterBill/chargeHeads.types";
+} from "@/types/water-bill/chargeHeads.types";
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -19,6 +19,7 @@ const mockConfirm = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("next-intl", () => ({
@@ -47,22 +48,22 @@ describe("useChargeHeads Hook Tests", () => {
   const sampleRecords: ChargeHead[] = [
     {
       id: 1,
-      code: "WTR_CHG",
-      name: "Water Charge",
+      chargeHeadCode: "WTR_CHG",
+      chargeHeadName: "Water Charge",
       chargeType: "Charge",
-      isTax: false,
-      isPenalty: false,
       isRefundable: false,
+      sequenceNo: 1,
+      isRegularPay: false,
       isActive: true,
     },
     {
       id: 2,
-      code: "WTR_TAX",
-      name: "Water Tax",
+      chargeHeadCode: "WTR_TAX",
+      chargeHeadName: "Water Tax",
       chargeType: "Tax",
-      isTax: true,
-      isPenalty: false,
       isRefundable: false,
+      sequenceNo: 2,
+      isRegularPay: false,
       isActive: true,
     },
   ];
@@ -171,12 +172,12 @@ describe("useChargeHeads Hook Tests", () => {
     );
 
     const formData: CreateChargeHeadDto = {
-      code: "WTR_NEW",
-      name: "New Connection Charge",
+      chargeHeadCode: "WTR_NEW",
+      chargeHeadName: "New Connection Charge",
       chargeType: "Charge",
-      isTax: false,
-      isPenalty: false,
       isRefundable: false,
+      sequenceNo: 1,
+      isRegularPay: false,
       isActive: true,
     };
 
@@ -206,12 +207,12 @@ describe("useChargeHeads Hook Tests", () => {
 
     await act(async () => {
       await result.current.handleFormSubmit({
-        code: "WTR_CHG",
-        name: "Water Charge",
+        chargeHeadCode: "WTR_CHG",
+        chargeHeadName: "Water Charge",
         chargeType: "Charge",
-        isTax: false,
-        isPenalty: false,
         isRefundable: false,
+        sequenceNo: 1,
+        isRegularPay: false,
         isActive: true,
       });
     });
@@ -232,12 +233,12 @@ describe("useChargeHeads Hook Tests", () => {
     );
 
     const formData: CreateChargeHeadDto = {
-      code: "WTR_CHG_UPD",
-      name: "Water Charge Updated",
+      chargeHeadCode: "WTR_CHG_UPD",
+      chargeHeadName: "Water Charge Updated",
       chargeType: "Charge",
-      isTax: false,
-      isPenalty: false,
       isRefundable: false,
+      sequenceNo: 1,
+      isRegularPay: false,
       isActive: true,
     };
 

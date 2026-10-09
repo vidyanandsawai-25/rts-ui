@@ -119,7 +119,7 @@ export async function fetchTariffChargeHeadOptionsAction(): Promise<TariffCharge
     if (!response.success || !response.data) return [];
     return response.data.items.map((chargeHead) => ({
       value: String(chargeHead.id),
-      label: chargeHead.name || chargeHead.code || String(chargeHead.id),
+      label: String(chargeHead.name || chargeHead.code || chargeHead.id),
     }));
   } catch (error) {
     logger.error('Failed to fetch charge-detail charge-head options', {}, error);

@@ -1,9 +1,9 @@
 import { setRequestLocale } from 'next-intl/server';
 import { ChargeHeads } from '@/components/modules/water-bill/charge-heads';
-import type { AddChargeHeadPageProps } from '@/types/waterBill/chargeHeads.types';
+import type { AddChargeHeadPageProps } from '@/types/water-bill/chargeHeads.types';
 import { parsePagedSearchParams } from '@/lib/utils/search-params-helper';
 import {
-  fetchChargeHeadsServer,
+  getChargeHeadsPagedAction,
   createChargeHeadAction,
   updateChargeHeadAction,
   deleteChargeHeadAction,
@@ -15,13 +15,13 @@ export default async function AddChargeHeadPage({ params, searchParams }: AddCha
   const sParams = await searchParams;
   const { pageNumber, pageSize, searchTerm, sortBy, sortOrder } = parsePagedSearchParams(sParams);
 
-  const pagedData = await fetchChargeHeadsServer({
+  const pagedData = await getChargeHeadsPagedAction(
     pageNumber,
     pageSize,
     searchTerm,
     sortBy,
-    sortOrder,
-  });
+    sortOrder
+  );
 
   return (
     <ChargeHeads
@@ -38,3 +38,4 @@ export default async function AddChargeHeadPage({ params, searchParams }: AddCha
     />
   );
 }
+

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Drawer, CancelButton, SaveButton, Input, Select, Label, ToggleSwitch } from "@/components/common";
 import { createChargeHeadSchema } from "@/lib/api/water-bill/chargeHeads.schema";
 import { WATER_BILL_ENUMS } from "@/constants/waterBill.constants";
-import type { ChargeHead, CreateChargeHeadDto } from "@/types/waterBill/chargeHeads.types";
+import type { ChargeHead, CreateChargeHeadDto } from "@/types/water-bill/chargeHeads.types";
 
 interface ChargeHeadFormProps {
   open: boolean;
@@ -59,16 +59,22 @@ export function ChargeHeadForm({
   const isEdit = Boolean(initialData);
 
   const [formData, setFormData] = useState<CreateChargeHeadDto>({
-    code: initialData?.code ?? "",
-    name: initialData?.name ?? "",
+    chargeHeadCode: initialData?.chargeHeadCode ?? "",
+    chargeHeadName: initialData?.chargeHeadName ?? "",
+    chargeHeadNameLocal: initialData?.chargeHeadNameLocal ?? "",
     chargeType: initialData?.chargeType ?? "Charge",
-    isTax: initialData?.isTax ?? false,
-    isPenalty: initialData?.isPenalty ?? false,
+    sequenceNo: initialData?.sequenceNo ?? 1,
+    description: initialData?.description ?? "",
     isRefundable: initialData?.isRefundable ?? false,
+    isRegularPay: initialData?.isRegularPay ?? false,
     isActive: initialData?.isActive ?? true,
   });
 
-  const [errors, setErrors] = useState<{ code?: string; name?: string }>({});
+  const [errors, setErrors] = useState<{
+    chargeHeadCode?: string;
+    chargeHeadName?: string;
+    sequenceNo?: string;
+  }>({});
 
   const [prevOpen, setPrevOpen] = useState(open);
   const [prevInitialData, setPrevInitialData] = useState(initialData);
@@ -78,23 +84,27 @@ export function ChargeHeadForm({
     setPrevInitialData(initialData);
     if (open && initialData) {
       setFormData({
-        code: initialData.code ?? "",
-        name: initialData.name ?? "",
+        chargeHeadCode: initialData.chargeHeadCode ?? "",
+        chargeHeadName: initialData.chargeHeadName ?? "",
+        chargeHeadNameLocal: initialData.chargeHeadNameLocal ?? "",
         chargeType: initialData.chargeType ?? "Charge",
-        isTax: initialData.isTax ?? false,
-        isPenalty: initialData.isPenalty ?? false,
+        sequenceNo: initialData.sequenceNo ?? 1,
+        description: initialData.description ?? "",
         isRefundable: initialData.isRefundable ?? false,
+        isRegularPay: initialData.isRegularPay ?? false,
         isActive: initialData.isActive ?? true,
       });
       setErrors({});
     } else if (open && !initialData) {
       setFormData({
-        code: "",
-        name: "",
+        chargeHeadCode: "",
+        chargeHeadName: "",
+        chargeHeadNameLocal: "",
         chargeType: "Charge",
-        isTax: false,
-        isPenalty: false,
+        sequenceNo: 1,
+        description: "",
         isRefundable: false,
+        isRegularPay: false,
         isActive: true,
       });
       setErrors({});
@@ -107,9 +117,14 @@ export function ChargeHeadForm({
     const res = schema.safeParse(formData);
     if (!res.success) {
       const fieldErrors = res.error.flatten().fieldErrors;
-      const newErrors: { code?: string; name?: string } = {};
-      if (fieldErrors.code?.[0]) newErrors.code = fieldErrors.code[0];
-      if (fieldErrors.name?.[0]) newErrors.name = fieldErrors.name[0];
+      const newErrors: {
+        chargeHeadCode?: string;
+        chargeHeadName?: string;
+        sequenceNo?: string;
+      } = {};
+      if (fieldErrors.chargeHeadCode?.[0]) newErrors.chargeHeadCode = fieldErrors.chargeHeadCode[0];
+      if (fieldErrors.chargeHeadName?.[0]) newErrors.chargeHeadName = fieldErrors.chargeHeadName[0];
+      if (fieldErrors.sequenceNo?.[0]) newErrors.sequenceNo = fieldErrors.sequenceNo[0];
       setErrors(newErrors);
       return;
     }
@@ -146,13 +161,13 @@ export function ChargeHeadForm({
           <div className="space-y-1">
             <Input
               label={t("form.code.label")}
-              value={formData.code}
+              value={formData.chargeHeadCode}
               onChange={(e) => {
-                setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }));
-                if (errors.code) setErrors((prev) => ({ ...prev, code: undefined }));
+                setFormData((prev) => ({ ...prev, chargeHeadCode: e.target.value.toUpperCase() }));
+                if (errors.chargeHeadCode) setErrors((prev) => ({ ...prev, chargeHeadCode: undefined }));
               }}
               placeholder={t("form.code.placeholder")}
-              error={errors.code}
+              error={errors.chargeHeadCode}
               required
             />
           </div>
@@ -160,18 +175,29 @@ export function ChargeHeadForm({
           <div className="space-y-1">
             <Input
               label={t("form.name.label")}
-              value={formData.name}
+              value={formData.chargeHeadName}
               onChange={(e) => {
-                setFormData((prev) => ({ ...prev, name: e.target.value }));
-                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                setFormData((prev) => ({ ...prev, chargeHeadName: e.target.value }));
+                if (errors.chargeHeadName) setErrors((prev) => ({ ...prev, chargeHeadName: undefined }));
               }}
               placeholder={t("form.name.placeholder")}
-              error={errors.name}
+              error={errors.chargeHeadName}
               required
             />
           </div>
 
-          {/* Row 2: Charge Type | Is Tax */}
+          {/* Row 2: Local Name | Charge Type */}
+          <div className="space-y-1">
+            <Input
+              label={t("form.nameLocal.label")}
+              value={formData.chargeHeadNameLocal || ""}
+              onChange={(e) => {
+                setFormData((prev) => ({ ...prev, chargeHeadNameLocal: e.target.value }));
+              }}
+              placeholder={t("form.nameLocal.placeholder")}
+            />
+          </div>
+
           <div className="space-y-1">
             <Select
               label={t("form.chargeType.label")}
@@ -184,23 +210,35 @@ export function ChargeHeadForm({
             />
           </div>
 
-          <ToggleField
-            label={t("form.tax")}
-            checked={formData.isTax}
-            enabledText={t("enabled")}
-            disabledText={t("disabled")}
-            onChange={(val) => setFormData((prev) => ({ ...prev, isTax: val }))}
-          />
+          {/* Row 3: Sequence No | Description */}
+          <div className="space-y-1">
+            <Input
+              label={t("form.sequenceNo.label")}
+              type="number"
+              value={formData.sequenceNo}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setFormData((prev) => ({ ...prev, sequenceNo: isNaN(val) ? 1 : val }));
+                if (errors.sequenceNo) setErrors((prev) => ({ ...prev, sequenceNo: undefined }));
+              }}
+              placeholder={t("form.sequenceNo.placeholder")}
+              error={errors.sequenceNo}
+              required
+            />
+          </div>
 
-          {/* Row 3: Penalty | Refundable */}
-          <ToggleField
-            label={t("form.penalty")}
-            checked={formData.isPenalty}
-            enabledText={t("enabled")}
-            disabledText={t("disabled")}
-            onChange={(val) => setFormData((prev) => ({ ...prev, isPenalty: val }))}
-          />
+          <div className="space-y-1">
+            <Input
+              label={t("form.description.label")}
+              value={formData.description || ""}
+              onChange={(e) => {
+                setFormData((prev) => ({ ...prev, description: e.target.value }));
+              }}
+              placeholder={t("form.description.placeholder")}
+            />
+          </div>
 
+          {/* Row 4: Refundable | Regular Pay */}
           <ToggleField
             label={t("form.refundable")}
             checked={formData.isRefundable}
@@ -209,7 +247,15 @@ export function ChargeHeadForm({
             onChange={(val) => setFormData((prev) => ({ ...prev, isRefundable: val }))}
           />
 
-          {/* Row 4: Active */}
+          <ToggleField
+            label={t("form.regularPay")}
+            checked={formData.isRegularPay}
+            enabledText={t("enabled")}
+            disabledText={t("disabled")}
+            onChange={(val) => setFormData((prev) => ({ ...prev, isRegularPay: val }))}
+          />
+
+          {/* Row 5: Active */}
           <ToggleField
             label={t("form.active")}
             checked={formData.isActive}

@@ -6,7 +6,7 @@ import { getConnectionCategoryPaged } from '@/lib/api/water-bill/connectionCateg
 import { getGeographyUnitPaged } from '@/lib/api/water-bill/geographyunitmaster/geography-unit-crud.service';
 import { getTapSizePaged } from '@/lib/api/water-connection-master/water-connection-type-size.service';
 import { getChargeHeadsPaged } from '@/lib/api/water-bill/chargeHeads.service';
-import type { ChargeHead } from '@/types/waterBill/chargeHeads.types';
+import type { ChargeHead } from '@/types/water-bill/chargeHeads.types';
 import { apiClient } from '@/services/api.service';
 
 export type { LookupOption, FinancialYearLookupOption };
@@ -92,7 +92,7 @@ export async function fetchChargeHeadLookupOptions(): Promise<LookupOption[]> {
         .filter((ch: ChargeHead) => ch.isActive)
         .map((ch: ChargeHead) => ({
           value: String(ch.id),
-          label: ch.name || ch.code || `Charge Head ${ch.id}`,
+          label: ch.chargeHeadName || ch.chargeHeadCode || `Charge Head ${ch.id}`,
         }));
     }
   } catch { }

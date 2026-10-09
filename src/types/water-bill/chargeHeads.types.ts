@@ -1,21 +1,25 @@
 export interface ChargeHead extends Record<string, unknown> {
   id: number;
-  code: string;
-  name: string;
+  chargeHeadCode: string;
+  chargeHeadName: string;
+  chargeHeadNameLocal?: string;
   chargeType: string;
-  isTax: boolean;
-  isPenalty: boolean;
   isRefundable: boolean;
+  sequenceNo: number;
+  description?: string;
+  isRegularPay: boolean;
   isActive: boolean;
 }
 
 export interface CreateChargeHeadDto {
-  code: string;
-  name: string;
+  chargeHeadCode: string;
+  chargeHeadName: string;
+  chargeHeadNameLocal?: string;
   chargeType: string;
-  isTax: boolean;
-  isPenalty: boolean;
   isRefundable: boolean;
+  sequenceNo: number;
+  description?: string;
+  isRegularPay: boolean;
   isActive: boolean;
 }
 
