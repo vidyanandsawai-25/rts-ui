@@ -47,7 +47,7 @@ export function useSubUnitMediaStaging(unit: any, staged: any) {
     } finally {
       setIsFetchingDb(false);
     }
-  }, [unit.dbId, unit.id, unit.assetId, unit.AssetId, subUnitAssetId]);
+  }, [unit, staged, subUnitAssetId]);
 
   useEffect(() => {
     const currentId = Number(
@@ -61,7 +61,7 @@ export function useSubUnitMediaStaging(unit: any, staged: any) {
     if (currentId > 0 && lastLoadedIdRef.current === currentId) return;
     lastLoadedIdRef.current = currentId;
     loadExistingDocuments();
-  }, [unit.assetId, unit.AssetId, unit.dbId, unit.id, loadExistingDocuments]);
+  }, [unit, loadExistingDocuments]);
 
   const initialPhotoSlots = useMemo(() => {
     return buildInitialPhotoSlots(

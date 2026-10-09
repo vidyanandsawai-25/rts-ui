@@ -39,7 +39,7 @@ export function useAmenityOffsetPopup(
     } else {
       setTimeout(() => { setDrawerOffsets([]); }, 0);
     }
-  }, [offsetPopupSpaceId, isFormOffsetOpen, offsetSpace?.id, isOpen]);
+  }, [offsetPopupSpaceId, isFormOffsetOpen, offsetSpace, isOpen]);
 
   const tempOffsetAreaSqM = calcAreaSqM(
     tempOffsetShape, tempOffsetLength, tempOffsetWidth, tempOffsetHeight,

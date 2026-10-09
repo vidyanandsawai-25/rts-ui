@@ -171,12 +171,18 @@ export function useNAUnitPoolGeneration({
     genCountPerFloor,
     dropdownOptions,
     formData.id,
+    formData.typeId,
     t,
     genConYear,
     genConType,
     genUseType,
     genSubUseType,
     dynamicSubUseTypes,
+    resetGeneratorFields,
+    setIsGenerating,
+    setParentFloors,
+    setPool,
+    updateFormData,
   ]);
 
   return {

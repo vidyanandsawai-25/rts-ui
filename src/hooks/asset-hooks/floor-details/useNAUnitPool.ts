@@ -130,7 +130,7 @@ export function useNAUnitPool({
 
       return merged;
     });
-  }, [initialSubUnits, parentFloors, dropdownOptions]);
+  }, [initialSubUnits, parentFloors, dropdownOptions, departments]);
 
   const { handleRemove } = useNAUnitPoolRemove(pool, setPool, setParentFloors, formData, t);
 

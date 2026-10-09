@@ -23,7 +23,7 @@ import { useTranslations } from "next-intl";
 import { useNAAssetForm } from "../NAAssetFormContext";
 import { useNADynamicFields } from "@/hooks/asset/municipal-Asset/new-add-new-asset/useNADynamicFields";
 import { groupAndMergeFields } from "@/lib/utils/asset-utils/new-add-new-asset/FieldRendererUtils";
-import { DynamicFieldInput } from "../basic-Info/DynamicFieldInput";
+import { DynamicFieldInput } from "../basic-info/DynamicFieldInput";
 
 import type { NADynamicFieldsProps } from "@/types/asset/municipal-Asset/new-add-new-asset";
 

@@ -57,7 +57,7 @@ export function useNARoomWiseSubmissionDrawer({
         })
         .catch((err) => console.error('Failed to load dynamic room types', err));
     }
-  }, [isOpen, unit, assetFormData?.categoryId, assetFormData?.typeId]);
+  }, [isOpen, unit, assetFormData?.categoryId, assetFormData?.typeId, setIsFormOffsetOpen]);
 
   const setMainDim = (key: any, val: string) => {
     setForm((prev) => {

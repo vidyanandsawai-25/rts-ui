@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { clearDocumentCacheEntry } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
-import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
-import type { AdditionalImage } from '@/components/modules/property-tax/ptis/media/MediaImageCards';
-import { getEnglishCategoryName, patchCategory } from '@/lib/utils/ptis-photo-plan-localization';
+import { clearDocumentCacheEntry } from '@/components/modules/assets/municipal-Asset/NewAddNewAsset/basic-info/media/ImageWithFallback';
+import type { PhotoCategory, AdditionalImage } from '@/types/asset/media.types';
+import { getEnglishCategoryName, patchCategory } from '@/lib/utils/asset-utils/asset-photo-plan-localization';
 
 export interface UsePhotoPlanReplaceMutationProps {
   categories: PhotoCategory[];
@@ -50,9 +48,11 @@ export function usePhotoPlanReplaceMutation({
 
       // Pure client-side staging
       const fileToSave = file;
-      (fileToSave as any).displayOrder = targetImg.displayOrder || 1;
-      (fileToSave as any).remarks = replaceRemarks;
-      (fileToSave as any).photoTypeId = activeCategory?.photoTypeId || targetImg.photoTypeId;
+      Object.assign(fileToSave, {
+        displayOrder: targetImg.displayOrder || 1,
+        remarks: replaceRemarks,
+        photoTypeId: activeCategory?.photoTypeId || targetImg.photoTypeId,
+      });
 
       // Update local state to immediately show the new image
       const url = URL.createObjectURL(fileToSave);
@@ -112,7 +112,7 @@ export function usePhotoPlanReplaceMutation({
   const handleSaveEditedPhoto = useCallback(async (index: number, file: File): Promise<boolean> => {
     if (isUploading || !activeCategory) return false;
     const targetImg = activeCategory.images[index];
-    const propertyPhotoId = targetImg?.propertyPhotoId || (targetImg as any)?.photoId || 0;
+    const propertyPhotoId = targetImg?.propertyPhotoId ?? 0;
     return executeReplaceApi(propertyPhotoId, file, targetImg, index);
   }, [activeCategory, isUploading, executeReplaceApi]);
 

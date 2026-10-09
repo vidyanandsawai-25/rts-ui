@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useMovableValuation } from "./useMovableValuation";
 
 const INFRASTRUCTURE_TYPES = ["Road", "Bridge", "Subway", "Bridge/Subway", "Water Tank", "Water Tank/Reservoir"];
@@ -35,7 +35,7 @@ export function useValuationData(
   }, [initialCategories, formData.categoryId]);
   const conditions = useMemo(() => initialConditions, [initialConditions]);
 
-  const mapFloors = (floors: any[]) => floors.map((f: any) => {
+  const mapFloors = useCallback((floors: any[]) => floors.map((f: any) => {
     const floorDetailsId = f.floorDetailsId ?? f.FloorDetailsId ?? f.id ?? f.Id ?? 0;
     const assetIdVal = f.assetId ?? f.AssetId ?? 0;
     const contextFloor = formData.floors?.find((cf: any) => cf.id === floorDetailsId || cf.floor === String(f.floorId || f.FloorId));
@@ -69,17 +69,17 @@ export function useValuationData(
       typeOfUseDescription: String(f.typeOfUseDescription ?? ""),
       subTypeOfUseDescription: String(f.subTypeOfUseDescription ?? ""),
     };
-  });
+  }), [formData.floors]);
 
   const ssrFloors = useMemo(() => {
     const raw = initialValuationData?.floors;
     return Array.isArray(raw) && raw.length > 0 ? mapFloors(raw) : [];
-  }, []);
+  }, [initialValuationData?.floors, mapFloors]);
 
-  const ssrInventories: any[] = useMemo(() => initialValuationData?.inventories ?? [], []);
-  const ssrBuildingCV: any = useMemo(() => initialValuationData?.buildingCV ?? null, []);
-  const ssrPlotCV: any = useMemo(() => initialValuationData?.plotCV ?? null, []);
-  const ssrCvRollup: any = useMemo(() => initialValuationData?.cvRollup ?? null, []);
+  const ssrInventories: any[] = useMemo(() => initialValuationData?.inventories ?? [], [initialValuationData?.inventories]);
+  const ssrBuildingCV: any = useMemo(() => initialValuationData?.buildingCV ?? null, [initialValuationData?.buildingCV]);
+  const ssrPlotCV: any = useMemo(() => initialValuationData?.plotCV ?? null, [initialValuationData?.plotCV]);
+  const ssrCvRollup: any = useMemo(() => initialValuationData?.cvRollup ?? null, [initialValuationData?.cvRollup]);
 
   const [dynamicFloors] = useState<any[]>(ssrFloors);
   const [rawInventories] = useState<any[]>(ssrInventories);
@@ -90,7 +90,7 @@ export function useValuationData(
   useEffect(() => {
     if (ssrFloors.length > 0) updateFormData({ floors: ssrFloors });
     if (ssrBuildingCV || ssrPlotCV) updateFormData({ ...(ssrBuildingCV ? { capitalValue: String(ssrBuildingCV.totalBuildingCapitalValue ?? 0) } : {}) });
-  }, []);
+  }, [ssrBuildingCV, ssrFloors, ssrPlotCV, updateFormData]);
 
   const inventoryState = useMemo(() => {
     const furniture: any[] = [];
@@ -144,7 +144,16 @@ export function useValuationData(
       });
     }
     if (setIsDataLoading) setIsDataLoading(false);
-  }, []);
+  }, [
+    initialValuationData?.asset,
+    updateFormData,
+    setIsDataLoading,
+    formData.attributes,
+    formData.developmentCost,
+    formData.landArea,
+    formData.landRate,
+    formData.marketAppreciation,
+  ]);
 
   const { scheduleRecalc } = useMovableValuation(formData, updateFormData, conditions, isBuilding, isLand);
 

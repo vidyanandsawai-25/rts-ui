@@ -1,6 +1,5 @@
- 
 import { useCallback } from 'react';
-import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media/PhotoPlanSidebar';
+import type { PhotoCategory } from '@/types/asset/media.types';
 import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 
 export function useAssetPhotoPlanViewerNav(

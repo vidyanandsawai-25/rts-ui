@@ -63,5 +63,5 @@ export function useSubUnitDropdownAutoSelect(
       }
       return prev;
     });
-  }, [dropdownOptions, parentFloors, formData.floorId]);
+  }, [dropdownOptions, parentFloors, formData.floorId, setFormData]);
 }

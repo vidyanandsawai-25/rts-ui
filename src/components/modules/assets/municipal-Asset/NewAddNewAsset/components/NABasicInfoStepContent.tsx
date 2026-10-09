@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { MovableParentAssetSection } from "../basic-Info/MovableParentAssetSection";
+import { MovableParentAssetSection } from "../basic-info/MovableParentAssetSection";
 import { NAAssetProfile } from "./NAAssetProfile";
 import { NAPropertyInfo } from "./NAPropertyInfo";
 import { NADynamicFields } from "./NADynamicFields";
@@ -30,6 +30,8 @@ export function NABasicInfoStepContent({
   initialParentAsset = null,
   initialParentFloors = [],
   initialParentSubunits = [],
+  initialPhotoTypes = [],
+  initialDbPhotos = [],
   cvRollup = null,
 }: NABasicInfoStepContentProps) {
   const { confirm } = useConfirm();
@@ -191,7 +193,11 @@ export function NABasicInfoStepContent({
                     onAttributeChange={orchestrator.handleAttributeChange}
                   />
                 )}
-              <NAAssetMedia currentStep={currentStep} />
+              <NAAssetMedia
+                currentStep={currentStep}
+                initialPhotoTypes={initialPhotoTypes}
+                initialDbPhotos={initialDbPhotos}
+              />
             </div>
           </div>
 

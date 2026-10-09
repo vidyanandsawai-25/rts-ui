@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   createFloorSubmissionAction,
@@ -74,6 +74,14 @@ export function useSubUnitDuplicateMode({
   const [duplicateEntries, setDuplicateEntries] = useState<DuplicateEntry[]>([]);
   const [editingDuplicateId, setEditingDuplicateId] = useState<string | null>(null);
   const [initialSubUnitsDetailsId, setInitialSubUnitsDetailsId] = useState<number | null>(null);
+
+  const formDataRef = useRef(formData);
+  const dynamicSubUseTypesRef = useRef(dynamicSubUseTypes);
+
+  useEffect(() => {
+    formDataRef.current = formData;
+    dynamicSubUseTypesRef.current = dynamicSubUseTypes;
+  });
 
   const effectiveAssetId = Number(
     targetAssetId ||
@@ -168,8 +176,9 @@ export function useSubUnitDuplicateMode({
             const configuredRows = res.data.filter(isConfiguredEntry);
 
             if (configuredRows.length > 0) {
+              const currentFormData = formDataRef.current;
               const anyConfiguredRented =
-                Boolean(formData.isRenter || formData.isRented) ||
+                Boolean(currentFormData?.isRenter || currentFormData?.isRented) ||
                 configuredRows.some((item: any) =>
                   Boolean(item.isRenter ?? item.IsRenter ?? item.isRented ?? item.IsRented ?? false)
                 );
@@ -207,7 +216,7 @@ export function useSubUnitDuplicateMode({
                 const itemSubUseId = item.subTypeOfUseId ?? item.SubTypeOfUseId ?? '';
                 const subUseOpt =
                   (dropdownOptions?.subUseTypes || []).find((o: any) => String(o.value) === String(itemSubUseId)) ||
-                  (dynamicSubUseTypes || []).find((o: any) => String(o.value) === String(itemSubUseId));
+                  (dynamicSubUseTypesRef.current || []).find((o: any) => String(o.value) === String(itemSubUseId));
                 const itemSubUseName =
                   item.subTypeOfUseName ||
                   item.SubTypeOfUseName ||
@@ -257,7 +266,7 @@ export function useSubUnitDuplicateMode({
                     (r: any) => r.submissionType === 'Open Space' || r.roomType === 'Open Space'
                   ),
                   formDataSnapshot: {
-                    ...formData,
+                    ...(currentFormData || {}),
                     floorId: fId,
                     floorLabel: fLabel,
                     subFloorId: sfId ? String(sfId) : '',
@@ -319,7 +328,7 @@ export function useSubUnitDuplicateMode({
     return () => {
       isCancelled = true;
     };
-  }, [effectiveAssetId, dropdownOptions, subFloorOptions, resetFloorFormForFreshEntry]);
+  }, [effectiveAssetId, dropdownOptions, subFloorOptions, resetFloorFormForFreshEntry, setFormData]);
 
   /**
    * Add or update a floor entry directly from the Floor & Construction Details card.

@@ -111,7 +111,9 @@ export function useSubUnitMasterDataLoad(
     globalFormData.parentBuildingId,
     globalFormData.id,
     globalFormData.assetId,
-    parentFloors.length,
+    globalFormData?.assetTypeId,
+    globalFormData?.typeId,
+    parentFloors,
     dropdownOptions,
   ]);
 

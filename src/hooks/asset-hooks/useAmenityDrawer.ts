@@ -30,7 +30,7 @@ export function useAmenityDrawer(
       setEditingId(null);
     }, 0);
     setIsFormOffsetOpen(false);
-  }, [isOpen, initialSpaces]);
+  }, [isOpen, initialSpaces, setIsFormOffsetOpen]);
 
   const toggleOffset = (spaceId: string, val: "Yes" | "No") => {
     setSpacesList((prev: any) => prev.map((s: any) => {

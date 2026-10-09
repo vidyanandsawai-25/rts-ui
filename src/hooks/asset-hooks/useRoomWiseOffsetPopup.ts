@@ -43,7 +43,7 @@ export function useRoomWiseOffsetPopup(
     } else {
       setTimeout(() => { setDrawerOffsets([]); }, 0);
     }
-  }, [offsetPopupRoomId, isFormOffsetOpen, offsetRoom?.id, isOpen]);
+  }, [offsetPopupRoomId, isFormOffsetOpen, offsetRoom, isOpen]);
 
   const tempOffsetAreaSqM = calcAreaSqM(
     tempOffsetShape, tempOffsetLength, tempOffsetWidth, tempOffsetHeight,

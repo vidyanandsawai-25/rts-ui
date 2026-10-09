@@ -109,3 +109,12 @@ export interface PagedResponse<T> {
   /** @deprecated Use duplicateCount instead */
   dublicateCount?: number;
 }
+
+export interface PhotoUploadSuccessModalProps {
+  open: boolean;
+  onClose: () => void;
+  photoName?: string;
+  categoryName?: string;
+  imgSrc?: string;
+  isReplacement?: boolean;
+}

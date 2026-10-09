@@ -69,6 +69,8 @@ export default async function Page({ params, searchParams }: BaseAssetPageProps)
         initialParentSubunits={pageDataResult.initialParentSubunits}
         initialWizardData={pageDataResult.initialWizardData}
         prefetchedFields={pageDataResult.prefetchedFields}
+        initialPhotoTypes={pageDataResult.initialPhotoTypes}
+        initialDbPhotos={pageDataResult.initialDbPhotos}
       />
     </NAAssetFormProvider>
   );

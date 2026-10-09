@@ -144,7 +144,7 @@ export function useNALegalDocuments(
     return () => {
       isMounted = false;
     };
-  }, [categoryId, typeId, assetId, setIsDataLoading]);
+  }, [categoryId, typeId, assetId, setIsDataLoading, stagedFiles]);
 
   // Ad-hoc upload function
   const handleAdHocUpload = useCallback(async (file: File) => {

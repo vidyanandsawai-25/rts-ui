@@ -45,7 +45,7 @@ export function useOpenSpaceOffsetPopup(
     if (offsetSpace) {
       setTimeout(() => { setDrawerOffsets(Array.isArray(offsetSpace.offsets) ? [...offsetSpace.offsets] : []); }, 0);
     }
-  }, [isFormOffsetOpen, offsetPopupSpaceId, offsetSpace?.id]);
+  }, [isFormOffsetOpen, offsetPopupSpaceId, offsetSpace]);
 
   const tempOffsetAreaSqM = calcAreaSqM(
     tempOffsetShape,

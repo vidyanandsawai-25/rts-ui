@@ -221,6 +221,8 @@ export interface MainImageViewerProps {
 
 export interface ImageWithFallbackProps {
   src: string;
+  initialResolvedSrc?: string;
+  documentGuid?: string;
   alt?: string;
   fallbackSrc?: string;
   className?: string;
@@ -229,10 +231,13 @@ export interface ImageWithFallbackProps {
   fill?: boolean;
   sizes?: string;
   priority?: boolean;
+  unoptimized?: boolean;
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   onError?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
   hideErrorBanner?: boolean;
   style?: React.CSSProperties;
+  hasPhoto?: boolean;
+  emptyLabel?: string;
 }
 
 export interface ImageHoverPreviewProps {

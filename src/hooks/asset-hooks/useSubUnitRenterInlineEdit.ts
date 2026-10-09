@@ -70,7 +70,7 @@ export function useSubUnitRenterInlineEdit(
         setFormData((prev: any) => ({ ...prev, duration: '' }));
       }
     }
-  }, [formData.leaseStart, formData.leaseEnd, formData.duration]);
+  }, [formData.leaseStart, formData.leaseEnd, formData.duration, setFormData, t]);
 
   const handleRenterToggle = (val: string) => {
     const isTrue = val === 'true';

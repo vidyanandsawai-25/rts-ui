@@ -45,7 +45,7 @@ export function useOpenSpaceDrawer(isOpen: boolean, initialSpaces: any[], onSave
     }
     
     setIsFormOffsetOpen(false);
-  }, [isOpen, initialSpaces]);
+  }, [isOpen, initialSpaces, setIsFormOffsetOpen]);
 
   const toggleOffset = (spaceId: string, val: "Yes" | "No") => {
     setSpacesList((prev) => prev.map((s) => {

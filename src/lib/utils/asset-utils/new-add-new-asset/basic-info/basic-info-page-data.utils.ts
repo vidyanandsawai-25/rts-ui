@@ -13,6 +13,10 @@ import {
   getAssetMasterByIdQuery,
   type InitialWizardData,
 } from "@/lib/api/asset/municipal-Asset/new-add-new-asset/basic-info.service";
+import {
+  fetchAssetPhotoTypesAction,
+  fetchAssetPhotosAction,
+} from "@/app/[locale]/assets/municipal-Asset/new-add-new-asset/floor-details/actions/asset-photos.actions";
 import type {
   Zone,
   Ward,
@@ -60,7 +64,18 @@ export async function loadBasicInfoPageData(params: BasicInfoPageParams) {
   const wardsPromise = zoneIdParam ? getWardsByZoneQuery(zoneIdParam) : null;
   const subzonesPromise = moujaIdParam ? getSubzonesByMoujaQuery(moujaIdParam) : null;
 
-  const [zonesRes, departmentsRes, moujasRes, ownershipRes, assetConditionsRes, initialWizardDataRes, fieldsRes, parentAssetRes] = await Promise.all([
+  const [
+    zonesRes,
+    departmentsRes,
+    moujasRes,
+    ownershipRes,
+    assetConditionsRes,
+    initialWizardDataRes,
+    fieldsRes,
+    parentAssetRes,
+    photoTypesRes,
+    photosRes,
+  ] = await Promise.all([
     getZones(1, -1).catch(() => ({ items: [] as Zone[] })),
     getOwningDepartments().catch(() => [] as OwningDepartment[]),
     getMoujasAllActive().catch(() => [] as Mouja[]),
@@ -71,7 +86,12 @@ export async function loadBasicInfoPageData(params: BasicInfoPageParams) {
       ? getBuildingFieldDefinitionsQuery(categoryId, typeId)
       : Promise.resolve({ success: false as const, error: "Missing ids", data: [] as ProcessedField[] }),
     shouldFetchParentAsset ? getAssetMasterByIdQuery(parentAssetIdParam!) : Promise.resolve(null),
+    fetchAssetPhotoTypesAction(assetId > 0 ? assetId : 0, typeId, categoryId).catch(() => ({ success: false, data: [] })),
+    assetId > 0 ? fetchAssetPhotosAction(assetId).catch(() => ({ success: false, data: [] })) : Promise.resolve({ success: true, data: [] }),
   ]);
+
+  const initialPhotoTypes = photoTypesRes?.success && Array.isArray(photoTypesRes.data) ? photoTypesRes.data : [];
+  const initialDbPhotos = photosRes?.success && Array.isArray(photosRes.data) ? photosRes.data : [];
 
   initialWizardData = (initialWizardDataRes?.success && initialWizardDataRes.data) ? initialWizardDataRes.data : null;
 
@@ -161,5 +181,6 @@ export async function loadBasicInfoPageData(params: BasicInfoPageParams) {
     wards, zones, departments, moujas, designations, ownershipTypes, prefetchedFields,
     subzones, assetConditions, initialWizardData,
     initialParentAsset, initialParentFloors, initialParentSubunits,
+    initialPhotoTypes, initialDbPhotos,
   };
 }

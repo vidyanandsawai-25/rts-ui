@@ -104,13 +104,16 @@ export type SortKey =
   | 'carpet'
   | 'builtup';
 
+import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
+
 export interface NASubUnitMediaProps {
-  initialPhotoSlots?: unknown;
-  initialPhotos?: unknown;
+  initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[] | unknown;
+  initialPhotos?: PropertyPhotoDto[] | unknown;
   isFetchingDb?: boolean;
   onFileStaged?: (photoTypeCode: string, file: File) => void;
   onFileUnstaged?: (photoTypeCode: string, fileOrIndex: number | File) => void;
   onFileReplaced?: (photoTypeCode: string, newFile: File, oldFile?: File, targetImg?: unknown, index?: number) => void;
+  onDbPhotoRemoved?: (photoId: number) => void;
   subUnit?: unknown;
   onUploadPhoto?: (file: File) => void;
   onUploadPlan?: (file: File) => void;

@@ -104,7 +104,7 @@ export function useNADirectRoomRegistrationLocalState(
     if (initialSubUnits) {
       setTimeout(() => { setSavedFloors(mapSubUnitsToFloors(filterFloorSubmissionSubUnits(initialSubUnits), dbFloors, dropdownOptions)); }, 0);
     }
-  }, [initialSubUnits, dbFloors]);
+  }, [initialSubUnits, dbFloors, dropdownOptions]);
 
   const [isViewDrawerOpen, setIsViewDrawerOpen] = useState(false);
   const [selectedFloorForView, setSelectedFloorForView] = useState<any>(null);

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils/cn';
 import { Button } from '@/components/common';
 
 // TODO: Do NOT delete this import, it will be added back in the future.
-// import { PhotoPlanDrawer } from '../municipal-Asset/NewAddNewAsset/basic-Info/media/PhotoPlanDrawer';
+// import { PhotoPlanDrawer } from '../municipal-Asset/NewAddNewAsset/basic-info/media/PhotoPlanDrawer';
 // import type { PhotoCategory } from '@/types/asset/media.types';
 
 // TEMPORARY: Revert this when add new asset module is merged

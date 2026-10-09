@@ -57,6 +57,8 @@ export default async function BasicInfoStepPage({ params, searchParams }: AssetS
         initialParentSubunits={pageDataResult.initialParentSubunits}
         initialWizardData={pageDataResult.initialWizardData}
         prefetchedFields={pageDataResult.prefetchedFields}
+        initialPhotoTypes={pageDataResult.initialPhotoTypes}
+        initialDbPhotos={pageDataResult.initialDbPhotos}
       />
     </>
   );

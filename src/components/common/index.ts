@@ -15,6 +15,9 @@ export type { CollapsibleSectionHeaderProps } from './CollapsibleSectionHeader';
 export { Button } from './ActionButton';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './ActionButton';
 
+export { PhotoUploadSuccessModal } from './PhotoUploadSuccessModal';
+export type { PhotoUploadSuccessModalProps } from './PhotoUploadSuccessModal';
+
 export { ToggleSwitch, FormStatusToggle } from './ToggleSwitch';
 export type { ToggleSwitchProps, FormStatusToggleProps } from './ToggleSwitch';
 

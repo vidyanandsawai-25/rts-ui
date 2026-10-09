@@ -191,7 +191,7 @@ export function useNAUnitPoolSave(props: any) {
     } finally {
       setIsSaving(false);
     }
-  }, [pool, formData, t, floorOpenSpaces, floorAmenities, parentFloors, floorConfigDirty, setPool, setIsSaving, setFloorConfigDirty]);
+  }, [pool, formData, t, floorOpenSpaces, floorAmenities, parentFloors, floorConfigDirty, setPool, setIsSaving, setFloorConfigDirty, updateFormData]);
 
   return handleSaveAll;
 }

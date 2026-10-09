@@ -2,6 +2,7 @@ import type { InventoryLookups } from "@/app/[locale]/assets/municipal-Asset/new
 import type { InventoryBatchListResponse } from "@/types/asset/municipal-Asset/new-add-new-asset/inventory-batch.types";
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
+import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto, AdditionalImage } from "@/types/asset/media.types";
 import type {
   Zone,
   Ward,
@@ -38,10 +39,21 @@ export interface NewAddNewAssetPageProps {
   activeStepKey?: string;
   initialLookups?: InventoryLookups;
   initialBatches?: InventoryBatchListResponse | null;
+  initialPhotoTypes?: PropertyPhotoTypeWithStatusDto[];
+  initialDbPhotos?: PropertyPhotoDto[];
 }
 
 export interface NAAssetMediaProps {
   currentStep?: number;
+  initialPhotoTypes?: PropertyPhotoTypeWithStatusDto[];
+  initialDbPhotos?: PropertyPhotoDto[];
+  initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
+  initialPhotos?: PropertyPhotoDto[];
+  isFetchingDb?: boolean;
+  onFileStaged?: (photoTypeCode: string, file: File) => void;
+  onFileUnstaged?: (photoTypeCode: string, fileOrIndex: number | File) => void;
+  onFileReplaced?: (photoTypeCode: string, newFile: File, oldFile?: File, targetImg?: AdditionalImage, index?: number) => void;
+  onDbPhotoRemoved?: (photoId: number) => void;
 }
 
 export interface FloorCvRollup {
@@ -94,6 +106,8 @@ export interface NABasicInfoStepContentProps {
   initialParentAsset?: MovableParentAssetItem | null;
   initialParentFloors?: AssetFloorDetailItem[];
   initialParentSubunits?: ParentSubunitLookupItem[];
+  initialPhotoTypes?: PropertyPhotoTypeWithStatusDto[];
+  initialDbPhotos?: PropertyPhotoDto[];
   cvRollup?: FloorCvRollup | number | null;
 }
 
