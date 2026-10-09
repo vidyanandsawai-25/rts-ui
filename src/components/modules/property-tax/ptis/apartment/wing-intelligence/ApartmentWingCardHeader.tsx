@@ -19,7 +19,6 @@ const StatBadge: React.FC<StatBadgeProps> = ({ label, value, highlight }) => {
 export const ApartmentWingCardHeader: React.FC<WingCardHeaderProps> = ({
   letter,
   name,
-  rating,
   stats,
   areaUnit,
   colorClass,
@@ -48,9 +47,6 @@ export const ApartmentWingCardHeader: React.FC<WingCardHeaderProps> = ({
             >
               {name.length > 50 ? `${name.substring(0, 50)}...` : name}
             </h3>
-            <div className="bg-[#fcd34d] text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 shadow-sm shrink-0">
-              <span className="text-amber-600 tracking-tighter">{'★'}</span> {rating}
-            </div>
             <div
               className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/80 p-1.5 rounded-full cursor-pointer ml-1 transition-colors shrink-0"
               onClick={onEdit}
