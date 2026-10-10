@@ -1,10 +1,10 @@
 import {
   getRtsWorkflowsDataAction,
-  getWorkflowStagesByServiceIdAction,
+  getWorkflowStagesByApprovalFlowIdAction,
   saveWorkflowWithStagesAction,
-  deleteWorkflowAction,
-} from "./actions";
-import RtsWorkflowsConfig from "@/components/modules/rts/configuration-settings/RtsWorkflowsConfig";
+  setWorkflowActiveAction,
+} from './actions';
+import RtsWorkflowsConfig from '@/components/modules/rts/configuration-settings/RtsWorkflowsConfig';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -19,9 +19,9 @@ export default async function RtsWorkflowsPage({ params }: PageProps) {
       <RtsWorkflowsConfig
         data={data}
         locale={locale}
-        getStagesByServiceId={getWorkflowStagesByServiceIdAction}
+        getStagesByApprovalFlowId={getWorkflowStagesByApprovalFlowIdAction}
         saveWorkflow={saveWorkflowWithStagesAction}
-        deleteWorkflow={deleteWorkflowAction}
+        setWorkflowActive={setWorkflowActiveAction}
       />
     </div>
   );

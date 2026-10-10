@@ -2,34 +2,32 @@ import type {
   RtsApplicationPaymentStatus,
   RtsApprovalFlowStageApiItem,
   WorkflowActionType,
-} from "@/types/rts/workflow.types";
+} from '@/types/rts/workflow.types';
 
 /**
  * Which workflow actions the given user may take on the application's current stage.
  *
- * Eligibility is purely by EmployeeType — RTS.Users has no DepartmentId, so any
- * active user whose EmployeeType matches the stage's EmployeeTypeId may act on it
- * (queue model, not per-department assignment).
+ * Eligibility is by the user explicitly assigned to the approval stage.
  */
 export function resolveAvailableActions(
   stage: RtsApprovalFlowStageApiItem | null,
   paymentStatus: RtsApplicationPaymentStatus,
-  userEmployeeTypeId: number | null | undefined
+  userId: number | null | undefined
 ): WorkflowActionType[] {
   if (!stage) return [];
-  if (userEmployeeTypeId == null || userEmployeeTypeId !== stage.employeeTypeId) return [];
+  if (userId == null || userId !== stage.userId) return [];
 
   const actions: WorkflowActionType[] = [];
 
-  if (stage.canVerifyDocument) actions.push("verifyDocument");
+  if (stage.canVerifyDocument) actions.push('verifyDocument');
 
-  const paymentOutstanding = stage.canPay && paymentStatus !== "Paid";
-  if (paymentOutstanding) actions.push("pay");
+  const paymentOutstanding = stage.canPay && paymentStatus !== 'Paid';
+  if (paymentOutstanding) actions.push('pay');
 
   // Approve is withheld until any required payment for this stage is recorded.
-  if (stage.canApprove && !paymentOutstanding) actions.push("approve");
-  if (stage.canReject) actions.push("reject");
-  if (stage.canReturn) actions.push("return");
+  if (stage.canApprove && !paymentOutstanding) actions.push('approve');
+  if (stage.canReject) actions.push('reject');
+  if (stage.canReturn) actions.push('return');
 
   return actions;
 }

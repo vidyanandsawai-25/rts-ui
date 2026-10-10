@@ -1,16 +1,31 @@
-"use client";
+'use client';
 
-import { useState, useTransition } from "react";
-import { Plus, Search, GitMerge, Edit2, Trash2, CheckCircle2, XCircle } from "lucide-react";
-import { Card, Drawer, MasterTable, useConfirm } from "@/components/common";
-import type { Column } from "@/components/common/MasterTable";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useEffect, useState, useTransition } from 'react';
+import { GitMerge, Search, Trash2, UserRoundCog } from 'lucide-react';
+import WorkflowStageOfficerEditor from './WorkflowStageOfficerEditor';
+import {
+  AddButton,
+  CancelButton,
+  Card,
+  Drawer,
+  EditButton,
+  Input,
+  MasterTable,
+  SaveButton,
+  Select,
+  StatusBadge,
+  TextArea,
+  ToggleSwitch,
+} from '@/components/common';
+import type { Column } from '@/components/common/MasterTable';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   RTS_DASHBOARD_TABLE_CLASS,
   RTS_DASHBOARD_TABLE_CONTAINER_CLASS,
   RTS_DASHBOARD_TABLE_HEAD_CLASS,
-} from "@/lib/utils/rts/dashboard-table-styles";
+} from '@/lib/utils/rts/dashboard-table-styles';
 interface WorkflowItem {
   id: number;
   serviceId: number;
@@ -24,14 +39,18 @@ export interface StageConfigItem {
   id?: number;
   stageOrder: number;
   stageName: string;
-  employeeTypeId: number;
   slaDays: number;
   canVerifyDocument: boolean;
+  canEdit: boolean;
+  canViewNoteSheet: boolean;
+  canIssueCertificate: boolean;
+  canViewCertificate: boolean;
   canApprove: boolean;
   canReject: boolean;
   canReturn: boolean;
   canPay: boolean;
   isFinalStage: boolean;
+  userAllocationCount?: number;
 }
 
 interface RtsWorkflowsConfigProps {
@@ -41,63 +60,197 @@ interface RtsWorkflowsConfigProps {
     services: { id: string; name: string; nameLocal?: string | null; departmentId: string }[];
   };
   locale: string;
-  getStagesByServiceId?: (serviceId: number) => Promise<StageConfigItem[]>;
+  getStagesByApprovalFlowId?: (approvalFlowId: number) => Promise<StageConfigItem[]>;
   saveWorkflow?: (data: {
+    workflowId?: number;
     serviceId: number;
     flowName: string;
+    isActive: boolean;
     stages: StageConfigItem[];
   }) => Promise<{ success: boolean; workflow?: WorkflowItem; error?: string }>;
-  deleteWorkflow?: (id: number) => Promise<{ success: boolean; error?: string }>;
+  setWorkflowActive?: (
+    id: number,
+    isActive: boolean
+  ) => Promise<{ success: boolean; isActive?: boolean; error?: string }>;
 }
 
 type WorkflowTableRow = Record<string, unknown> & WorkflowItem;
 
+const actionPermissions = [
+  { field: 'canVerifyDocument', label: 'verifyDocs' },
+  { field: 'canEdit', label: 'canEdit' },
+  { field: 'canPay', label: 'canPay' },
+  { field: 'canApprove', label: 'approve' },
+  { field: 'canReturn', label: 'canReturn' },
+  { field: 'canReject', label: 'reject' },
+] as const;
+
+const viewPermissions = [
+  { field: 'canViewNoteSheet', label: 'canViewNoteSheet' },
+  { field: 'canIssueCertificate', label: 'canIssueCertificate' },
+] as const;
+
+function StageConfigCard({
+  stage,
+  onChange,
+  onRemove,
+  onManageUsers,
+}: {
+  stage: StageConfigItem;
+  onChange: (stage: StageConfigItem) => void;
+  onRemove: () => void;
+  onManageUsers: () => void;
+}) {
+  const t = useTranslations('rts.workflowMaster');
+  return (
+    <Card padding="sm" className="rounded-xl border-slate-200 shadow-sm">
+      <div className="mb-3 flex flex-col gap-2 border-b border-slate-100 pb-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:flex-1">
+          <h4 className="text-xs font-bold text-blue-950">
+            {t('stageNumber', { order: stage.stageOrder })}
+          </h4>
+          <StatusBadge
+            variant="info"
+            label={t('assignedUsers', { count: stage.userAllocationCount ?? 0 })}
+            className="whitespace-nowrap px-2 py-0.5 text-[11px] shadow-none"
+          />
+        </div>
+        <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
+          <button
+            type="button"
+            onClick={onManageUsers}
+            disabled={!stage.id}
+            title={stage.id ? t('manageStageUsers') : t('saveStageBeforeUsers')}
+            className="flex items-center gap-1 whitespace-nowrap rounded-md border border-blue-200 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <UserRoundCog className="h-3.5 w-3.5" aria-hidden="true" />
+            {t('manageStageUsers')}
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label={t('removeStage')}
+            title={t('removeStage')}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-rose-600 hover:bg-rose-50"
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+      {!stage.id && <p className="mb-3 text-[11px] text-slate-500">{t('saveStageBeforeUsers')}</p>}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Input
+          label={t('stageNameLabel')}
+          value={stage.stageName}
+          onChange={(event) => onChange({ ...stage, stageName: event.target.value })}
+          fullWidth
+          className="h-9 text-xs"
+        />
+        <Input
+          label={t('slaDaysLabel')}
+          type="number"
+          min={1}
+          value={stage.slaDays}
+          onChange={(event) => onChange({ ...stage, slaDays: Number(event.target.value) })}
+          fullWidth
+          className="h-9 text-xs"
+        />
+      </div>
+      <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50/40 p-2 [&>div]:justify-between [&_span]:!text-xs">
+        <ToggleSwitch
+          checked={stage.isFinalStage}
+          onChange={(checked) => onChange({ ...stage, isFinalStage: checked })}
+          label={t('finalStage')}
+          showPopup={false}
+        />
+      </div>
+      <div className="mt-4">
+        <h5 className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          {t('approvalActionConfig')}
+        </h5>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {actionPermissions.map((permission) => (
+            <div
+              key={permission.field}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 [&>div]:justify-between [&_span]:!text-[11px]"
+            >
+              <ToggleSwitch
+                checked={stage[permission.field]}
+                onChange={(checked) => onChange({ ...stage, [permission.field]: checked })}
+                label={t(permission.label)}
+                showPopup={false}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-4">
+        <h5 className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          {t('viewIssueConfig')}
+        </h5>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {viewPermissions.map((permission) => (
+            <div
+              key={permission.field}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 [&>div]:justify-between [&_span]:!text-[11px]"
+            >
+              <ToggleSwitch
+                checked={stage[permission.field]}
+                onChange={(checked) => onChange({ ...stage, [permission.field]: checked })}
+                label={t(permission.label)}
+                showPopup={false}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function RtsWorkflowsConfig({
   data,
   locale,
-  getStagesByServiceId,
+  getStagesByApprovalFlowId,
   saveWorkflow,
-  deleteWorkflow,
+  setWorkflowActive,
 }: RtsWorkflowsConfigProps) {
-  const t = useTranslations("rts");
-  const { confirm } = useConfirm();
+  const t = useTranslations('rts');
   const [isPending, startTransition] = useTransition();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [workflowsList, setWorkflowsList] = useState<WorkflowItem[]>(data.workflows);
-  const [selectedDeptId, setSelectedDeptId] = useState<string>("All");
-  const [selectedServiceId, setSelectedServiceId] = useState<string>("All");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDeptId, setSelectedDeptId] = useState<string>('All');
+  const [selectedServiceId, setSelectedServiceId] = useState<string>('All');
+  const [selectedStatus, setSelectedStatus] = useState<'All' | 'Active' | 'Inactive'>('All');
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   // Drawer states
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingWorkflow, setEditingWorkflow] = useState<WorkflowItem | null>(null);
 
   // Form states
-  const [formServiceId, setFormServiceId] = useState<string>("");
-  const [formFlowName, setFormFlowName] = useState<string>("");
-  const [formIsActive, setFormIsActive] = useState<boolean>(true);
+  const [formDepartmentId, setFormDepartmentId] = useState<string>('');
+  const [formServiceId, setFormServiceId] = useState<string>('');
+  const [formFlowName, setFormFlowName] = useState<string>('');
+  const [formIsActive, setFormIsActive] = useState<boolean>(false);
+  const [stagesLoading, setStagesLoading] = useState(false);
+  const [stagesError, setStagesError] = useState('');
 
   // Stages for the active form
-  const [stages, setStages] = useState<Array<{
-    stageOrder: number;
-    stageName: string;
-    employeeTypeId: number;
-    slaDays: number;
-    canVerifyDocument: boolean;
-    canApprove: boolean;
-    canReject: boolean;
-    canReturn: boolean;
-    canPay: boolean;
-    isFinalStage: boolean;
-  }>>([
+  const [stages, setStages] = useState<StageConfigItem[]>([
     {
       stageOrder: 1,
-      stageName: "Document Verification (Clerk)",
-      employeeTypeId: 1,
+      stageName: 'Document Verification (Clerk)',
       slaDays: 2,
       canVerifyDocument: true,
+      canEdit: false,
+      canViewNoteSheet: false,
+      canIssueCertificate: false,
+      canViewCertificate: false,
       canApprove: false,
       canReject: false,
       canReturn: true,
@@ -106,141 +259,269 @@ export default function RtsWorkflowsConfig({
     },
     {
       stageOrder: 2,
-      stageName: "Final Approval (Senior Officer)",
-      employeeTypeId: 3,
+      stageName: 'Final Approval (Senior Officer)',
       slaDays: 3,
       canVerifyDocument: false,
+      canEdit: false,
+      canViewNoteSheet: false,
+      canIssueCertificate: false,
+      canViewCertificate: false,
       canApprove: true,
       canReject: true,
       canReturn: true,
       canPay: false,
       isFinalStage: true,
-    }
+    },
   ]);
 
   const filteredServicesForFilter = data.services.filter(
-    s => selectedDeptId === "All" || s.departmentId === selectedDeptId
+    (s) => selectedDeptId === 'All' || s.departmentId === selectedDeptId
   );
+  const formServices = data.services.filter((service) => service.departmentId === formDepartmentId);
 
-  const filteredWorkflows = workflowsList.filter(w => {
-    const serviceObj = data.services.find(s => String(s.id) === String(w.serviceId));
-    const deptMatch = selectedDeptId === "All" || (serviceObj && serviceObj.departmentId === selectedDeptId);
-    const serviceMatch = selectedServiceId === "All" || String(w.serviceId) === selectedServiceId;
+  const filteredWorkflows = workflowsList.filter((w) => {
+    const serviceObj = data.services.find((s) => String(s.id) === String(w.serviceId));
+    const deptMatch =
+      selectedDeptId === 'All' || (serviceObj && serviceObj.departmentId === selectedDeptId);
+    const serviceMatch = selectedServiceId === 'All' || String(w.serviceId) === selectedServiceId;
     const searchMatch = !searchTerm || w.flowName.toLowerCase().includes(searchTerm.toLowerCase());
-    return deptMatch && serviceMatch && searchMatch;
+    const statusMatch = selectedStatus === 'All' || w.isActive === (selectedStatus === 'Active');
+    return deptMatch && serviceMatch && searchMatch && statusMatch;
   });
 
   const totalPages = Math.ceil(filteredWorkflows.length / pageSize) || 1;
-  const paginatedWorkflows = filteredWorkflows.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+  const paginatedWorkflows = filteredWorkflows.slice(
+    (pageNumber - 1) * pageSize,
+    pageNumber * pageSize
+  );
+
+  const drawerName = searchParams.get('drawer');
+  const drawerMode = searchParams.get('mode');
+  const workflowIdParam = searchParams.get('workflowId');
+  const subDrawerName = searchParams.get('subDrawer');
+  const stageIdParam = searchParams.get('stageId');
+  const isDrawerOpen = drawerName === 'workflow-editor';
+  const selectedStageId = Number(stageIdParam);
+  const isStageUsersDrawerOpen =
+    isDrawerOpen && subDrawerName === 'stage-users' && Number.isSafeInteger(selectedStageId);
+  const updateDrawerRoute = (next: { mode?: 'create'; workflowId?: number } | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('drawer');
+    params.delete('mode');
+    params.delete('workflowId');
+    params.delete('subDrawer');
+    params.delete('stageId');
+
+    if (next) {
+      params.set('drawer', 'workflow-editor');
+      if (next.mode) params.set('mode', next.mode);
+      if (next.workflowId) params.set('workflowId', String(next.workflowId));
+    }
+
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
+  };
+
+  const closeDrawer = () => updateDrawerRoute(null);
+
+  const openStageUsersDrawer = (stage: StageConfigItem) => {
+    if (!editingWorkflow || !stage.id) {
+      toast.error(t('workflowMaster.saveStageBeforeUsers'));
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('drawer', 'workflow-editor');
+    params.set('workflowId', String(editingWorkflow.id));
+    params.set('subDrawer', 'stage-users');
+    params.set('stageId', String(stage.id));
+    params.delete('mode');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const closeStageUsersDrawer = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('subDrawer');
+    params.delete('stageId');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    if (drawerName !== 'workflow-editor') {
+      return;
+    }
+
+    if (drawerMode === 'create' && !workflowIdParam) {
+      queueMicrotask(() => {
+        setEditingWorkflow(null);
+        setFormDepartmentId('');
+        setFormServiceId('');
+        setFormFlowName('');
+        setFormIsActive(false);
+        setStagesError('');
+        setStagesLoading(false);
+        setStages([
+          {
+            stageOrder: 1,
+            stageName: locale === 'mr' ? 'कागदपत्र पडताळणी' : 'Document Verification',
+            slaDays: 2,
+            canVerifyDocument: true,
+            canEdit: false,
+            canViewNoteSheet: false,
+            canIssueCertificate: false,
+            canViewCertificate: false,
+            canApprove: false,
+            canReject: false,
+            canReturn: true,
+            canPay: false,
+            isFinalStage: false,
+          },
+          {
+            stageOrder: 2,
+            stageName: locale === 'mr' ? 'अंतिम मंजुरी' : 'Final Approval',
+            slaDays: 3,
+            canVerifyDocument: false,
+            canEdit: false,
+            canViewNoteSheet: false,
+            canIssueCertificate: false,
+            canViewCertificate: false,
+            canApprove: true,
+            canReject: true,
+            canReturn: true,
+            canPay: false,
+            isFinalStage: true,
+          },
+        ]);
+      });
+      return;
+    }
+
+    const workflowId = Number(workflowIdParam);
+    const workflow = workflowsList.find((item) => item.id === workflowId);
+    if (!Number.isInteger(workflowId) || !workflow) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      setEditingWorkflow(workflow);
+      setFormDepartmentId(
+        data.services.find((service) => Number(service.id) === workflow.serviceId)?.departmentId ||
+          ''
+      );
+      setFormServiceId(String(workflow.serviceId));
+      setFormFlowName(workflow.flowName);
+      setFormIsActive(workflow.isActive);
+    });
+
+    if (!getStagesByApprovalFlowId) return;
+    let current = true;
+    queueMicrotask(() => {
+      if (current) {
+        setStagesLoading(true);
+        setStagesError('');
+      }
+    });
+    void getStagesByApprovalFlowId(workflow.id)
+      .then((loadedStages) => {
+        if (!current) return;
+        setStages(loadedStages);
+        setStagesError('');
+      })
+      .catch((error) => {
+        if (current)
+          setStagesError(
+            error instanceof Error ? error.message : 'Failed to load workflow stages.'
+          );
+      })
+      .finally(() => {
+        if (current) setStagesLoading(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [
+    data.services,
+    drawerName,
+    drawerMode,
+    getStagesByApprovalFlowId,
+    locale,
+    workflowIdParam,
+    workflowsList,
+  ]);
 
   const handleOpenAddDrawer = () => {
-    setEditingWorkflow(null);
-    setFormServiceId(data.services[0]?.id || "");
-    setFormFlowName("");
-    setFormIsActive(true);
-    setStages([
-      {
-        stageOrder: 1,
-        stageName: locale === "mr" ? "कागदपत्र पडताळणी" : "Document Verification",
-        employeeTypeId: 1,
-        slaDays: 2,
-        canVerifyDocument: true,
-        canApprove: false,
-        canReject: false,
-        canReturn: true,
-        canPay: false,
-        isFinalStage: false,
-      },
-      {
-        stageOrder: 2,
-        stageName: locale === "mr" ? "अंतिम मंजुरी" : "Final Approval",
-        employeeTypeId: 3,
-        slaDays: 3,
-        canVerifyDocument: false,
-        canApprove: true,
-        canReject: true,
-        canReturn: true,
-        canPay: false,
-        isFinalStage: true,
-      },
-    ]);
-    setIsDrawerOpen(true);
+    updateDrawerRoute({ mode: 'create' });
   };
 
-  const handleOpenEditDrawer = async (item: WorkflowItem) => {
-    setEditingWorkflow(item);
-    setFormServiceId(String(item.serviceId));
-    setFormFlowName(item.flowName);
-    setFormIsActive(item.isActive);
-    setIsDrawerOpen(true);
+  const handleOpenEditDrawer = (item: WorkflowItem) => {
+    updateDrawerRoute({ workflowId: item.id });
+  };
 
-    if (getStagesByServiceId) {
-      try {
-        const loadedStages = await getStagesByServiceId(item.serviceId);
-        if (loadedStages && loadedStages.length > 0) {
-          setStages(loadedStages);
-        }
-      } catch {
-        // preserve existing stages
+  const handleStatusChange = (item: WorkflowItem) => {
+    if (!setWorkflowActive) return;
+    startTransition(async () => {
+      const result = await setWorkflowActive(item.id, !item.isActive);
+      if (!result.success || result.isActive === undefined) {
+        toast.error(result.error || t('workflowMaster.statusChangeFailed'));
+        return;
       }
-    }
-  };
-
-  const handleDeleteWorkflow = (id: number) => {
-    confirm({
-      variant: "delete",
-      title: t("workflowMaster.title"),
-      description: locale === "mr" ? "तुम्हाला नक्की हा कार्यप्रवाह हटवायचा आहे का?" : "Are you sure you want to delete this approval workflow?",
-      onConfirm: async () => {
-        startTransition(async () => {
-          try {
-            if (deleteWorkflow) {
-              const res = await deleteWorkflow(id);
-              if (!res.success) {
-                toast.error(res.error || (locale === "mr" ? "हटवण्यात त्रुटी आली." : "Failed to delete workflow."));
-                return;
-              }
-            }
-            setWorkflowsList((prev) => prev.filter((w) => w.id !== id));
-            toast.success(locale === "mr" ? "कार्यप्रवाह यशस्वीरित्या हटवला गेला." : "Approval workflow deleted successfully.");
-          } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Error deleting workflow");
-          }
-        });
-      },
+      setWorkflowsList((previous) =>
+        previous.map((workflow) =>
+          workflow.id === item.id ? { ...workflow, isActive: result.isActive! } : workflow
+        )
+      );
+      toast.success(
+        result.isActive ? t('workflowMaster.activated') : t('workflowMaster.deactivated')
+      );
     });
   };
 
   const handleAddStage = () => {
-    setStages(prev => [
+    setStages((prev) => [
       ...prev,
       {
         stageOrder: prev.length + 1,
         stageName: `Stage ${prev.length + 1}`,
-        employeeTypeId: 2,
         slaDays: 3,
         canVerifyDocument: false,
+        canEdit: false,
+        canViewNoteSheet: false,
+        canIssueCertificate: false,
+        canViewCertificate: false,
         canApprove: false,
         canReject: false,
         canReturn: true,
         canPay: false,
         isFinalStage: false,
-      }
+      },
     ]);
   };
 
   const handleRemoveStage = (index: number) => {
     if (stages.length <= 1) {
-      toast.error("At least one stage is required.");
+      toast.error('At least one stage is required.');
       return;
     }
-    setStages(prev => prev.filter((_, i) => i !== index).map((s, idx) => ({ ...s, stageOrder: idx + 1 })));
+    setStages((prev) =>
+      prev.filter((_, i) => i !== index).map((s, idx) => ({ ...s, stageOrder: idx + 1 }))
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (
+      !formDepartmentId ||
+      !formServiceId ||
+      !formServices.some((service) => service.id === formServiceId)
+    ) {
+      toast.error(t('workflowMaster.chooseDepartmentAndService'));
+      return;
+    }
     if (!formFlowName.trim()) {
-      toast.error(locale === "mr" ? "कार्यप्रवाहाचे नाव आवश्यक आहे." : "Flow name is required.");
+      toast.error(locale === 'mr' ? 'कार्यप्रवाहाचे नाव आवश्यक आहे.' : 'Flow name is required.');
+      return;
+    }
+    if (stagesLoading || stagesError) {
+      toast.error(stagesError || t('workflowMaster.loadStagesFailed'));
       return;
     }
 
@@ -248,8 +529,10 @@ export default function RtsWorkflowsConfig({
       try {
         if (saveWorkflow) {
           const res = await saveWorkflow({
+            workflowId: editingWorkflow?.id,
             serviceId: Number(formServiceId),
             flowName: formFlowName.trim(),
+            isActive: formIsActive,
             stages,
           });
           if (res.success && res.workflow) {
@@ -257,46 +540,59 @@ export default function RtsWorkflowsConfig({
               res.workflow!,
               ...prev.filter((w) => w.id !== res.workflow!.id),
             ]);
-            toast.success(locale === "mr" ? "कार्यप्रवाह यशस्वीरित्या जतन केला." : "Workflow saved successfully.");
-            setIsDrawerOpen(false);
+            toast.success(
+              locale === 'mr'
+                ? 'कार्यप्रवाह यशस्वीरित्या जतन केला.'
+                : 'Workflow saved successfully.'
+            );
+            closeDrawer();
             return;
           } else if (!res.success) {
-            toast.error(res.error || (locale === "mr" ? "कार्यप्रवाह जतन करण्यात त्रुटी आली." : "Failed to save workflow."));
+            toast.error(
+              res.error ||
+                (locale === 'mr'
+                  ? 'कार्यप्रवाह जतन करण्यात त्रुटी आली.'
+                  : 'Failed to save workflow.')
+            );
             return;
           }
         }
-        setIsDrawerOpen(false);
+        closeDrawer();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Error saving workflow");
+        toast.error(err instanceof Error ? err.message : 'Error saving workflow');
       }
     });
   };
 
   const columns: Column<WorkflowTableRow>[] = [
     {
-      key: "id",
-      label: t("workflowMaster.colSrNo"),
-      width: "80px",
-      align: "center",
+      key: 'id',
+      label: t('workflowMaster.colSrNo'),
+      width: '80px',
+      align: 'center',
       render: (_, __, index) => (pageNumber - 1) * pageSize + index + 1,
     },
     {
-      key: "flowName",
-      label: t("workflowMaster.colFlowName"),
+      key: 'flowName',
+      label: t('workflowMaster.colFlowName'),
       render: (_, row) => (
         <div>
           <div className="font-bold text-slate-800">{row.flowName}</div>
-          <div className="text-[11px] text-slate-400 font-medium">Flow ID: #{row.id}</div>
+          <div className="text-[11px] font-medium text-slate-400">
+            {t('workflowMaster.flowId', { id: row.id })}
+          </div>
         </div>
       ),
     },
     {
-      key: "serviceId",
-      label: t("workflowMaster.colService"),
+      key: 'serviceId',
+      label: t('workflowMaster.colService'),
       render: (_, row) => {
-        const serviceObj = data.services.find(s => String(s.id) === String(row.serviceId));
+        const serviceObj = data.services.find((s) => String(s.id) === String(row.serviceId));
         const serviceName = serviceObj
-          ? (locale === "mr" ? serviceObj.nameLocal || serviceObj.name : serviceObj.name)
+          ? locale === 'mr'
+            ? serviceObj.nameLocal || serviceObj.name
+            : serviceObj.name
           : `Service #${row.serviceId}`;
         return (
           <span className="font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md text-xs">
@@ -306,328 +602,363 @@ export default function RtsWorkflowsConfig({
       },
     },
     {
-      key: "isActive",
-      label: t("workflowMaster.colStatus"),
-      align: "center",
+      key: 'isActive',
+      label: t('workflowMaster.colStatus'),
+      align: 'center',
       render: (_, row) => (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-          row.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-500"
-        }`}>
-          {row.isActive ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-          {row.isActive ? t("workflowMaster.active") : t("workflowMaster.inactive")}
-        </span>
+        <StatusBadge
+          value={row.isActive}
+          activeLabel={t('workflowMaster.active')}
+          inactiveLabel={t('workflowMaster.inactive')}
+          className="justify-center"
+        />
       ),
     },
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gradient-to-r from-[#173B73] to-[#4b70a6] p-6 rounded-2xl text-white shadow-lg">
+    <div className="space-y-4">
+      <Card className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
-            <GitMerge className="h-8 w-8 text-amber-300" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
+            <GitMerge className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight">{t("workflowMaster.title")}</h1>
-            <p className="text-xs text-slate-200 mt-1">{t("workflowMaster.subtitle")}</p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-800">
+              {t('workflowMaster.title')}
+            </h1>
+            <p className="text-xs text-slate-500">{t('workflowMaster.subtitle')}</p>
           </div>
         </div>
-        <button
-          onClick={handleOpenAddDrawer}
-          className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-md transition text-xs"
-        >
-          <Plus className="h-4 w-4" />
-          {t("workflowMaster.addBtn")}
-        </button>
-      </div>
+        <AddButton type="button" onClick={handleOpenAddDrawer} label={t('workflowMaster.addBtn')} />
+      </Card>
 
       {/* Filter Bar */}
-      <Card className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.filterDept")}</label>
-            <select
+      <Card className="border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase text-[#3d3d3d]">
+              {t('workflowMaster.filterDept')}
+            </label>
+            <Select
               value={selectedDeptId}
-              onChange={(e) => {
-                setSelectedDeptId(e.target.value);
-                setSelectedServiceId("All");
+              selectSize="sm"
+              ariaLabel={t('workflowMaster.filterDept')}
+              options={[
+                { label: t('workflowMaster.allDepts'), value: 'All' },
+                ...data.departments.map((department) => ({
+                  label:
+                    locale === 'mr' ? department.nameLocal || department.name : department.name,
+                  value: department.id,
+                })),
+              ]}
+              onChange={(_, value) => {
+                setSelectedDeptId(value);
+                setSelectedServiceId('All');
                 setPageNumber(1);
               }}
-              className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-              <option value="All" className="text-slate-900 font-semibold">{t("workflowMaster.allDepts")}</option>
-              {data.departments.map(d => (
-                <option key={d.id} value={d.id} className="text-slate-900 font-semibold">
-                  {locale === "mr" ? d.nameLocal || d.name : d.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.filterService")}</label>
-            <select
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase text-[#3d3d3d]">
+              {t('workflowMaster.filterStatus')}
+            </label>
+            <Select
+              value={selectedStatus}
+              selectSize="sm"
+              ariaLabel={t('workflowMaster.filterStatus')}
+              options={[
+                { label: t('workflowMaster.allStatuses'), value: 'All' },
+                { label: t('workflowMaster.active'), value: 'Active' },
+                { label: t('workflowMaster.inactive'), value: 'Inactive' },
+              ]}
+              onChange={(_, value) => {
+                setSelectedStatus(value as 'All' | 'Active' | 'Inactive');
+                setPageNumber(1);
+              }}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase text-[#3d3d3d]">
+              {t('workflowMaster.filterService')}
+            </label>
+            <Select
               value={selectedServiceId}
-              onChange={(e) => {
-                setSelectedServiceId(e.target.value);
+              selectSize="sm"
+              ariaLabel={t('workflowMaster.filterService')}
+              options={[
+                { label: t('workflowMaster.allServices'), value: 'All' },
+                ...filteredServicesForFilter.map((service) => ({
+                  label: locale === 'mr' ? service.nameLocal || service.name : service.name,
+                  value: service.id,
+                })),
+              ]}
+              onChange={(_, value) => {
+                setSelectedServiceId(value);
                 setPageNumber(1);
               }}
-              className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-              <option value="All" className="text-slate-900 font-semibold">{t("workflowMaster.allServices")}</option>
-              {filteredServicesForFilter.map(s => (
-                <option key={s.id} value={s.id} className="text-slate-900 font-semibold">
-                  {locale === "mr" ? s.nameLocal || s.name : s.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">{t("workflowMaster.searchLabel")}</label>
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase text-[#3d3d3d]">
+              {t('workflowMaster.searchLabel')}
+            </label>
             <div className="relative">
-              <input
+              <Input
                 type="text"
-                placeholder={t("workflowMaster.searchPh")}
+                placeholder={t('workflowMaster.searchPh')}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   setPageNumber(1);
                 }}
-                className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 pl-8 focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-slate-400"
+                fullWidth
+                className="h-8 py-1.5 pl-8 text-xs"
               />
-              <Search className="h-4 w-4 text-slate-500 absolute left-2.5 top-2.5" />
+              <Search className="pointer-events-none absolute left-2.5 top-2 h-4 w-4 text-slate-400" />
             </div>
           </div>
         </div>
       </Card>
 
       {/* Workflows Table */}
-      <Card className="overflow-hidden border border-slate-200 rounded-xl shadow-sm">
-        <MasterTable<WorkflowTableRow>
-          columns={columns}
-          data={paginatedWorkflows}
-          loading={isPending}
-          emptyText={t("workflowMaster.empty")}
-          getRowKey={(row) => String(row.id)}
-          renderActions={(row) => (
-            <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={() => handleOpenEditDrawer(row)}
-                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                title="Edit Workflow"
-              >
-                <Edit2 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => handleDeleteWorkflow(row.id)}
-                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                title="Delete Workflow"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          actionLabel={t("workflowMaster.colActions")}
-          pageNumber={pageNumber}
-          pageSize={pageSize}
-          totalCount={filteredWorkflows.length}
-          totalPages={totalPages}
-          onPageChange={setPageNumber}
-          onPageSizeChange={setPageSize}
-          paginationConfig={{
-            enabled: true,
-            showPageSizeSelector: true,
-          }}
-          pageSizeOptions={[5, 10, 20, 50]}
-          maxBodyHeightClassName="min-h-[200px] max-h-auto"
-          theadClassName={RTS_DASHBOARD_TABLE_HEAD_CLASS}
-          tableClassName={RTS_DASHBOARD_TABLE_CLASS}
-          containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
-          rowClassName={() => "hover:bg-blue-50"}
-        />
-      </Card>
+      <MasterTable<WorkflowTableRow>
+        columns={columns}
+        data={paginatedWorkflows}
+        loading={isPending}
+        emptyText={t('workflowMaster.empty')}
+        getRowKey={(row) => String(row.id)}
+        renderActions={(row) => (
+          <div className="flex items-center justify-center gap-2">
+            <EditButton
+              type="button"
+              onClick={() => handleOpenEditDrawer(row)}
+              title="Edit Workflow"
+              aria-label="Edit Workflow"
+            />
+            <button
+              type="button"
+              onClick={() => handleStatusChange(row)}
+              disabled={isPending}
+              className="rounded-md border border-blue-200 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+              title={row.isActive ? t('workflowMaster.deactivate') : t('workflowMaster.activate')}
+            >
+              {row.isActive ? t('workflowMaster.deactivate') : t('workflowMaster.activate')}
+            </button>
+          </div>
+        )}
+        actionLabel={t('workflowMaster.colActions')}
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        totalCount={filteredWorkflows.length}
+        totalPages={totalPages}
+        onPageChange={setPageNumber}
+        onPageSizeChange={setPageSize}
+        paginationConfig={{
+          enabled: true,
+          showPageSizeSelector: true,
+        }}
+        pageSizeOptions={[5, 10, 20, 50]}
+        maxBodyHeightClassName="min-h-[200px] max-h-auto"
+        theadClassName={RTS_DASHBOARD_TABLE_HEAD_CLASS}
+        tableClassName={RTS_DASHBOARD_TABLE_CLASS}
+        containerClassName={RTS_DASHBOARD_TABLE_CONTAINER_CLASS}
+        rowClassName={() => 'hover:bg-blue-50'}
+      />
 
       {/* Add / Edit Drawer */}
       <Drawer
         open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        title={editingWorkflow ? t("workflowMaster.editTitle") : t("workflowMaster.createTitle")}
+        onClose={closeDrawer}
+        title={editingWorkflow ? t('workflowMaster.editTitle') : t('workflowMaster.createTitle')}
         width="md"
-      >
-        <form onSubmit={handleSubmit} className="space-y-6 p-2">
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-800 mb-1 block">{t("workflowMaster.rtsServiceLabel")}</label>
-              <select
-                value={formServiceId}
-                onChange={(e) => setFormServiceId(e.target.value)}
-                className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                {data.services.map(s => (
-                  <option key={s.id} value={s.id} className="text-slate-900 font-semibold">
-                    {locale === "mr" ? s.nameLocal || s.name : s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 mb-1 block">{t("workflowMaster.flowNameLabel")}</label>
-              <input
-                type="text"
-                placeholder={t("workflowMaster.flowNamePh")}
-                value={formFlowName}
-                onChange={(e) => setFormFlowName(e.target.value)}
-                className="w-full text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
-                required
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="formIsActive"
-                checked={formIsActive}
-                onChange={(e) => setFormIsActive(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="formIsActive" className="text-xs font-bold text-slate-800 cursor-pointer">
-                {t("workflowMaster.isActiveLabel")}
-              </label>
-            </div>
-          </div>
-
-          {/* Dynamic Stages Section */}
-          <div className="border-t border-slate-200 pt-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-extrabold uppercase text-slate-800 flex items-center gap-1.5">
-                <GitMerge className="h-4 w-4 text-blue-600" />
-                {t("workflowMaster.pipelineTitle")} ({stages.length})
-              </h3>
-              <button
-                type="button"
-                onClick={handleAddStage}
-                className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                {t("workflowMaster.addStage")}
-              </button>
-            </div>
-
-            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-              {stages.map((stage, idx) => (
-                <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <span className="text-xs font-extrabold text-blue-950">Stage #{stage.stageOrder}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStage(idx)}
-                      className="text-rose-600 hover:text-rose-800 text-xs font-bold"
-                    >
-                      {t("workflowMaster.removeStage")}
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-700 block">{t("workflowMaster.stageNameLabel")}</label>
-                      <input
-                        type="text"
-                        value={stage.stageName}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setStages(prev => prev.map((s, i) => i === idx ? { ...s, stageName: val } : s));
-                        }}
-                        className="w-full text-xs font-semibold text-slate-900 border border-slate-300 rounded p-1.5 bg-white placeholder:text-slate-400"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-700 block">{t("workflowMaster.slaDaysLabel")}</label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={stage.slaDays}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setStages(prev => prev.map((s, i) => i === idx ? { ...s, slaDays: val } : s));
-                        }}
-                        className="w-full text-xs font-semibold text-slate-900 border border-slate-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 pt-1 text-[11px] font-bold text-slate-800">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={stage.canVerifyDocument}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setStages(prev => prev.map((s, i) => i === idx ? { ...s, canVerifyDocument: checked } : s));
-                        }}
-                      />
-                      {t("workflowMaster.verifyDocs")}
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={stage.canApprove}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setStages(prev => prev.map((s, i) => i === idx ? { ...s, canApprove: checked } : s));
-                        }}
-                      />
-                      {t("workflowMaster.approve")}
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={stage.canReject}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setStages(prev => prev.map((s, i) => i === idx ? { ...s, canReject: checked } : s));
-                        }}
-                      />
-                      {t("workflowMaster.reject")}
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={stage.isFinalStage}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setStages(prev => prev.map((s, i) => i === idx ? { ...s, isFinalStage: checked } : s));
-                        }}
-                      />
-                      {t("workflowMaster.finalStage")}
-                    </label>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg"
-            >
-              {t("workflowMaster.cancel")}
-            </button>
-            <button
+        className="max-w-[96vw]"
+        hideHeader
+        bodyClassName="relative overflow-hidden"
+        footer={
+          <>
+            <CancelButton type="button" onClick={closeDrawer} label={t('workflowMaster.cancel')} />
+            <SaveButton
               type="submit"
-              disabled={isPending}
-              className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm"
+              form="rts-workflow-form"
+              disabled={isPending || stagesLoading || Boolean(stagesError)}
+              isLoading={isPending}
+              label={editingWorkflow ? t('workflowMaster.update') : t('workflowMaster.save')}
+            />
+          </>
+        }
+      >
+        <div className="absolute inset-0 flex min-h-0 flex-col overflow-hidden bg-slate-50/60">
+          <header className="flex shrink-0 items-center justify-between gap-3 border-b-2 border-blue-200 bg-[#143d7d] px-5 py-3 text-white shadow-sm">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-white/10">
+                <GitMerge className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-sm font-extrabold tracking-tight">
+                  {editingWorkflow
+                    ? t('workflowMaster.editTitle')
+                    : t('workflowMaster.createTitle')}
+                </h2>
+                <p className="truncate text-[11px] font-medium text-blue-100">
+                  {t('workflowMaster.drawerSubtitle')}
+                </p>
+              </div>
+            </div>
+          </header>
+
+          <form
+            id="rts-workflow-form"
+            onSubmit={handleSubmit}
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto p-2"
+          >
+            <Card padding="sm" className="rounded-2xl border-slate-200 p-4 shadow-sm">
+              <h3 className="mb-4 border-b border-slate-100 pb-3 text-sm font-extrabold text-blue-950">
+                {t('workflowMaster.workflowDetails')}
+              </h3>
+              <div className="grid gap-4">
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    {t('workflowMaster.departmentLabel')}
+                  </label>
+                  <Select
+                    value={formDepartmentId}
+                    selectSize="sm"
+                    ariaLabel={t('workflowMaster.departmentLabel')}
+                    options={[
+                      { label: t('workflowMaster.chooseDepartment'), value: '' },
+                      ...data.departments.map((department) => ({
+                        label:
+                          locale === 'mr'
+                            ? department.nameLocal || department.name
+                            : department.name,
+                        value: department.id,
+                      })),
+                    ]}
+                    onChange={(_, value) => {
+                      setFormDepartmentId(value);
+                      setFormServiceId('');
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    {t('workflowMaster.rtsServiceLabel')}
+                  </label>
+                  <Select
+                    value={formServiceId}
+                    selectSize="sm"
+                    disabled={!formDepartmentId}
+                    ariaLabel={t('workflowMaster.rtsServiceLabel')}
+                    options={[
+                      { label: t('workflowMaster.chooseService'), value: '' },
+                      ...formServices.map((service) => ({
+                        label: locale === 'mr' ? service.nameLocal || service.name : service.name,
+                        value: service.id,
+                      })),
+                    ]}
+                    onChange={(_, value) => {
+                      setFormServiceId(value);
+                    }}
+                  />
+                </div>
+                <TextArea
+                  label={t('workflowMaster.flowNameLabel')}
+                  rows={2}
+                  maxLength={200}
+                  placeholder={t('workflowMaster.flowNamePh')}
+                  value={formFlowName}
+                  onChange={(event) => setFormFlowName(event.target.value)}
+                  className="min-h-20 resize-none text-sm"
+                  required
+                />
+                <div className="flex items-center rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3 [&>div]:w-full [&>div]:justify-between">
+                  <ToggleSwitch
+                    checked={formIsActive}
+                    onChange={setFormIsActive}
+                    label={t('workflowMaster.isActiveLabel')}
+                    activeLabel={t('workflowMaster.active')}
+                    inactiveLabel={t('workflowMaster.inactive')}
+                    showPopup={false}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            <Card
+              padding="sm"
+              className="min-w-0 space-y-3 rounded-2xl border-slate-200 bg-slate-50/70 shadow-sm"
             >
-              {editingWorkflow ? t("workflowMaster.update") : t("workflowMaster.save")}
-            </button>
-          </div>
-        </form>
+              <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                <h3 className="text-sm font-extrabold text-blue-950">
+                  {t('workflowMaster.pipelineTitle')}
+                </h3>
+                <AddButton
+                  type="button"
+                  onClick={handleAddStage}
+                  size="xs"
+                  label={t('workflowMaster.addStage')}
+                />
+              </div>
+              {stagesError && (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700"
+                >
+                  {stagesError}
+                </p>
+              )}
+              {stagesLoading && (
+                <p className="text-xs text-slate-500">{t('workflowMaster.loadingStages')}</p>
+              )}
+              {!stagesLoading &&
+                stages.map((stage, index) => (
+                  <div key={stage.id ?? `new-${index}`} className="relative pl-9">
+                    {index < stages.length - 1 && (
+                      <span
+                        aria-hidden="true"
+                        className="absolute bottom-[-0.75rem] left-[0.72rem] top-7 w-px bg-blue-200"
+                      />
+                    )}
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-3 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white ring-4 ring-slate-50"
+                    >
+                      {stage.stageOrder}
+                    </span>
+                    <StageConfigCard
+                      stage={stage}
+                      onRemove={() => handleRemoveStage(index)}
+                      onManageUsers={() => openStageUsersDrawer(stage)}
+                      onChange={(updated) =>
+                        setStages((previous) =>
+                          previous.map((item, itemIndex) => (itemIndex === index ? updated : item))
+                        )
+                      }
+                    />
+                  </div>
+                ))}
+            </Card>
+          </form>
+        </div>
       </Drawer>
+
+      <WorkflowStageOfficerEditor
+        open={isStageUsersDrawerOpen}
+        workflowId={editingWorkflow?.id ?? null}
+        stageId={isStageUsersDrawerOpen ? selectedStageId : null}
+        onClose={closeStageUsersDrawer}
+        onSaved={(stageId, userAllocationCount) =>
+          setStages((previous) =>
+            previous.map((stage) =>
+              stage.id === stageId ? { ...stage, userAllocationCount } : stage
+            )
+          )
+        }
+      />
     </div>
   );
 }

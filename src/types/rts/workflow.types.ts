@@ -17,9 +17,13 @@ export interface RtsApprovalFlowStageApiItem {
   approvalFlowId: number;
   stageOrder: number;
   stageName: string;
-  employeeTypeId: number;
+  userId: number;
   slaDays: number;
   canVerifyDocument: boolean;
+  canEdit?: boolean;
+  canViewNoteSheet?: boolean;
+  canIssueCertificate?: boolean;
+  canViewCertificate?: boolean;
   canApprove: boolean;
   canReject: boolean;
   canReturn: boolean;
@@ -33,17 +37,38 @@ export interface RtsApprovalFlowStageApiItem {
   officerName?: string | null;
 }
 
-/** GET /RTSApprovalFlowMaster/stages/{serviceId} response payload. */
-export interface RtsApprovalFlowStagesByServiceItem {
-  flowId: number;
-  serviceId: number;
-  flowName: string;
-  stages: RtsApprovalFlowStageApiItem[];
+/** Approval-stage master API shape. Officer assignment lives in the allocation master. */
+export interface RtsApprovalFlowStageMasterApiItem {
+  id: number;
+  approvalFlowId: number;
+  stageOrder: number;
+  stageName: string;
+  slaDays: number;
+  canVerifyDocument: boolean;
+  canEdit?: boolean;
+  canViewNoteSheet?: boolean;
+  canIssueCertificate?: boolean;
+  canViewCertificate?: boolean;
+  canApprove: boolean;
+  canReject: boolean;
+  canReturn: boolean;
+  canPay: boolean;
+  isFinalStage: boolean;
+  /** Count of saved active and inactive candidate-user allocations for this stage. */
+  userAllocationCount?: number;
 }
 
-export interface RtsApprovalFlowStagesByServiceApiResponse {
-  status: boolean;
-  data?: RtsApprovalFlowStagesByServiceItem;
+/** Candidate officer allocation with optional display fields from the user master. */
+export interface RtsStageUserAllocationApiItem {
+  id: number;
+  approvalFlowStageId: number | null;
+  userId: number | null;
+  priority: number | null;
+  isActive: boolean;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  userName?: string | null;
 }
 
 export type WorkflowActionType = 'verifyDocument' | 'approve' | 'reject' | 'return' | 'pay';
