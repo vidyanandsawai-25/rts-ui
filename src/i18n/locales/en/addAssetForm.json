@@ -1,4 +1,16 @@
 {
+  "common": {
+    "loading": "Loading..."
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "submit": "Submit"
+  },
   "stepper": {
     "editingAsset": "Editing Asset #{assetNo}",
     "steps": {

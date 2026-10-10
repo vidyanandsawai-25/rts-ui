@@ -88,7 +88,14 @@ export const inventoryBatchService = {
       }
 
       if (!response.ok || (data && data.success === false)) {
-        return { success: false, error: data.message || data.error || `Failed with status ${response.status}` };
+        let errorMsg = data.message || data.error || data.detail || data.title;
+        if (data.errors && typeof data.errors === 'object') {
+          const errList = Object.entries(data.errors)
+            .map(([field, msgs]: [string, any]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join('; ');
+          if (errList) errorMsg = errList;
+        }
+        return { success: false, error: errorMsg || `Failed with status ${response.status}` };
       }
 
       return { success: true, data: data };
@@ -105,7 +112,10 @@ export const inventoryBatchService = {
 
     Object.keys(item).forEach(key => {
       if (key !== 'units' && key !== 'documentFiles' && key !== 'documentMetadata') {
-        if (item[key] !== null && item[key] !== undefined) {
+        if (item[key] !== null && item[key] !== undefined && item[key] !== '') {
+          if (key === 'inventoryItemModelId' && (Number(item[key]) === 0 || !item[key])) {
+            return;
+          }
           fd.append(key, String(item[key]));
         }
       }
@@ -143,6 +153,13 @@ export const inventoryBatchService = {
     if (response.ok && data && data.success !== false) {
       return { ok: true, data };
     }
-    return { ok: false, error: `${item.itemName}: ${data?.message || data?.error || 'Failed with status ' + response.status}` };
+    let errorMsg = data?.message || data?.error || data?.detail || data?.title;
+    if (data?.errors && typeof data.errors === 'object') {
+      const errList = Object.entries(data.errors)
+        .map(([field, msgs]: [string, any]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+        .join('; ');
+      if (errList) errorMsg = errList;
+    }
+    return { ok: false, error: `${item.itemName}: ${errorMsg || 'Failed with status ' + response.status}` };
   },
 };

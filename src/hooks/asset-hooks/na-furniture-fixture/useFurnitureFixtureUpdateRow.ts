@@ -58,8 +58,12 @@ export function useFurnitureFixtureUpdateRow(deps: UpdateRowDeps) {
     setIsSaving(true);
     try {
       if (payload.quantity !== existingRow.quantity) {
-        await deleteInventoryBatchAction(existingRow.batchId);
         const ids = resolveInventoryIds(editForm, categories, itemNames, itemModels, conditions, departments);
+        if (!ids.isValid || ids.error) {
+          setIsSaving(false);
+          return setFormError(ids.error || "Selected item or model hierarchy is invalid.");
+        }
+        await deleteInventoryBatchAction(existingRow.batchId);
         const createPayload = buildInventoryBatchApiPayload(parentAssetId!, ids, {
           specifications: payload.specifications !== "NA" ? payload.specifications : "",
           purchaseDate: payload.purchaseDate,

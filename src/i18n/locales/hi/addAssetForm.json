@@ -1,4 +1,16 @@
 {
+  "common": {
+    "loading": "लोड हो रहा है..."
+  },
+  "actions": {
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "add": "जोड़ें",
+    "close": "बंद करें",
+    "submit": "जमा करें"
+  },
   "stepper": {
     "editingAsset": "संपत्ति #{assetNo} संपादित की जा रही है",
     "steps": {

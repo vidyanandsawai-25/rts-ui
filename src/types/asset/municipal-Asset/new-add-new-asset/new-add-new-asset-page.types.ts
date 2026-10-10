@@ -20,6 +20,7 @@ import type { ParentSubunitLookupItem } from "./basic-info-actions.types";
 import type { AssetFormData } from "./asset-wizard.types";
 import type { ProcessedField } from "./asset-field-renderer.types";
 import type { UseNAFormOrchestratorReturn } from "./form-orchestrator.types";
+import type { ValuationResponse } from "./review-submit.types";
 
 export interface NewAddNewAssetPageProps {
   wards?: Ward[];
@@ -41,6 +42,7 @@ export interface NewAddNewAssetPageProps {
   initialBatches?: InventoryBatchListResponse | null;
   initialPhotoTypes?: PropertyPhotoTypeWithStatusDto[];
   initialDbPhotos?: PropertyPhotoDto[];
+  initialValuationData?: ValuationResponse | null;
 }
 
 export interface NAAssetMediaProps {

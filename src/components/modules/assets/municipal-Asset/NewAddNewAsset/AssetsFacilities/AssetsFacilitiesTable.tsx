@@ -74,7 +74,7 @@ export function AssetsFacilitiesTable({
               <th className="px-4 py-1.5 font-black text-[#1c2aab] text-center">CV</th>
               <th className="px-4 py-1.5 font-black text-[#1c2aab] text-center">{t("photo") || "Photo"}</th>
               <th className="px-4 py-1.5 font-black text-[#1c2aab] text-center">{t("invoice") || "Invoice"}</th>
-              <th className="px-4 py-1.5 font-black text-[#1c2aab] text-center">{t("actions") || "Actions"}</th>
+              <th className="px-4 py-1.5 font-black text-[#1c2aab] text-center">{t("actions.title") || t("actionColumn") || "Actions"}</th>
             </tr>
           </thead>
           <tbody className="bg-white">

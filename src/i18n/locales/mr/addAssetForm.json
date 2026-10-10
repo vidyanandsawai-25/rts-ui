@@ -1,4 +1,16 @@
 {
+  "common": {
+    "loading": "लोड होत आहे..."
+  },
+  "actions": {
+    "cancel": "रद्द करा",
+    "save": "जतन करा",
+    "delete": "हटवा",
+    "edit": "संपादित करा",
+    "add": "जोडा",
+    "close": "बंद करा",
+    "submit": "सबमिट करा"
+  },
   "stepper": {
     "editingAsset": "मालमत्ता #{assetNo} संपादित करत आहे",
     "steps": {

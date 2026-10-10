@@ -34,3 +34,4 @@ export * from './assets-facilities.types';
 export * from './floor-components.types';
 export * from './sub-units-components.types';
 export * from './photo-plan-viewer.types';
+export * from './review-submit.types';

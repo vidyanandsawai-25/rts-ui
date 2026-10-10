@@ -47,3 +47,67 @@ export interface InventoryBatchListResponse {
   totalCapitalValue: number;
   batches: InventoryBatchDetail[];
 }
+
+export interface InventoryConditionDetail {
+  id?: number | string;
+  conditionName?: string;
+  conditionFactor?: number;
+  [key: string]: unknown;
+}
+
+export interface ResolvedInventoryIds {
+  c: number;
+  n: number;
+  m: number;
+  cond?: InventoryConditionDetail | null;
+  d: number;
+  isValid: boolean;
+  error?: string;
+}
+
+export interface InventoryQuantityValidationResult {
+  isValid: boolean;
+  error?: string;
+  value?: number;
+}
+
+export interface InventoryUnitValueValidationResult {
+  isValid: boolean;
+  error?: string;
+  value?: number;
+}
+
+export interface InventoryResolveIdsInput {
+  category?: string;
+  itemName?: string;
+  modelName?: string;
+  condition?: string;
+  owningDepartment?: string;
+  itemCategoryId?: number;
+  itemId?: number;
+  inventoryItemModelId?: number;
+  inventoryItemConditionId?: number;
+  owningDepartmentId?: number;
+}
+
+export interface InventoryBatchPayloadSource {
+  specifications?: string;
+  purchaseDate?: string;
+  quantity: number | string;
+  unitValue: number | string;
+  invoiceNumber?: string;
+  invoiceDate?: string;
+  invoiceFileName?: string;
+  photoName?: string;
+  unitDynamicAttributes?: Record<number, Record<string, unknown>>;
+}
+
+export interface BuildInventoryDocumentFilesResult {
+  documentFiles: File[];
+  documentMetadata: Array<{
+    documentTypeId: number;
+    displayOrder: number;
+    remarks: string;
+    isEnabled: boolean;
+  }>;
+}

@@ -36,6 +36,11 @@ export function useFurnitureFixtureSaveAll(deps: SaveAllDeps) {
 
       for (const row of unsavedRows) {
         const ids = resolveInventoryIds(row, categories, itemNames, itemModels, conditions, departments);
+        if (!ids.isValid || ids.error) {
+          setSaveError(ids.error || "Selected item or model hierarchy is invalid.");
+          setIsSaving(false);
+          return { success: false, error: ids.error };
+        }
         const apiPayload = buildInventoryBatchApiPayload(parentAssetId, ids, {
           specifications: row.specifications && row.specifications !== "NA" ? row.specifications : "",
           purchaseDate: row.purchaseDate,

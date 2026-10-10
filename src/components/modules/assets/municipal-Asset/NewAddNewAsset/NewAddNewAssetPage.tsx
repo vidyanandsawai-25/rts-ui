@@ -16,6 +16,7 @@ import { useNAInitialDataLoaders } from "@/hooks/asset/municipal-Asset/new-add-n
 import { useNAAssetForm } from "./NAAssetFormContext";
 import { LocationOwnershipContent } from "./ownership";
 import { AssetsFacilitiesContent } from "./AssetsFacilities/AssetsFacilitiesContent";
+import { ReviewSubmitContent } from "./review-submit";
 import type {
   NewAddNewAssetPageProps,
   FloorCvRollup,
@@ -48,7 +49,13 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
       ? Boolean(orchestrator.formData.isMovableCategory)
       : props.initialWizardData?.isMovableCategory !== undefined
         ? Boolean(props.initialWizardData.isMovableCategory)
-        : categoryKey === "MOVABLE";
+        : /movable|vehicle|equipment|furniture|जंगम|वाहन|उपकरण/i.test(category) || categoryKey === "MOVABLE";
+
+  const isLandCategory =
+    Number(props.initialWizardData?.categoryId || orchestrator.formData.categoryId || 0) === 2 ||
+    /land|plot|जमीन|भूखंड/i.test(category);
+
+  const isBuilding = !isMovable && !isLandCategory;
 
   const hasInventory =
     orchestrator.formData.hasInventory !== undefined
@@ -100,6 +107,7 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
     }
   }
   const [cvRollup, setCvRollup] = useState<FloorCvRollup | number | null>(null);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [isFinalSubmitting, setIsFinalSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState<{ assetName: string; assetCode: string } | null>(null);
 
@@ -113,6 +121,9 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
 
   const goToStep = (step: number) => {
     if (step >= 1 && step <= steps.length) {
+      if (currentStep === steps.length && step !== currentStep) {
+        setIsConfirmed(false);
+      }
       const targetStep = steps[step - 1];
       const assetId = Number(orchestrator.assetId || orchestrator.formData.id || orchestrator.formData.assetId || searchParams.get("assetId") || searchParams.get("id") || 0);
       if (assetId > 0 && detectedStepKey && targetStep) {
@@ -125,9 +136,16 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
   };
 
   const handleFinalSubmit = async () => {
+    if (isFinalSubmitting) return;
+
     const assetId = Number(orchestrator.assetId || orchestrator.formData.id || orchestrator.formData.assetId);
     if (!assetId || assetId <= 0) {
       toast.error(t("notifications.assetIdNotFound"));
+      return;
+    }
+
+    if (currentStep === steps.length && !isConfirmed) {
+      toast.error(t("notifications.pleaseConfirmDeclaration") || "Please confirm the declaration before submitting.");
       return;
     }
 
@@ -144,7 +162,11 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
           assetCode: orchestrator.formData.assetCode || "",
         });
       } else {
-        toast.error(result.error || t("notifications.finalSubmitFailed"));
+        if (result.validationErrors && result.validationErrors.length > 0) {
+          toast.error(`${result.error} (${result.validationErrors.join(", ")})`);
+        } else {
+          toast.error(result.error || t("notifications.finalSubmitFailed"));
+        }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : t("notifications.unexpectedSubmitError");
@@ -248,10 +270,30 @@ export function NewAddNewAssetPage(props: NewAddNewAssetPageProps) {
               }
             />
           </div>
+        ) : activeStepKey === "review" ? (
+          <div className="flex-1 overflow-y-auto p-6 bg-[#F8FAFC]">
+            <ReviewSubmitContent
+              assetId={resolvedAssetId}
+              isBuilding={isBuilding}
+              formData={orchestrator.formData}
+              ownershipTypes={props.ownershipTypes}
+              initialValuationData={props.initialValuationData}
+              onEditStep={(stepNum) => {
+                setIsConfirmed(false);
+                const targetKey = stepNum === 1 ? "basic-info" : stepNum === 2 ? "location" : stepNum === 3 ? "inventory" : "review";
+                const foundIdx = steps.findIndex((s) => s.key === targetKey);
+                if (foundIdx !== -1) {
+                  goToStep(foundIdx + 1);
+                }
+              }}
+              isConfirmed={isConfirmed}
+              setIsConfirmed={setIsConfirmed}
+            />
+          </div>
         ) : (
           <div className="flex-1 overflow-y-auto bg-[#F8FAFC] p-6 flex items-center justify-center">
             <div className="bg-white border border-slate-200 rounded-xl p-8 max-w-md text-center shadow-sm">
-              {activeStepKey === "review" && <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />}
+              <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
               <h3 className="text-lg font-semibold text-slate-800 mb-1">
                 {t("stepper.steps.review.title")}
               </h3>

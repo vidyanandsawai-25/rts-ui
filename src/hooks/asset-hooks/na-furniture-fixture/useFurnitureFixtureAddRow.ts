@@ -47,6 +47,10 @@ export function useFurnitureFixtureAddRow(deps: AddRowDeps) {
     setIsSaving(true); setFormError("");
     try {
       const ids = resolveInventoryIds(form, categories, itemNames, itemModels, conditions, departments);
+      if (!ids.isValid || ids.error) {
+        setIsSaving(false);
+        return setFormError(ids.error || "Selected item or model hierarchy is invalid.");
+      }
       const apiPayload = buildInventoryBatchApiPayload(parentAssetId, ids, {
         specifications: form.specifications,
         purchaseDate: form.purchaseDate,
