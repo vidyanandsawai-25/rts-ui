@@ -20,10 +20,14 @@ import {
 } from "@/lib/api/rts/rtsdocument.client";
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
-import { getPaymentReceiptAction, getPaymentStatusAction } from "@/app/[locale]/service/payment/actions";
+import {
+  getPaymentReceiptAction,
+  getPaymentStatusAction,
+  initializePendingPaymentAction,
+} from "@/app/[locale]/service/payment/actions";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { Language } from "@/types/language.type";
-import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
 
 type RtsCitizenViewDetailsDrawerProps = {
   application: RtsMisDashboardUserApplicationItem | null;
@@ -158,20 +162,33 @@ export default function RtsCitizenViewDetailsDrawer({
   }, [applicationNumber, detailData]);
 
   useEffect(() => {
-    if (!applicationNumber || paymentStatusData !== undefined) return;
+    if (!applicationNumber) return;
 
     const applicationId = Number.parseInt(applicationNumber.replace(/\D/g, ""), 10);
     if (!Number.isFinite(applicationId) || applicationId <= 0) return;
 
     let cancelled = false;
 
-    void getPaymentStatusAction(applicationId)
-      .then((response) => {
-        if (!cancelled) setPaymentStatus(response.success ? response.data ?? null : null);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch citizen payment status:", error);
-      });
+    const loadPaymentStatus = async () => {
+      try {
+        let status = paymentStatusData;
+        if (status === undefined) {
+          const response = await getPaymentStatusAction(applicationId);
+          status = response.success ? response.data ?? null : null;
+        }
+
+        if (status && !status.hasPaymentTransaction) {
+          const initialized = await initializePendingPaymentAction(applicationId);
+          status = initialized.success ? initialized.data ?? status : status;
+        }
+
+        if (!cancelled) setPaymentStatus(status ?? null);
+      } catch (error) {
+        console.error("Failed to load citizen payment status:", error);
+      }
+    };
+
+    void loadPaymentStatus();
 
     return () => {
       cancelled = true;
@@ -181,11 +198,9 @@ export default function RtsCitizenViewDetailsDrawer({
   if (!application) return null;
 
   const resolvedDetail = detailData ?? detail;
-  const resolvedPaymentStatus = paymentStatusData !== undefined
-    ? paymentStatusData
-    : paymentStatus?.applicationNo.trim().toLowerCase() === applicationNumber?.trim().toLowerCase()
+  const resolvedPaymentStatus = paymentStatus?.applicationNo.trim().toLowerCase() === applicationNumber?.trim().toLowerCase()
       ? paymentStatus
-      : null;
+      : paymentStatusData ?? null;
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
   const appServiceName = (application?.serviceName || "").trim().toLowerCase();

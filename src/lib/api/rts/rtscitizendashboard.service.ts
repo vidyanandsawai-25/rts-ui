@@ -1,35 +1,8 @@
-import type { RtsMisDashboardUserApplicationItem } from '@/types/rts/rtsmisdashboard.types';
-
-export interface RtsCitizenDashboardRequest {
-  UpicId: string | null;
-  ApplicationNo: string | null;
-  ApplicationStatus: string | null;
-  FromDate: string | null;
-  ToDate: string | null;
-  pageNumber: number | null;
-  pageSize: number | null;
-}
-
-export type RtsCitizenDashboardRequestInput = Partial<RtsCitizenDashboardRequest>;
-
-export interface RtsCitizenDashboardAsyncResult {
-  result: RtsMisDashboardUserApplicationItem[] | null;
-  id: number | null;
-  exception: unknown | null;
-  status: number | null;
-  isCanceled: boolean;
-  isCompleted: boolean;
-  isCompletedSuccessfully: boolean;
-  creationOptions: number | null;
-  asyncState: unknown | null;
-  isFaulted: boolean;
-}
-
-export interface RtsCitizenDashboardResponse {
-  status: boolean;
-  message: string;
-  data: RtsCitizenDashboardAsyncResult;
-}
+import type {
+  RtsCitizenDashboardRequest,
+  RtsCitizenDashboardRequestInput,
+  RtsCitizenDashboardResponse,
+} from '@/types/rts/rtscitizendashboard.types';
 
 function getOneSolutionBaseUrl(): string {
   const baseUrl =

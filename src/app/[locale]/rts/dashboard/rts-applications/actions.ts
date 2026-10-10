@@ -2,7 +2,7 @@
 
 import { revalidatePath, unstable_cache } from 'next/cache';
 import { cookies, headers } from 'next/headers';
-import { getRtsMisDashboardData } from '@/lib/api/rts/rtsmisdashboard.service';
+import { getRtsCitizenDashboardData } from '@/lib/api/rts/rtscitizendashboard.service';
 import {
   getRtsApplicationDashboardData,
   type RtsApplicationDashboardRequestInput,
@@ -45,8 +45,8 @@ import { computeOverdueDays, computeRemainingDays } from '@/lib/utils/rts/applic
 import type {
   RtsMisDashboardApplicationItem,
   RtsMisDashboardDepartmentItem,
-  RtsMisDashboardResponse,
 } from '@/types/rts/rtsmisdashboard.types';
+import type { RtsCitizenDashboardResponse } from '@/types/rts/rtscitizendashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
 import type {
   ApplicationWorkflowState,
@@ -117,7 +117,7 @@ export async function uploadManualCertificateDocumentAction(formData: FormData):
   }
 }
 
-export async function getUserMisDashboardAction(upicId?: string): Promise<RtsMisDashboardResponse> {
+export async function getUserMisDashboardAction(upicId?: string): Promise<RtsCitizenDashboardResponse> {
   try {
     const cookieStore = await cookies();
     const resolvedUpicId =
@@ -127,8 +127,7 @@ export async function getUserMisDashboardAction(upicId?: string): Promise<RtsMis
       cookieStore.get('upic_id')?.value ||
       null;
 
-    return await getRtsMisDashboardData({
-      Flag: 'user',
+    return await getRtsCitizenDashboardData({
       UpicId: resolvedUpicId,
     });
   } catch (error) {
@@ -138,9 +137,9 @@ export async function getUserMisDashboardAction(upicId?: string): Promise<RtsMis
       status: false,
       message: 'Failed to fetch dashboard data.',
       data: {
-        serviceWiseData: [],
-        departmentWiseData: [],
-        userApplicationDashboardData: [],
+        result: [], id: null, exception: null, status: null,
+        isCanceled: false, isCompleted: false, isCompletedSuccessfully: false,
+        creationOptions: null, asyncState: null, isFaulted: false,
       },
     };
   }
@@ -261,13 +260,11 @@ export async function getRtsApplicationProcessDataAction(
     details.data.applicationStatus?.toLowerCase().includes('approv')
   ) {
     try {
-      const { getIssuedCertificateByApplicationNo } = await import(
-        '@/lib/api/rts/rtscertificate.service'
-      );
+      const { getIssuedCertificateByApplicationNo } =
+        await import('@/lib/api/rts/rtscertificate.service');
       const issued = await getIssuedCertificateByApplicationNo(details.data.applicationNo);
       if (issued) {
-        details.data.issuedCertificateGuid =
-          issued.documentGuid || issued.certificateGuid || null;
+        details.data.issuedCertificateGuid = issued.documentGuid || issued.certificateGuid || null;
       }
     } catch {
       // Ignore fallback failure
@@ -322,13 +319,11 @@ export async function getRtsApplicationFullDetailDataAction(
     details.data.applicationStatus?.toLowerCase().includes('approv')
   ) {
     try {
-      const { getIssuedCertificateByApplicationNo } = await import(
-        '@/lib/api/rts/rtscertificate.service'
-      );
+      const { getIssuedCertificateByApplicationNo } =
+        await import('@/lib/api/rts/rtscertificate.service');
       const issued = await getIssuedCertificateByApplicationNo(details.data.applicationNo);
       if (issued) {
-        details.data.issuedCertificateGuid =
-          issued.documentGuid || issued.certificateGuid || null;
+        details.data.issuedCertificateGuid = issued.documentGuid || issued.certificateGuid || null;
       }
     } catch {
       // Ignore fallback failure
@@ -379,7 +374,9 @@ async function resolveApprovalActor(applicationId: number): Promise<ApprovalActo
 async function submitApprovalDecision(
   applicationId: number,
   remark: string,
-  submit: (payload: RtsApplicationApprovalActionPayload) => Promise<RtsApplicationApprovalDecisionResponse>,
+  submit: (
+    payload: RtsApplicationApprovalActionPayload
+  ) => Promise<RtsApplicationApprovalDecisionResponse>,
   status: string
 ): Promise<RtsApplicationApprovalActionResult> {
   if (!Number.isInteger(applicationId) || applicationId <= 0) {
@@ -540,16 +537,22 @@ export async function getApplicationDetailAction(
       }
 
       const sId = (viewDetails as any)?.serviceId || applicationHeader?.serviceId || 0;
-      const sName = (viewDetails as any)?.serviceName || (applicationHeader as any)?.serviceName || null;
+      const sName =
+        (viewDetails as any)?.serviceName || (applicationHeader as any)?.serviceName || null;
       let isCertRequired = (viewDetails as any)?.isCertificateRequired;
       let certType = (viewDetails as any)?.certificateType;
 
       if (isCertRequired === undefined || certType === undefined) {
         const services = await getAllRtsServices().catch(() => []);
-        const matched = services.find((s) =>
-          (sId > 0 && s.id === sId) ||
-          (sName && s.serviceName && s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
-          (sName && s.serviceNameLocal && s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
+        const matched = services.find(
+          (s) =>
+            (sId > 0 && s.id === sId) ||
+            (sName &&
+              s.serviceName &&
+              s.serviceName.trim().toLowerCase() === sName.trim().toLowerCase()) ||
+            (sName &&
+              s.serviceNameLocal &&
+              s.serviceNameLocal.trim().toLowerCase() === sName.trim().toLowerCase())
         );
         if (matched) {
           isCertRequired = matched.isCertificateRequired === true && matched.certificateType !== 0;
@@ -557,7 +560,10 @@ export async function getApplicationDetailAction(
         }
       }
 
-      const rawStatus = (viewDetails as any)?.applicationStatus || applicationHeader?.applicationStatus || 'pending';
+      const rawStatus =
+        (viewDetails as any)?.applicationStatus ||
+        applicationHeader?.applicationStatus ||
+        'pending';
       const statusNorm = rawStatus.toLowerCase();
       const isTerminal = ['approved', 'rejected'].includes(statusNorm);
 
@@ -589,29 +595,33 @@ export async function getApplicationDetailAction(
       const dynamicWorkflow: ApplicationWorkflowState = {
         applicationId: numericId,
         applicationNo,
-        departmentId: sId > 0 ? ((viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0) : 0,
+        departmentId:
+          sId > 0 ? (viewDetails as any)?.departmentId || applicationHeader?.departmentId || 0 : 0,
         serviceId: sId,
         applicationStatus: mappedOverallStatus,
         paymentStatus: effectiveIsPaid
           ? 'Paid'
-          : verification?.feesRequired
+          : verification?.hasPaymentTransaction && Number(verification.payableFee ?? 0) > 0
             ? 'Pending'
             : 'NotRequired',
-        currentStage: verification && verification.stageId > 0 ? {
-          id: verification.stageId,
-          approvalFlowId: verification.approvalFlowId || 0,
-          stageOrder: verification.stageOrder || 1,
-          stageName: verification.stageName || '',
-          employeeTypeId: 0,
-          slaDays: verification.slaDays ?? 0,
-          canVerifyDocument: Boolean(verification.canVerifyDocument),
-          canApprove: Boolean(verification.canApprove),
-          canReject: Boolean(verification.canReject),
-          canReturn: Boolean(verification.canReturn),
-          canPay: Boolean(verification.canPay),
-          isFinalStage: Boolean(verification.isFinalStage),
-          isActive: true,
-        } : null,
+        currentStage:
+          verification && verification.stageId > 0
+            ? {
+                id: verification.stageId,
+                approvalFlowId: verification.approvalFlowId || 0,
+                stageOrder: verification.stageOrder || 1,
+                stageName: verification.stageName || '',
+                userId: 0,
+                slaDays: verification.slaDays ?? 0,
+                canVerifyDocument: Boolean(verification.canVerifyDocument),
+                canApprove: Boolean(verification.canApprove),
+                canReject: Boolean(verification.canReject),
+                canReturn: Boolean(verification.canReturn),
+                canPay: Boolean(verification.canPay),
+                isFinalStage: Boolean(verification.isFinalStage),
+                isActive: true,
+              }
+            : null,
         availableActions,
         history: (stageDetails?.approvalStages || [])
           .filter((s) => s.createdDate || s.status)
@@ -625,10 +635,12 @@ export async function getApplicationDetailAction(
             actionType: (s.status as TrackHistoryActionType) || 'Submitted',
             actionDate: s.createdDate || s.completedDate || '',
             performedByUserId: null,
-            performedByUserName: s.userName || (s.firstName ? `${s.firstName} ${s.lastName || ''}`.trim() : null),
+            performedByUserName:
+              s.userName || (s.firstName ? `${s.firstName} ${s.lastName || ''}`.trim() : null),
             remark: s.remark ?? null,
           })),
-        stageEnteredAt: stageDetails?.approvalStages?.find((s) => s.isCurrentStage)?.createdDate || null,
+        stageEnteredAt:
+          stageDetails?.approvalStages?.find((s) => s.isCurrentStage)?.createdDate || null,
       };
 
       if (
@@ -660,21 +672,24 @@ export async function getApplicationDetailAction(
           })
         );
 
-        const approvalFlowStages: RtsApprovalFlowStageApiItem[] = (stageDetails?.approvalStages || []).map((stg) => {
+        const approvalFlowStages: RtsApprovalFlowStageApiItem[] = (
+          stageDetails?.approvalStages || []
+        ).map((stg) => {
           const isCurrent = stg.isCurrentStage;
           return {
             id: stg.approvalFlowStageId,
             approvalFlowId: verification?.approvalFlowId || 0,
             stageOrder: stg.stageOrder,
             stageName: stg.stageName,
-            employeeTypeId: 0,
+            userId: 0,
             slaDays: isCurrent && verification ? verification.slaDays : 0,
-            canVerifyDocument: isCurrent && verification ? Boolean(verification.canVerifyDocument) : false,
+            canVerifyDocument:
+              isCurrent && verification ? Boolean(verification.canVerifyDocument) : false,
             canApprove: isCurrent && verification ? Boolean(verification.canApprove) : false,
             canReject: isCurrent && verification ? Boolean(verification.canReject) : false,
             canReturn: isCurrent && verification ? Boolean(verification.canReturn) : false,
             canPay: isCurrent && verification ? Boolean(verification.canPay) : false,
-            isFinalStage: stg.isFinalStage ?? (stg.stageOrder === stageDetails?.totalApprovalStages),
+            isFinalStage: stg.isFinalStage ?? stg.stageOrder === stageDetails?.totalApprovalStages,
             isActive: true,
             createdDate: stg.createdDate || '',
             updatedDate: null,
@@ -688,13 +703,11 @@ export async function getApplicationDetailAction(
 
         if (!resolvedIssuedCertificateGuid && applicationNo) {
           try {
-            const { getIssuedCertificateByApplicationNo } = await import(
-              '@/lib/api/rts/rtscertificate.service'
-            );
+            const { getIssuedCertificateByApplicationNo } =
+              await import('@/lib/api/rts/rtscertificate.service');
             const issued = await getIssuedCertificateByApplicationNo(applicationNo);
             if (issued) {
-              resolvedIssuedCertificateGuid =
-                issued.documentGuid || issued.certificateGuid || null;
+              resolvedIssuedCertificateGuid = issued.documentGuid || issued.certificateGuid || null;
             }
           } catch {
             // Ignore fallback failure
@@ -733,7 +746,10 @@ export async function getApplicationDetailAction(
         applicationStatus: rawStatus,
         isCertificateRequired: isCertRequired ?? false,
         certificateType: certType ?? 0,
-        issuedCertificateGuid: viewDetails?.issuedCertificateGuid || (applicationHeader as any)?.issuedCertificateGuid || null,
+        issuedCertificateGuid:
+          viewDetails?.issuedCertificateGuid ||
+          (applicationHeader as any)?.issuedCertificateGuid ||
+          null,
         answerGroups: [],
         workflow: dynamicWorkflow,
         approvalFlowStages: [],
@@ -844,7 +860,14 @@ export interface RtsApplicationsDashboardFilters {
   status?: string;
   fromDate?: string;
   toDate?: string;
-  sortBy?: 'applicationNo' | 'CreatedDate' | 'ApplicantName' | 'ApplicationStatus' | 'UpdatedDate' | 'RemainingDays' | 'FIFO';
+  sortBy?:
+    | 'applicationNo'
+    | 'CreatedDate'
+    | 'ApplicantName'
+    | 'ApplicationStatus'
+    | 'UpdatedDate'
+    | 'RemainingDays'
+    | 'FIFO';
   sortOrder?: 'asc' | 'desc';
   assignedUserId?: number;
   currentUserId?: number;
@@ -856,7 +879,10 @@ const DASHBOARD_PAGE_SIZE = 10;
 const SOURCE_PAGE_SIZE_LIMIT = 100;
 const APPLICATION_DASHBOARD_CACHE_SECONDS = 15;
 
-function toDashboardDateTime(value: string | undefined, boundary: 'start' | 'end'): string | undefined {
+function toDashboardDateTime(
+  value: string | undefined,
+  boundary: 'start' | 'end'
+): string | undefined {
   const date = value?.trim();
   if (!date) return undefined;
   if (date.includes('T')) return date;
@@ -865,14 +891,16 @@ function toDashboardDateTime(value: string | undefined, boundary: 'start' | 'end
 }
 
 const getCachedApplicationDashboardPage = unstable_cache(
-  async (payload: RtsApplicationDashboardRequestInput) =>
-    getRtsApplicationDashboardData(payload),
+  async (payload: RtsApplicationDashboardRequestInput) => getRtsApplicationDashboardData(payload),
   ['rts-application-dashboard-page'],
   { revalidate: APPLICATION_DASHBOARD_CACHE_SECONDS }
 );
 
 function getSourcePageSize(targetSize: number, loadAll: boolean): number {
-  return Math.max(1, Math.min(loadAll ? SOURCE_PAGE_SIZE_LIMIT : targetSize, SOURCE_PAGE_SIZE_LIMIT));
+  return Math.max(
+    1,
+    Math.min(loadAll ? SOURCE_PAGE_SIZE_LIMIT : targetSize, SOURCE_PAGE_SIZE_LIMIT)
+  );
 }
 
 function shouldLoadAllForGlobalSort(filters: RtsApplicationsDashboardFilters): boolean {
@@ -904,10 +932,7 @@ function getCreatedDateOrder(
 }
 
 function getHeadPageNumbers(totalCount: number, pageSize: number, targetSize: number): number[] {
-  const pageCount = Math.max(
-    1,
-    Math.ceil(Math.min(totalCount, targetSize) / pageSize)
-  );
+  const pageCount = Math.max(1, Math.ceil(Math.min(totalCount, targetSize) / pageSize));
   return Array.from({ length: pageCount }, (_, index) => index + 1);
 }
 
@@ -921,10 +946,7 @@ function getTailPageNumbers(totalCount: number, pageSize: number, targetSize: nu
     availableRows += pageSize;
   }
 
-  return Array.from(
-    { length: totalPages - firstPage + 1 },
-    (_, index) => firstPage + index
-  );
+  return Array.from({ length: totalPages - firstPage + 1 }, (_, index) => firstPage + index);
 }
 
 async function getApprovalApplicationsWindow(
@@ -938,36 +960,38 @@ async function getApprovalApplicationsWindow(
   const pageSize = getSourcePageSize(targetSize, loadAll);
   const hasExplicitSort = Boolean(filters.sortBy || filters.sortOrder);
   const isFifo = filters.isFifo ?? !hasExplicitSort;
-  const requestPage = (pageNumber: number) => getApprovalApplicationsPaged({
-    pageNumber,
-    pageSize,
-    departmentId: filters.departmentId,
-    serviceId: filters.serviceId,
-    applicationNo: filters.applicationNo,
-    search: filters.search ?? filters.applicationNo,
-    status: filters.status,
-    fromDate: toDashboardDateTime(filters.fromDate, 'start'),
-    toDate: toDashboardDateTime(filters.toDate, 'end'),
-    sortBy: hasExplicitSort ? filters.sortBy : undefined,
-    sortOrder: hasExplicitSort ? filters.sortOrder : undefined,
-    userId: filters.assignedUserId,
-    currentUserId: filters.currentUserId,
-    isFifo,
-  });
+  const requestPage = (pageNumber: number) =>
+    getApprovalApplicationsPaged({
+      pageNumber,
+      pageSize,
+      departmentId: filters.departmentId,
+      serviceId: filters.serviceId,
+      applicationNo: filters.applicationNo,
+      search: filters.search ?? filters.applicationNo,
+      status: filters.status,
+      fromDate: toDashboardDateTime(filters.fromDate, 'start'),
+      toDate: toDashboardDateTime(filters.toDate, 'end'),
+      sortBy: hasExplicitSort ? filters.sortBy : undefined,
+      sortOrder: hasExplicitSort ? filters.sortOrder : undefined,
+      userId: filters.assignedUserId,
+      currentUserId: filters.currentUserId,
+      isFifo,
+    });
 
   const firstPage = await requestPage(1);
-  const rowsToLoad = loadAll
-    ? firstPage.totalCount
-    : Math.min(firstPage.totalCount, targetSize);
+  const rowsToLoad = loadAll ? firstPage.totalCount : Math.min(firstPage.totalCount, targetSize);
   const pageCount = Math.max(1, Math.ceil(rowsToLoad / pageSize));
-  const remainingPages = pageCount > 1
-    ? await Promise.all(
-        Array.from({ length: pageCount - 1 }, (_, index) => requestPage(index + 2).catch((error) => {
-          console.error(`Failed to fetch approval application page ${index + 2}:`, error);
-          return null;
-        }))
-      )
-    : [];
+  const remainingPages =
+    pageCount > 1
+      ? await Promise.all(
+          Array.from({ length: pageCount - 1 }, (_, index) =>
+            requestPage(index + 2).catch((error) => {
+              console.error(`Failed to fetch approval application page ${index + 2}:`, error);
+              return null;
+            })
+          )
+        )
+      : [];
 
   return {
     applications: [
@@ -991,11 +1015,12 @@ async function getApplicationDashboardWindow(
   // The external endpoint has no working sort parameter. Detect its date
   // direction and load only the head or tail needed by the requested date sort.
   const pageSize = SOURCE_PAGE_SIZE_LIMIT;
-  const requestPage = (pageNumber: number) => getCachedApplicationDashboardPage({
-    ...payload,
-    PageNumber: pageNumber,
-    PageSize: pageSize,
-  });
+  const requestPage = (pageNumber: number) =>
+    getCachedApplicationDashboardPage({
+      ...payload,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+    });
   const firstResponse = await requestPage(1);
   if (!firstResponse.status) return null;
 
@@ -1006,27 +1031,31 @@ async function getApplicationDashboardWindow(
   const shouldLoadHead =
     (desiredSortOrder === 'asc' && dateOrder === 'ascending') ||
     (desiredSortOrder === 'desc' && dateOrder === 'descending');
-  const pageNumbers = loadAll || dateOrder === 'unknown'
-    ? Array.from({ length: totalPages }, (_, index) => index + 1)
-    : shouldLoadHead
-      ? getHeadPageNumbers(totalCount, pageSize, targetSize)
-      : getTailPageNumbers(totalCount, pageSize, targetSize);
+  const pageNumbers =
+    loadAll || dateOrder === 'unknown'
+      ? Array.from({ length: totalPages }, (_, index) => index + 1)
+      : shouldLoadHead
+        ? getHeadPageNumbers(totalCount, pageSize, targetSize)
+        : getTailPageNumbers(totalCount, pageSize, targetSize);
   const additionalPageNumbers = pageNumbers.filter((pageNumber) => pageNumber !== 1);
-  const additionalPages = additionalPageNumbers.length > 0
-    ? await Promise.all(
-        additionalPageNumbers.map((pageNumber) => requestPage(pageNumber).catch((error) => {
-          console.error(`Failed to fetch application-dashboard page ${pageNumber}:`, error);
-          return null;
-        }))
-      )
-    : [];
+  const additionalPages =
+    additionalPageNumbers.length > 0
+      ? await Promise.all(
+          additionalPageNumbers.map((pageNumber) =>
+            requestPage(pageNumber).catch((error) => {
+              console.error(`Failed to fetch application-dashboard page ${pageNumber}:`, error);
+              return null;
+            })
+          )
+        )
+      : [];
   const selectedFirstPage = pageNumbers.includes(1) ? firstApplications : [];
 
   return {
     applications: [
       ...selectedFirstPage,
       ...additionalPages.flatMap((response) =>
-        response?.status ? response.data?.applicationDahboardData ?? [] : []
+        response?.status ? (response.data?.applicationDahboardData ?? []) : []
       ),
     ],
     departments: firstResponse.data?.dashboardCardCount ?? [],
@@ -1111,13 +1140,19 @@ function compareDashboardRows(
 
   switch (sortBy) {
     case 'applicationNo':
-      comparison = left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true }) * direction;
+      comparison =
+        left.applicationNo.localeCompare(right.applicationNo, undefined, { numeric: true }) *
+        direction;
       break;
     case 'ApplicantName':
-      comparison = left.applicantName.localeCompare(right.applicantName, undefined, { sensitivity: 'base' }) * direction;
+      comparison =
+        left.applicantName.localeCompare(right.applicantName, undefined, { sensitivity: 'base' }) *
+        direction;
       break;
     case 'ApplicationStatus':
-      comparison = left.currentStatus.localeCompare(right.currentStatus, undefined, { sensitivity: 'base' }) * direction;
+      comparison =
+        left.currentStatus.localeCompare(right.currentStatus, undefined, { sensitivity: 'base' }) *
+        direction;
       break;
     case 'UpdatedDate': {
       const leftTime = new Date(left.lastUpdatedDate).getTime();
@@ -1162,9 +1197,7 @@ function sortDashboardRows(
   sortBy: RtsApplicationsDashboardFilters['sortBy'] = 'CreatedDate',
   sortOrder: RtsApplicationsDashboardFilters['sortOrder'] = 'asc'
 ): AdminApplicationGridRow[] {
-  return [...rows].sort((left, right) =>
-    compareDashboardRows(left, right, sortBy, sortOrder)
-  );
+  return [...rows].sort((left, right) => compareDashboardRows(left, right, sortBy, sortOrder));
 }
 
 function mergePrioritizedDashboardRows(
@@ -1175,13 +1208,10 @@ function mergePrioritizedDashboardRows(
   sortOrder: RtsApplicationsDashboardFilters['sortOrder'],
   preserveSourceOrder = false
 ): AdminApplicationGridRow[] {
-  const priorityApprovalRows = currentUserId == null
-    ? []
-    : approvalRows.filter((row) => row.assignedUserId === currentUserId);
+  const priorityApprovalRows =
+    currentUserId == null ? [] : approvalRows.filter((row) => row.assignedUserId === currentUserId);
   const remainingRows = [
-    ...approvalRows.filter(
-      (row) => currentUserId == null || row.assignedUserId !== currentUserId
-    ),
+    ...approvalRows.filter((row) => currentUserId == null || row.assignedUserId !== currentUserId),
     ...applicationDashboardRows,
   ];
 
@@ -1197,9 +1227,10 @@ function mergePrioritizedDashboardRows(
   ];
 }
 
-function deduplicateDashboardRows(
-  rows: AdminApplicationGridRow[]
-): { rows: AdminApplicationGridRow[]; duplicateCount: number } {
+function deduplicateDashboardRows(rows: AdminApplicationGridRow[]): {
+  rows: AdminApplicationGridRow[];
+  duplicateCount: number;
+} {
   const rowsByApplicationNo = new Map<string, AdminApplicationGridRow>();
   const rowsWithoutApplicationNo: AdminApplicationGridRow[] = [];
   let duplicateCount = 0;
@@ -1316,17 +1347,19 @@ function mapApplicationDashboardRow(
     currentStageName: status.charAt(0).toUpperCase() + status.slice(1),
     remarks: application.remark?.trim() || '—',
     expectedSlaDays: slaDays,
-    remainingDays: application.remainingDays != null
-      ? application.remainingDays
-      : isActionable
-        ? computeRemainingDays(application.createdDate, slaDays)
-        : null,
+    remainingDays:
+      application.remainingDays != null
+        ? application.remainingDays
+        : isActionable
+          ? computeRemainingDays(application.createdDate, slaDays)
+          : null,
     dueDays: application.dueDays ?? null,
-    overdueDays: application.overdueDays != null
-      ? application.overdueDays
-      : isActionable
-        ? computeOverdueDays(application.createdDate, slaDays)
-        : null,
+    overdueDays:
+      application.overdueDays != null
+        ? application.overdueDays
+        : isActionable
+          ? computeOverdueDays(application.createdDate, slaDays)
+          : null,
     lastUpdatedDate: application.updatedDate || application.createdDate,
     assignedTo: assignedToName,
     assignedToName,
@@ -1381,9 +1414,8 @@ export async function getRtsApplicationsDashboardAction(
 ): Promise<RtsApplicationsDashboardResult> {
   try {
     const pageSize = DASHBOARD_PAGE_SIZE;
-    const requestedPageNumber = Number.isInteger(filters.pageNumber) && filters.pageNumber > 0
-      ? filters.pageNumber
-      : 1;
+    const requestedPageNumber =
+      Number.isInteger(filters.pageNumber) && filters.pageNumber > 0 ? filters.pageNumber : 1;
     // One extra UI page protects the requested window when the APIs overlap,
     // while remaining bounded for the common early-page workflow.
     const targetPrefixSize = (requestedPageNumber + 1) * pageSize;
@@ -1394,10 +1426,8 @@ export async function getRtsApplicationsDashboardAction(
     const hasExplicitSort = Boolean(filters.sortBy || filters.sortOrder);
     const effectiveFilters: RtsApplicationsDashboardFilters = {
       ...filters,
-      assignedUserId: isMyApplicationsMode
-        ? currentUserId ?? undefined
-        : filters.assignedUserId,
-      currentUserId: isMyApplicationsMode ? undefined : currentUserId ?? undefined,
+      assignedUserId: isMyApplicationsMode ? (currentUserId ?? undefined) : filters.assignedUserId,
+      currentUserId: isMyApplicationsMode ? undefined : (currentUserId ?? undefined),
       // Do not apply default FIFO/date ordering to the officer-only API response.
       isFifo: isMyApplicationsMode && !hasExplicitSort ? false : filters.isFifo,
     };
@@ -1411,16 +1441,17 @@ export async function getRtsApplicationsDashboardAction(
       ToDate: toDashboardDateTime(filters.toDate, 'end') ?? null,
     };
 
-    const approvalApplicationsRequest = isMyApplicationsMode && currentUserId == null
-      ? Promise.resolve(null)
-      : getApprovalApplicationsWindow(
-          effectiveFilters,
-          targetPrefixSize,
-          loadAllForGlobalSort
-        ).catch((err) => {
-          console.error('Failed to fetch approval applications list:', err);
-          return null;
-        });
+    const approvalApplicationsRequest =
+      isMyApplicationsMode && currentUserId == null
+        ? Promise.resolve(null)
+        : getApprovalApplicationsWindow(
+            effectiveFilters,
+            targetPrefixSize,
+            loadAllForGlobalSort
+          ).catch((err) => {
+            console.error('Failed to fetch approval applications list:', err);
+            return null;
+          });
     const applicationDashboardRequest = isMyApplicationsMode
       ? getApplicationDashboardCountSnapshot(applicationDashboardPayload).catch((err) => {
           console.error('Failed to fetch application dashboard count snapshot:', err);
@@ -1447,11 +1478,11 @@ export async function getRtsApplicationsDashboardAction(
 
     const externalApplications = applicationDashboardWindow?.applications ?? [];
     const externalDepartments = applicationDashboardWindow?.departments ?? [];
-    const externalTotalCount = applicationDashboardWindow?.totalCount ?? externalApplications.length;
+    const externalTotalCount =
+      applicationDashboardWindow?.totalCount ?? externalApplications.length;
     const externalKpis = getApplicationDashboardKpis(externalDepartments);
-    const externalKpiTotal = externalDepartments.length > 0
-      ? externalKpis.total
-      : externalTotalCount;
+    const externalKpiTotal =
+      externalDepartments.length > 0 ? externalKpis.total : externalTotalCount;
 
     const total = (cards?.totalApplications ?? approvalRes?.totalCount ?? 0) + externalKpiTotal;
     const pending = (cards?.pending ?? 0) + externalKpis.pending;
@@ -1554,7 +1585,8 @@ export async function getRtsApplicationsDashboardAction(
       filters.sortOrder,
       isMyApplicationsMode && !hasExplicitSort
     );
-    const combinedSourceTotal = (approvalRes?.totalCount ?? approvalRows.length) + externalTotalCount;
+    const combinedSourceTotal =
+      (approvalRes?.totalCount ?? approvalRows.length) + externalTotalCount;
     const totalCount = Math.max(
       mergedRows.length,
       combinedSourceTotal - reconciledRows.duplicateCount
@@ -1824,7 +1856,7 @@ export async function getCertificatePreviewAction(
         officerData.ReceiptNo ||
         (verification?.isPaid || paymentReceipt
           ? `REC-${applicationNo}`
-          : verification?.feesRequired === false
+          : !verification?.hasPaymentTransaction || Number(verification.payableFee ?? 0) <= 0
             ? 'शुल्क लागू नाही (विनामूल्य)'
             : '—');
 
@@ -2283,7 +2315,7 @@ export async function getIssuedCertificateAction(applicationNo: string) {
             officerInputsData.ReceiptNo ||
             (verification?.isPaid || paymentReceipt
               ? `REC-${result.applicationNo}`
-              : verification?.feesRequired === false
+              : !verification?.hasPaymentTransaction || Number(verification.payableFee ?? 0) <= 0
                 ? 'शुल्क लागू नाही (विनामूल्य)'
                 : '—');
 

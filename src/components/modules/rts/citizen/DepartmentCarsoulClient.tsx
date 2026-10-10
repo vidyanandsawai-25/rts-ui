@@ -33,7 +33,7 @@ import type {
   CitizenDashboardPagination,
   CitizenDashboardRouteState,
 } from "@/app/[locale]/service/dashboard/actions";
-import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
 
 type LangText = { en?: string; hi?: string; mr?: string } & Record<string, string | undefined>;
 type Service = {
@@ -449,11 +449,14 @@ export default function DepartmentCarsoulClient({
                       });
 
                     const hasExternalServiceUrl = !!(matchedService as any)?.serviceUrl;
-                    const isFeesRequired = (matchedService as any)?.feesRequired === true;
-                    const dynamicServiceFee = Number((matchedService as any)?.fees) || 0;
                     const isExternalPortalApp = hasExternalServiceUrl || !matchedService;
+                    const paymentDataUnavailable = app.paymentStatus === undefined;
+                    const hasPaymentTransaction = app.hasPaymentTransaction === true;
+                    const payableFee = Number(app.payableFee ?? 0);
+                    const paymentStatus = app.paymentStatus?.trim().toUpperCase();
                     const isPaidExplicitly =
                       paidAppMap[app.applicationNo] === true ||
+                      paymentStatus === "SUCCESS" ||
                       app.status?.toLowerCase().includes("payment received") ||
                       app.status?.toLowerCase().includes("payment success") ||
                       app.status?.toLowerCase().includes("payment completed") ||
@@ -523,7 +526,9 @@ export default function DepartmentCarsoulClient({
                         <td className="px-3 py-3">
                           {isExternalPortalApp ? (
                             <span className="text-slate-400 font-bold text-sm tracking-widest pl-2">—</span>
-                          ) : !isFeesRequired || dynamicServiceFee === 0 ? (
+                          ) : paymentDataUnavailable ? (
+                            <span className="text-slate-400 font-bold text-sm tracking-widest pl-2">—</span>
+                          ) : !hasPaymentTransaction || payableFee <= 0 ? (
                             <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
                               {lang === "mr" ? "विनामूल्य" : lang === "hi" ? "निःशुल्क" : "Free"}
                             </span>
@@ -556,7 +561,7 @@ export default function DepartmentCarsoulClient({
                                 className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs transition-all hover:bg-emerald-700"
                               >
                                 <CreditCard className="h-3.5 w-3.5" />
-                                {lang === "mr" ? `शुल्क भरा (₹${dynamicServiceFee})` : lang === "hi" ? `शुल्क भरें (₹${dynamicServiceFee})` : `Pay Fee (₹${dynamicServiceFee})`}
+                                {lang === "mr" ? `शुल्क भरा (₹${payableFee})` : lang === "hi" ? `शुल्क भरें (₹${payableFee})` : `Pay Fee (₹${payableFee})`}
                               </button>
                             </div>
                           )}

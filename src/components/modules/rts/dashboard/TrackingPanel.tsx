@@ -12,7 +12,7 @@ import {
   getCitizenRtsDocumentDownloadUrl,
   getCitizenRtsDocumentViewUrl,
 } from "@/lib/api/rts/rtsdocument.client";
-import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
 
 function normalizedStatus(status: string): "approved" | "rejected" | "pending" {
   const value = status.toLowerCase();

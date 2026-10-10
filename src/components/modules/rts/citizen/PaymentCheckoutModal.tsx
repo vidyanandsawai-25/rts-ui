@@ -16,6 +16,7 @@ import {
 } from '@/app/[locale]/service/payment/actions';
 import { PaymentReceiptModal } from './PaymentReceiptModal';
 import type { PaymentReceiptResult, PaymentOrderResult } from '@/lib/api/rts/rtspayment.service';
+import type { RtsFeeEvaluationResult } from '@/types/rts/rts-rulemaster.types';
 
 declare global {
   interface Window {
@@ -31,6 +32,7 @@ interface PaymentCheckoutModalProps {
   fees?: number;
   customerName?: string;
   customerMobile?: string;
+  feeEvaluation?: RtsFeeEvaluationResult;
   onClose: () => void;
   onSuccess?: (receipt: PaymentReceiptResult) => void;
   onPaymentTerminal?: (outcome: 'failed' | 'dismissed' | 'error') => void;
@@ -44,6 +46,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   fees,
   customerName,
   customerMobile,
+  feeEvaluation,
   onClose,
   onSuccess,
   onPaymentTerminal
@@ -95,7 +98,7 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
       // Step 1: Create Order dynamically via Backend API
       const orderRes = await createPaymentOrderAction({
         applicationId,
-        paymentGateway: 'Razorpay'
+        paymentGateway: 'Razorpay',
       });
 
       if (!orderRes.success || !orderRes.data) {
@@ -201,7 +204,13 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
     return <PaymentReceiptModal receipt={receiptData} onClose={onClose} />;
   }
 
-  const displayFee = fees !== undefined && fees > 0 ? fees : 50;
+  const displayFee =
+    Number(feeEvaluation?.payableAmount ?? fees) > 0
+      ? Number(feeEvaluation?.payableAmount ?? fees)
+      : 50;
+  const baseFee = Number(feeEvaluation?.baseFee ?? displayFee);
+  const addonFee = Number(feeEvaluation?.addonFee ?? 0);
+  const usesServiceFeeFallback = feeEvaluation?.usedServiceFeeFallback ?? true;
 
   return (
     <Modal
@@ -276,8 +285,12 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
         {/* Fee Itemization Card */}
         <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-100/90 space-y-2 text-xs">
           <div className="flex justify-between text-gray-600">
-            <span>Government Service Fee / शासकीय शुल्क:</span>
-            <span className="font-semibold text-gray-900 font-mono">₹{Number(displayFee).toFixed(2)}</span>
+            <span>{usesServiceFeeFallback ? 'Service Default Fee / सेवा शुल्क:' : 'Base Fee / मूळ शुल्क:'}</span>
+            <span className="font-semibold text-gray-900 font-mono">₹{baseFee.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-gray-600">
+            <span>Add-on Fee / अतिरिक्त शुल्क:</span>
+            <span className="font-semibold text-gray-900 font-mono">₹{addonFee.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>Portal Convenience Fee / पोर्टल शुल्क:</span>

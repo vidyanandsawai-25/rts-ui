@@ -1,9 +1,9 @@
 import 'server-only';
 
 import type {
-  RtsMisDashboardApplicationItem,
-  RtsMisDashboardDepartmentItem,
-} from '@/types/rts/rtsmisdashboard.types';
+  RtsApplicationDashboardApplicationItem,
+  RtsApplicationDashboardDepartmentItem,
+} from '@/types/rts/rtsapplicationdashboard.types';
 
 export interface RtsApplicationDashboardRequest {
   UpicId: string | null;
@@ -20,9 +20,9 @@ export interface RtsApplicationDashboardRequest {
 export type RtsApplicationDashboardRequestInput = Partial<RtsApplicationDashboardRequest>;
 
 export interface RtsApplicationDashboardData {
-  dashboardCardCount: RtsMisDashboardDepartmentItem[] | null;
+  dashboardCardCount: RtsApplicationDashboardDepartmentItem[] | null;
   // The API contract currently returns this key with the "Dahboard" spelling.
-  applicationDahboardData: RtsMisDashboardApplicationItem[] | null;
+  applicationDahboardData: RtsApplicationDashboardApplicationItem[] | null;
   totalRecords: number | null;
   pageSize: number | null;
   pageNumber: number | null;

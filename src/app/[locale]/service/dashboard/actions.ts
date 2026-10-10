@@ -17,7 +17,7 @@ import {
   resolveExternalServiceNavigation,
   type ExternalServiceNavigationResult,
 } from "@/lib/utils/rts/external-service-application";
-import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
 import {
   getApplicationDetailAction,
@@ -26,6 +26,7 @@ import {
 import {
   getPaymentReceiptByNo,
   getPaymentStatus,
+  getPaymentStatuses,
   type PaymentReceiptResult,
   type PaymentStatusResult,
 } from "@/lib/api/rts/rtspayment.service";
@@ -64,6 +65,38 @@ function createCitizenDashboardPagination(
     // The endpoint has no total-count field, so a full page is the only next-page signal.
     hasNextPage: resultCount === CITIZEN_DASHBOARD_PAGE_SIZE,
   };
+}
+
+/** Adds locally-stored payment snapshots without issuing one request per table row. */
+async function attachPaymentSnapshots(
+  applications: RtsMisDashboardUserApplicationItem[]
+): Promise<RtsMisDashboardUserApplicationItem[]> {
+  if (applications.length === 0) return applications;
+
+  try {
+    const statuses = await getPaymentStatuses(applications.map((application) => application.applicationNo));
+    const statusesByApplicationNo = new Map(
+      statuses.map((status) => [status.applicationNo.trim().toLowerCase(), status])
+    );
+
+    return applications.map((application) => {
+      const status = statusesByApplicationNo.get(application.applicationNo.trim().toLowerCase());
+      if (!status) return application;
+
+      return {
+        ...application,
+        paymentTransactionId: status.transactionId ?? null,
+        payableFee: status.requiredFee,
+        hasPaymentTransaction: status.hasPaymentTransaction === true,
+        paymentStatus: status.paymentStatus,
+        receiptNo: status.receiptNo ?? null,
+      };
+    });
+  } catch (error) {
+    // External/legacy applications can legitimately have no local payment record.
+    console.warn('Failed to load dashboard payment snapshots:', error);
+    return applications;
+  }
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -407,7 +440,7 @@ export async function getCitizenDashboardData(
         return {
           departments,
           upicId: cuidCookie,
-          userApplications,
+          userApplications: await attachPaymentSnapshots(userApplications),
           pagination: {
             pageNumber,
             pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
@@ -438,7 +471,8 @@ export async function getCitizenDashboardData(
       pageNumber,
       pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
     }).catch(() => null);
-    const userApplications = response?.status ? response.data.result ?? [] : [];
+    const sourceApplications = response?.status ? response.data.result ?? [] : [];
+    const userApplications = await attachPaymentSnapshots(sourceApplications);
 
     return {
       departments,

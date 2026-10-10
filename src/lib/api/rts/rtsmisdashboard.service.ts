@@ -29,13 +29,9 @@ export async function getRtsMisDashboardData(
     process.env.RTS_MIS_DASHBOARD_URL?.trim() ||
     `${baseUrl}/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetMISDashboardData`;
 
-  const normalizedFlag = payload.Flag?.trim().toLowerCase();
-  const resolvedFlag: RtsMisDashboardFlag =
-    normalizedFlag === 'rtsapplicationdashboard'
-      ? 'RTSApplicationDashboard'
-      : normalizedFlag === 'user'
-        ? 'user'
-        : 'admin';
+  // Application-dashboard requests use rtsapplicationdashboard.service.ts.
+  // The MIS integration now supports the admin response only.
+  const resolvedFlag: RtsMisDashboardFlag = 'admin';
 
   const requestPayload: RtsMisDashboardRequest = {
     Flag: resolvedFlag,
