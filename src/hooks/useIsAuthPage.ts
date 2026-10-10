@@ -34,6 +34,17 @@ export function useIsAuthPage(initialValue = false) {
     : segments[0];
 
   const noShellSegments = ["login", "home"];
+    if (firstRealSegment === 'water-bill') {
 
+    const secondSegment = locales.includes(segments[0] as typeof locales[number])
+
+      ? segments[2]
+
+      : segments[1];
+ 
+    return secondSegment === 'portal';
+
+  }
+ 
   return noShellSegments.includes(firstRealSegment);
 }
