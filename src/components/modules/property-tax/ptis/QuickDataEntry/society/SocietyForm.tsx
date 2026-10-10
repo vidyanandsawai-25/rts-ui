@@ -34,6 +34,7 @@ const RedesignSocietyFormContent: React.FC<SocietyFormProps> = (props) => {
         open: true,
         propertyId: props.propertyIdSearch,
         propertyMasterData: props.propertyMasterData || undefined,
+        societyData: props.societyData,
         locale: props.locale,
         onSuccess: () => {
             // Updated successfully
@@ -55,7 +56,7 @@ const RedesignSocietyFormContent: React.FC<SocietyFormProps> = (props) => {
     }
 
     return (
-        <div className="p-3 sm:p-4 space-y-4 max-w-7xl mx-auto font-sans">
+        <div className="p-3 sm:p-4 space-y-4 w-full font-sans">
             <SocietyTabSection
                 formData={formData}
                 onChange={updateField}

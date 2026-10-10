@@ -11,13 +11,13 @@ import { useSafeTranslations } from '@/hooks/useSafeTranslations';
  * On hover, expands to the left revealing the text "Show Photo Plan".
  * Supports dragging vertically to adjust its position on the screen.
  */
-export function MediaPanelToggle(): React.ReactElement | null {
+export function MediaPanelToggle({ label: customLabel }: { label?: string } = {}): React.ReactElement | null {
   const { isPanelVisible, togglePanel } = useMediaPanel();
   const t = useSafeTranslations('ptis');
   const [topY, setTopY] = useState(96);
   const dragInfo = useRef({ isDragging: false, startY: 0, startTopY: 0, hasDragged: false });
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const translatedLabel = t('media.showPhotoPlan');
+  const translatedLabel = customLabel || t('media.showPhotoPlan');
   const label = !translatedLabel || translatedLabel === 'media.showPhotoPlan' ? 'Show Photo Plan' : translatedLabel;
 
   const handleMouseDown = (e: React.MouseEvent) => {

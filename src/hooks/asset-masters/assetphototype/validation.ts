@@ -9,7 +9,7 @@ import {
   isAllZeros
 } from "@/lib/utils/asset-validation-rules";
 import { AssetPhotoTypeFormModel } from "@/types/asset-masters/asset-photo-type.types";
-import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
+import { mapSharedApiError, translateReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 20;
 export const NAME_MAX = 100;
@@ -23,7 +23,7 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
   } else if (name === "photoTypeName") {
-    sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s\-()\/&,.]/gu, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -55,7 +55,7 @@ export const validateAssetPhotoForm = (
       if (!str) return t('form.validation.photoTypeNameRequired');
       if (str.length > NAME_MAX) return t('form.validation.photoTypeNameMaxLength', { count: NAME_MAX });
       if (/^0+$/.test(str)) return t('form.validation.photoTypeNameFormat');
-      if (!/^[\p{L}\p{M}\p{N}]+(?:[\s][\p{L}\p{M}\p{N}]+)*$/u.test(str)) return t('form.validation.photoTypeNameFormat');
+      if (!/^[\p{L}\p{M}\p{N}()](?:[\p{L}\p{M}\p{N}\s\-()\/&,.]*[\p{L}\p{M}\p{N}()])?$/u.test(str)) return t('form.validation.photoTypeNameFormat');
       return undefined;
     },
     description: (val: unknown) => {
@@ -106,18 +106,30 @@ export const validateAssetPhotoForm = (
   return validateForm(data, schema);
 };
 
+// Reference check (DELETE, or PUT with isActive: false):
+//   "This Asset Photo Type cannot be deleted|deactivated because it is in use."
+const translateReferenceBlocked = (
+  message: string | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string | undefined =>
+  translateReferenceBlockedMessage(message, t, {
+    entities: { "Asset Photo Type": "apiErrors.referenceBlocked.assetPhotoType" },
+  });
+
 export const mapAssetPhotoApiError = (
   result: { statusCode?: number; message?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const referenceBlocked = translateReferenceBlocked(result.message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message: result.message,
     statusCode: result.statusCode,
     t,
     tCommon,
     fallbackEntityName: t("list.title"),
-    entityMatchers: [{ test: /photo/i, labelKey: "list.title" }],
     customStatusCodes: {
       409: t("apiErrors.duplicateRecord"),
       404: t("apiErrors.notFound"),
@@ -135,12 +147,14 @@ export function getErrorMessage(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
   fallbackEntityName: string
 ): string {
+  const referenceBlocked = translateReferenceBlocked(message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message,
     statusCode,
     t,
     tCommon,
     fallbackEntityName,
-    entityMatchers: [{ test: /photo/i, labelKey: "list.title" }]
   });
 }

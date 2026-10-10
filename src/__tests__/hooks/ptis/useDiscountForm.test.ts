@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useDiscountForm } from '@/hooks/useDiscountForm';
 import { toast } from 'sonner';
-import { deletePropertySocialDetailAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';
+import { deletePropertySocialDetailsByHierarchyAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions';
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ locale: 'en' }),
@@ -30,7 +30,7 @@ vi.mock('@/hooks/useLoading', () => ({
 
 vi.mock('@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/Discount/discount-actions', () => ({
   updateDiscountDetailsAction: vi.fn(),
-  deletePropertySocialDetailAction: vi.fn(),
+  deletePropertySocialDetailsByHierarchyAction: vi.fn(),
 }));
 
 const mockDiscountData = {
@@ -62,8 +62,8 @@ describe('useDiscountForm', () => {
     expect(result.current.discountData[1].enabled).toBe(true);
   });
 
-  it('should call deletePropertySocialDetailAction and clear local state on handleDeleteDiscount', async () => {
-    vi.mocked(deletePropertySocialDetailAction).mockResolvedValue({ success: true });
+  it('should call deletePropertySocialDetailsByHierarchyAction and clear local state on handleDeleteDiscount', async () => {
+    vi.mocked(deletePropertySocialDetailsByHierarchyAction).mockResolvedValue({ success: true });
 
     const { result } = renderHook(() => useDiscountForm(mockDiscountData, "123"));
 
@@ -71,10 +71,76 @@ describe('useDiscountForm', () => {
       await result.current.handleDeleteDiscount(1);
     });
 
-    expect(deletePropertySocialDetailAction).toHaveBeenCalledWith("123", 1, "en");
+    expect(deletePropertySocialDetailsByHierarchyAction).toHaveBeenCalledWith(
+      { socialAttributeId: 1, documentBindingId: 100, entityType: "P", propertyId: 123, propertyIds: [123] },
+      "123",
+      "en"
+    );
     expect(result.current.discountData[1].bitValue).toBe(false);
     expect(result.current.discountData[1].enabled).toBe(false);
     expect(result.current.discountData[1].documentGuid).toBeNull();
     expect(toast.success).toHaveBeenCalledWith("discount.deleteSuccess");
+  });
+
+  it('should hydrate direct unit record when editing a specific unit at Unit level', () => {
+    const masterAttributes = [
+      {
+        id: 1,
+        socialAttributeCode: "STP",
+        socialAttributeName: "Sewage Treatment Plant",
+        dataType: "BIT",
+        isDiscountApplicable: true,
+        isActive: true,
+      }
+    ];
+
+    const savedPropertyDetails = [
+      {
+        id: 555,
+        socialAttributeId: 1,
+        propertyId: 1001,
+        entityType: 'P',
+        bitValue: true,
+        documentBindingId: 777,
+        documentGuid: "stp-a1-guid",
+        fileName: "stp_a1.pdf",
+        remark: "A1 Sewage plant remark",
+        isActive: true,
+      }
+    ];
+
+    const { result, rerender } = renderHook(
+      (props: { editingUnitId: number | null }) =>
+        useDiscountForm(
+          mockDiscountData,
+          "123",
+          masterAttributes as unknown as Parameters<typeof useDiscountForm>[2],
+          {
+            level: 'Unit',
+            savedPropertyDetails: savedPropertyDetails as unknown as NonNullable<Parameters<typeof useDiscountForm>[3]>['savedPropertyDetails'],
+            editingUnitId: props.editingUnitId,
+            isSociety: true,
+          }
+        ),
+      {
+        initialProps: { editingUnitId: 1001 },
+      }
+    );
+
+    // Unit A1 has direct record saved
+    expect(result.current.discountData[1]).toBeDefined();
+    expect(result.current.discountData[1].propertySocialDetailId).toBe(555);
+    expect(result.current.discountData[1].documentGuid).toBe("stp-a1-guid");
+    expect(result.current.discountData[1].fileName).toBe("stp_a1.pdf");
+    expect(result.current.discountData[1].remark).toBe("A1 Sewage plant remark");
+    expect(result.current.discountData[1].enabled).toBe(true);
+
+    // Switch to Unit A2 (unapplied unit with ID 1002, which inherits baseline data)
+    rerender({ editingUnitId: 1002 });
+    expect(result.current.discountData[1].propertySocialDetailId).toBeNull();
+    // Inherits document and baseline state from wing/society
+    expect(result.current.discountData[1].documentGuid).toBe("doc-guid");
+    // Attribute enabled toggle must remain true (preserved from master/initial baseline)
+    expect(result.current.discountData[1].enabled).toBe(true);
   });
 });

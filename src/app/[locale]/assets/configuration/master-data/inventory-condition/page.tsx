@@ -6,7 +6,9 @@ import {
   InventoryConditionMasterErrorProvider,
   InventoryConditionMasterLayoutContent
 } from "@/components/modules/assets/configuration/master-data/inventory-condition-master";
-import { fetchInventoryConditionPagedServerAction, getInventoryConditionCategoriesAction, getAssetCategoriesForConditionAction } from "./actions";
+import {
+  fetchInventoryConditionPagedServerAction,
+} from "./actions";
 import { sanitizeSearchParams, type RawSearchParams } from "@/lib/utils/sanitize-params";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,7 @@ interface PageProps {
   searchParams: Promise<RawSearchParams>;
 }
 
-const ALLOWED_SORT_COLUMNS = ["conditionName", "conditionFactor", "isActive"] as const;
+const ALLOWED_SORT_COLUMNS = ["conditionCategory", "categoryName", "conditionName", "displayOrder", "isActive"] as const;
 
 export default async function Page({ params, searchParams }: PageProps): Promise<React.ReactElement> {
   const { locale } = await params;
@@ -31,13 +33,13 @@ export default async function Page({ params, searchParams }: PageProps): Promise
     allowedSortColumns: ALLOWED_SORT_COLUMNS,
   });
 
-  const [result, inventoryCategories, assetCategories] = await Promise.all([
-    fetchInventoryConditionPagedServerAction(pageNumber, pageSize, searchTerm || "", sortBy || "", (sortOrder as "asc" | "desc") || "asc"),
-    getInventoryConditionCategoriesAction(),
-    getAssetCategoriesForConditionAction(),
-  ]);
-
-  const combinedCategories = [...(inventoryCategories || []), ...(assetCategories || [])];
+  const result = await fetchInventoryConditionPagedServerAction(
+    pageNumber,
+    pageSize,
+    searchTerm || "",
+    sortBy || "",
+    (sortOrder as "asc" | "desc") || "asc"
+  );
 
   return (
     <InventoryConditionMasterErrorProvider>
@@ -51,12 +53,11 @@ export default async function Page({ params, searchParams }: PageProps): Promise
             }
           >
             <InventoryConditionMaster
-              data={result.items as unknown as import("@/types/asset-masters/inventory-condition.types").InventoryCondition[]}
+              data={result.items}
               pageNumber={result.pageNumber}
               pageSize={result.pageSize}
               totalCount={result.totalCount}
               totalPages={result.totalPages}
-              categories={combinedCategories}
               search={searchTerm || ""}
             />
           </Suspense>

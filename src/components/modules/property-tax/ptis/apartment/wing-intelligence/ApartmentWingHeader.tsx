@@ -2,6 +2,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/common';
 
 export interface WingIntelligenceHeaderProps {
   totalWings?: number;
@@ -29,23 +30,18 @@ export const ApartmentWingHeader: React.FC<WingIntelligenceHeaderProps> = ({ tot
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
-        {isExpanded ? (
-          <div className="flex items-center gap-4 text-[10px] font-bold text-slate-600">
-            <div className="flex items-center gap-1"><span className="text-[#10b981] font-black">{t('grades.aPlus') || 'A+'}</span> : {t('grades.excellent') || 'Excellent'} (90%+)</div>
-            <div className="flex items-center gap-1"><span className="text-[#34d399] font-black">{t('grades.a') || 'A'}</span> : {t('grades.good') || 'Good'} (75-90%)</div>
-            <div className="flex items-center gap-1"><span className="text-[#fbbf24] font-black">{t('grades.b') || 'B'}</span> : {t('grades.average') || 'Average'} (50-75%)</div>
-            <div className="flex items-center gap-1"><span className="text-[#f97316] font-black">{t('grades.c') || 'C'}</span> : {t('grades.poor') || 'Poor'} (&lt;50%)</div>
-          </div>
-        ) : (
-          <button 
+      {!isExpanded && (
+        <div className="flex items-center gap-6">
+          <Button
             onClick={onToggle}
-            className="flex items-center gap-2 border border-blue-200 bg-blue-50 text-blue-500 text-[10px] font-bold px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+            variant="outline"
+            size="xs"
+            className="rounded-full bg-blue-50 text-blue-500 border-blue-200 hover:bg-blue-100 font-bold px-3 py-1 h-auto text-[10px]"
           >
-            <span>{t('clickToExpand', { count: totalWings || 0 }) || `Click to Expand (${totalWings} Wings)`}</span>
-          </button>
-        )}
-      </div>
+            {t('clickToExpand', { count: totalWings || 0 }) || `Click to Expand (${totalWings} Wings)`}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

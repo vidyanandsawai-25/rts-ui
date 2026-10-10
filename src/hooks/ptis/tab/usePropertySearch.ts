@@ -106,8 +106,8 @@ export function usePropertySearch() {
 
         if (isApartmentSociety) {
           targetPath = `/${locale}/property-tax/ptis/apartment`;
-        } else if (searchData.category !== undefined || searchData.categoryLabel !== undefined) {
-          targetPath = `/${locale}/property-tax/ptis`;
+        } else {
+          targetPath = `/${locale}/property-tax/ptis/individual`;
         }
 
         const params: Record<string, string | null> = {

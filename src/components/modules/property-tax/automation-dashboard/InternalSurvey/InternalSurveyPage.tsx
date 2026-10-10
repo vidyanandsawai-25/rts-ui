@@ -13,7 +13,7 @@ import { DashboardFilterBar } from '@/components/modules/property-tax/automation
 import { getInternalSurveyColumns, getInternalSurveyHeaderRows, InternalSurveyTableRow } from './InternalSurveyColumns';
 import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
-import { ExportDropdown } from './ExportDropdown';
+import { ExportDropdown } from '../CommonFilterDashbaord/ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { applyTableSort, useTableSort } from '@/lib/utils/automation-dashboard/sortUtils';

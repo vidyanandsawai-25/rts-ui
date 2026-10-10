@@ -78,8 +78,8 @@ export const useAgeFactorCvBulkOps = ({
     
     const { addToast, clearFilters } = callbacks;
 
-    const t = useTranslations('ageFactorMaster');
-    const tW = useTranslations('weightageMaster');
+    const t = useTranslations('assetWeightageMaster.age');
+    const tW = useTranslations('assetWeightageMaster');
     const locale = useLocale();
     const router = useRouter();
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);

@@ -14,6 +14,23 @@ const createSchema = z.object({
 
 const idSchema = z.number().positive();
 
+export async function getPropertyPhotoTypesByScopeAction(
+  scope: string = 'PROPERTY'
+): Promise<ActionResult<import('@/types/photoplan.types').PropertyPhotoTypeRecord[]>> {
+  try {
+    const result = await photoPlanService.getAllPropertyPhotoTypes(scope);
+    if (result.success && result.data) {
+      return { success: true, data: result.data };
+    }
+    return { success: false, error: result.error || 'Failed to fetch property photo types' };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch property photo types',
+    };
+  }
+}
+
 export async function createPropertyPhotoTypeAction(
   photoTypeCode: string,
   photoTypeName: string,

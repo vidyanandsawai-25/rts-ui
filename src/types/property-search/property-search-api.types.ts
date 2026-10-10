@@ -62,6 +62,10 @@ export interface PropertySearchApiItem {
   rvcv?: number | null;
   totalTax: number | null;
   status: string | null;
+  societyDetailId?: number | null;
+  societyId?: number | null;
+  wingDetailId?: number | null;
+  wingId?: number | null;
 }
 
 export interface PropertySearchApiResponse {

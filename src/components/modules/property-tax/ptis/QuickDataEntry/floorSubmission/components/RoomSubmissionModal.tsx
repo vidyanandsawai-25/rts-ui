@@ -9,19 +9,11 @@ import type { FloorData, RoomSubmissionSidebarProps } from '@/types/floor-detail
 import RoomWiseSubmission from '../RoomSubmission/RoomWiseSubmission';
 import { convertSqFtToSqM, convertSqMToSqFt } from '@/lib/utils/RoomSubmission/conversions';
 import { checkIsUtilityCategory } from '@/lib/utils/floorSubmission/floor-utility-checks';
+import { isRecordOpenPlot } from '@/hooks/ptis/floorSubmission/useFloorAreaValidation';
 
 export default function RoomSubmissionSidebar(props: RoomSubmissionSidebarProps) {
     const isUtilityCategory = checkIsUtilityCategory(props.floorData?.typeOfUseCategoryId);
-    const isOpenPlot = props.floorData?.isOpenPlot === true ||
-        props.floorData?.selectedFloorType === 'OpenPlot' ||
-        String(props.floorData?.conTyp || '').toLowerCase().includes('open plot') ||
-        String(props.floorData?.constructionType || '').toLowerCase().includes('open plot') ||
-        String(props.floorData?.floor || '').toLowerCase().includes('open plot') ||
-        String(props.floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
-        String(props.floorData?.floor || '').toLowerCase().includes('open space') ||
-        String(props.floorData?.floorDescription || '').toLowerCase().includes('open space') ||
-        String(props.floorData?.typeOfUseCategory || '').toLowerCase().includes('open space') ||
-        String(props.floorData?.typeOfUseCategory || '').toLowerCase().includes('open plot');
+    const isOpenPlot = isRecordOpenPlot(props.floorData);
     let lastFilledRoomIndex = -1;
     if (Array.isArray(props.existingRooms)) {
         for (let i = props.existingRooms.length - 1; i >= 0; i--) {

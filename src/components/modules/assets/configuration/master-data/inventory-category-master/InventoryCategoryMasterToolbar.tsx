@@ -60,6 +60,7 @@ export function InventoryCategoryMasterToolbar() {
       <AddButton
         label={t("addNew", { name: tNames("inventory-category-master") })}
         onClick={() => router.push(`${base}/inventory-category/add`)}
+        className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
       />
     </div>
   );

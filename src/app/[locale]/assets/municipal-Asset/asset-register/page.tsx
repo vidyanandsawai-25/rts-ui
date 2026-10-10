@@ -4,13 +4,27 @@ import { parsePaginationParams } from '@/lib/utils/pagination';
 import { AssetRegisterView } from '@/components/modules/assets/municipal-Asset/asset-register/AssetRegisterView';
 import {
   fetchAssetRegisterPage,
+  fetchAssetTypesByCategory,
   fetchZones,
   fetchWards,
   fetchDepartments,
   fetchCategories,
+  fetchOwnershipTypes,
+  fetchSubUnitsByAsset,
 } from './[categoryId]/action';
+import {
+  PAGE_SIZE_OPTIONS,
+  buildCanonicalQuery,
+  isQueryCanonical,
+  isValidMultiFilterValue,
+  isValidSingleFilterValue,
+  sanitizePositiveId,
+  sanitizeSearch,
+} from '@/lib/utils/asset-utils/asset-register-query';
 
 export const dynamic = 'force-dynamic';
+
+const SUB_PAGE_SIZE_OPTIONS = [1, 2, 5, 10, 20, 50] as const;
 
 interface PageProps {
   params: Promise<{
@@ -26,39 +40,16 @@ interface PageProps {
     ZoneId?: string;
     WardId?: string;
     DepartmentId?: string;
-    sortBy?: string;
-    sortOrder?: string;
+    ownershipType?: string;
+    encroachmentStatus?: string;
     viewImageAssetId?: string;
     expandAssetId?: string;
+    subPage?: string;
+    subPageSize?: string;
+    subSearch?: string;
+    sortBy?: string;
+    sortOrder?: string;
   }>;
-}
-
-function isValidSingleFilterValue(value: string): boolean {
-  return value === 'all' || /^\d+$/.test(value);
-}
-
-function isValidMultiFilterValue(value: string): boolean {
-  return value === 'all' || /^\d+(,\d+)*$/.test(value);
-}
-
-function sanitizePositiveId(value: string | undefined): string | undefined {
-  if (!value || !/^\d+$/.test(value)) return undefined;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
-  return String(parsed);
-}
-
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
-
-const INDIAN_LANGUAGE_SEARCH_REGEX = /^[\p{L}\p{M}\p{N}\s.,\-()/]$/u;
-
-function sanitizeSearch(value: string | undefined): string {
-  return (value || '')
-    .trim()
-    .split('')
-    .filter((char) => INDIAN_LANGUAGE_SEARCH_REGEX.test(char))
-    .join('')
-    .slice(0, 200);
 }
 
 export default async function Page({ params, searchParams }: PageProps) {
@@ -78,13 +69,49 @@ export default async function Page({ params, searchParams }: PageProps) {
   const safeZoneId = isValidSingleFilterValue(query.ZoneId ?? 'all') ? (query.ZoneId ?? 'all') : 'all';
   const safeWardId = isValidSingleFilterValue(query.WardId ?? 'all') ? (query.WardId ?? 'all') : 'all';
   const safeDepartmentId = isValidSingleFilterValue(query.DepartmentId ?? 'all') ? (query.DepartmentId ?? 'all') : 'all';
-  const safeSortBy = typeof query.sortBy === 'string' ? query.sortBy : undefined;
-  const safeSortOrder = query.sortOrder === 'desc' ? 'desc' : (query.sortOrder === 'asc' ? 'asc' : undefined);
+  const safeOwnershipType = typeof query.ownershipType === 'string' && query.ownershipType !== 'all' ? query.ownershipType : 'all';
+  const safeEncroachmentStatus = typeof query.encroachmentStatus === 'string' && query.encroachmentStatus !== 'all' ? query.encroachmentStatus : 'all';
   const safeViewImageAssetId = sanitizePositiveId(query.viewImageAssetId);
   const safeExpandAssetId = sanitizePositiveId(query.expandAssetId);
+  const safeSubPage = sanitizePositiveId(query.subPage);
+  const parsedSubPageSize = sanitizePositiveId(query.subPageSize);
+  const safeSubPageSize = parsedSubPageSize && SUB_PAGE_SIZE_OPTIONS.includes(Number(parsedSubPageSize) as (typeof SUB_PAGE_SIZE_OPTIONS)[number])
+    ? parsedSubPageSize
+    : '10';
+  const safeSubSearch = sanitizeSearch(query.subSearch);
   const updatedDate = new Date().toLocaleDateString('en-GB');
 
-  const [assetsResult, typesResult, zonesResult, wardsResult, departmentsResult, categoriesResult] = await Promise.all([
+  const preFetchCanonicalParams = {
+    finalPage: safePage,
+    safePageSize,
+    safeSearch,
+    safeSearchField,
+    safeAssetNo,
+    safeAssetTypeId,
+    safeZoneId,
+    finalWardId: safeWardId,
+    safeDepartmentId,
+    safeOwnershipType,
+    safeEncroachmentStatus,
+    safeViewImageAssetId,
+    safeExpandAssetId,
+  };
+
+  if (
+    !isQueryCanonical({ ...query }, preFetchCanonicalParams) ||
+    (query.subPageSize !== undefined && query.subPageSize !== safeSubPageSize)
+  ) {
+    const normalizedQuery = buildCanonicalQuery(preFetchCanonicalParams);
+    if (safeExpandAssetId) {
+      if (safeSubPage && safeSubPage !== '1') normalizedQuery.set('subPage', safeSubPage);
+      if (safeSubPageSize && safeSubPageSize !== '10') normalizedQuery.set('subPageSize', safeSubPageSize);
+      if (safeSubSearch) normalizedQuery.set('subSearch', safeSubSearch);
+    }
+    const normalizedQueryString = normalizedQuery.toString();
+    redirect(`/${locale}/assets/municipal-Asset/asset-register${normalizedQueryString ? `?${normalizedQueryString}` : ''}`);
+  }
+
+  const [assetsResult, typesResult, zonesResult, wardsResult, departmentsResult, categoriesResult, ownershipResult] = await Promise.all([
     fetchAssetRegisterPage(
       null,
       safePage,
@@ -97,14 +124,15 @@ export default async function Page({ params, searchParams }: PageProps) {
       (safeSearchField === 'assetId' && safeSearch) ? safeSearch : safeAssetNo,
       safeSearchField === 'assetName' ? safeSearch : '',
       safeSearchField === 'address' ? safeSearch : '',
-      safeSortBy,
-      safeSortOrder
+      safeOwnershipType,
+      safeEncroachmentStatus
     ),
-    Promise.resolve([]),
+    fetchAssetTypesByCategory(null),
     fetchZones(),
     fetchWards(safeZoneId),
     fetchDepartments(),
     fetchCategories(),
+    fetchOwnershipTypes(),
   ]);
 
   if (assetsResult.error) {
@@ -125,38 +153,70 @@ export default async function Page({ params, searchParams }: PageProps) {
     finalPage = totalPages;
   }
 
-  const canonicalQuery = new URLSearchParams();
-  if (finalPage > 1) canonicalQuery.set('page', String(finalPage));
-  if (safePageSize !== 10) canonicalQuery.set('pageSize', String(safePageSize));
-  if (safeSearch) canonicalQuery.set('search', safeSearch);
-  if (safeSearchField !== 'all') canonicalQuery.set('searchField', safeSearchField);
-  if (safeAssetNo) canonicalQuery.set('AssetNo', safeAssetNo);
-  if (safeAssetTypeId !== 'all') canonicalQuery.set('AssetTypeId', safeAssetTypeId);
-  if (safeZoneId !== 'all') canonicalQuery.set('ZoneId', safeZoneId);
-  if (finalWardId !== 'all') canonicalQuery.set('WardId', finalWardId);
-  if (safeDepartmentId !== 'all') canonicalQuery.set('DepartmentId', safeDepartmentId);
-  if (safeSortBy) canonicalQuery.set('sortBy', safeSortBy);
-  if (safeSortOrder) canonicalQuery.set('sortOrder', safeSortOrder);
-  if (safeViewImageAssetId) canonicalQuery.set('viewImageAssetId', safeViewImageAssetId);
-  if (safeExpandAssetId) canonicalQuery.set('expandAssetId', safeExpandAssetId);
+  // Re-run canonicalization if page was clamped or ward was reset so URL is updated and corrected page data is loaded
+  if (finalPage !== safePage || finalWardId !== safeWardId) {
+    const postFetchCanonicalParams = {
+      ...preFetchCanonicalParams,
+      finalPage,
+      finalWardId,
+    };
+    const normalizedQuery = buildCanonicalQuery(postFetchCanonicalParams);
+    if (safeExpandAssetId) {
+      if (safeSubPage && safeSubPage !== '1') normalizedQuery.set('subPage', safeSubPage);
+      if (safeSubPageSize && safeSubPageSize !== '10') normalizedQuery.set('subPageSize', safeSubPageSize);
+      if (safeSubSearch) normalizedQuery.set('subSearch', safeSubSearch);
+    }
+    const normalizedQueryString = normalizedQuery.toString();
+    redirect(`/${locale}/assets/municipal-Asset/asset-register${normalizedQueryString ? `?${normalizedQueryString}` : ''}`);
+  }
 
-  const isCanonical =
-    (query.page || '1') === String(finalPage) &&
-    (query.pageSize || '10') === String(safePageSize) &&
-    (query.search || '') === safeSearch &&
-    (query.searchField || 'all') === safeSearchField &&
-    (query.AssetNo || '') === safeAssetNo &&
-    (query.AssetTypeId === safeAssetTypeId || (query.AssetTypeId === undefined && safeAssetTypeId === 'all')) &&
-    (query.ZoneId === safeZoneId || (query.ZoneId === undefined && safeZoneId === 'all')) &&
-    (query.WardId === finalWardId || (query.WardId === undefined && finalWardId === 'all')) &&
-    (query.DepartmentId === safeDepartmentId || (query.DepartmentId === undefined && safeDepartmentId === 'all')) &&
-    query.sortBy === safeSortBy &&
-    query.sortOrder === safeSortOrder &&
-    query.viewImageAssetId === safeViewImageAssetId &&
-    query.expandAssetId === safeExpandAssetId;
-  if (!isCanonical) {
-    const qStr = canonicalQuery.toString();
-    redirect(`/${locale}/assets/municipal-Asset/asset-register${qStr ? '?' + qStr : ''}`);
+  // Pre-validate safeExpandAssetId against parent assets
+  let isExpandValid = false;
+  if (safeExpandAssetId) {
+    isExpandValid = assetsResult.items.some((item) => String(item.id) === safeExpandAssetId);
+    if (!isExpandValid) {
+      // expandAssetId does not belong to the current page rows, redirect to strip it
+      const strippedParams = { ...preFetchCanonicalParams, safeExpandAssetId: undefined };
+      const normalizedQuery = buildCanonicalQuery(strippedParams).toString();
+      redirect(`/${locale}/assets/municipal-Asset/asset-register${normalizedQuery ? `?${normalizedQuery}` : ''}`);
+    }
+  }
+
+  let initialSubunitData = null;
+  if (isExpandValid && safeExpandAssetId) {
+    const subPageNum = safeSubPage ? Number(safeSubPage) : 1;
+    const subPageSizeNum = safeSubPageSize ? Number(safeSubPageSize) : 10;
+    const subunitResponse = await fetchSubUnitsByAsset(
+      Number(safeExpandAssetId),
+      subPageNum,
+      subPageSizeNum,
+      safeSubSearch
+    );
+    if (subunitResponse) {
+      const subTotalPages = Math.max(1, subunitResponse.totalPages ?? Math.ceil(subunitResponse.totalCount / subPageSizeNum));
+      const finalSubPage = Math.min(subPageNum, subTotalPages);
+
+      if (finalSubPage !== subPageNum) {
+        const normalizedQuery = buildCanonicalQuery(preFetchCanonicalParams);
+        normalizedQuery.set('subPage', String(finalSubPage));
+        if (safeSubPageSize && safeSubPageSize !== '10') normalizedQuery.set('subPageSize', safeSubPageSize);
+        if (safeSubSearch) normalizedQuery.set('subSearch', safeSubSearch);
+        const normalizedQueryString = normalizedQuery.toString();
+        redirect(`/${locale}/assets/municipal-Asset/asset-register${normalizedQueryString ? `?${normalizedQueryString}` : ''}`);
+      }
+    }
+    if (subunitResponse && subunitResponse.items) {
+      initialSubunitData = {
+        parentId: Number(safeExpandAssetId),
+        items: subunitResponse.items,
+        meta: {
+          totalCount: subunitResponse.totalCount,
+          totalPages: subunitResponse.totalPages,
+          pageNumber: subunitResponse.pageNumber,
+          pageSize: subunitResponse.pageSize,
+        },
+      };
+    }
   }
 
   return (
@@ -171,6 +231,8 @@ export default async function Page({ params, searchParams }: PageProps) {
       ZoneId={safeZoneId}
       WardId={finalWardId}
       DepartmentId={safeDepartmentId}
+      ownershipType={safeOwnershipType}
+      encroachmentStatus={safeEncroachmentStatus}
       safePageSize={safePageSize}
       finalPage={finalPage}
       totalPages={totalPages}
@@ -179,10 +241,10 @@ export default async function Page({ params, searchParams }: PageProps) {
       zonesResult={zonesResult}
       wardsResult={wardsResult}
       departmentsResult={departmentsResult}
+      ownershipResult={ownershipResult}
       updatedDate={updatedDate}
       categoryOptions={categoriesResult}
-      sortBy={safeSortBy}
-      sortOrder={safeSortOrder}
+      initialSubunitData={initialSubunitData}
     />
   );
 }

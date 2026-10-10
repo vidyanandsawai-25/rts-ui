@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Info, Loader2 } from "lucide-react";
 import { Label, TextArea, SaveButton } from "@/components/common";
 import { FlatSocialAttributeState, getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttributeHierarchyDto } from "@/types/property-social-details.types";
@@ -9,11 +9,7 @@ import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { AttributeControl } from "./AttributeControl";
 import { NestedAttributes } from "./NestedAttributes";
-import { 
-    SocialSelectPrompt, 
-    SocialDisabledPrompt, 
-    DisabledBanner 
-} from "./SocialPanePlaceholders";
+import { SocialSelectPrompt } from "./SocialPanePlaceholders";
 
 interface SocialDetailPaneProps {
     data: FlatSocialAttributeState | null | undefined;
@@ -30,8 +26,11 @@ interface SocialDetailPaneProps {
     };
     onDeleteSocialDetail?: () => void;
     isSaving?: boolean;
+    isDeleting?: boolean;
     hasChanges?: boolean;
+    isFormValid?: boolean;
     onSave?: () => void;
+    isDeleteDisabled?: boolean;
 }
 
 export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
@@ -46,17 +45,21 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
     t,
     onDeleteSocialDetail,
     isSaving = false,
+    isDeleting = false,
     hasChanges = false,
+    isFormValid,
     onSave,
+    isDeleteDisabled = false,
 }) => {
     const { confirm } = useConfirm();
 
     const isSocialDetailFilled = React.useMemo(() => {
         if (!data) return false;
-        const hasFile = !!(data.documentGuid || data.documentUrl || data.pendingFile);
+        if (data.isInherited && data.bitValue) return true;
+        const hasFile = !!(data.documentGuid || data.documentUrl || data.photoGuid || data.documentBindingId || data.photoBindingId || data.pendingFile);
         const isBitType = data.dataType?.toUpperCase() === "BIT";
         if (isBitType) {
-            return hasFile || !!data.remark?.trim();
+            return hasFile || !!data.remark?.trim() || data.bitValue === true;
         }
         const hasVal = !!(
             data.intValue !== null && data.intValue !== undefined ||
@@ -68,8 +71,25 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     const isUpdateCase = React.useMemo(() => {
         if (!data) return false;
-        return typeof data.id === "number" && data.id > 0;
+        return (
+            (typeof data.id === "number" && data.id > 0) ||
+            (data.isInherited && data.bitValue !== false) ||
+            data.isOverridden
+        );
     }, [data]);
+
+    const isSpecialToggle = React.useMemo(() => {
+        if (!data) return false;
+        const code = (data.socialAttributeCode || "").toUpperCase();
+        return code === "ROAD_WIDTH" || 
+               code.includes("WATER_CONN") || 
+               code.includes("TREE");
+    }, [data]);
+
+    const isValueRequired = React.useMemo(() => {
+        if (!data) return false;
+        return Boolean(data.isRequiredWhenParentTrue || (isSpecialToggle && data.bitValue === true));
+    }, [data, isSpecialToggle]);
 
     if (!data || !hierarchyData) {
         return <SocialSelectPrompt t={t as (key: string) => string} />;
@@ -109,9 +129,40 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
     const handleDeleteSocialDetailWithConfirm = () => {
         if (onDeleteSocialDetail && data) {
+            let title = t("discount.confirmDeleteAttributeTitle") || "Delete Social Detail & Data";
+            let description = `${t("discount.confirmToggleOffWarning") || "You have an active attribute with details:"}\n${displayName}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social detail and all its associated data?"}`;
+
+            if (data.isOverridden) {
+                title = t("discount.confirmDeleteOverrideTitle") || "Delete Level Override";
+                description = `${displayName}\n\n${t("discount.confirmDeleteOverrideDesc") || "You have modified this inherited attribute. Deleting this will remove the custom override for this level and revert back to inherited settings.\n\nAre you sure you want to delete this override?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'WING' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'WING' ||
+                ((data.entityType || '').toUpperCase() === 'W' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialWingDesc") || "This social attribute is applied at Wing Level.\n\nDeleting it will remove this attribute from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level attribute?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'APARTMENT' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'APARTMENT' ||
+                ((data.entityType || '').toUpperCase() === 'S' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialApartmentDesc") || "This social attribute is applied at Apartment Level.\n\nDeleting it will remove this attribute from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level attribute?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'W') {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialWingDesc") || "This social attribute is applied at Wing Level.\n\nDeleting it will remove this attribute from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level attribute?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'S') {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialApartmentDesc") || "This social attribute is applied at Apartment Level.\n\nDeleting it will remove this attribute from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level attribute?"}`;
+            } else {
+                title = t("discount.confirmDeleteUnitTitle") || "Delete Unit Level Detail";
+                description = `${displayName}\n\n${t("discount.confirmDeleteSocialUnitDesc") || "This social attribute is applied at Unit Level.\n\nDeleting it will remove this attribute for the selected unit(s).\n\nAre you sure you want to delete this Unit Level attribute?"}`;
+            }
+
             confirm({
-                title: t("discount.confirmDeleteAttributeTitle") || "Delete Social Detail & Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have an active attribute with details:"}\n${displayName}\n\n${t("discount.confirmDeleteAttributeDesc") || "Are you sure you want to delete this social detail and all its associated data?"}`,
+                title,
+                description,
                 confirmText: t("discount.confirmDeleteAttributeOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteAttributeCancel") || "No, Cancel",
                 variant: "delete",
@@ -122,22 +173,6 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
         }
     };
 
-    const isEnabled = isAttributeEnabled(data);
-    const hasAnyData = !!(
-        data.intValue !== null ||
-        data.decimalValue !== null ||
-        data.textValue?.trim() ||
-        data.dateValue?.trim() ||
-        data.documentGuid?.trim() ||
-        data.documentBindingId ||
-        data.remark?.trim()
-    );
-
-    if (!isEnabled && !hasAnyData) {
-        return <SocialDisabledPrompt displayName={displayName} t={t as (key: string) => string} />;
-    }
-
-    const isDisabled = !isEnabled;
     const isPhotoRequired = data.isPhotoRequired === true;
 
     const errorMsg = validationErrors?.[data.socialAttributeId];
@@ -176,33 +211,49 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
         }
     }
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
-
-    const isSpecialToggle = 
-        data.socialAttributeCode.toUpperCase() === "ROAD_WIDTH" || 
-        data.socialAttributeCode.toUpperCase().includes("WATER_CONN") || 
-        data.socialAttributeCode.toUpperCase().includes("TREE");
-
-    const isValueRequired = data.isRequiredWhenParentTrue || (isSpecialToggle && data.bitValue === true);
+    const isDisabled = !isAttributeEnabled(data);
+    const canDelete = !isDisabled && !isDeleteDisabled;
 
     return (
-        <div
-            className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
-                isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
-            }`}
-        >
-            <div className="space-y-5 overflow-y-auto pr-1">
-                {isDisabled && <DisabledBanner t={t as (key: string) => string} />}
+        <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
+                {data.isInherited && (
+                    <div className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-lg border ${
+                        data.isOverridden
+                            ? "bg-amber-50 border-amber-200 text-amber-800"
+                            : "bg-indigo-50 border-indigo-200 text-indigo-800"
+                    }`}>
+                        <Info size={16} className={data.isOverridden ? "text-amber-600 shrink-0" : "text-indigo-600 shrink-0"} />
+                        <span className="text-xs font-semibold">
+                            {data.isOverridden
+                                ? (t("discount.overridePendingNote") || "You have modified this inherited attribute. Saving will create an override record exclusively for this level.")
+                                : ((data.inheritedFrom || '').toUpperCase() === 'APARTMENT' || (data.inheritedFrom || '').toUpperCase() === 'SOCIETY' || (data.entityType || '').toUpperCase() === 'S')
+                                    ? (t("discount.inheritedFromApartmentNote") || "This social attribute is inherited from Apartment level. Modifying details or toggling it off will create an override.")
+                                    : (t("discount.inheritedFromWingNote") || "This social attribute is inherited from Wing level. Modifying details or toggling it off will create an override.")}
+                        </span>
+                    </div>
+                )}
 
-                <div className="pb-3 border-b border-blue-50">
-                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+                {isDisabled && (
+                    <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-800 text-xs font-semibold mb-2">
+                        <Info size={16} className="text-amber-600 shrink-0" />
+                        <span>
+                            {t("discount.enableDiscountPrompt") ||
+                                "This social attribute is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
+                        </span>
+                    </div>
+                )}
+
+                <div className="pb-2 border-b border-blue-50">
+                    <span className="text-[11px] font-bold tracking-wider text-blue-500 uppercase block mb-0.5">
                         {t("discount.editingDiscount") || "Social Attribute Details"}
                     </span>
-                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                    <h4 className="text-base font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
                 {/* Root value input if applicable */}
                 {showValueInput && (
-                    <div className="flex flex-col gap-1.5 w-full">
+                    <div className="flex flex-col gap-1 w-full">
                         <span className="text-xs font-bold text-slate-600">
                             {displayName}
                             {isValueRequired && <span className="text-red-500 ml-0.5">*</span>}
@@ -222,8 +273,8 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
 
                 {/* Children attributes if any */}
                 {hierarchyData.children && hierarchyData.children.length > 0 && (
-                    <div className="p-3 bg-slate-50/50 border border-slate-100 rounded-xl space-y-3">
-                        <h5 className="text-xs font-bold text-slate-700 border-b border-slate-200/60 pb-1 mb-2">
+                    <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-lg space-y-2">
+                        <h5 className="text-xs font-bold text-slate-700 border-b border-slate-200/60 pb-1 mb-1.5">
                             {t("discount.complexFieldsTitle") || "Detailed Attributes"}
                         </h5>
                         <NestedAttributes
@@ -237,20 +288,21 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 )}
 
                 {/* Photo Upload Dropzone */}
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <Label className="text-sm font-bold text-blue-800">
                         {t("discount.uploadDocument") || "Photo Attachment"}
                         {isPhotoRequired && <span className="text-red-500 ml-0.5">*</span>}
                     </Label>
                     <DocumentAttachment
                         documentGuid={data.documentGuid || undefined}
+                        fileName={data.fileName || undefined}
                         hasDocumentBinding={!!data.documentBindingId}
                         isUploading={data.isUploading}
                         isDeleting={data.isDeleting}
                         isDisabled={isDisabled}
                         isDocumentInvalid={isPhotoInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
-                        onFileDelete={handlePhotoDeleteWithConfirm}
+                        onFileDelete={canDelete && (data.documentGuid || data.documentBindingId || data.photoBindingId || data.pendingFile) ? handlePhotoDeleteWithConfirm : undefined}
                         t={t as (key: string, values?: Record<string, string | number>) => string}
                         label={displayName}
                         pendingFile={data.pendingFile}
@@ -263,16 +315,15 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 </div>
 
                 {/* Remark Textarea */}
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <div className="flex items-center justify-between">
                         <Label className="text-sm font-bold text-blue-800">
                             {t("discount.remark") || "Remark"}
                         </Label>
-                        {(data.remark || "").trim() !== "" && (
+                        {(data.remark || "").trim() !== "" && !isDisabled && (
                             <button
                                 type="button"
                                 onClick={() => onInputChange(data.socialAttributeId, "remark", "")}
-                                disabled={isDisabled}
                                 className="px-2.5 py-0.5 text-[10px] md:text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-red-400 active:bg-red-200 shadow-sm"
                             >
                                 {t("commonbuttonmessages.clear") || "Clear"}
@@ -281,12 +332,12 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                     </div>
                     <TextArea
                         value={data.remark || ""}
+                        disabled={isDisabled}
                         onChange={(e) => {
                             const val = e.target.value.replace(/[<>]/g, "");
                             onInputChange(data.socialAttributeId, "remark", val);
                         }}
                         placeholder={t("discount.remarkPlaceholder") || "Enter remark..."}
-                        disabled={isDisabled}
                         rows={2}
                         maxLength={500}
                         showCharCount
@@ -299,29 +350,38 @@ export const SocialDetailPane: React.FC<SocialDetailPaneProps> = ({
                 </div>
             </div>
 
-            <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
+            <div className="pt-2 border-t border-blue-100 mt-1 flex items-center justify-between gap-2 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" aria-hidden="true" role="presentation" />
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
                         {t("discount.verifyDetailsNote") || "Verify details & photo attachment before saving changes."}
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && !isDisabled && (
+                    {onDeleteSocialDetail && isSocialDetailFilled && isUpdateCase && canDelete && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving}
+                            disabled={isDisabled || isSaving || isDeleting || !canDelete}
                             onClick={handleDeleteSocialDetailWithConfirm}
-                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t("discount.deleteSocialDetail") || "Delete Detail & Data"}
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" />
+                                    <span>{t("commonbuttonmessages.deleting") || "Deleting..."}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>{t("discount.deleteSocialDetail") || "Delete Detail & Data"}</span>
+                                </>
+                            )}
                         </button>
                     )}
                     {onSave && (
                         <SaveButton
                             onClick={onSave}
-                            disabled={!hasChanges || isSaving}
+                            disabled={!hasChanges || (isFormValid !== undefined && !isFormValid) || isSaving || isDeleting}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

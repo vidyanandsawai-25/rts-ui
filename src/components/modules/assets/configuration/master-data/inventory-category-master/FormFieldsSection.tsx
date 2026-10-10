@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { Label } from "@/components/common/label";
 import { Input } from "@/components/common/Input";
@@ -8,6 +5,7 @@ import { Select } from "@/components/common/select";
 import { TextArea } from "@/components/common/Textarea";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
 import type { FormFieldsSectionProps } from "@/types/asset-masters/inventory-category.types";
+import { DESCRIPTION_MAX } from "@/hooks/asset-masters/inventory-category/validation";
 
 interface ExtendedFormFieldsSectionProps extends FormFieldsSectionProps {
   codeRef?: React.RefObject<HTMLInputElement | null>;
@@ -99,6 +97,28 @@ export function FormFieldsSection({
       </div>
 
       <div>
+        <Input
+          name="displayOrder"
+          label={t("labels.displayOrder")}
+          required
+          type="number"
+          min="0"
+          value={formData.displayOrder ?? ""}
+          onChange={onChange}
+          onKeyDown={(e) => {
+            if (e.key === "-" || e.key === "." || e.key === "e") {
+              e.preventDefault();
+            }
+          }}
+          onBlur={onBlur}
+          placeholder={t("placeholders.displayOrder")}
+          error={showError("displayOrder") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.displayOrder} visible={showError("displayOrder")} />
+      </div>
+
+      <div>
         <TextArea
           name="description"
           label={t("labels.description")}
@@ -107,7 +127,7 @@ export function FormFieldsSection({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={t("placeholders.description")}
-          maxLength={500}
+          maxLength={DESCRIPTION_MAX}
           error={showError("description") ? true : false}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />

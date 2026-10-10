@@ -15,12 +15,12 @@ describe('InventoryCondition Actions', () => {
   beforeEach(() => { vi.clearAllMocks(); });
   it('creates', async () => {
     vi.mocked(inventoryConditionService.create).mockResolvedValue({ id: 1 } as any);
-    const result = await createInventoryConditionAction({ inventoryItemCategoryId: 1, conditionType: "Inventory", conditionName: "New", conditionFactor: 0.5, description: "", isActive: true } as any);
+    const result = await createInventoryConditionAction({ inventoryItemCategoryId: 1, conditionType: "Inventory", conditionName: "New", conditionFactor: 0.5, displayOrder: 1, description: "", isActive: true } as any);
     expect(result.success).toBe(true);
   });
   it('updates', async () => {
     vi.mocked(inventoryConditionService.update).mockResolvedValue({ id: 1 } as any);
-    const result = await updateInventoryConditionAction({ id: 1, inventoryItemCategoryId: 1, conditionType: "Inventory", conditionName: "Up", conditionFactor: 0.5, description: "", isActive: true } as any);
+    const result = await updateInventoryConditionAction({ id: 1, inventoryItemCategoryId: 1, conditionType: "Inventory", conditionName: "Up", conditionFactor: 0.5, displayOrder: 1, description: "", isActive: true } as any);
     expect(result.success).toBe(true);
   });
   it('deletes', async () => {

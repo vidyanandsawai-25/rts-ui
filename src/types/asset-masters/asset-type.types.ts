@@ -9,9 +9,11 @@ export interface AssetTypeFormModel {
   id?: string;
   code: string;
   name: string;
+  typeNameLocal: string;
   group: string;
   allowUnitRegistration: boolean;
   allowRoomRegistration: boolean;
+  isSubUnit: boolean;
   description: string;
   isActive: boolean;
 }
@@ -24,11 +26,14 @@ export interface AssetTypeApiRecord {
   id: number;
   /** Human-readable name for the type */
   typeName: string;
+  /** Local language name for the type */
+  typeNameLocal?: string;
   /** Alphanumeric code identifier */
   typeCode: string;
   /** Reference ID to the parent Asset Category */
   categoryId: number;
   categoryName?: string;
+  assetCategoryName?: string;
   description: string;
   /** Determines if the type is currently available for selection */
   isActive: boolean;
@@ -38,6 +43,7 @@ export interface AssetTypeApiRecord {
   codeFormat?: string;
   allowUnitRegistration?: boolean;
   allowRoomRegistration?: boolean;
+  isSubUnit?: boolean;
 }
 
 /**
@@ -47,12 +53,14 @@ export interface AssetType {
   id: number;
   typeCode: string;
   typeName: string;
+  typeNameLocal?: string;
   categoryId: number;
   categoryName: string;
   description: string;
   isActive: boolean;
   allowUnitRegistration: boolean;
   allowRoomRegistration: boolean;
+  isSubUnit: boolean;
   createdDate: string;
   updatedDate: string | null;
 }
@@ -99,6 +107,7 @@ export interface FormFieldsSectionProps {
   onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSelectChange: (name: string, value: string) => void;
   onRadioChange: (value: string) => void;
+  onToggleSubUnit: (checked: boolean) => void;
   t: (key: string) => string;
   categoryOptions: { label: string; value: string }[];
 }

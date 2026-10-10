@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import {
   usePropertyPhotosQuery,
-  propertyMediaCache,
-  isCacheValid,
-  evictOldestCacheEntry,
   areSlotsEqual,
   arePhotosEqual,
 } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
@@ -18,38 +15,22 @@ vi.mock('@/app/[locale]/property-tax/ptis/media-fetch.action', () => ({
 describe('usePropertyPhotosQuery', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    propertyMediaCache.clear();
-  });
-
-  it('manages property media caching and LRU eviction', () => {
-    expect(isCacheValid(99)).toBe(false);
-
-    propertyMediaCache.set(99, {
-      photoSlots: [],
-      photos: [],
-      timestamp: Date.now(),
-    });
-
-    expect(isCacheValid(99)).toBe(true);
-
-    for (let i = 1; i <= 12; i++) {
-      propertyMediaCache.set(i, { photoSlots: [], photos: [], timestamp: Date.now() + i });
-    }
-
-    evictOldestCacheEntry();
-    expect(propertyMediaCache.size).toBe(12);
   });
 
   it('compares slots and photos equality helpers correctly', () => {
     const slotsA = [{ photoTypeId: 1, photoTypeCode: 'P', photoTypeName: 'Prop', hasPhoto: true, photoCount: 1, propertyPhotoId: 10, viewUrl: '/url' }];
     const slotsB = [{ photoTypeId: 1, photoTypeCode: 'P', photoTypeName: 'Prop', hasPhoto: true, photoCount: 1, propertyPhotoId: 10, viewUrl: '/url' }];
+    const slotsC = [{ photoTypeId: 2, photoTypeCode: 'Q', photoTypeName: 'Prop2', hasPhoto: false, photoCount: 0 }];
     const photosA = [{ propertyPhotoId: 1, propertyId: 42, photoTypeId: 1, photoTypeCode: 'P', photoTypeName: 'Prop', viewUrl: '/v', downloadUrl: '/d', documentGuid: 'g1', displayOrder: 1, remarks: 'r', fileName: 'f.png', mimeType: 'image/png' }];
+    const photosB = [{ propertyPhotoId: 2, propertyId: 42, photoTypeId: 2, photoTypeCode: 'Q', photoTypeName: 'Prop2', viewUrl: '/v2', downloadUrl: '/d2', documentGuid: 'g2', displayOrder: 2, remarks: 'r2', fileName: 'f2.png', mimeType: 'image/png' }];
 
     expect(areSlotsEqual(slotsA, slotsB)).toBe(true);
+    expect(areSlotsEqual(slotsA, slotsC)).toBe(false);
     expect(arePhotosEqual(photosA, photosA)).toBe(true);
+    expect(arePhotosEqual(photosA, photosB)).toBe(false);
   });
 
-  it('supports refetching photo slots and photos manually', async () => {
+  it('supports dynamic fetching and refetching photo slots and photos without caching', async () => {
     vi.mocked(mediaFetchActions.getPhotoSlotsAction).mockResolvedValue({
       success: true,
       data: [{ photoTypeId: 1, photoTypeCode: 'PROP', photoTypeName: 'Property Photo', hasPhoto: true, photoCount: 1 }],

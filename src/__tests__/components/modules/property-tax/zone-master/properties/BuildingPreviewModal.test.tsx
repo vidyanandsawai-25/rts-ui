@@ -79,6 +79,7 @@ describe("BuildingPreviewModal", () => {
     propertyTypeId: 5,
     categoryId: 2,
     societyDetailId: 100,
+    wingDetailId: 200,
     onGenerateSuccess: mockOnGenerateSuccess,
   };
 

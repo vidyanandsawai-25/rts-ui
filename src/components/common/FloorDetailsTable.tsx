@@ -2,7 +2,7 @@
 
 import React, { type ReactNode, useState, useMemo, useRef, useCallback, useEffect, startTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, Home, ChevronRight, Pencil, type LucideIcon } from 'lucide-react';
+import { ChevronDown, ArrowUpDown, ArrowUp, ArrowDown, ChevronRight, Pencil, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Tooltip } from './Tooltip';
 
@@ -94,6 +94,7 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   data: Row[];
   columns: FloorDetailsTableColumn<Row>[];
   emptyMessage?: ReactNode;
+  emptyMessageClassName?: string;
 
   // Expansion Props
   showExpandColumn?: boolean;
@@ -103,6 +104,7 @@ interface FloorDetailsTableProps<Row extends { id: number | string }> {
   renderExpanded?: (row: Row) => ReactNode;
   expandIcon?: LucideIcon;
   expandHeaderIcon?: LucideIcon;
+  expandHeaderLabel?: ReactNode;
 
   // Edit Props
   onEditClick?: (row: Row, index: number) => void;
@@ -196,13 +198,15 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   data,
   columns,
   emptyMessage = 'No data found',
+  emptyMessageClassName,
   showExpandColumn = true,
   expandedLabel = 'Expand row',
   expandedRowIds = [],
   getExpandHref,
   renderExpanded,
-  expandIcon: ExpandIcon = ChevronRight,
-  expandHeaderIcon: ExpandHeaderIcon = Home,
+  expandIcon: ExpandIcon = ChevronDown,
+  expandHeaderIcon: ExpandHeaderIcon,
+  expandHeaderLabel = '#',
   onEditClick,
   getEditHref,
   editTooltip,
@@ -269,7 +273,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
     if (!containerRef.current) return;
     const container = containerRef.current;
     const maxScroll = container.scrollWidth - container.clientWidth;
-    
+
     if (isScrolledRight) {
       container.scrollTo({ left: 0, behavior: 'smooth' });
       setIsScrolledRight(false);
@@ -363,53 +367,59 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
   const containerStyle = useMemo(() => {
     if (!heightRows || !data || data.length === 0) return undefined;
     const rowHeight = 36;
-    const headerHeight = 36;
+    const headerHeight = 28;
     const calculatedHeight = headerHeight + (heightRows * rowHeight);
     return {
       height: `${calculatedHeight}px`,
+      minHeight: `${calculatedHeight}px`,
       maxHeight: `${calculatedHeight}px`,
     };
   }, [heightRows, data]);
 
   return (
-    <div
-      ref={containerRef}
-      onScroll={handleScroll}
-      className={cn(
-        'w-full overflow-x-auto bg-white shadow-sm transition-all duration-200',
-        heightRows && 'overflow-y-auto',
-        showBorder && 'border border-blue-200 rounded-lg',
-        containerClassName
-      )}
-      style={containerStyle}
-    >
-      <table className={cn('w-full border-collapse text-left text-[12px]', tableClassName)}>
-        <thead className={cn('bg-[#1440aa] text-white sticky top-0 z-20', theadClassName)}>
-          {renderHeader?.()}
-          <tr className={headerRowClassName}>
-            {/* Optional Expand Control Header */}
-            {showExpandColumn && (
-              <th
-                className={cn(
-                  (onEditClick || getEditHref) ? 'w-[75px] min-w-[75px]' : 'w-[40px] min-w-[40px]',
-                  'px-1 py-1.5 border-r border-blue-700/60 text-center align-middle',
-                  headerCellClassName
-                )}
-              >
-                <div className="flex items-center justify-center">
-                  <div className="inline-flex h-6 w-7 items-center justify-center rounded border border-white/20 bg-white/10 shadow-sm">
-                    <ExpandHeaderIcon className="h-3 w-3 text-white" />
+    <>
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className={cn(
+          'w-full overflow-x-auto bg-white shadow-sm transition-all duration-200',
+          heightRows && 'overflow-y-auto',
+          showBorder && 'border border-blue-200 rounded-lg',
+          containerClassName
+        )}
+        style={containerStyle}
+      >
+        <table className={cn('w-full border-collapse text-left text-[12px]', tableClassName)}>
+          <thead className={cn('bg-[#1440aa] text-white sticky top-0 z-20', theadClassName)}>
+            {renderHeader?.()}
+            <tr className={headerRowClassName}>
+              {/* Optional Expand Control Header */}
+              {showExpandColumn && (
+                <th
+                  className={cn(
+                    (onEditClick || getEditHref) ? 'w-[75px] min-w-[75px]' : 'w-[36px] min-w-[36px]',
+                    'px-1 py-1 border-r border-blue-700/60 text-center align-middle',
+                    headerCellClassName
+                  )}
+                >
+                  <div className="flex items-center justify-center">
+                    <div className="inline-flex h-5 w-6 items-center justify-center rounded border border-white/20 bg-white/10 shadow-xs">
+                      {ExpandHeaderIcon ? (
+                        <ExpandHeaderIcon className="h-2.5 w-2.5 text-white" />
+                      ) : (
+                        <span className="text-white font-bold text-[11px] leading-none">{expandHeaderLabel}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </th>
-            )}
+                </th>
+              )}
 
             {/* Data Headers */}
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={cn(
-                  'px-1.5 py-1.5 border-r border-blue-700/60 font-bold uppercase tracking-wider text-[11px] align-middle text-center',
+                  'px-1 py-1 border-r border-blue-700/60 font-bold uppercase tracking-wider text-[10px] align-middle text-center',
                   headerCellClassName,
                   col.headerClassName
                 )}
@@ -431,7 +441,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                     <div
                       onClick={() => col.sortable !== false && handleSort(col.key)}
                       className={cn(
-                        'inline-flex h-6 w-full items-center justify-center gap-1 px-1 text-[11px] font-bold text-white transition-colors duration-200 select-none whitespace-nowrap',
+                        'inline-flex h-5 w-full items-center justify-center gap-0.5 px-1 text-[10px] font-bold text-white transition-colors duration-200 select-none whitespace-nowrap',
                         col.sortable !== false && 'cursor-pointer hover:opacity-80 active:opacity-60',
                         headerBadgeClassName,
                         col.headerBadgeClassName
@@ -448,12 +458,12 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                         <span className="inline-flex flex-shrink-0 items-center ml-0.5">
                           {sortConfig.key === col.key ? (
                             sortConfig.direction === 'asc' ? (
-                              <ArrowUp className="h-3 w-3 text-white opacity-100 font-bold" />
+                              <ArrowUp className="h-2.5 w-2.5 text-white opacity-100 font-bold" />
                             ) : (
-                              <ArrowDown className="h-3 w-3 text-white opacity-100 font-bold" />
+                              <ArrowDown className="h-2.5 w-2.5 text-white opacity-100 font-bold" />
                             )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3 text-white opacity-90 hover:opacity-100 transition-opacity" />
+                            <ArrowUpDown className="h-2.5 w-2.5 text-white opacity-90 hover:opacity-100 transition-opacity" />
                           )}
                         </span>
                       )}
@@ -465,13 +475,13 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
 
             {/* Toggle Scroll Header (Sticky on the right) */}
             {shouldShowScrollButton && (
-              <th className={cn("w-[40px] min-w-[40px] px-1 py-1.5 border-l border-blue-700/60 text-center align-middle sticky right-0 z-30 bg-[#1440aa]", headerCellClassName)}>
+              <th className={cn("w-[36px] min-w-[36px] px-1 py-1 border-l border-blue-700/60 text-center align-middle sticky right-0 z-30 bg-[#1440aa]", headerCellClassName)}>
                 <button
                   type="button"
                   onClick={handleScrollToggle}
-                  className="inline-flex h-6 w-7 items-center justify-center rounded border border-white/20 bg-white/15 hover:bg-white/25 shadow-sm cursor-pointer transition-colors"
+                  className="inline-flex h-5 w-6 items-center justify-center rounded border border-white/20 bg-white/15 hover:bg-white/25 shadow-xs cursor-pointer transition-colors"
                 >
-                  <ChevronRight className={cn("h-3.5 w-3.5 text-white transition-transform duration-300", isScrolledRight && "rotate-180")} />
+                  <ChevronRight className={cn("h-3 w-3 text-white transition-transform duration-300", isScrolledRight && "rotate-180")} />
                 </button>
               </th>
             )}
@@ -486,7 +496,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                 className="px-6 py-10 text-center align-middle"
               >
                 <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
-                  <span className="text-sm font-medium italic opacity-80">{emptyMessage}</span>
+                  <span className={cn("text-sm font-medium italic opacity-80", emptyMessageClassName)}>{emptyMessage}</span>
                 </div>
               </td>
             </tr>
@@ -540,7 +550,7 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
                         )}
                       >
                         <div className="flex items-center justify-center gap-1">
-                          {expandHref ? (
+                          {(expandHref || renderExpanded) ? (
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
@@ -641,5 +651,6 @@ export function FloorDetailsTable<Row extends { id: number | string }>({
         </tbody>
       </table>
     </div>
-  );
+  </>
+);
 }

@@ -40,7 +40,7 @@ export function useNatureFactorCvBulkOps({
     refreshPage,
     clearFilters,
 }: UseNatureFactorCvBulkOpsParams) {
-    const tW = useTranslations("weightageMaster");
+    const tW = useTranslations("assetWeightageMaster");
 
     const handleApplyFilter = (): void => {
         const factor = parseFloat(factorValue);

@@ -43,12 +43,15 @@ describe('InventoryCategory Server Actions', () => {
       formData.append('code', 'CODE1');
       formData.append('name', 'Name 1');
       formData.append('group', '1');
+      formData.append('displayOrder', '5');
       formData.append('isActive', 'true');
 
       const result = await saveInventoryCategoryAction('', formData);
       expect(result.ok).toBe(true);
       expect(result.mode).toBe('create');
-      expect(inventoryCategoryService.create).toHaveBeenCalled();
+      expect(inventoryCategoryService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ displayOrder: 5 })
+      );
       expect(revalidatePath).toHaveBeenCalled();
     });
 
@@ -58,13 +61,40 @@ describe('InventoryCategory Server Actions', () => {
       formData.append('code', 'CODE2');
       formData.append('name', 'Name 2');
       formData.append('group', '1');
+      formData.append('displayOrder', '2');
       formData.append('isActive', 'true');
 
       const result = await saveInventoryCategoryAction('10', formData);
       expect(result.ok).toBe(true);
       expect(result.mode).toBe('update');
-      expect(inventoryCategoryService.update).toHaveBeenCalled();
+      expect(inventoryCategoryService.update).toHaveBeenCalledWith(
+        '10',
+        expect.objectContaining({ displayOrder: 2 })
+      );
       expect(revalidatePath).toHaveBeenCalled();
+    });
+
+    it('validates missing display order', async () => {
+      const formData = new FormData();
+      formData.append('code', 'CODE1');
+      formData.append('name', 'Name 1');
+      formData.append('group', '1');
+
+      const result = await saveInventoryCategoryAction('', formData);
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('Display order is required');
+    });
+
+    it('validates invalid display order', async () => {
+      const formData = new FormData();
+      formData.append('code', 'CODE1');
+      formData.append('name', 'Name 1');
+      formData.append('group', '1');
+      formData.append('displayOrder', 'invalid');
+
+      const result = await saveInventoryCategoryAction('', formData);
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('Display order must be a valid integer');
     });
 
     it('handles errors gracefully', async () => {
@@ -100,12 +130,13 @@ describe('InventoryCategory Server Actions', () => {
   });
 
   describe('getInventoryCategoryByIdAction', () => {
-    it('fetches single record by ID', async () => {
-      const mockItem = { id: 2, code: 'C2', name: 'N2', isActive: true };
+    it('fetches single record by ID including displayOrder', async () => {
+      const mockItem = { id: 2, typeCode: 'C2', typeName: 'N2', displayOrder: 3, isActive: true };
       vi.mocked(inventoryCategoryService.getById).mockResolvedValue(mockItem as any);
 
       const result = await getInventoryCategoryByIdAction(2);
       expect(result).toBeDefined();
+      expect(result?.displayOrder).toBe('3');
       expect(inventoryCategoryService.getById).toHaveBeenCalledWith('2');
     });
 

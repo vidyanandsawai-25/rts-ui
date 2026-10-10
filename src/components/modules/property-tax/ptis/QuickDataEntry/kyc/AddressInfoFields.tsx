@@ -164,89 +164,90 @@ export const AddressInfoFields: React.FC<AddressInfoFieldsProps> = ({
 
           {/* Shop Name Regional */}
           <div className="col-span-12 sm:col-span-6 md:col-span-3 space-y-1.5">
-            <Label htmlFor="kyc-shopname" className="text-xs font-semibold text-gray-700">
-              {t('kyc.shopNameMarathi')}
-            </Label>
-            <PTISTransliteratedInput
-              type="text"
-              id="kyc-shopname"
-              placeholder={t('kyc.enterShopNameMarathi')}
-              value={formData.flatOrShopName ?? ''}
-              maxLength={KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH}
-              className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${shopNameError ? 'border-red-300 focus:border-red-500' : ''}`}
-              onFocus={() => onFocusField('flatOrShopName')}
-              onKeyDown={preventEnterSubmit}
-              onBlur={() => {
-                onBlurField();
-                setFormData((prev) => ({
-                  ...prev,
-                  flatOrShopName: capitalizeEachWordKycSociety(
-                    (prev.flatOrShopName ?? '').trim().replace(/\s+/g, ' '),
-                    true
-                  ),
-                }));
-              }}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const val = e.target.value;
-                const start = e.target.selectionStart ?? val.length;
-                const isAtEnd = start >= val.length;
-                const sanitized = sanitizeShopName(val);
-                const finalVal = isAtEnd
-                  ? capitalizeEachWordKycSociety(sanitized, false)
-                  : sanitized;
-                if (finalVal.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
-                  setFormData((prev) => ({ ...prev, flatOrShopName: finalVal }));
-                }
-              }}
-            />
-            {shopNameError && (
-              <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
-            )}
-          </div>
+              <Label htmlFor="kyc-shopname" className="text-xs font-semibold text-gray-700">
+                {t('kyc.shopNameMarathi')}
+              </Label>
+              <PTISTransliteratedInput
+                type="text"
+                id="kyc-shopname"
+                placeholder={t('kyc.enterShopNameMarathi')}
+                value={formData.flatOrShopName ?? ''}
+                maxLength={KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH}
+                className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${shopNameError ? 'border-red-300 focus:border-red-500' : ''}`}
+                onFocus={() => onFocusField('flatOrShopName')}
+                onKeyDown={preventEnterSubmit}
+                onBlur={() => {
+                  onBlurField();
+                  setFormData((prev) => ({
+                    ...prev,
+                    flatOrShopName: capitalizeEachWordKycSociety(
+                      (prev.flatOrShopName ?? '').trim().replace(/\s+/g, ' '),
+                      true
+                    ),
+                  }));
+                }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const val = e.target.value;
+                  const start = e.target.selectionStart ?? val.length;
+                  const isAtEnd = start >= val.length;
+                  const sanitized = sanitizeShopName(val);
+                  const finalVal = isAtEnd
+                    ? capitalizeEachWordKycSociety(sanitized, false)
+                    : sanitized;
+                  if (finalVal.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
+                    setFormData((prev) => ({ ...prev, flatOrShopName: finalVal }));
+                  }
+                }}
+              />
+              {shopNameError && (
+                <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+              )}
+            </div>
 
           {/* Shop Name English */}
           <div className="col-span-12 sm:col-span-6 md:col-span-3 space-y-1.5">
-            <Label htmlFor="kyc-shopname-english" className="text-xs font-semibold text-gray-700">
-              {t('kyc.shopNameEnglish')}
-            </Label>
-            <Input
-              type="text"
-              id="kyc-shopname-english"
-              placeholder={t('kyc.enterShopNameEnglish')}
-              value={formData.flatOrShopNameEnglish ?? ''}
-              maxLength={KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH}
-              className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${shopNameEnglishError ? 'border-red-300 focus:border-red-500' : ''}`}
-              onFocus={() => onFocusField('flatOrShopNameEnglish')}
-              onKeyDown={preventEnterSubmit}
-              onBlur={() => {
-                onBlurField();
-                setFormData((prev) => ({
-                  ...prev,
-                  flatOrShopNameEnglish: capitalizeEachWordKycSociety(
-                    (prev.flatOrShopNameEnglish ?? '').trim().replace(/\s+/g, ' '),
-                    true
-                  ),
-                }));
-              }}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const val = e.target.value;
-                const start = e.target.selectionStart ?? val.length;
-                const isAtEnd = start >= val.length;
-                const sanitized = sanitizeShopName(val);
-                const finalVal = isAtEnd
-                  ? capitalizeEachWordKycSociety(sanitized, false)
-                  : sanitized;
-                if (finalVal.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
-                  setFormData((prev) => ({ ...prev, flatOrShopNameEnglish: finalVal }));
-                }
-              }}
-            />
-            {shopNameEnglishError && (
-              <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
-            )}
-          </div>
+              <Label htmlFor="kyc-shopname-english" className="text-xs font-semibold text-gray-700">
+                {t('kyc.shopNameEnglish')}
+              </Label>
+              <Input
+                type="text"
+                id="kyc-shopname-english"
+                placeholder={t('kyc.enterShopNameEnglish')}
+                value={formData.flatOrShopNameEnglish ?? ''}
+                maxLength={KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH}
+                className={`h-9 text-sm border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-200 ${shopNameEnglishError ? 'border-red-300 focus:border-red-500' : ''}`}
+                onFocus={() => onFocusField('flatOrShopNameEnglish')}
+                onKeyDown={preventEnterSubmit}
+                onBlur={() => {
+                  onBlurField();
+                  setFormData((prev) => ({
+                    ...prev,
+                    flatOrShopNameEnglish: capitalizeEachWordKycSociety(
+                      (prev.flatOrShopNameEnglish ?? '').trim().replace(/\s+/g, ' '),
+                      true
+                    ),
+                  }));
+                }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const val = e.target.value;
+                  const start = e.target.selectionStart ?? val.length;
+                  const isAtEnd = start >= val.length;
+                  const sanitized = sanitizeShopName(val);
+                  const finalVal = isAtEnd
+                    ? capitalizeEachWordKycSociety(sanitized, false)
+                    : sanitized;
+                  if (finalVal.length <= KYC_VALIDATION_RULES.SHOP_NAME_MAX_LENGTH) {
+                    setFormData((prev) => ({ ...prev, flatOrShopNameEnglish: finalVal }));
+                  }
+                }}
+              />
+              {shopNameEnglishError && (
+                <span className="text-xs text-red-500">{t('kyc.validation.invalidName')}</span>
+              )}
+            </div>
         </>
       )}
+
 
       {(!section || section === 'address-email-pincode') && (
         <>

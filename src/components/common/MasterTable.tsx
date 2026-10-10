@@ -113,6 +113,10 @@ export interface MasterTableProps<T extends Record<string, unknown> = Record<str
 
   actionLabel?: string;
 
+  actionHeaderAlign?: 'left' | 'center' | 'right';
+
+  actionCellAlign?: 'left' | 'center' | 'right';
+
   getRowKey?: (row: T, index: number) => React.Key;
 
   maxBodyHeightClassName?: string;
@@ -260,6 +264,10 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
 
   actionLabel,
 
+  actionHeaderAlign = 'center',
+
+  actionCellAlign = 'center',
+
   renderActions,
 
   getRowKey,
@@ -391,7 +399,16 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
             ))}
 
             {hasActions && (
-              <th className="px-4 py-3 text-center text-sm font-semibold text-[#1E3A8A]">
+              <th
+                className={cn(
+                  'px-4 py-3 text-sm font-semibold text-[#1E3A8A]',
+                  actionHeaderAlign === 'left'
+                    ? 'text-left'
+                    : actionHeaderAlign === 'right'
+                      ? 'text-right'
+                      : 'text-center'
+                )}
+              >
                 {actualActionLabel}
               </th>
             )}
@@ -468,8 +485,26 @@ export function MasterTable<T extends Record<string, unknown> = Record<string, u
                 })}
 
                 {hasActions && (
-                  <td className="px-4 py-2 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                  <td
+                    className={cn(
+                      'px-4 py-2',
+                      actionCellAlign === 'left'
+                        ? 'text-left'
+                        : actionCellAlign === 'right'
+                          ? 'text-right'
+                          : 'text-center'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'flex items-center gap-2',
+                        actionCellAlign === 'left'
+                          ? 'justify-start'
+                          : actionCellAlign === 'right'
+                            ? 'justify-end'
+                            : 'justify-center'
+                      )}
+                    >
                       {renderActions?.(row)}
                     </div>
                   </td>

@@ -16,6 +16,7 @@ import {
 } from "@/types/asset-masters/assessment-year-range.types";
 import { getAssessmentYearRangeColumns } from "./AssessmentYearRangeColumns";
 import { useAssessmentYearRangePagination } from "@/hooks/asset-masters/assessmentYearRange/useAssessmentYearRangePagination";
+import { translateAssessmentYearRangeReferenceError } from "@/hooks/asset-masters/assessmentYearRange/useAssessmentYearRangeForm";
 
 interface AssessmentYearRangeMasterComponentProps<T extends AssessmentYearRange>
   extends AssessmentYearRangeMasterProps<T> {
@@ -90,6 +91,11 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
             toast.success(t("success.deleted", { fromYear, toYear }));
             startTransition(() => router.refresh());
           } else {
+            const referenceMessage = translateAssessmentYearRangeReferenceError(result.message, t);
+            if (referenceMessage) {
+              toast.error(referenceMessage);
+              return;
+            }
             const isForeignKeyOrUseError =
               result.statusCode === 409 ||
               result.statusCode === 500 ||
@@ -118,6 +124,8 @@ export function AssessmentYearRangeMaster<T extends AssessmentYearRange>({
 
   return (
     <MasterTable<T>
+      theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+      footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
       columns={columns}
       data={data}
       loading={isPending}

@@ -2,7 +2,7 @@
   "configuration": {
     "header": {
       "title": "Configuration Master",
-      "subtitle": "केंद्रीकृत मास्टर डेटा व्यवस्थापन प्रणाली",
+      "subtitle": "मालमत्ता आणि इन्व्हेंटरी स्थिती व्यवस्थापन",
       "totalMasters": "Total Masters"
     },
     "tabs": {
@@ -33,6 +33,7 @@
           "name": "नाव",
           "conditionType": "स्थिती श्रेणी",
           "category": "श्रेणी",
+          "categoryName": "श्रेणीचे नाव",
           "description": "वर्णन",
           "conditionFactor": "स्थिती घटक",
           "displayOrder": "प्रदर्शन क्रम",
@@ -53,6 +54,9 @@
           "update": "अद्यतनित करा",
           "cancel": "रद्द करा"
         },
+        "validation": {
+          "duplicateRecord": "हा रेकॉर्ड आधीपासून अस्तित्वात आहे. कृपया तपासा आणि पुन्हा प्रयत्न करा."
+        },
         "errors": {
           "fillRequired": "कृपया सर्व आवश्यक फील्ड भरा.",
           "conditionTypeRequired": "स्थिती श्रेणी आवश्यक आहे.",
@@ -65,6 +69,7 @@
           "conditionFactorInvalid": "स्थिती घटक वैध क्रमांक असणे आवश्यक आहे.",
           "conditionFactorRange": "स्थिती घटक 0 आणि 1 च्या दरम्यान असणे आवश्यक आहे.",
           "displayOrderRequired": "प्रदर्शन क्रम आवश्यक आहे.",
+          "displayOrderInvalid": "प्रदर्शन क्रम 1 किंवा त्याहून मोठा पूर्णांक असणे आवश्यक आहे.",
           "apiActionsNotConfigured": "API क्रिया संरचीत नाहीत.",
           "saveFailed": "रेकॉर्ड जतन करता आले नाही.",
           "deleteFailed": "रेकॉर्ड हटवता आले नाही.",
@@ -109,12 +114,64 @@
       }
     }
   },
+  "apiErrors": {
+    "referenceBlocked": {
+      "condition": {
+        "deleteInUse": "ही स्थिती वापरात असल्यामुळे डिलीट करता येत नाही.",
+        "deactivateInUse": "ही स्थिती वापरात असल्यामुळे निष्क्रिय करता येत नाही."
+      }
+    }
+  },
   "masterNames": {
     "asset-type-master": "मालमत्ता प्रकार",
     "asset-category-master": "मालमत्ता श्रेणी",
     "inventory-category-master": "इन्व्हेंटरी श्रेणी",
     "inventory-model-master": "इन्व्हेंटरी मॉडेल",
     "inventory-name-master": "इन्व्हेंटरी आयटमचे नाव",
-    "inventory-condition-master": "इन्व्हेंटरी स्थिती"
+    "inventory-condition-master": "मालमत्ता स्थिती मास्टर"
+  },
+  "list": {
+    "title": "इन्व्हेंटरी स्थिती मास्टर",
+    "subtitle": "इन्व्हेंटरीसाठी स्थिती व्यवस्थापित करा",
+    "buttons": {
+      "add": "नवीन इन्व्हेंटरी स्थिती जोडा",
+      "edit": "संपादित करा",
+      "delete": "डिलीट"
+    },
+    "filters": {
+      "show": "दाखवा",
+      "search": "इन्व्हेंटरी स्थिती शोधा...",
+      "label": "फिल्टर्स",
+      "conditionCategoryAll": "स्थिती श्रेणी: सर्व",
+      "categoryAll": "श्रेणी: सर्व",
+      "statusAll": "स्थिती: सर्व",
+      "reset": "रीसेट करा",
+      "export": "निर्यात करा",
+      "asset": "मालमत्ता",
+      "inventory": "इन्व्हेंटरी"
+    },
+    "table": {
+      "conditionCategory": "स्थिती श्रेणी",
+      "name": "नाव",
+      "description": "वर्णन",
+      "conditionFactor": "स्थिती घटक",
+      "category": "श्रेणी",
+      "status": "स्थिती",
+      "actions": "कृती"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    }
+  },
+  "stats": {
+    "totalConditions": "एकूण स्थिती",
+    "totalConditionsSub": "सर्व कॉन्फिगर केलेल्या स्थिती",
+    "activeConditions": "सक्रिय स्थिती",
+    "activeConditionsSub": "सध्या सक्रिय",
+    "avgConditionFactor": "सरासरी स्थिती घटक",
+    "avgConditionFactorSub": "सर्व स्थितींमध्ये",
+    "categories": "श्रेण्या",
+    "categoriesSub": "स्थिती श्रेण्या"
   }
 }

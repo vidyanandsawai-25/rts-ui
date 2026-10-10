@@ -44,7 +44,7 @@ describe("social-details.validation", () => {
             dataType: "INT",
             parentAttributeId: null,
             isRequiredWhenParentTrue: false,
-            bitValue: null,
+            bitValue: true,
             intValue: null,
             decimalValue: null,
             textValue: null,
@@ -388,18 +388,28 @@ describe("social-details.validation", () => {
                 socialAttributeId: 3,
                 isPhotoRequired: true,
                 documentGuid: null,
-                documentBindingId: 123
+                documentBindingId: 123,
+                fileName: "photo.jpg"
+            });
+            const attrPhotoBindingOnlyNoFile = createBaseAttr({
+                socialAttributeId: 4,
+                isPhotoRequired: true,
+                documentGuid: null,
+                documentBindingId: 123,
+                fileName: null
             });
 
             const errors = validateSocialDetails({
                 1: attrPhotoMissing,
                 2: attrPhotoPresentGuid,
-                3: attrPhotoPresentBinding
+                3: attrPhotoPresentBinding,
+                4: attrPhotoBindingOnlyNoFile
             });
 
             expect(errors[1]).toBe("Photo is required.");
             expect(errors[2]).toBeUndefined();
             expect(errors[3]).toBeUndefined();
+            expect(errors[4]).toBe("Photo is required.");
         });
     });
 });

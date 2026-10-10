@@ -61,7 +61,7 @@ export async function fetchAssetPhotoPagedServerAction(
 
 export async function createAssetPhotoAction(
     data: AssetPhotoTypeFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; statusCode?: number; validationErrors?: Record<string, string> }> {
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
@@ -77,10 +77,41 @@ export async function createAssetPhotoAction(
         return { success: true, message: msg };
     } catch (error: unknown) {
         if (error instanceof ApiError) {
+            let validationErrors: Record<string, string> | undefined = undefined;
+            let errorMessage = error.responseText;
+            try {
+                const parsed = JSON.parse(error.responseText);
+                if (parsed && typeof parsed === 'object') {
+                    if (parsed.errors) validationErrors = parsed.errors;
+                    if (parsed.message) errorMessage = parsed.message;
+                }
+            } catch (_e) {
+                // Not JSON, fallback to raw responseText
+            }
+
+            // Fallback parsing: apiClient flattens JSON errors into responseText string. 
+            // We need to recreate field-level errors for UI mapping.
+            if (!validationErrors && errorMessage) {
+                const lowerMsg = errorMessage.toLowerCase();
+                if (lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
+                    validationErrors = {};
+                    if (lowerMsg.includes("photo type code")) {
+                        validationErrors["PhotoTypeCode"] = errorMessage;
+                    }
+                    if (lowerMsg.includes("photo type name")) {
+                        validationErrors["PhotoTypeName"] = errorMessage;
+                    }
+                    if (Object.keys(validationErrors).length === 0) {
+                         validationErrors = undefined;
+                    }
+                }
+            }
+
             return {
                 success: false,
-                message: error.responseText,
-                statusCode: error.statusCode
+                message: errorMessage,
+                statusCode: error.statusCode,
+                validationErrors
             };
         }
         if (error instanceof Error) {
@@ -92,7 +123,7 @@ export async function createAssetPhotoAction(
 
 export async function updateAssetPhotoAction(
     data: AssetPhotoTypeFormModel
-): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+): Promise<{ success: boolean; message?: string; statusCode?: number; validationErrors?: Record<string, string> }> {
     try {
         const cookieStore = await cookies();
         const userId = getUserIdFromCookies(cookieStore);
@@ -108,10 +139,41 @@ export async function updateAssetPhotoAction(
         return { success: true, message: msg };
     } catch (error: unknown) {
         if (error instanceof ApiError) {
+            let validationErrors: Record<string, string> | undefined = undefined;
+            let errorMessage = error.responseText;
+            try {
+                const parsed = JSON.parse(error.responseText);
+                if (parsed && typeof parsed === 'object') {
+                    if (parsed.errors) validationErrors = parsed.errors;
+                    if (parsed.message) errorMessage = parsed.message;
+                }
+            } catch (_e) {
+                // Not JSON, fallback to raw responseText
+            }
+
+            // Fallback parsing: apiClient flattens JSON errors into responseText string. 
+            // We need to recreate field-level errors for UI mapping.
+            if (!validationErrors && errorMessage) {
+                const lowerMsg = errorMessage.toLowerCase();
+                if (lowerMsg.includes("already exists") || lowerMsg.includes("duplicate")) {
+                    validationErrors = {};
+                    if (lowerMsg.includes("photo type code")) {
+                        validationErrors["PhotoTypeCode"] = errorMessage;
+                    }
+                    if (lowerMsg.includes("photo type name")) {
+                        validationErrors["PhotoTypeName"] = errorMessage;
+                    }
+                    if (Object.keys(validationErrors).length === 0) {
+                         validationErrors = undefined;
+                    }
+                }
+            }
+
             return {
                 success: false,
-                message: error.responseText,
-                statusCode: error.statusCode
+                message: errorMessage,
+                statusCode: error.statusCode,
+                validationErrors
             };
         }
         if (error instanceof Error) {

@@ -34,19 +34,19 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
         }
 
         if (val === "" || /^\d*\.?\d*$/.test(val)) {
-            // Limit integer part to 4 digits
+            // Limit integer part to 6 digits
             if (val.includes(".")) {
                 const [intPart, decPart] = val.split(".");
-                val = intPart.slice(0, 4) + "." + (decPart.slice(0, 4));
+                val = intPart.slice(0, 6) + "." + (decPart.slice(0, 4));
             } else {
-                val = val.slice(0, 4);
+                val = val.slice(0, 6);
             }
             onChange(val);
         }
     };
 
     return (
-        <foreignObject x={x - 45} y={y - 15} width="90" height="60">
+        <foreignObject x={x - 52} y={y - 18} width="104" height="66">
             <div className={`flex flex-col items-center p-1 rounded-md transition-all duration-300 ${isFilled ? "bg-green-50/80 border border-green-200" : ""}`}>
                 {verticalLabel && <span className="text-[10px] font-bold text-[#10B981] mb-1">{label}</span>}
                 <div className="relative group w-full">
@@ -77,7 +77,7 @@ export const ParameterInput: React.FC<ParameterInputProps & { areaUnit?: "sq.m" 
                             }
                         }}
                         className={cn(
-                            "w-full h-7 bg-white border-2 text-center text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all",
+                            "w-full h-7 bg-white border-2 text-center text-xs font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10B981] transition-all pr-3.5",
                             isFilled ? "border-[#10B981]" : "border-gray-200 group-hover:border-[#10B981]"
                         )}
                         placeholder={label}

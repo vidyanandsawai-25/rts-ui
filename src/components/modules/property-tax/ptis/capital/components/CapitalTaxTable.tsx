@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { FloorDetailsTable } from '@/components/common';
 import { ShowTaxOnExpand } from '@/components/modules/property-tax/ptis/ShowTaxOnExpand';
 import {
-  buildExpandHref,
   getCapitalColumns,
   getCapitalItems,
   mapCapitalRow,
@@ -41,7 +40,6 @@ export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, lo
         emptyMessage={t('noCapitalRows')}
         expandedLabel={t('viewTaxBreakdown')}
         expandedRowIds={expandedRowIds}
-        getExpandHref={(row) => buildExpandHref(searchParams as Record<string, string | string[] | undefined>, row.id, expandedRowIds)}
         getEditHref={propertyId ? (row) => {
           const params = new URLSearchParams();
           params.set('floorId', String(row.id));
@@ -56,7 +54,7 @@ export const CapitalTaxTable: React.FC<Props> = ({ capitalData, searchParams, lo
         headerBadgeClassName={PTIS_TABLE_PRESETS.headerBadge}
         cellClassName={PTIS_TABLE_PRESETS.cellText}
         containerClassName="overflow-x-auto"
-        heightRows={6}
+        heightRows={3}
         renderExpanded={(row: CapitalRow) => <ShowTaxOnExpand locale={locale} taxes={row.taxes} />}
       />
     </div>

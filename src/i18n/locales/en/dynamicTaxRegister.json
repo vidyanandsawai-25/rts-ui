@@ -347,7 +347,7 @@
     "ruleInUseHint": "In use by a tax — can't be deleted or deactivated.",
     "ruleTypeLockedHint": "In use by a tax — Rule Category can't be changed.",
     "columns": {
-      "id": "#",
+      "id": "Sr. No",
       "displayName": "Display Name",
       "ruleType": "Rule Category",
       "attachedReference": "Master Source",

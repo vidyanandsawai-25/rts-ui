@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import type { OwningDepartmentFormModel } from "@/types/asset-masters/owning-department.types";
 import { validateForm } from "@/lib/utils/validation";
-import { isAllZeros, ASSET_MASTER_NAME_REGEX, DESCRIPTION_REGEX } from "@/lib/utils/asset-validation-rules";
+import { isAllZeros, ALPHANUMERIC_WITH_SPACES_REGEX, DESCRIPTION_REGEX } from "@/lib/utils/asset-validation-rules";
 
 interface UseOwningDepartmentFormValidationProps {
   isEdit: boolean;
@@ -30,7 +30,7 @@ export function useOwningDepartmentFormValidation({
           if (strVal.length > 100) {
             return t("form.validation.nameMaxLength", { count: 100 });
           }
-          if (isAllZeros(strVal) || !ASSET_MASTER_NAME_REGEX.test(strVal)) {
+          if (isAllZeros(strVal) || !ALPHANUMERIC_WITH_SPACES_REGEX.test(strVal)) {
             return t("form.validation.nameFormat");
           }
           return undefined;

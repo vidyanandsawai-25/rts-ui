@@ -137,6 +137,10 @@ function normalizePropertySearchApiItem(
     rvcv: toOptionalNumber(readField(raw, "rvcv", "Rvcv")),
     totalTax: toOptionalNumber(readField(raw, "totalTax", "TotalTax")),
     status: readApiText(raw, "status", "Status") || null,
+    societyDetailId: toOptionalNumber(readField(raw, "societyDetailId", "SocietyDetailId")),
+    societyId: toOptionalNumber(readField(raw, "societyId", "SocietyId")),
+    wingDetailId: toOptionalNumber(readField(raw, "wingDetailId", "WingDetailId")),
+    wingId: toOptionalNumber(readField(raw, "wingId", "WingId")),
   };
 }
 
@@ -151,13 +155,7 @@ function normalizePropertyStatus(raw: string | null | undefined): PropertyStatus
 export function normalizePropertySearchItem(
   data: PropertySearchApiItem | Record<string, unknown>
 ): SearchResult {
-  const item =
-    typeof data === "object" &&
-      data !== null &&
-      "propertyId" in data &&
-      typeof (data as PropertySearchApiItem).propertyId === "number"
-      ? (data as PropertySearchApiItem)
-      : normalizePropertySearchApiItem(data as Record<string, unknown>);
+  const item = normalizePropertySearchApiItem(data as Record<string, unknown>);
 
   const propertyId = Number(item.propertyId);
   if (!Number.isFinite(propertyId) || propertyId <= 0) {
@@ -207,6 +205,10 @@ export function normalizePropertySearchItem(
     cv,
     totalTax: toOptionalNumber(item.totalTax) ?? 0,
     status: normalizePropertyStatus(item.status),
+    societyDetailId: item.societyDetailId ?? item.societyId ?? null,
+    societyId: item.societyId ?? item.societyDetailId ?? null,
+    wingDetailId: item.wingDetailId ?? item.wingId ?? null,
+    wingId: item.wingId ?? item.wingDetailId ?? null,
   };
 }
 

@@ -11,8 +11,6 @@ import {
 } from '@/types/property-tax/apartment';
 import {
   fetchApartmentDetailsWingWiseAction,
-  fetchApartmentPropertyTaxDetailsRvAction,
-  fetchApartmentPropertyTaxDetailsCvAction,
 } from '@/app/[locale]/property-tax/ptis/apartment/action';
 import { matchesFloor } from '@/lib/utils/ptis-floor.utils';
 import { extractArrayFromPayload, parseApartmentItemNodes } from './apartment-mappers';
@@ -26,52 +24,53 @@ export function useApartmentData(
   const [previousUnits, setPreviousUnits] = React.useState<AssessmentUnit[]>([]);
   const [surveyUnits, setSurveyUnits] = React.useState<AssessmentUnit[]>([]);
   const [apiDifferences, setApiDifferences] = React.useState<UnitDifference[]>([]);
-  const [rvTaxAmounts, setRvTaxAmounts] = React.useState<TaxHeadAmountItem[]>([]);
-  const [cvTaxAmounts, setCvTaxAmounts] = React.useState<TaxHeadAmountItem[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [rvTaxAmounts] = React.useState<TaxHeadAmountItem[]>([]);
+  const [cvTaxAmounts] = React.useState<TaxHeadAmountItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState(() => Boolean(filters.propertyId || filters.wingDetailId));
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
   const isLoadingMoreRef = React.useRef(false);
   const lastFetchedKeyRef = React.useRef<string>('');
+  const requestIdRef = React.useRef<number>(0);
+  const filtersRef = React.useRef(filters);
+  React.useEffect(() => {
+    filtersRef.current = filters;
+  });
   const [apiError, setApiError] = React.useState<string | null>(null);
 
   const fetchWingWiseData = React.useCallback(async (customFilters?: SearchWingWiseFilters, isAppend = false) => {
-    const activeFilters = customFilters || filters;
+    const activeFilters = customFilters || filtersRef.current;
     if (!activeFilters.propertyId && !activeFilters.wingDetailId && !activeFilters.wingId) {
       if (!isAppend) {
         setSurveyUnits([]); setPreviousUnits([]); setApiDifferences([]);
+        setIsLoading(false);
       }
       return;
     }
-    const filterKey = `${activeFilters.propertyId}_${activeFilters.wingDetailId}_${activeFilters.wingId}_${activeFilters.pageNumber}_${activeFilters.pageSize}_${activeFilters.floor}`;
-    if (!isAppend && !customFilters && lastFetchedKeyRef.current === filterKey) {
+    const filterKey = `${activeFilters.propertyId}_${activeFilters.wingDetailId}_${activeFilters.wingId}_${activeFilters.pageNumber}_${activeFilters.pageSize}_${activeFilters.sortBy ?? ""}_${activeFilters.sortOrder ?? ""}`;
+    if (!isAppend && lastFetchedKeyRef.current === filterKey) {
       return;
     }
     lastFetchedKeyRef.current = filterKey;
+
+    const currentRequestId = ++requestIdRef.current;
 
     if (!isAppend) setIsLoading(true);
     setApiError(null);
 
     try {
       const res = await fetchApartmentDetailsWingWiseAction(activeFilters);
+
+      // Discard response if a newer request has been triggered in the meantime
+      if (currentRequestId !== requestIdRef.current) {
+        return;
+      }
+
       if (!res || !res.success) {
         if (!isAppend) {
           setSurveyUnits([]); setPreviousUnits([]); setApiDifferences([]);
         }
         setApiError(res?.message || 'Failed to connect to API backend.');
         return;
-      }
-
-      if (activeFilters.propertyId) {
-        try {
-          const [rvRes, cvRes] = await Promise.all([
-            fetchApartmentPropertyTaxDetailsRvAction(activeFilters.propertyId),
-            fetchApartmentPropertyTaxDetailsCvAction(activeFilters.propertyId),
-          ]);
-          setRvTaxAmounts((rvRes?.success && rvRes.data ? ((rvRes.data as { items?: { taxAmounts?: TaxHeadAmountItem[] } }).items?.taxAmounts || []) : []));
-          setCvTaxAmounts((cvRes?.success && cvRes.data ? ((cvRes.data as { items?: { taxAmounts?: TaxHeadAmountItem[] } }).items?.taxAmounts || []) : []));
-        } catch {
-          setRvTaxAmounts([]); setCvTaxAmounts([]);
-        }
       }
 
       const rawContainer = res.items || res.data;
@@ -105,14 +104,17 @@ export function useApartmentData(
         setApiError(activeFilters.propertyId ? `No records returned for Property ID ${activeFilters.propertyId}.` : 'No apartment wing details found.');
       }
     } catch (err) {
+      if (currentRequestId !== requestIdRef.current) return;
       if (!isAppend) {
         setSurveyUnits([]); setPreviousUnits([]); setApiDifferences([]);
       }
       setApiError(err instanceof Error ? err.message : 'Error calling backend API endpoint.');
     } finally {
-      if (!isAppend) setIsLoading(false);
+      if (!isAppend && currentRequestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [filters, setPaginationInfo]);
+  }, [setPaginationInfo]);
 
   React.useEffect(() => {
     if (filters.propertyId || filters.wingDetailId || filters.wingId) fetchWingWiseData();

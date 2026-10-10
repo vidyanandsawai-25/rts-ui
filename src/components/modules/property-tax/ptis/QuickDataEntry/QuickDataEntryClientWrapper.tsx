@@ -9,39 +9,86 @@ import { TabNavigation } from "./TabNavigation";
 import { cn } from '@/lib/utils/cn';
 import { useConfirm } from '@/components/common/ConfirmProvider';
 import { QDE_TO_MAIN_MAP } from '@/lib/utils/qde-tab-mapping';
+import { MediaPanelProvider, useMediaPanel } from '@/hooks/ptis/photoplan/useMediaPanelVisibility';
+import { usePropertyPhotosQuery } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
+import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
+import PropertyMediaPanel from '../media/PropertyMediaPanel';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment/wing-intelligence.types';
 
 export function QuickDataEntryClientWrapper({
     children,
+    categoryId,
+    propertyTypeId,
     categoryName,
     propertyDescription,
     initialHasIncompatibleFloor = false,
+    initialPhotoSlots = [],
+    initialPhotos = [],
+    societyDetailId,
+    wings = [],
+    wingName,
+    wingDetailId,
 }: {
     children: ReactNode;
+    categoryId?: number | null;
+    propertyTypeId?: number | null;
     categoryName?: string;
     propertyDescription?: string;
     initialHasIncompatibleFloor?: boolean;
+    initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
+    initialPhotos?: PropertyPhotoDto[];
+    societyDetailId?: number | null;
+    wings?: WingWiseWingDetails[];
+    wingName?: string;
+    wingDetailId?: number | null;
 }) {
     return (
-        <QuickDataEntryContent
-            categoryName={categoryName}
-            propertyDescription={propertyDescription}
-            initialHasIncompatibleFloor={initialHasIncompatibleFloor}
-        >
-            {children}
-        </QuickDataEntryContent>
+        <MediaPanelProvider initialVisible={false} syncWithCookie={false}>
+            <QuickDataEntryContent
+                categoryId={categoryId}
+                propertyTypeId={propertyTypeId}
+                categoryName={categoryName}
+                propertyDescription={propertyDescription}
+                initialHasIncompatibleFloor={initialHasIncompatibleFloor}
+                initialPhotoSlots={initialPhotoSlots}
+                initialPhotos={initialPhotos}
+                societyDetailId={societyDetailId}
+                wings={wings}
+                wingName={wingName}
+                wingDetailId={wingDetailId}
+            >
+                {children}
+            </QuickDataEntryContent>
+        </MediaPanelProvider>
     );
 }
 
 function QuickDataEntryContent({
     children,
+    categoryId,
+    propertyTypeId,
     categoryName,
     propertyDescription,
     initialHasIncompatibleFloor = false,
+    initialPhotoSlots = [],
+    initialPhotos = [],
+    societyDetailId,
+    wings = [],
+    wingName,
+    wingDetailId,
 }: {
     children: ReactNode;
+    categoryId?: number | null;
+    propertyTypeId?: number | null;
     categoryName?: string;
     propertyDescription?: string;
     initialHasIncompatibleFloor?: boolean;
+    initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
+    initialPhotos?: PropertyPhotoDto[];
+    societyDetailId?: number | null;
+    wings?: WingWiseWingDetails[];
+    wingName?: string;
+    wingDetailId?: number | null;
 }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -74,6 +121,39 @@ function QuickDataEntryContent({
     const resolvedReturnTab = returnTab || derivedReturnTab || 'olddetails';
 
     const { confirm } = useConfirm();
+    const { isPanelVisible, togglePanel } = useMediaPanel();
+    const isMediaPanelOpen = isPanelVisible;
+
+    const isDrawerOpen = searchParams.get('drawer') === 'photo-plan';
+
+    const numericPropertyId = propertyId ? Number(propertyId) : undefined;
+    const searchSocietyId =
+        searchParams.get('societyDetailId') ||
+        searchParams.get('societydetailid') ||
+        searchParams.get('societyId') ||
+        searchParams.get('societyid');
+    const numericSocietyId = searchSocietyId ? Number(searchSocietyId) : (societyDetailId ? Number(societyDetailId) : null);
+
+    const searchWingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingdetailid');
+    const numericWingDetailId = searchWingDetailId ? Number(searchWingDetailId) : (wingDetailId ? Number(wingDetailId) : null);
+
+    const {
+        loading: mediaLoading,
+        photoSlots,
+        photos,
+        setPhotos,
+        setPhotoSlots,
+    } = usePropertyPhotosQuery(
+        numericPropertyId,
+        isPanelVisible,
+        isDrawerOpen,
+        initialPhotoSlots,
+        initialPhotos,
+        numericSocietyId,
+        undefined,
+        undefined,
+        numericWingDetailId
+    );
 
     const [isFormSaving] = useState(false);
     const [showIncompatibleBanner, setShowIncompatibleBanner] = useState(initialHasIncompatibleFloor);
@@ -90,6 +170,12 @@ function QuickDataEntryContent({
                 sessionStorage.setItem('qde_is_apartment', 'true');
             } else {
                 sessionStorage.removeItem('qde_is_apartment');
+            }
+
+            if (returnTab === 'individual' || searchParams.get('from') === 'individual') {
+                sessionStorage.setItem('qde_is_individual', 'true');
+            } else {
+                sessionStorage.removeItem('qde_is_individual');
             }
         }
     }, [returnTab, searchParams]);
@@ -141,22 +227,73 @@ function QuickDataEntryContent({
             if (cleanPropertyNo) params.set('propertyNo', cleanPropertyNo);
             if (partitionNo) params.set('partitionNo', partitionNo);
 
-            const isApartment = returnTab === 'apartment' ||
-                               resolvedReturnTab === 'apartment' ||
-                               searchParams.get('from') === 'apartment';
+            const isExplicitApartment = returnTab === 'apartment' || searchParams.get('from') === 'apartment';
+            const isApartment = isExplicitApartment ||
+                               (!returnTab && (
+                                   resolvedReturnTab === 'apartment' ||
+                                   (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_apartment') === 'true')
+                               ));
+
+            const isExplicitIndividual = returnTab === 'individual' || searchParams.get('from') === 'individual';
+            const isIndividual = isExplicitIndividual ||
+                                 (!returnTab && (
+                                     resolvedReturnTab === 'individual' ||
+                                     (typeof window !== 'undefined' && sessionStorage.getItem('qde_is_individual') === 'true')
+                                 ));
 
             if (typeof window !== 'undefined') {
                 sessionStorage.removeItem('qde_is_apartment');
+                sessionStorage.removeItem('qde_is_individual');
             }
 
             if (isApartment) {
-                const societyId = searchParams.get('societyId');
+                const societyId = searchParams.get('societyId') || searchParams.get('societyDetailId') || societyDetailId;
                 const wingId = searchParams.get('wingId');
-                const wingDetailId = searchParams.get('wingDetailId');
-                if (societyId) params.set('societyId', societyId);
-                if (wingId) params.set('wingId', wingId);
-                if (wingDetailId) params.set('wingDetailId', wingDetailId);
-                router.push(`/${locale}/property-tax/ptis/apartment?${params}`);
+                const resolvedParentPropId =
+                    parentPropertyId ||
+                    searchParams.get('parentPropertyId') ||
+                    searchParams.get('parentpropertyid');
+
+                if (resolvedParentPropId) {
+                    params.set('propertyId', String(resolvedParentPropId));
+                } else if (propertyId) {
+                    params.set('propertyId', String(propertyId));
+                }
+                params.delete('partitionNo');
+                if (societyId) params.set('societyId', String(societyId));
+                if (wingId) params.set('wingId', String(wingId));
+                if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
+                if (wingName) params.set('wingName', String(wingName));
+
+                // Clean up QDE internal params
+                params.delete('fromFooterEdit');
+                params.delete('fromSocietyEdit');
+                params.delete('fromWingEdit');
+                params.delete('hideWing');
+                params.delete('hideSociety');
+                params.delete('from');
+                params.delete('returnTab');
+                params.delete('parentPropertyId');
+
+                router.push(`/${locale}/property-tax/ptis/apartment?${params.toString()}`);
+            } else if (isIndividual) {
+                // Clean up QDE internal and routing params
+                params.delete('from');
+                params.delete('returnTab');
+                params.delete('floorId');
+                params.delete('tab');
+                params.delete('valuationTab');
+                params.delete('appartmentTab');
+                params.delete('subTab');
+                params.delete('showDetails');
+                params.delete('parentPropertyId');
+                params.delete('fromFooterEdit');
+                params.delete('fromSocietyEdit');
+                params.delete('fromWingEdit');
+                params.delete('hideWing');
+                params.delete('hideSociety');
+
+                router.push(`/${locale}/property-tax/ptis/individual?${params.toString()}`);
             } else {
                 if (resolvedReturnTab) params.set('tab', resolvedReturnTab);
                 if (valuationTab) params.set('valuationTab', valuationTab);
@@ -164,6 +301,9 @@ function QuickDataEntryContent({
                 if (subTab) params.set('subTab', subTab);
                 if (showDetails) params.set('showDetails', showDetails);
                 if (parentPropertyId) params.set('parentPropertyId', parentPropertyId);
+                if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
+                if (wingName) params.set('wingName', wingName);
+                if (societyDetailId) params.set('societyDetailId', String(societyDetailId));
                 rateableExpands.forEach(v => params.append('rateableExpand', v));
                 capitalExpands.forEach(v => params.append('capitalExpand', v));
                 dualExpands.forEach(v => params.append('dualExpand', v));
@@ -179,6 +319,7 @@ function QuickDataEntryContent({
             win.__buildingFormHasChanges = false;
             win.__discountFormHasChanges = false;
             win.__socialFormHasChanges = false;
+            win.__buildingFormIncompleteDetails = null;
             doClose();
         };
 
@@ -234,6 +375,7 @@ function QuickDataEntryContent({
                     win.__buildingFormHasChanges = false;
                     win.__discountFormHasChanges = false;
                     win.__socialFormHasChanges = false;
+                    win.__buildingFormIncompleteDetails = null;
                     doClose();
                 }
             });
@@ -246,11 +388,12 @@ function QuickDataEntryContent({
     const isBusy = isFormSaving || (typeof window !== 'undefined' && !!(window as unknown as { __buildingFormIsSaving?: boolean }).__buildingFormIsSaving);
 
     const drawerClassName = cn(
-        "quick-data-entry-wrapper",
-        "[&_div.fixed.right-0]:!w-[97vw]",
-        "md:[&_div.fixed.right-0]:!w-[1000px]",
-        "lg:[&_div.fixed.right-0]:!w-[1100px]",
-        "xl:[&_div.fixed.right-0]:!w-[1200px]",
+        `quick-data-entry-wrapper transition-[width] duration-300 ease-in-out overflow-hidden ${
+            isMediaPanelOpen
+                ? 'w-[75vw] [&_div.fixed.right-0]:!w-[75vw]'
+                : 'w-[60vw] [&_div.fixed.right-0]:!w-[60vw]'
+        }`,
+        "[&_div.fixed.right-0]:transition-[width] [&_div.fixed.right-0]:duration-300 [&_div.fixed.right-0]:ease-in-out [&_div.fixed.right-0]:overflow-hidden",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child]:!bg-blue-600",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child_h2]:!text-white",
         !isRenterPage && "[&_div.fixed.right-0>div:first-child_button_svg]:!text-white",
@@ -276,6 +419,16 @@ function QuickDataEntryContent({
                     <Layers className="h-3 w-3 text-white/80" />
                     <span>{t('roomSubmission.info.partition')}: {appartmentPartition || partitionNo || '—'}</span>
                 </div>
+                {(() => {
+                    const wing = searchParams.get('wingName') || searchParams.get('wingname');
+                    if (!wing) return null;
+                    return (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-semibold text-white border border-white/10 backdrop-blur-xs transition-colors hover:bg-white/15">
+                            <Layers className="h-3 w-3 text-white/80" />
+                            <span>{t('aliasFallback.wing') || 'Wing'}: {wing}</span>
+                        </div>
+                    );
+                })()}
                 {(() => {
                     const rawCat = categoryName || searchParams.get('propertyCategory') || searchParams.get('categoryName') || '';
                     const hasPartition = Boolean(appartmentPartition || partitionNo);
@@ -325,10 +478,24 @@ function QuickDataEntryContent({
                     }}
                 />
             )}
-            <Drawer open={true} onClose={handleClose} title={drawerTitle} width="xl" hideHeader={isRenterPage}>
-                <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)]">
+            <Drawer
+                open={true}
+                onClose={handleClose}
+                title={drawerTitle}
+                width="xl"
+                hideHeader={isRenterPage}
+                bodyClassName="overflow-y-auto overflow-x-hidden"
+                className={`transition-[width] duration-300 ease-in-out overflow-hidden ${
+                    isMediaPanelOpen ? '!w-[75vw]' : '!w-[60vw]'
+                }`}
+            >
+                <div className="flex flex-col border-slate-300 bg-white shadow-sm min-h-[calc(100vh-60px)] overflow-x-hidden">
                     {!isRenterPage && (
-                        <TabNavigation categoryName={categoryName} />
+                        <TabNavigation
+                            categoryName={categoryName}
+                            isMediaPanelOpen={isMediaPanelOpen}
+                            onToggleMediaPanel={togglePanel}
+                        />
                     )}
                     {showIncompatibleBanner && (
                         <div className="mx-4 mt-3 flex items-start gap-3 p-3.5 bg-amber-50/90 border border-amber-200/80 text-amber-900 rounded-xl shadow-xs transition-all duration-300">
@@ -347,8 +514,46 @@ function QuickDataEntryContent({
                             </div>
                         </div>
                     )}
-                    <div className="flex-1 flex flex-col">
-                        {children}
+                    <div className="flex-1 flex flex-row min-h-0 relative p-1.5 md:p-2 gap-2 transition-all duration-300 overflow-x-hidden">
+                        <div className="flex-1 min-w-0 flex flex-col transition-all duration-300 ease-in-out">
+                            {children}
+                        </div>
+
+                        {!isRenterPage && (
+                            <div
+                                className={cn(
+                                    "transition-all duration-300 ease-in-out z-30 shrink-0 sticky top-0 self-start h-[calc(100vh-140px)]",
+                                    isMediaPanelOpen
+                                        ? 'w-[208px] shrink-0 opacity-100 translate-x-0'
+                                        : 'w-0 opacity-0 translate-x-full pointer-events-none overflow-hidden'
+                                )}
+                            >
+                                <PropertyMediaPanel
+                                    propertyId={numericPropertyId}
+                                    categoryId={
+                                        categoryId ??
+                                        (searchParams.get('categoryId') ? Number(searchParams.get('categoryId')) : null) ??
+                                        (searchParams.get('hideWing') === 'true' && searchParams.get('hideSociety') === 'true' ? 2 : null) ??
+                                        (categoryName?.toLowerCase().includes('individual') ? 2 : categoryName?.toLowerCase().includes('apartment') ? 1 : null)
+                                    }
+                                    propertyTypeId={propertyTypeId ?? undefined}
+                                    initialPhotoSlots={photoSlots}
+                                    initialPhotos={photos}
+                                    loading={mediaLoading}
+                                    onPhotosChange={setPhotos}
+                                    onPhotoSlotsChange={setPhotoSlots}
+                                    societyDetailId={numericSocietyId ?? undefined}
+                                    wings={wings}
+                                    wingName={wingName || (searchParams.get('wingName') || searchParams.get('wingname') || undefined)}
+                                    wingDetailId={numericWingDetailId ?? undefined}
+                                    wardNo={wardNo}
+                                    propertyNo={propertyNo}
+                                    partitionNo={partitionNo}
+                                    propertyDescription={propertyDescription}
+                                    isQuickDataEntry={true}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </Drawer>

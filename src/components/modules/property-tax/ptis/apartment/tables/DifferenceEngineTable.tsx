@@ -2,12 +2,16 @@
 
 import React from 'react';
 import { UnitDifference, PtisTaxMode } from '@/types/property-tax/apartment';
+import { cn } from '@/lib/utils/cn';
 import { DifferenceEngineTableHeader } from './DifferenceEngineTableHeader';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
 import { DifferenceEngineTableRow } from './DifferenceEngineTableRow';
 import { PtisTableSkeleton } from './PtisTableSkeleton';
 import { PtisEmptyTableState } from './PtisEmptyTableState';
 
 interface DifferenceEngineTableProps {
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
   differences: UnitDifference[];
   totalDeltas?: {
     carpetDelta?: number;
@@ -24,7 +28,10 @@ interface DifferenceEngineTableProps {
   onScroll?: (e: React.UIEvent<HTMLDivElement>) => void;
   taxMode?: PtisTaxMode;
   isLoading?: boolean;
+  isFullscreen?: boolean;
 }
+
+import { useTranslations } from 'next-intl';
 
 export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
   differences,
@@ -36,7 +43,11 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
   onScroll,
   taxMode,
   isLoading = false,
+  isFullscreen = false,
+  sort,
+  onSort,
 }) => {
+  const t = useTranslations('ptisRedesign.subTables');
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
   const totalCols = showRv && showCv ? 8 : (showRv || showCv ? 7 : 6);
@@ -45,10 +56,16 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
     <div
       ref={scrollRef}
       onScroll={onScroll}
-      className="w-full h-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-400/50 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-button]:!w-0 [&::-webkit-scrollbar-button]:!h-0"
+      className={cn(
+        'w-full overflow-auto text-[11px] font-sans bg-white select-none ios-scrollbar sticky bottom-0',
+        '[&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-slate-400/70 hover:[&::-webkit-scrollbar-thumb]:bg-slate-500 [&::-webkit-scrollbar-thumb]:rounded-full',
+        isFullscreen
+          ? 'h-full'
+          : 'h-auto max-h-[396px]'
+      )}
     >
       <table className="w-full text-left border-collapse min-w-max">
-        <DifferenceEngineTableHeader taxMode={taxMode} />
+        <DifferenceEngineTableHeader taxMode={taxMode} sort={sort} onSort={onSort} />
         <tbody className="divide-y divide-zinc-200 text-zinc-800 font-medium">
           {isLoading && <PtisTableSkeleton columnCount={totalCols} rowCount={8} />}
           {!isLoading &&
@@ -67,7 +84,7 @@ export const DifferenceEngineTable: React.FC<DifferenceEngineTableProps> = ({
         </tbody>
       </table>
       {!isLoading && differences.length === 0 && (
-        <PtisEmptyTableState message="No differences calculated." />
+        <PtisEmptyTableState message={t('emptyDiffState') || 'No differences calculated.'} />
       )}
     </div>
   );

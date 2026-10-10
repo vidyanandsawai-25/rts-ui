@@ -4,12 +4,14 @@ import { apiClient } from "@/services/api.service";
 import {
   getMunicipalDashboardStats,
   getAssetsByTypeDetails,
+  getAssetCategoryTypeDetails,
 } from "@/lib/api/asset/municipal-Asset/asset-dashboard.service";
 import type {
   DashboardStatsResponse,
   AssetMaster,
   PaginatedApiResponse,
   SubUnitsApiResponse,
+  AssetCategoryTypeStatsResponseDto,
 } from "@/types/asset/municipal-Asset/municipal-asset.types";
 
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────
@@ -116,6 +118,23 @@ export async function fetchAssetsByTypeDetails(
   } catch (err: unknown) {
     console.error("fetchAssetsByTypeDetails failed:", err);
     const message = err instanceof Error ? err.message : "Failed to fetch asset details";
+    return { success: false as const, error: message, data: null };
+  }
+}
+
+/**
+ * Fetch category asset types breakdown.
+ * API: GET /AssetDashboard/assets-by-type/details?assetCategoryId={id}
+ */
+export async function fetchAssetCategoryTypeDetails(
+  assetCategoryId: number
+): Promise<{ success: boolean; data: AssetCategoryTypeStatsResponseDto | null; error?: string }> {
+  try {
+    const data = await getAssetCategoryTypeDetails(assetCategoryId);
+    return { success: true as const, data };
+  } catch (err: unknown) {
+    console.error("fetchAssetCategoryTypeDetails failed:", err);
+    const message = err instanceof Error ? err.message : "Failed to fetch category type details";
     return { success: false as const, error: message, data: null };
   }
 }

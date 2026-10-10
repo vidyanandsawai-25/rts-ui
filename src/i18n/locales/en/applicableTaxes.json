@@ -58,6 +58,7 @@
     "residentialRV": "RESIDENTIAL RV",
     "commercialRV": "COMMERCIAL RV",
     "area": "AREA",
+    "squareMeters": "m²",
     "toilets": "TOILETS",
     "showInactive": "Show inactive",
     "print": "Print",
@@ -65,10 +66,15 @@
     "applicableTo": "APPLICABLE TO",
     "residentialAndShop": "Residential + Shop",
     "residential": "Residential",
-    "commercialOnly": "Commercial only",
+    "commercialOnly": "Commercial",
     "wholeProperty": "Whole Property",
     "ruleRate": "RULE / RATE",
     "statusOnOff": "STATUS ON / OFF",
     "amount": "AMOUNT",
-    "currencySymbol": "₹"
+    "currencySymbol": "₹",
+    "breakdown": "Breakdown",
+    "avg": "Avg",
+    "type": "TYPE",
+    "base": "Base",
+    "viewRateBreakdown": "View rate breakdown"
 }

@@ -1,8 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { InventoryCategoryForm } from "@/components/modules/assets/configuration/master-data/inventory-category-master";
-import { getInventoryCategoryByIdAction } from "../../actions";
-import { getAssetMasterDataProvider } from "@/lib/api/asset-masters/asset-master-provider";
-import { MASTER_IDS } from "@/types/asset-masters/master-data.types";
+import { getInventoryCategoryByIdAction, getAssetCategoriesForInventoryAction } from "../../actions";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -18,7 +16,7 @@ export default async function EditPage({ params }: PageProps) {
 
   const [initialData, categoriesResult] = await Promise.all([
     getInventoryCategoryByIdAction(id).catch(() => null),
-    getAssetMasterDataProvider(MASTER_IDS.CATEGORY, "all", 1, 1000, ""),
+    getAssetCategoriesForInventoryAction(),
   ]);
 
   if (!initialData) {
@@ -26,13 +24,13 @@ export default async function EditPage({ params }: PageProps) {
   }
 
   const groups = categoriesResult.success && categoriesResult.data
-    ? (categoriesResult.data.records
-      ?.filter((r: Record<string, unknown>) => r.status === "Active" || String(r.id) === String(initialData.group))
-      .map((r: Record<string, unknown>) => ({
+    ? categoriesResult.data
+      .filter((r) => r.status === "Active" || String(r.id) === String(initialData.group))
+      .map((r) => ({
         id: String(r.id),
-        name: String(r.name ?? ""),
-        status: String(r.status ?? "Active"),
-      })) || [])
+        name: String(r.name),
+        status: String(r.status),
+      }))
     : [];
 
   return (

@@ -1,5 +1,10 @@
 import { PagedResponse } from "../common.types";
 
+export interface AssetGrievanceRemarkCategoryOption {
+  id: number;
+  grievanceTypeName: string;
+}
+
 export interface AssetGrievanceRemarkFormModel {
   id?: number;
   grievanceCategoryId: number;

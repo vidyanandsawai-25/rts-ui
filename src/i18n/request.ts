@@ -1,7 +1,7 @@
 /**
  * i18n Request Configuration
  * Server-side locale detection and message loading
- * Force reload: 2
+ * Force reload: 4
  */
 
 import { getRequestConfig } from 'next-intl/server';
@@ -12,9 +12,9 @@ const validateLocale = (locale: string | undefined): Locale => {
   return locale && locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale;
 };
 
-export default getRequestConfig(async (params: any) => {
-  let rawLocale = params?.requestLocale ? await params.requestLocale : params?.locale;
-  const validatedLocale = validateLocale(rawLocale);
+export default getRequestConfig(async ({ requestLocale }) => {
+  const resolvedLocale = await requestLocale;
+  const validatedLocale = validateLocale(resolvedLocale);
 
   // Load all translation files
   const [
@@ -31,6 +31,7 @@ export default getRequestConfig(async (params: any) => {
     assessmentYearRangeMessages,
     ownershipTypeMessages,
     assetMessages,
+    assetPaymentMessages,
     ptisMessages,
     ptisRedesignMessages,
     floorFactorMasterMessages,
@@ -48,6 +49,7 @@ export default getRequestConfig(async (params: any) => {
     bankMasterMessages,
     screenAccessMessages,
     appartmentQCMessages,
+    individualMessages,
     departmentMasterMessages,
     departmentActivationMessages,
     homeMessages,
@@ -88,6 +90,8 @@ export default getRequestConfig(async (params: any) => {
     gstMasterMessages,
     penaltyRuleMasterMessages,
     owningDepartmentMessages,
+    assetMasterDashboardMessages,
+    revenueDashboardMessages,
     municipalAssetMessages,
     moujaSubzoneMessages,
     assetTypeOfUseMessages,
@@ -102,6 +106,30 @@ export default getRequestConfig(async (params: any) => {
     retrospectiveRuleLibraryMessages,
     taxZoningRangeMessages,
     aliasMasterMessages,
+    tariffWorkbenchMessages,
+    chargeHeadsMessages,
+    assetGisMessages,
+    connectionTypeMasterMessages,
+    connectionCategoryMasterMessages,
+    billingFrequencyMasterMessages,
+    billingPeriodMasterMessages,
+    tapSizeMasterMessages,
+    assetWeightageMasterMessages,
+    assetAssessmentYearRangeMessages,
+    geographyTypeMasterMessages,
+    geographyUnitMasterMessages,
+    geographySharedMessages,
+    meterTestStatusMasterMessages,
+    meterTypeMasterMessages,
+    readingSourceMasterMessages,
+    assetDetailNewMessages,
+    assetFieldDefinitionMessages,
+    assetDocumentDefinitionMessages,
+    newAddNewAssetMessages,
+    subAssetDetailMessages,
+    extendedAreaAssessmentMessages,
+    propertyMediaMessages,
+    waterPenaltyRuleMessages,
   ] = await Promise.all([
     import(`./locales/${validatedLocale}/common.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/login.json`).then((m) => m.default),
@@ -116,6 +144,7 @@ export default getRequestConfig(async (params: any) => {
     import(`./locales/${validatedLocale}/assessmentYearRange.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ownership-type.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/asset.json`).then((m) => m.default),
+    import(`./locales/${validatedLocale}/AssetPayment.json`).then((m) => m.default),
     import(`./locales/${validatedLocale}/ptis.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/ptisRedesign.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/floorFactorMaster.json`).then((m) => m.default),
@@ -139,6 +168,9 @@ export default getRequestConfig(async (params: any) => {
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/appartmentQC.json`)
+      .catch(() => ({}))
+      .then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/individual.json`)
       .catch(() => ({}))
       .then((m) => m.default || m),
     import(`./locales/${validatedLocale}/departmentMaster.json`)
@@ -230,6 +262,8 @@ export default getRequestConfig(async (params: any) => {
     import(`./locales/${validatedLocale}/gstMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/penaltyRuleMaster.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/owningDepartment.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetmasterdashboard.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/revenueDashboard.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/municipalAsset.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/moujaSubzone.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/assetTypeOfUse.json`).catch(() => ({})).then((m) => m.default || m),
@@ -244,6 +278,30 @@ export default getRequestConfig(async (params: any) => {
     import(`./locales/${validatedLocale}/retrospectiveRuleLibrary.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/taxZoningRange.json`).catch(() => ({})).then((m) => m.default || m),
     import(`./locales/${validatedLocale}/aliasMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/tariffWorkbench.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/chargeHeads.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetGis.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/connectionTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/connectionCategoryMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/billingFrequencyMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/billingPeriodMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/tapSizeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetWeightageMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetAssessmentYearRange.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/geographyTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/geographyUnitMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/geographyShared.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/meterTestStatusMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/meterTypeMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/readingSourceMaster.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/asset-detail.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetFieldDefinition.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/assetDocumentDefinition.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/newAddNewAsset.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/subAssetDetail.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/extendedAreaAssessment.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/propertyMedia.json`).catch(() => ({})).then((m) => m.default || m),
+    import(`./locales/${validatedLocale}/waterPenaltyRule.json`).catch(() => ({})).then((m) => m.default || m),
   ]);
 
   return {
@@ -263,6 +321,7 @@ export default getRequestConfig(async (params: any) => {
       ownershipType: ownershipTypeMessages?.ownershipType || ownershipTypeMessages,
       'ownership-type': ownershipTypeMessages,
       asset: assetMessages,
+      AssetPayment: assetPaymentMessages,
       ptis: ptisMessages,
       ptisRedesign: ptisRedesignMessages,
       floorFactorMaster: floorFactorMasterMessages.floorFactorMaster,
@@ -280,6 +339,7 @@ export default getRequestConfig(async (params: any) => {
       bankMaster: bankMasterMessages,
       screenAccess: screenAccessMessages,
       appartmentQC: appartmentQCMessages,
+      individual: individualMessages,
       departmentMaster: departmentMasterMessages,
       departmentActivation: departmentActivationMessages,
       home: homeMessages,
@@ -324,6 +384,8 @@ export default getRequestConfig(async (params: any) => {
       gstMaster: gstMasterMessages,
       penaltyRuleMaster: penaltyRuleMasterMessages,
       owningDepartment: owningDepartmentMessages,
+      assetmasterdashboard: assetMasterDashboardMessages,
+      revenueDashboard: revenueDashboardMessages,
       municipalAsset: municipalAssetMessages,
       moujaSubzone: moujaSubzoneMessages,
       assetTypeOfUse: assetTypeOfUseMessages,
@@ -337,6 +399,38 @@ export default getRequestConfig(async (params: any) => {
       retrospectiveRuleLibrary: retrospectiveRuleLibraryMessages,
       taxZoningRange: taxZoningRangeMessages?.taxZoningRange || taxZoningRangeMessages,
       aliasMaster: aliasMasterMessages,
+      tariffWorkbench:
+        tariffWorkbenchMessages?.tariffWorkbench || tariffWorkbenchMessages,
+      chargeHeads:
+        chargeHeadsMessages?.chargeHeads || chargeHeadsMessages,
+      assetGis: assetGisMessages?.assetGis || assetGisMessages,
+      gis: assetGisMessages?.assetGis || assetGisMessages,
+      connectionTypeMaster: connectionTypeMasterMessages?.connectionTypeMaster || connectionTypeMasterMessages,
+      connectionCategoryMaster: connectionCategoryMasterMessages?.connectionCategoryMaster || connectionCategoryMasterMessages,
+      billingFrequencyMaster:
+        billingFrequencyMasterMessages?.billingFrequencyMaster || billingFrequencyMasterMessages,
+      billingPeriodMaster:
+        billingPeriodMasterMessages?.billingPeriodMaster || billingPeriodMasterMessages,
+      tapSizeMaster: tapSizeMasterMessages?.tapSizeMaster || tapSizeMasterMessages,
+      assetWeightageMaster:
+        assetWeightageMasterMessages?.assetWeightageMaster || assetWeightageMasterMessages,
+      assetAssessmentYearRange:
+        assetAssessmentYearRangeMessages?.assetAssessmentYearRange || assetAssessmentYearRangeMessages,
+      geographyTypeMaster: geographyTypeMasterMessages,
+      geographyUnitMaster: geographyUnitMasterMessages,
+      geographyShared: geographySharedMessages,
+      meterTestStatusMaster: meterTestStatusMasterMessages,
+      meterTypeMaster: meterTypeMasterMessages,
+      readingSourceMaster: readingSourceMasterMessages,
+      'asset-detail': assetDetailNewMessages,
+      assetFieldDefinition: assetFieldDefinitionMessages,
+      assetDocumentDefinition: assetDocumentDefinitionMessages,
+      newAddNewAsset: newAddNewAssetMessages,
+      addAssetForm: newAddNewAssetMessages,
+      subAssetDetail: subAssetDetailMessages,
+      extendedAreaAssessment: extendedAreaAssessmentMessages,
+      propertyMedia: propertyMediaMessages?.propertyMedia || propertyMediaMessages,
+      waterPenaltyRule: waterPenaltyRuleMessages?.waterPenaltyRule || waterPenaltyRuleMessages,
     },
   };
 });

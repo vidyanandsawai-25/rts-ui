@@ -7,7 +7,7 @@ import { Maximize2, Minimize2, EyeOff } from 'lucide-react';
 interface PtisPanelHeaderProps {
   title: string;
   subtitle?: string;
-  widthPercent: number;
+  widthPercent?: number;
   variant?: 'survey' | 'difference' | 'existing';
   hasAiStatus?: boolean;
   onToggleHide?: () => void;
@@ -18,7 +18,6 @@ interface PtisPanelHeaderProps {
 export const PtisPanelHeader: React.FC<PtisPanelHeaderProps> = ({
   title,
   subtitle,
-  widthPercent,
   variant = 'survey',
   onToggleHide,
   onToggleExpand,
@@ -28,19 +27,16 @@ export const PtisPanelHeader: React.FC<PtisPanelHeaderProps> = ({
     survey: {
       bar: 'bg-blue-100 border-b border-blue-200 text-blue-950',
       subtitle: 'text-blue-700 font-medium',
-      badge: 'text-blue-900 bg-blue-200/80 border border-blue-300',
       btn: 'text-blue-700 hover:bg-blue-200 hover:text-blue-950',
     },
     difference: {
       bar: 'bg-amber-100 border-b border-amber-200 text-amber-950',
       subtitle: 'text-amber-700 font-medium',
-      badge: 'text-amber-900 bg-amber-200/80 border border-amber-300',
       btn: 'text-amber-700 hover:bg-amber-200 hover:text-amber-950',
     },
     existing: {
       bar: 'bg-emerald-100 border-b border-emerald-200 text-emerald-950',
       subtitle: 'text-emerald-700 font-medium',
-      badge: 'text-emerald-900 bg-emerald-200/80 border border-emerald-300',
       btn: 'text-emerald-700 hover:bg-emerald-200 hover:text-emerald-950',
     },
   }[variant];
@@ -58,10 +54,6 @@ export const PtisPanelHeader: React.FC<PtisPanelHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <span className={cn("text-[11px] font-mono font-bold px-1.5 py-0.5 rounded", styles.badge)}>
-          {widthPercent}%
-        </span>
-
         {onToggleExpand && (
           <button
             type="button"

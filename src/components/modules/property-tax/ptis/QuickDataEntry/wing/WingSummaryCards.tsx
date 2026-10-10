@@ -23,9 +23,11 @@ export const WingSummaryCards: React.FC<WingSummaryCardsProps> = ({
 }) => {
   const t = useTranslations('quickDataEntry');
 
-  const getStats = (wingId: number, societyDetailId: number) => {
+  const getStats = (wingId: number | null, societyDetailId: number) => {
     const stat = wingStats.find(
-      (s) => s.societyDetailId === societyDetailId || s.wingId === wingId
+      (s) =>
+        s.societyDetailId === societyDetailId ||
+        (wingId !== null && s.wingId === wingId)
     );
     return {
       propertyCount: stat?.propertyCount ?? 0,

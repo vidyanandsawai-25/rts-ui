@@ -16,10 +16,10 @@ export function useApartmentWingScrollControl() {
     const isScrollable = scrollWidth > clientWidth + 5;
     
     if (leftArrowRef.current) {
-      leftArrowRef.current.style.display = (isScrollable && scrollLeft > 5) ? 'block' : 'none';
+      leftArrowRef.current.style.display = (isScrollable && scrollLeft > 5) ? 'flex' : 'none';
     }
     if (rightArrowRef.current) {
-      rightArrowRef.current.style.display = (isScrollable && Math.ceil(scrollLeft + clientWidth) < scrollWidth - 5) ? 'block' : 'none';
+      rightArrowRef.current.style.display = (isScrollable && Math.ceil(scrollLeft + clientWidth) < scrollWidth - 5) ? 'flex' : 'none';
     }
   }, []);
 

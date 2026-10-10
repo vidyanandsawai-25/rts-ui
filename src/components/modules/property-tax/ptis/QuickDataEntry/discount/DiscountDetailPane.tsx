@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Trash2, Info, Loader2 } from "lucide-react";
 import { Label, TextArea, SaveButton } from "@/components/common";
 import { DiscountAttributeState } from "@/types/discount.types";
 import { DocumentAttachment } from "../building/DocumentAttachment";
 import { useConfirm } from "@/components/common/ConfirmProvider";
 import { DiscountValueInput } from "./DiscountValueInput";
 import { getLocalizedName } from "@/lib/utils/social-details";
+import { isAttributeActive } from "@/lib/utils/discount-helpers";
 
 interface DiscountDetailPaneProps {
     data: DiscountAttributeState | null | undefined;
@@ -17,8 +18,11 @@ interface DiscountDetailPaneProps {
     onDeleteDiscount?: () => void;
     validationError?: string;
     isSaving?: boolean;
+    isDeleting?: boolean;
     hasChanges?: boolean;
+    isFormValid?: boolean;
     onSave?: () => void;
+    isDeleteDisabled?: boolean;
     t: {
         (key: string, values?: Record<string, string | number | Date>): string;
         has?: (key: string) => boolean;
@@ -33,13 +37,14 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     onDeleteDiscount,
     validationError,
     isSaving = false,
+    isDeleting = false,
     hasChanges = false,
+    isFormValid,
     onSave,
+    isDeleteDisabled = false,
     t,
 }) => {
     const { confirm } = useConfirm();
-    const isActiveDiscount = (item: DiscountAttributeState) =>
-        item.dataType.toUpperCase() === "BIT" ? item.bitValue === true : item.enabled;
 
     const displayName = data
         ? getLocalizedName(
@@ -81,29 +86,65 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
 
     const isDiscountFilled = React.useMemo(() => {
         if (!data) return false;
+        if (data.isInherited && data.enabled) return true;
         const hasFile = !!(data.documentGuid || data.fileName || data.pendingFile);
         const isBitType = data.dataType?.toUpperCase() === "BIT";
         if (isBitType) {
-            return hasFile || !!data.remark?.trim();
+            return hasFile || !!data.remark?.trim() || data.bitValue === true || data.enabled === true;
         }
         const hasVal = !!(
             data.intValue !== null && data.intValue !== undefined ||
             data.decimalValue !== null && data.decimalValue !== undefined ||
             data.textValue?.trim() || data.dateValue?.trim()
         );
-        return hasFile || hasVal || !!data.remark?.trim();
+        return hasFile || hasVal || !!data.remark?.trim() || data.enabled === true;
     }, [data]);
 
     const isUpdateCase = React.useMemo(() => {
         if (!data) return false;
-        return typeof data.propertySocialDetailId === "number" && data.propertySocialDetailId > 0;
+        return (
+            (typeof data.propertySocialDetailId === "number" && data.propertySocialDetailId > 0) ||
+            (data.isInherited && data.enabled) ||
+            data.isOverridden
+        );
     }, [data]);
 
     const handleDeleteDiscountWithConfirm = () => {
         if (onDeleteDiscount && data) {
+            let title = t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data";
+            let description = `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`;
+
+            if (data.isOverridden) {
+                title = t("discount.confirmDeleteOverrideTitle") || "Delete Level Override";
+                description = `${displayName}\n\n${t("discount.confirmDeleteOverrideDesc") || "You have modified this inherited attribute. Deleting this will remove the custom override for this level and revert back to inherited settings.\n\nAre you sure you want to delete this override?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'WING' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'WING' ||
+                ((data.entityType || '').toUpperCase() === 'W' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteWingDesc") || "This discount is applied at Wing Level.\n\nDeleting it will remove this discount from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level discount?"}`;
+            } else if (
+                (data.inheritedFrom || '').toUpperCase() === 'APARTMENT' ||
+                (data.inheritanceLevel || '').toUpperCase() === 'APARTMENT' ||
+                ((data.entityType || '').toUpperCase() === 'S' && data.isInherited)
+            ) {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteApartmentDesc") || "This discount is applied at Apartment Level.\n\nDeleting it will remove this discount from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level discount?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'W') {
+                title = t("discount.confirmDeleteWingTitle") || "Delete Wing Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteWingDesc") || "This discount is applied at Wing Level.\n\nDeleting it will remove this discount from this Wing and all its units.\n\nAre you sure you want to delete this Wing Level discount?"}`;
+            } else if ((data.entityType || '').toUpperCase() === 'S') {
+                title = t("discount.confirmDeleteApartmentTitle") || "Delete Apartment Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteApartmentDesc") || "This discount is applied at Apartment Level.\n\nDeleting it will remove this discount from the entire Apartment level (affecting all wings and units).\n\nAre you sure you want to delete this Apartment Level discount?"}`;
+            } else {
+                title = t("discount.confirmDeleteUnitTitle") || "Delete Unit Level Discount";
+                description = `${displayName}\n\n${t("discount.confirmDeleteUnitDesc") || "This discount is applied at Unit Level.\n\nDeleting it will remove this discount for the selected unit(s).\n\nAre you sure you want to delete this Unit Level discount?"}`;
+            }
+
             confirm({
-                title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                title,
+                description,
                 confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
                 cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
                 variant: "delete",
@@ -129,29 +170,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const hasRemark = typeof tWithHas.has === "function" && tWithHas.has("discount.remark");
     const hasRemarkPlaceholder = typeof tWithHas.has === "function" && tWithHas.has("discount.remarkPlaceholder");
 
-    const hasAnyData = !!(
-        (data.intValue !== null && data.intValue !== undefined) ||
-        (data.decimalValue !== null && data.decimalValue !== undefined) ||
-        data.textValue?.trim() ||
-        data.dateValue?.trim() ||
-        data.documentGuid?.trim() ||
-        data.documentBindingId ||
-        data.remark?.trim()
-    );
-
-    if (!isActiveDiscount(data) && !hasAnyData) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[300px] lg:h-full bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                <AlertCircle size={36} className="text-blue-500 mb-3" />
-                <h4 className="text-base font-bold text-gray-800 mb-2">{displayName}</h4>
-                <p className="text-sm font-semibold text-gray-500 max-w-sm">
-                    {t("discount.enableDiscountPrompt") || "This discount type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
-                </p>
-            </div>
-        );
-    }
-
-    const isDisabled = !isActiveDiscount(data);
+    const isDisabled = !isAttributeActive(data);
     const docRequiredMsg = t("common.validation.documentRequired") || "Document is required.";
     const isDocumentInvalid = !!validationError && validationError === docRequiredMsg;
 
@@ -186,33 +205,48 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
     const showValueInput = (data.dataType || "").toUpperCase() !== "BIT";
 
     const inputClassName = `h-10 text-sm placeholder:text-gray-400 focus:ring-1 shadow-sm transition-colors font-semibold ${
-        isDisabled
-            ? "bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed"
-            : isValueInvalid
-                ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500"
-                : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
+        isValueInvalid
+            ? "bg-white text-gray-800 border-red-500 focus:border-red-500 focus:ring-red-500"
+            : "bg-white text-gray-800 border-blue-200 focus:border-blue-600 focus:ring-blue-600 hover:border-blue-300"
     }`;
 
+    const canDelete = !isDisabled && !isDeleteDisabled;
+
     return (
-        <div
-            className={`flex flex-col min-h-[300px] lg:h-full border rounded-xl shadow-sm p-4 justify-between transition-opacity ${
-                isDisabled ? "bg-gray-50 border-gray-200 opacity-75" : "bg-white border-blue-100"
-            }`}
-        >
-            <div className="space-y-5 overflow-y-auto pr-1">
-                {isDisabled && (
-                    <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg">
-                        <AlertCircle size={16} className="text-amber-600 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-amber-800">
-                            {t("discount.disabledWithDataNote") || "This discount is currently disabled. Toggle it active to edit details."}
+        <div className="flex flex-col flex-1 h-full min-h-0 border border-blue-100 rounded-xl shadow-sm p-2.5 sm:p-3 justify-between transition-opacity overflow-hidden relative bg-white">
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
+                {data.isInherited && (
+                    <div className={`flex items-center gap-2 px-3 py-2 mb-2 rounded-lg border ${
+                        data.isOverridden
+                            ? "bg-amber-50 border-amber-200 text-amber-800"
+                            : "bg-indigo-50 border-indigo-200 text-indigo-800"
+                    }`}>
+                        <Info size={16} className={data.isOverridden ? "text-amber-600 shrink-0" : "text-indigo-600 shrink-0"} />
+                        <span className="text-xs font-semibold">
+                            {data.isOverridden
+                                ? (t("discount.overridePendingNote") || "You have modified this inherited attribute. Saving will create an override record exclusively for this level.")
+                                : ((data.inheritedFrom || '').toUpperCase() === 'APARTMENT' || (data.inheritedFrom || '').toUpperCase() === 'SOCIETY' || (data.entityType || '').toUpperCase() === 'S')
+                                    ? (t("discount.inheritedFromApartmentNote") || "This discount is inherited from Apartment level. Modifying details or toggling it off will create an override.")
+                                    : (t("discount.inheritedFromWingNote") || "This discount is inherited from Wing level. Modifying details or toggling it off will create an override.")}
                         </span>
                     </div>
                 )}
-                <div className="pb-3 border-b border-blue-50">
-                    <span className="text-xs font-bold tracking-wider text-blue-500 uppercase block mb-1">
+
+                {isDisabled && (
+                    <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-800 text-xs font-semibold mb-2">
+                        <Info size={16} className="text-amber-600 shrink-0" />
+                        <span>
+                            {t("discount.enableDiscountPrompt") ||
+                                "This discount type is currently disabled. Toggle it active in the sidebar list to edit details and attach documents."}
+                        </span>
+                    </div>
+                )}
+
+                <div className="pb-2 border-b border-blue-50">
+                    <span className="text-[11px] font-bold tracking-wider text-blue-500 uppercase block mb-0.5">
                         {t("discount.editingDiscount") || "Discount Details"}
                     </span>
-                    <h4 className="text-lg font-bold text-blue-900 leading-tight">{displayName}</h4>
+                    <h4 className="text-base font-bold text-blue-900 leading-tight">{displayName}</h4>
                 </div>
 
                 {showValueInput && (
@@ -227,7 +261,7 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     />
                 )}
 
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <Label className="text-sm font-bold text-blue-800">
                         {t("discount.uploadDocument") || "Document Attachment"}
                         {data.isDocumentRequired === true && <span className="text-red-500 ml-0.5">*</span>}
@@ -242,23 +276,22 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                         isDisabled={isDisabled}
                         isDocumentInvalid={isDocumentInvalid}
                         onFileUpload={handleFileUploadWithConfirm}
-                        onFileDelete={handleFileDeleteWithConfirm}
+                        onFileDelete={canDelete && (data.documentGuid || data.documentBindingId || data.pendingFile) ? handleFileDeleteWithConfirm : undefined}
                         t={t}
                         label={displayName}
                         pendingFile={data.pendingFile}
                     />
                 </div>
 
-                <div className="space-y-1.5 w-full">
+                <div className="space-y-1 w-full">
                     <div className="flex items-center justify-between">
                         <Label className="text-sm font-bold text-blue-800">
                             {hasRemark ? t("discount.remark") : "Remark"}
                         </Label>
-                        {(data.remark || "").trim() !== "" && (
+                        {(data.remark || "").trim() !== "" && !isDisabled && (
                             <button
                                 type="button"
                                 onClick={() => onInputChange("remark", "")}
-                                disabled={isDisabled}
                                 className="px-2.5 py-0.5 text-[10px] md:text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-all cursor-pointer focus:outline-none focus:ring-1 focus:ring-red-400 active:bg-red-200 shadow-sm"
                             >
                                 {t("commonbuttonmessages.clear") || "Clear"}
@@ -267,12 +300,12 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                     </div>
                     <TextArea
                         value={data.remark || ""}
+                        disabled={isDisabled}
                         onChange={(e) => {
                             const val = e.target.value.replace(/[<>]/g, "");
                             onInputChange("remark", val);
                         }}
                         placeholder={hasRemarkPlaceholder ? t("discount.remarkPlaceholder") : "Enter remark..."}
-                        disabled={isDisabled}
                         rows={2}
                         maxLength={500}
                         showCharCount
@@ -287,29 +320,38 @@ export const DiscountDetailPane: React.FC<DiscountDetailPaneProps> = ({
                 </div>
             </div>
 
-            <div className="pt-2.5 border-t border-blue-50 mt-3 flex items-center justify-between gap-4">
+            <div className="pt-2 border-t border-blue-100 mt-1 flex items-center justify-between gap-2 shrink-0 bg-white z-10">
                 <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 flex-shrink-0 animate-pulse" aria-hidden="true" role="presentation" />
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
                         {t("discount.verifyDetailsNote") || "Verify details & file attachment before saving changes."}
                     </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && !isDisabled && (
+                    {onDeleteDiscount && isDiscountFilled && isUpdateCase && canDelete && (
                         <button
                             type="button"
-                            disabled={isDisabled || isSaving}
+                            disabled={isDisabled || isSaving || isDeleting || !canDelete}
                             onClick={handleDeleteDiscountWithConfirm}
-                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                            className="px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t("discount.deleteDiscount") || "Delete Discount & Data"}
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-red-600" />
+                                    <span>{t("commonbuttonmessages.deleting") || "Deleting..."}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>{t("discount.deleteDiscount") || "Delete Discount & Data"}</span>
+                                </>
+                            )}
                         </button>
                     )}
                     {onSave && (
                         <SaveButton
                             onClick={onSave}
-                            disabled={!hasChanges || isSaving}
+                            disabled={!hasChanges || (isFormValid !== undefined && !isFormValid) || isSaving || isDeleting}
                             isLoading={isSaving}
                             label={t("common.saveChanges") || "Save Changes"}
                         />

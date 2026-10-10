@@ -29,10 +29,12 @@ describe('assetTypeService', () => {
               typeCode: 'AT01',
               typeName: 'Building',
               categoryId: 10,
+              categoryName: 'Buildings',
               description: 'Standard building asset',
               isActive: true,
               allowUnitRegistration: true,
               allowRoomRegistration: false,
+              isSubUnit: true,
             },
           ],
           totalCount: 1,
@@ -51,8 +53,9 @@ describe('assetTypeService', () => {
         id: 1,
         typeCode: 'AT01',
         typeName: 'Building',
+        typeNameLocal: '',
         categoryId: 10,
-        categoryName: '',
+        categoryName: 'Buildings',
         isActive: true,
         createdDate: '',
         updatedDate: null,
@@ -64,8 +67,20 @@ describe('assetTypeService', () => {
         group: '10',
         allowRoomRegistration: false,
         allowUnitRegistration: true,
+        isSubUnit: true,
       });
       expect(result.totalCount).toBe(1);
+    });
+
+    it('should normalize string false isSubUnit values as false', async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({
+        success: true,
+        data: { items: [{ id: 2, typeCode: 'AT02', typeName: 'Land', isSubUnit: 'false' }] },
+      });
+
+      const result = await assetTypeService.getAll();
+
+      expect(result.items[0].isSubUnit).toBe(false);
     });
 
     it('should throw ApiError if apiClient returns success=false', async () => {

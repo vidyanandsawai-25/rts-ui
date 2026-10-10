@@ -28,6 +28,7 @@ export interface PlotAreaCalculatorProps {
   menuPlacement?: 'top' | 'bottom';
   handleOpenDropdown?: (key: 'loadFloor' | 'loadSubFloor' | 'loadConstruction' | 'loadUsage' | 'loadSubType' | 'loadOpenPlotCategory') => void;
   isPlotCategory?: boolean;
+  propertyTypeId?: string | number;
 }
 
 export const PlotAreaCalculator: React.FC<PlotAreaCalculatorProps> = (props) => {

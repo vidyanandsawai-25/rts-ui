@@ -55,10 +55,12 @@ export function RolePermissionHeader({
           <Select
             value={selectedDept}
             onChange={(_, val) => onDeptChange(val)}
-            options={departments.map((d) => ({
-              value: String(d.departmentMasterId ?? d.departmentId),
-              label: d.departmentName,
-            }))}
+            options={departments
+              .filter((d) => (d as { isActive?: boolean }).isActive !== false)
+              .map((d) => ({
+                value: String(d.departmentMasterId ?? d.departmentId),
+                label: d.departmentName,
+              }))}
             ariaLabel={translations.selectDept}
             className="h-10 border-gray-200"
           />
@@ -72,7 +74,9 @@ export function RolePermissionHeader({
           <Select
             value={selectedRole}
             onChange={(_, val) => onRoleChange(val)}
-            options={roles.map((r) => ({ value: String(r.roleMasterId), label: r.roleName }))}
+            options={roles
+              .filter((r) => r.isActive !== false)
+              .map((r) => ({ value: String(r.roleMasterId), label: r.roleName }))}
             ariaLabel={translations.selectRole}
             className="h-10 border-gray-200"
             disabled={!selectedDept || roles.length === 0}

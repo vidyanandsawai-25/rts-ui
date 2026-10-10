@@ -2,6 +2,7 @@ import React from "react";
 import type { Column } from "@/components/common/MasterTable";
 import type { AssetGrievanceRemark } from "@/types/asset-masters/asset-grievance-remark.types";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 
 function SortableHeader({
   label,
@@ -48,8 +49,8 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-center w-full">
-      <span>{label}</span>
+    <div className="inline-flex items-center gap-1 justify-center w-full whitespace-nowrap">
+      <span className="whitespace-nowrap">{label}</span>
       {renderSortButton()}
     </div>
   );
@@ -62,12 +63,8 @@ export function getAssetGrievanceRemarkColumns(
   sortOrder?: string,
   onSort?: (key: string) => void
 ): Column<AssetGrievanceRemark>[] {
-  // NOTE: "grievanceCategoryName" is mapped to "grievanceCategoryId" for sorting.
-  // The "description" and "isActive" columns are present in the table but are marked
-  // as non-sortable because the backend API does not support sorting on these fields.
   const sortableColumns: Record<string, string> = {
     remark: "remark",
-    grievanceCategoryName: "grievanceCategoryId",
   };
 
   const createSortableLabel = (label: string, key: string) => {
@@ -89,39 +86,39 @@ export function getAssetGrievanceRemarkColumns(
 
   return [
     {
-      key: "grievanceCategoryName",
-      label: createSortableLabel(t("table.columns.remarkType"), "grievanceCategoryName"),
-      width: "25%",
-      align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : "-"),
-    },
-    {
       key: "remark",
       label: createSortableLabel(t("table.columns.remark"), "remark"),
-      width: "35%",
+      width: "30%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : ""),
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-all [word-break:break-all]",
+      render: (value) => <TruncatedText text={typeof value === "string" ? value : ""} maxLength={30} />,
     },
     {
       key: "description",
       label: t("form.description") || "Description",
       width: "30%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
-      render: (value) => (typeof value === "string" ? value : "-"),
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-all [word-break:break-all]",
+      render: (value) => <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={30} />,
+    },
+    {
+      key: "grievanceCategoryName",
+      label: t("table.columns.remarkType"),
+      width: "20%",
+      align: "center",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-all [word-break:break-all]",
+      render: (value) => <TruncatedText text={typeof value === "string" && value ? value : "-"} maxLength={25} />,
     },
     {
       key: "isActive",
       label: t("table.columns.status"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "whitespace-nowrap",
       isStatus: true,
     },
   ];

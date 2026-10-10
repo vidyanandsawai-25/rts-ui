@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
+import { parseReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 import {
   createAssetRoomAction,
   updateAssetRoomAction,
@@ -119,10 +120,15 @@ export function useAssetRoomForm({
     try {
       const res = isEdit ? await updateAssetRoomAction(formData) : await createAssetRoomAction(formData);
       if (!res.success) {
-        toast.error(mapAssetRoomApiError(res, t, tCommon));
+        const errorMessage = mapAssetRoomApiError(res, t, tCommon);
+        if (parseReferenceBlockedMessage(res.message)?.operation === "deactivate") {
+          setErrors(prev => ({ ...prev, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
-      toast.success(res.message || t(isEdit ? "success.updated" : "success.created", { code: formData.roomTypeCode }));
+      const successMessage = t(isEdit ? "success.updated" : "success.created", { code: formData.roomTypeCode });
+      toast.success(successMessage || res.message);
       onSuccess();
       closeAndRoute();
     } finally {
@@ -133,6 +139,7 @@ export function useAssetRoomForm({
   const handleToggleStatus = useCallback((checked: boolean) => {
     setIsActive(checked);
     setFormData(p => ({ ...p, isActive: checked }));
+    setErrors(p => ({ ...p, isActive: "" }));
   }, []);
 
   const handleSelectChange = useCallback((name: string, value: string) => {

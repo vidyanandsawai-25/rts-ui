@@ -18,7 +18,7 @@ import { InternalSurveyWardWiseItems, InternalSurveyWardWiseData } from '@/types
 import { useFormattedDate } from '@/hooks/automation-dashboard/useFormattedDate';
 import { PropertyTypeMasterItem } from '@/types/automation-dashboard/property-dashboard/property-subgrid-details.type';
 import { getPropertyTypeIdParam } from '@/components/modules/property-tax/automation-dashboard/GeoSequencing/CommonGeoSequencingColumns';
-import { ExportDropdown } from '../ExportDropdown';
+import { ExportDropdown } from '../../CommonFilterDashbaord/ExportDropdown';
 import { ExportConfig } from '@/types/automation-dashboard/export.type';
 import { adaptTableConfigToExport } from '@/lib/utils/automation-dashboard/export/adapter';
 import { getAssessmentStatusNavigationParams } from '@/lib/utils/automation-dashboard/assessmentStatusNavigation';
@@ -57,17 +57,17 @@ const InternalSurveyWardWiseSummary = ({ zoneId, summaryData, propertyDescriptio
     const totalCount = summaryData?.totalCount ?? 0;
 
     const handlePageChange = (newPageNumber: number) => {
-        const currentParams = new URLSearchParams(window.location.search);
+        const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('pageNumber', newPageNumber.toString());
         currentParams.set('pageSize', pageSize.toString());
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`?${currentParams.toString()}`);
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        const currentParams = new URLSearchParams(window.location.search);
+        const currentParams = new URLSearchParams(searchParams.toString());
         currentParams.set('pageNumber', '1');
         currentParams.set('pageSize', newSize.toString());
-        router.push(`${window.location.pathname}?${currentParams.toString()}`);
+        router.push(`?${currentParams.toString()}`);
     };
 
     const zoneNo = searchParams.get('zoneNo');

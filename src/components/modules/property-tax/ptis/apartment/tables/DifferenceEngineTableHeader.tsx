@@ -1,30 +1,31 @@
 'use client';
 
 import React from 'react';
-import { Tooltip } from '@/components/common/Tooltip';
-import { cn } from '@/lib/utils/cn';
-
 import { PtisTaxMode } from '@/types/property-tax/apartment';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
+import { PtisTableHeader, type PtisColumnDef } from './PtisTableHeader';
+import { useTranslations } from 'next-intl';
 
-interface ColumnDef {
-  key: string;
-  label: string;
-  title: string;
-  className: string;
-}
 
-const DIFFERENCE_COLUMNS: ColumnDef[] = [
-  { key: 'carpetFt', label: 'CARPET (FT²)', title: 'Carpet Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'carpetMtr', label: 'CARPET (M²)', title: 'Carpet Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'buaFt', label: 'BUA (FT²)', title: 'Built-up Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'buaMtr', label: 'BUA (M²)', title: 'Built-up Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'rv', label: 'RV', title: 'Rateable Value Difference', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'cv', label: 'CV', title: 'Capital Value Difference', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'tax', label: 'TOTAL TAX', title: 'Total Property Tax Difference', className: 'px-3 py-2 text-right min-w-[100px]' },
-  { key: 'rtTax', label: 'RETRO TAX', title: 'Retrospective Tax Difference', className: 'px-3 py-2 text-right min-w-[100px]' },
+const DIFFERENCE_COLUMNS: PtisColumnDef[] = [
+  { key: 'carpetFt', labelKey: 'carpetFt', titleKey: 'carpetFtTitle', defaultLabel: 'CARPET (sq.ft)', defaultTitle: 'Carpet Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'carpetMtr', labelKey: 'carpetMtr', titleKey: 'carpetMtrTitle', defaultLabel: 'CARPET (sq.mt)', defaultTitle: 'Carpet Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'buaFt', labelKey: 'buaFt', titleKey: 'buaFtTitle', defaultLabel: 'BUA (sq.ft)', defaultTitle: 'Built-up Area Difference in Square Feet', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'buaMtr', labelKey: 'buaMtr', titleKey: 'buaMtrTitle', defaultLabel: 'BUA (sq.mt)', defaultTitle: 'Built-up Area Difference in Square Meters', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'rv', labelKey: 'rv', titleKey: 'rvTitle', defaultLabel: 'RV', defaultTitle: 'Rateable Value Difference', className: 'px-3 py-2 text-right min-w-[95px]' },
+  { key: 'cv', labelKey: 'cv', titleKey: 'cvTitle', defaultLabel: 'CV', defaultTitle: 'Capital Value Difference', className: 'px-3 py-2 text-right min-w-[95px]' },
+  { key: 'tax', labelKey: 'totalTax', titleKey: 'totalTaxTitle', defaultLabel: 'TOTAL TAX', defaultTitle: 'Total Property Tax Difference', className: 'px-3 py-2 text-right min-w-[100px]' },
+  { key: 'rtTax', labelKey: 'retroTax', titleKey: 'retroTaxTitle', defaultLabel: 'RETRO TAX', defaultTitle: 'Retrospective Tax Difference', className: 'px-3 py-2 text-right min-w-[100px]' },
 ];
 
-export const DifferenceEngineTableHeader: React.FC<{ taxMode?: PtisTaxMode }> = ({ taxMode }) => {
+interface DifferenceEngineTableHeaderProps {
+  taxMode?: PtisTaxMode;
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
+}
+
+export const DifferenceEngineTableHeader: React.FC<DifferenceEngineTableHeaderProps> = ({ taxMode, sort, onSort }) => {
+  const t = useTranslations('ptisRedesign.differenceColumns');
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
   const visibleColumns = DIFFERENCE_COLUMNS.filter((col) => {
@@ -34,19 +35,14 @@ export const DifferenceEngineTableHeader: React.FC<{ taxMode?: PtisTaxMode }> = 
   });
 
   return (
-    <thead className="sticky top-0 z-20 shadow-xs bg-amber-50/95 border-b border-amber-200">
-      <tr className="border-b border-amber-200 text-amber-950 font-bold uppercase tracking-wider text-[10px] h-10">
-        {visibleColumns.map((col) => (
-          <th
-            key={col.key}
-            className={cn('whitespace-nowrap', col.className)}
-          >
-            <Tooltip content={col.title} placement="top">
-              <span className="cursor-help inline-block">{col.label}</span>
-            </Tooltip>
-          </th>
-        ))}
-      </tr>
-    </thead>
+    <PtisTableHeader
+      panel="difference"
+      columns={visibleColumns}
+      translate={(key) => t(key)}
+      theadClassName="sticky top-0 z-20 shadow-xs bg-amber-50/95 border-b border-amber-200"
+      rowClassName="border-b border-amber-200 text-amber-950 font-bold uppercase tracking-wider text-[10px] h-10"
+      sort={sort}
+      onSort={onSort}
+    />
   );
 };

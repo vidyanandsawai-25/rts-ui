@@ -22,6 +22,7 @@ interface PtisLayoutWrapperProps {
   isMainProperty?: boolean;
   categoryId?: number | null;
   propertyTypeId?: number | null;
+  propertyDescription?: string;
   type?: string | number | null;
   societyDetailId?: number | null;
   initialPhotoSlots?: PropertyPhotoTypeWithStatusDto[];
@@ -31,6 +32,10 @@ interface PtisLayoutWrapperProps {
   initialWaybackReleases?: WaybackRelease[];
   initialVisible?: boolean;
   wings?: WingWiseWingDetails[];
+  societyBuildingPhotoGuid?: string;
+  societyPhotoUrl?: string;
+  societyLatitude?: number;
+  societyLongitude?: number;
 }
 
 import { useWaybackReleases } from '@/hooks/ptis/useWaybackReleases';
@@ -47,6 +52,7 @@ function PtisLayoutWrapperContent({
   isMainProperty,
   categoryId,
   propertyTypeId,
+  propertyDescription,
   type,
   societyDetailId,
   initialPhotoSlots = [],
@@ -55,21 +61,41 @@ function PtisLayoutWrapperContent({
   initialLongitude,
   initialWaybackReleases = [],
   wings = [],
+  societyBuildingPhotoGuid,
+  societyPhotoUrl,
+  societyLatitude,
+  societyLongitude,
 }: PtisLayoutWrapperProps) {
   const { isPanelVisible } = useMediaPanel();
   const searchParams = useSearchParams();
   const isDrawerOpen = searchParams?.get('drawer') === 'photo-plan';
+  const searchPropertyIdStr = searchParams?.get('propertyId') || searchParams?.get('propertyid');
+  const urlPropertyId = searchPropertyIdStr ? Number(searchPropertyIdStr) : undefined;
+
+  const isNavigatingToNewProperty = Boolean(
+    urlPropertyId && propertyId && urlPropertyId !== propertyId
+  );
+
+  const effectivePropertyId = isNavigatingToNewProperty ? urlPropertyId : propertyId;
+  const effectiveInitialSlots = isNavigatingToNewProperty ? [] : initialPhotoSlots;
+  const effectiveInitialPhotos = isNavigatingToNewProperty ? [] : initialPhotos;
+
   const { loading, photoSlots, photos, setPhotoSlots, setPhotos } = usePropertyPhotosQuery(
-    propertyId,
+    effectivePropertyId,
     isPanelVisible,
     isDrawerOpen,
-    initialPhotoSlots,
-    initialPhotos
+    effectiveInitialSlots,
+    effectiveInitialPhotos,
+    isMainProperty ? societyDetailId : undefined,
+    societyBuildingPhotoGuid,
+    societyPhotoUrl,
+    isMainProperty ? undefined : null,
+    isMainProperty
   );
   const { waybackReleases } = useWaybackReleases(isPanelVisible || isDrawerOpen);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 w-full items-start overflow-x-clip relative">
+    <div className="flex flex-col lg:flex-row gap-2 lg:gap-3 w-full items-start overflow-x-clip relative">
       <MediaPanelToggle />
 
       {/* Main Content Area */}
@@ -94,21 +120,26 @@ function PtisLayoutWrapperContent({
             propertyHolderName={propertyHolderName}
             propertyHolderNameMarathi={propertyHolderNameMarathi}
             isQCApproved={isQCApproved}
-            propertyId={propertyId}
+            propertyId={effectivePropertyId}
             isMainProperty={isMainProperty}
             categoryId={categoryId}
             propertyTypeId={propertyTypeId}
+            propertyDescription={propertyDescription}
             type={type}
             societyDetailId={societyDetailId}
             initialPhotoSlots={photoSlots}
             initialPhotos={photos}
-            loading={loading}
+            loading={loading || isNavigatingToNewProperty}
             initialLatitude={initialLatitude}
             initialLongitude={initialLongitude}
             initialWaybackReleases={waybackReleases.length > 0 ? waybackReleases : initialWaybackReleases}
             onPhotosChange={setPhotos}
             onPhotoSlotsChange={setPhotoSlots}
             wings={wings}
+            societyBuildingPhotoGuid={societyBuildingPhotoGuid}
+            societyPhotoUrl={societyPhotoUrl}
+            societyLatitude={societyLatitude}
+            societyLongitude={societyLongitude}
           />
         </div>
       </div>

@@ -74,6 +74,31 @@ export const ptisSocialMapper = {
         documentGuid: item.documentGuid ? String(item.documentGuid) : null,
         percentage: item.percentage != null ? Number(item.percentage) : null,
         amount: item.amount != null ? Number(item.amount) : null,
+        level: item.level
+          ? String(item.level)
+          : item.Level
+            ? String(item.Level)
+            : item.levelName
+              ? String(item.levelName)
+              : item.wingDetailId || item.WingDetailId
+                ? 'Wing'
+                : item.societyDetailId || item.SocietyDetailId
+                  ? 'Apartment'
+                  : undefined,
+        wingDetailId: item.wingDetailId != null
+          ? Number(item.wingDetailId)
+          : item.WingDetailId != null
+            ? Number(item.WingDetailId)
+            : null,
+        societyDetailId: item.societyDetailId != null
+          ? Number(item.societyDetailId)
+          : item.SocietyDetailId != null
+            ? Number(item.SocietyDetailId)
+            : null,
+        wingName: item.wingName ? String(item.wingName) : item.WingName ? String(item.WingName) : null,
+        unitNo: item.unitNo ? String(item.unitNo) : item.UnitNo ? String(item.UnitNo) : null,
+        partitionNo: item.partitionNo ? String(item.partitionNo) : item.PartitionNo ? String(item.PartitionNo) : null,
+        applicableToLabel: item.applicableToLabel ? String(item.applicableToLabel) : undefined,
       })),
     };
   },
@@ -94,6 +119,8 @@ export const ptisSocialMapper = {
       isActive?: boolean;
       isDiscountApplicable?: boolean;
       documentGuid?: string | null;
+      percentage?: number | string | null;
+      amount?: number | string | null;
       children?: RawSocialAttribute[];
     }
 
@@ -144,6 +171,25 @@ export const ptisSocialMapper = {
           updatedDate: null,
           isDiscountApplicable: attr.isDiscountApplicable === true,
           documentGuid: attr.documentGuid ? String(attr.documentGuid) : null,
+          percentage: attr.percentage != null ? Number(attr.percentage) : null,
+          amount: attr.amount != null ? Number(attr.amount) : null,
+          level: (attr as Record<string, unknown>).level
+            ? String((attr as Record<string, unknown>).level)
+            : (attr as Record<string, unknown>).wingDetailId
+              ? 'Wing'
+              : (attr as Record<string, unknown>).societyDetailId
+                ? 'Apartment'
+                : undefined,
+          wingDetailId: (attr as Record<string, unknown>).wingDetailId != null
+            ? Number((attr as Record<string, unknown>).wingDetailId)
+            : null,
+          societyDetailId: (attr as Record<string, unknown>).societyDetailId != null
+            ? Number((attr as Record<string, unknown>).societyDetailId)
+            : null,
+          wingName: (attr as Record<string, unknown>).wingName ? String((attr as Record<string, unknown>).wingName) : null,
+          unitNo: (attr as Record<string, unknown>).unitNo ? String((attr as Record<string, unknown>).unitNo) : null,
+          partitionNo: (attr as Record<string, unknown>).partitionNo ? String((attr as Record<string, unknown>).partitionNo) : (attr as Record<string, unknown>).PartitionNo ? String((attr as Record<string, unknown>).PartitionNo) : null,
+          applicableToLabel: (attr as Record<string, unknown>).applicableToLabel ? String((attr as Record<string, unknown>).applicableToLabel) : undefined,
         });
         if (Array.isArray(attr.children) && attr.children.length > 0) {
           traverse(attr.children);
@@ -163,47 +209,106 @@ export const ptisSocialMapper = {
     const itemsMap = new Map<string, BuildingPermissionItem>();
 
     const addCert = (rec: Record<string, unknown>, floorId: number | null = null, floorDesc: string | null = null) => {
-      const typeId = Number(rec.certificateTypeId);
+      const typeId = Number(
+        rec.certificateTypeId ?? rec.CertificateTypeId ?? rec.id ?? rec.Id ?? 0
+      );
       if (!typeId) return;
 
-      const certNo = rec.certificateNo != null ? String(rec.certificateNo) : null;
-      const issueDate = rec.issueDate ? String(rec.issueDate) : null;
-      const docGuid = rec.documentGuid ? String(rec.documentGuid) : null;
-      const hasCert = Boolean(rec.hasCertificate);
-      const isActive = rec.isActive !== undefined ? Boolean(rec.isActive) : true;
+      const certNo = (rec.certificateNo ?? rec.CertificateNo ?? rec.certificateNumber ?? rec.CertificateNumber ?? rec.number ?? rec.Number) != null
+        ? String(rec.certificateNo ?? rec.CertificateNo ?? rec.certificateNumber ?? rec.CertificateNumber ?? rec.number ?? rec.Number).trim()
+        : null;
 
-      const hasAttachedData = hasCert || !!(certNo?.trim() || issueDate?.trim() || docGuid?.trim());
+      const issueDate = (rec.issueDate ?? rec.IssueDate ?? rec.certificateIssueDate ?? rec.CertificateIssueDate ?? rec.certificateDate ?? rec.CertificateDate ?? rec.date ?? rec.Date) != null
+        ? String(rec.issueDate ?? rec.IssueDate ?? rec.certificateIssueDate ?? rec.CertificateIssueDate ?? rec.certificateDate ?? rec.CertificateDate ?? rec.date ?? rec.Date).trim()
+        : null;
 
-      const propCertId = rec.propertyCertificateId != null ? Number(rec.propertyCertificateId) : null;
-      
-      // Each attached certificate in DB has a unique propertyCertificateId (e.g. 57, 58, 59, 60, 61).
-      // Use propertyCertificateId if available to prevent overwriting multiple certificates of the same type across floors or property-level.
-      const uniqueKey = propCertId 
-        ? `id-${propCertId}` 
-        : `type-${typeId}-floor-${floorId ?? 'prop'}-${docGuid || certNo || issueDate || (hasCert ? 'hasCert' : 'noCert')}`;
+      const docGuid = (rec.documentGuid ?? rec.DocumentGuid ?? rec.guid ?? rec.Guid ?? rec.documentPath ?? rec.DocumentPath) != null
+        ? String(rec.documentGuid ?? rec.DocumentGuid ?? rec.guid ?? rec.Guid ?? rec.documentPath ?? rec.DocumentPath).trim()
+        : null;
+
+      const hasCertVal = rec.hasCertificate ?? rec.HasCertificate;
+      const isActiveVal = rec.isActive ?? rec.IsActive;
+
+      const propCertId = (rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id) != null
+        ? Number(rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id)
+        : null;
+
+      const hasAttachedData = Boolean(
+        hasCertVal ||
+        (propCertId && propCertId > 0) ||
+        (certNo && certNo !== '') ||
+        (issueDate && issueDate !== '') ||
+        (docGuid && docGuid !== '')
+      );
+
+      const isActive = isActiveVal !== undefined ? Boolean(isActiveVal) : true;
+
+      const certTypeName = String(
+        rec.certificateTypeName ?? rec.CertificateTypeName ?? rec.name ?? rec.Name ?? ''
+      );
+
+      const fileName = (rec.fileName ?? rec.FileName ?? rec.documentName ?? rec.DocumentName) != null
+        ? String(rec.fileName ?? rec.FileName ?? rec.documentName ?? rec.DocumentName).trim()
+        : null;
+
+      const resolvedFloorId = floorId ?? (
+        (rec.propertyDetailsId ?? rec.PropertyDetailsId) != null
+          ? Number(rec.propertyDetailsId ?? rec.PropertyDetailsId)
+          : null
+      );
+
+      const resolvedFloorDesc = floorDesc ?? (
+        (rec.floorDescription ?? rec.FloorDescription) != null
+          ? String(rec.floorDescription ?? rec.FloorDescription)
+          : null
+      );
+
+      const entityType = (rec.entityType ?? rec.EntityType) != null ? String(rec.entityType ?? rec.EntityType).trim() : null;
+      const level = (rec.level ?? rec.Level) != null ? String(rec.level ?? rec.Level).trim() : null;
+      const sourceLevel = (rec.sourceLevel ?? rec.SourceLevel) != null ? String(rec.sourceLevel ?? rec.SourceLevel).trim() : null;
+      const wingDetailId = (rec.wingDetailId ?? rec.WingDetailId) != null ? Number(rec.wingDetailId ?? rec.WingDetailId) : null;
+      const societyDetailId = (rec.societyDetailId ?? rec.SocietyDetailId) != null ? Number(rec.societyDetailId ?? rec.SocietyDetailId) : null;
+      const wingName = (rec.wingName ?? rec.WingName) != null ? String(rec.wingName ?? rec.WingName).trim() : null;
+      const partitionNo = (rec.partitionNo ?? rec.PartitionNo ?? rec.unitNo ?? rec.UnitNo) != null ? String(rec.partitionNo ?? rec.PartitionNo ?? rec.unitNo ?? rec.UnitNo).trim() : null;
+      const inheritedFrom = (rec.inheritedFrom ?? rec.InheritedFrom) != null ? String(rec.inheritedFrom ?? rec.InheritedFrom).trim() : null;
+
+      // Unique key: Prefer propertyCertificateId if present, else typeId + floorId + attached info
+      const uniqueKey = propCertId
+        ? `id-${propCertId}`
+        : `type-${typeId}-floor-${resolvedFloorId ?? 'prop'}-${docGuid || certNo || issueDate || (hasAttachedData ? 'attached' : 'empty')}`;
 
       itemsMap.set(uniqueKey, {
         certificateTypeId: typeId,
-        certificateTypeName: String(rec.certificateTypeName || ''),
-        displayOrder: Number(rec.displayOrder || 0),
-        hasCertificate: hasCert || hasAttachedData,
+        certificateTypeName: certTypeName,
+        displayOrder: Number(rec.displayOrder ?? rec.DisplayOrder ?? 0),
+        hasCertificate: hasAttachedData,
         propertyCertificateId: propCertId,
         isActive: isActive,
         certificateNo: certNo,
         issueDate: issueDate,
         documentGuid: docGuid,
-        fileName: rec.fileName ? String(rec.fileName) : null,
+        fileName: fileName,
         documentViewUrl: docGuid ? getViewDocumentUrl(docGuid) : null,
-        propertyDetailsId: floorId,
-        floorDescription: floorDesc,
+        propertyDetailsId: resolvedFloorId,
+        floorDescription: resolvedFloorDesc,
+        entityType,
+        level,
+        sourceLevel,
+        wingDetailId,
+        societyDetailId,
+        wingName,
+        partitionNo,
+        inheritedFrom,
       });
     };
 
     // 1. Process property-level certificates (types-with-status) FIRST
-    const propCertsRaw = rawData?.propertyCertificates ?? data;
+    const propCertsRaw = rawData?.propertyCertificates ?? (Array.isArray(data) ? data : (rawData?.items ?? data));
     const propRecord = safeRecord(propCertsRaw);
     const rawItems = Array.isArray(propRecord?.items)
       ? propRecord.items
+      : Array.isArray(propRecord?.data)
+      ? propRecord.data
       : Array.isArray(propCertsRaw)
       ? propCertsRaw
       : [];
@@ -211,38 +316,66 @@ export const ptisSocialMapper = {
     for (const item of rawItems) {
       const rec = safeRecord(item);
       if (rec) {
-        const propCertId = rec.propertyCertificateId != null ? Number(rec.propertyCertificateId) : null;
-        const hasContent = Boolean(rec.hasCertificate || rec.certificateNo || rec.issueDate || rec.documentGuid);
-        if (propCertId || hasContent) {
+        const propCertId = (rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id) != null
+          ? Number(rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id)
+          : null;
+        const certNo = rec.certificateNo ?? rec.CertificateNo ?? rec.certificateNumber ?? rec.CertificateNumber;
+        const issueDate = rec.issueDate ?? rec.IssueDate ?? rec.certificateIssueDate ?? rec.CertificateIssueDate;
+        const docGuid = rec.documentGuid ?? rec.DocumentGuid ?? rec.guid ?? rec.Guid;
+        const hasCert = rec.hasCertificate ?? rec.HasCertificate;
+        const hasContent = Boolean(hasCert || (propCertId && propCertId > 0) || certNo || issueDate || docGuid);
+        if (hasContent) {
           addCert(rec, null, null);
         }
       }
     }
 
     // 2. Process floor-level types-with-status SECOND
-    // Note: Floor-level cards must ONLY be added if there is a distinct floor certificate record
-    // in ptis.PropertyCertificates for that floor (i.e. rec.propertyCertificateId != null or rec.documentGuid != null).
-    // If rec.propertyCertificateId is null, the floor is merely inheriting property-wide values for tax calculations,
-    // so we do NOT duplicate the property-wide card across all floors.
     if (Array.isArray(rawData?.floorCertificatesWithStatus)) {
       for (const floorGroup of rawData.floorCertificatesWithStatus) {
         const fg = safeRecord(floorGroup);
         if (fg) {
-          const fId = fg.propertyDetailsId != null ? Number(fg.propertyDetailsId) : null;
-          const fDesc = fg.floorDescription ? String(fg.floorDescription) : null;
-          const certs = Array.isArray(fg.certificates) ? fg.certificates : [];
+          const fId = (fg.propertyDetailsId ?? fg.PropertyDetailsId) != null ? Number(fg.propertyDetailsId ?? fg.PropertyDetailsId) : null;
+          const fDesc = (fg.floorDescription ?? fg.FloorDescription) ? String(fg.floorDescription ?? fg.FloorDescription) : null;
+          const certs = Array.isArray(fg.certificates ?? fg.Certificates) ? (fg.certificates ?? fg.Certificates) as unknown[] : [];
 
           for (const cert of certs) {
             const rec = safeRecord(cert);
             if (rec) {
-              const propCertId = rec.propertyCertificateId != null ? Number(rec.propertyCertificateId) : null;
-              const docGuid = rec.documentGuid ? String(rec.documentGuid) : null;
+              const propCertId = (rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id) != null
+                ? Number(rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id)
+                : null;
+              const docGuid = rec.documentGuid ?? rec.DocumentGuid ?? rec.guid ?? rec.Guid;
+              const certNo = rec.certificateNo ?? rec.CertificateNo ?? rec.certificateNumber ?? rec.CertificateNumber;
+              const issueDate = rec.issueDate ?? rec.IssueDate ?? rec.certificateIssueDate ?? rec.CertificateIssueDate;
+              const hasCert = rec.hasCertificate ?? rec.HasCertificate;
               // Only add floor card if there is an ACTUAL floor-specific certificate entity or attached document for this floor
-              if (propCertId != null || docGuid != null) {
+              if (propCertId != null || docGuid != null || certNo != null || issueDate != null || hasCert) {
                 addCert(rec, fId, fDesc);
               }
             }
           }
+        }
+      }
+    }
+
+    // 3. Process any propertyWiseCertificates nested in floorCertificates response
+    const rawFloorObj = safeRecord(rawData?.floorCertificates);
+    const propWiseCerts = Array.isArray(rawFloorObj?.propertyWiseCertificates ?? rawFloorObj?.PropertyWiseCertificates)
+      ? (rawFloorObj?.propertyWiseCertificates ?? rawFloorObj?.PropertyWiseCertificates) as unknown[]
+      : [];
+    for (const item of propWiseCerts) {
+      const rec = safeRecord(item);
+      if (rec) {
+        const propCertId = (rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id) != null
+          ? Number(rec.propertyCertificateId ?? rec.PropertyCertificateId ?? rec.id ?? rec.Id)
+          : null;
+        const certNo = rec.certificateNo ?? rec.CertificateNo ?? rec.certificateNumber ?? rec.CertificateNumber;
+        const issueDate = rec.issueDate ?? rec.IssueDate ?? rec.certificateIssueDate ?? rec.CertificateIssueDate;
+        const docGuid = rec.documentGuid ?? rec.DocumentGuid ?? rec.guid ?? rec.Guid;
+        const hasCert = rec.hasCertificate ?? rec.HasCertificate;
+        if (hasCert || (propCertId && propCertId > 0) || certNo || issueDate || docGuid) {
+          addCert(rec, null, null);
         }
       }
     }

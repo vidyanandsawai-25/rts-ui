@@ -11,12 +11,24 @@ export interface UseRuleComparatorCodesReturn {
   refetchComparatorCodes: () => Promise<void>;
 }
 
-export function useRuleComparatorCodes(): UseRuleComparatorCodesReturn {
-  const [comparatorCodes, setComparatorCodes] = useState<RuleComparatorCodeItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export interface UseRuleComparatorCodesOptions {
+  initialComparatorCodes?: RuleComparatorCodeItem[];
+}
+
+export function useRuleComparatorCodes(
+  options?: UseRuleComparatorCodesOptions
+): UseRuleComparatorCodesReturn {
+  const hasInitialData = Boolean(
+    options?.initialComparatorCodes && options.initialComparatorCodes.length > 0
+  );
+
+  const [comparatorCodes, setComparatorCodes] = useState<RuleComparatorCodeItem[]>(
+    options?.initialComparatorCodes || []
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(!hasInitialData);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCodes = useCallback(async () => {
+  const refetchComparatorCodes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -32,41 +44,35 @@ export function useRuleComparatorCodes(): UseRuleComparatorCodesReturn {
   }, []);
 
   useEffect(() => {
-    let isCancelled = false;
-    queueMicrotask(() => {
-      if (!isCancelled) {
-        setIsLoading(true);
-        setError(null);
-      }
-    });
-
-    getComparatorCodesAction()
-      .then((res) => {
-        if (isCancelled) return;
-        if (res.success && res.data && res.data.length > 0) {
-          setComparatorCodes(res.data);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!isCancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch comparator codes');
-        }
-      })
-      .finally(() => {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      });
-
+    let isMounted = true;
+    if (!hasInitialData) {
+      getComparatorCodesAction()
+        .then((res) => {
+          if (!isMounted) return;
+          if (res.success && res.data && res.data.length > 0) {
+            setComparatorCodes(res.data);
+          }
+        })
+        .catch((err: unknown) => {
+          if (isMounted) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch comparator codes');
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        });
+    }
     return () => {
-      isCancelled = true;
+      isMounted = false;
     };
-  }, []);
+  }, [hasInitialData]);
 
   return {
     comparatorCodes,
     isLoading,
     error,
-    refetchComparatorCodes: fetchCodes,
+    refetchComparatorCodes,
   };
 }

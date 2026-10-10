@@ -23,6 +23,8 @@ export interface PropertySocietyDetailsApiItem {
   societyEmailId: string;
   secretaryEmailId: string;
   managerEmailId: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export interface PropertySocietyDetailsResponse {
@@ -55,6 +57,8 @@ export interface UpdatePropertySocietyDetailsDto {
   societyEmailId: string | null;
   secretaryEmailId: string | null;
   managerEmailId: string | null;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 import { PropertyMasterData } from "./property-tax/apartment";

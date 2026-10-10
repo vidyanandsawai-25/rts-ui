@@ -32,6 +32,7 @@ export interface InventoryCategoryListParams {
   PageSize?: number;
   SearchTerm?: string;
   MarkedForDeletion?: boolean;
+  IsActive?: boolean | string;
   SortBy?: string;
   SortOrder?: 'asc' | 'desc';
 }
@@ -54,6 +55,7 @@ export interface InventoryCategoryFormModel {
   name: string;
   group: string;
   depreciationRate?: string;
+  displayOrder?: string;
   description: string;
   isActive: boolean;
 }

@@ -79,9 +79,11 @@ export interface PropertyListItem {
   category?: number;
   categoryLabel?: string;
   societyDetailId?: number | null;
+  societyId?: number | null;
   societyName?: string | null;
   wings?: ApartmentQCSearchWingSummary[] | null;
   wingDetailId?: number | null;
+  wingId?: number | null;
 }
 
 export interface WardData {

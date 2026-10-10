@@ -151,4 +151,55 @@ describe('QuickDataEntryClientWrapper', () => {
         expect(screen.getByText('Property Category: Individual')).toBeInTheDocument();
         expect(screen.getByText('Property Description: Residential')).toBeInTheDocument();
     });
+
+    it('preserves propertyId when closing to apartment screen without overwriting with societyDetailId', () => {
+        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/330762/Society');
+        (useParams as Mock).mockReturnValue({ locale: 'en', propertyId: '330762' });
+
+        const searchParams = new URLSearchParams();
+        searchParams.set('propertyId', '330762');
+        searchParams.set('wardNo', 'MM8');
+        searchParams.set('propertyNo', '132');
+        searchParams.set('returnTab', 'apartment');
+        searchParams.set('fromSocietyEdit', 'true');
+        searchParams.set('societyDetailId', '7728');
+        (useSearchParams as Mock).mockReturnValue(searchParams);
+
+        render(
+            <QuickDataEntryClientWrapper societyDetailId={7728}>
+                <div>Content</div>
+            </QuickDataEntryClientWrapper>
+        );
+
+        fireEvent.click(screen.getByTestId('drawer-close-btn'));
+
+        expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/en/property-tax/ptis/apartment?'));
+        expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('propertyId=330762'));
+        expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('societyId=7728'));
+        expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('propertyId=7728'));
+    });
+
+    it('uses parentPropertyId when closing from unit edit to apartment screen', () => {
+        (usePathname as Mock).mockReturnValue('/en/property-tax/ptis/QuickDataEntry/999/Property');
+        (useParams as Mock).mockReturnValue({ locale: 'en', propertyId: '999' });
+
+        const searchParams = new URLSearchParams();
+        searchParams.set('propertyId', '999');
+        searchParams.set('parentPropertyId', '330762');
+        searchParams.set('wardNo', 'MM8');
+        searchParams.set('propertyNo', '132');
+        searchParams.set('returnTab', 'apartment');
+        (useSearchParams as Mock).mockReturnValue(searchParams);
+
+        render(
+            <QuickDataEntryClientWrapper>
+                <div>Content</div>
+            </QuickDataEntryClientWrapper>
+        );
+
+        fireEvent.click(screen.getByTestId('drawer-close-btn'));
+
+        expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/en/property-tax/ptis/apartment?'));
+        expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('propertyId=330762'));
+    });
 });

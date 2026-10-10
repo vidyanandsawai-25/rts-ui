@@ -89,7 +89,12 @@
     "notFound": "Asset room type not found.",
     "inUse": "Cannot deactivate/delete this Asset Room Type because it is referenced by other asset records.",
     "operationFailed": "Operation failed. Please try again later.",
-    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
+    "referenceBlocked": {
+      "assetRoomType": {
+        "deleteInUse": "This Asset Room Type cannot be deleted because it is in use.",
+        "deactivateInUse": "This Asset Room Type cannot be deactivated because it is in use."
+      }
+    }
   },
   "success": {
     "created": "New asset room type created successfully: {code}",

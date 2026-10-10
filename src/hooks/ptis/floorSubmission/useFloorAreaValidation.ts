@@ -16,23 +16,35 @@ interface UseFloorAreaValidationProps {
   propertyCategoryName?: string | null;
 }
 
+const OPEN_PLOT_KEYWORDS = ['open plot', 'open space', 'खुला', 'भूखंड', 'खुली जागा'] as const;
+
 /**
  * Checks if a floor record is an Open Space / Open Plot record
- * (e.g. conTyp === 'op', selectedFloorType === 'OpenPlot', floorId === 77).
+ * (e.g. conTyp/floorCode === 'op', selectedFloorType === 'OpenPlot', etc.).
  */
-export const isRecordOpenPlot = (floor: FloorData) => {
+export const isRecordOpenPlot = (floor?: FloorData | Record<string, unknown> | null): boolean => {
   if (!floor) return false;
   if (floor.selectedFloorType === 'OpenPlot') return true;
-  if (floor.isOpenPlot === true || floor.isOpenPlot === 'true') return true;
+  if (floor.isOpenPlot === true || floor.isOpenPlot === 'true' || floor.isOpenPlot === 1 || String(floor.isOpenPlot) === '1') return true;
 
   const conCodeOrDesc = String(
     floor.conTyp || floor.constructionTypeDescription || floor.constructionTypeId || ''
   ).toLowerCase().trim();
 
-  if (conCodeOrDesc === 'op' || conCodeOrDesc.includes('open plot')) return true;
+  if (
+    conCodeOrDesc === 'op' ||
+    conCodeOrDesc.startsWith('op-') ||
+    conCodeOrDesc.startsWith('op -') ||
+    OPEN_PLOT_KEYWORDS.some((kw) => conCodeOrDesc.includes(kw))
+  ) return true;
 
-  const floorStr = String(floor.floorId || floor.floor || '').toLowerCase().trim();
-  if (floorStr === '77' || floorStr.includes('op') || floorStr.includes('open plot')) return true;
+  const floorStr = String(floor.floorId || floor.floor || floor.floorDescription || '').toLowerCase().trim();
+  if (
+    floorStr === 'op' ||
+    floorStr.startsWith('op-') ||
+    floorStr.startsWith('op -') ||
+    OPEN_PLOT_KEYWORDS.some((kw) => floorStr.includes(kw))
+  ) return true;
 
   return false;
 };
@@ -123,7 +135,7 @@ export const useFloorAreaValidation = ({
   const masterPlotRecordId = useMemo(() => {
     const master = activeFloors.find(
       (f) =>
-        (f.isOpenPlot === true || String(f.floorId) === '77' || String(f.floor) === '77') &&
+        isRecordOpenPlot(f) &&
         (Number(f.carpetAreaSqMeter || f.builtupAreaSqMeter || 0) === plotAreaSqM || plotAreaSqM > 0)
     );
     return master?.id;

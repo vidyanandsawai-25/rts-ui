@@ -1,5 +1,5 @@
 import { LoadingPage } from "@/components/common";
 
 export default function Loading() {
-  return <LoadingPage translationNamespace="assessmentYearRange.capitalValue.loading" />;
+  return <LoadingPage translationNamespace="assetAssessmentYearRange.capitalValue.loading" />;
 }

@@ -91,28 +91,28 @@ export function getAssetPhotoTypeColumns(
     {
       key: "photoTypeCode",
       label: createSortableLabel(t("list.table.photoTypeCode"), "photoTypeCode"),
-      width: "20%",
+      width: "14%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "photoTypeName",
       label: createSortableLabel(t("list.table.photoTypeName"), "photoTypeName"),
-      width: "20%",
+      width: "16%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : ""),
     },
     {
       key: "description",
       label: createSortableLabel(t("list.table.description"), "description"),
-      width: "20%",
+      width: "18%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (typeof value === "string" ? value : "-"),
     },
     {
@@ -120,17 +120,17 @@ export function getAssetPhotoTypeColumns(
       label: createSortableLabel(t("list.table.displayOrder"), "displayOrder"),
       width: "10%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (value != null ? String(value) : "-"),
     },
     {
       key: "assetCategoryName",
       label: t("list.table.assetCategoryAndType"),
-      width: "20%",
+      width: "16%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (_, row) => {
         const parts = [];
         if (row.assetCategoryName) parts.push(row.assetCategoryName);
@@ -141,10 +141,10 @@ export function getAssetPhotoTypeColumns(
     {
       key: "isSubUnit",
       label: t("list.table.isSubUnit"),
-      width: "10%",
+      width: "8%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (
         <StatusBadge
           value={Boolean(value)}
@@ -156,10 +156,10 @@ export function getAssetPhotoTypeColumns(
     {
       key: "isRequired",
       label: t("list.table.isRequired"),
-      width: "10%",
+      width: "9%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       render: (value) => (
         <StatusBadge
           value={Boolean(value)}
@@ -171,10 +171,10 @@ export function getAssetPhotoTypeColumns(
     {
       key: "isActive",
       label: t("list.table.status"),
-      width: "10%",
+      width: "9%",
       align: "center",
-      headerClassName: "break-words [word-break:break-word]",
-      cellClassName: "break-words [word-break:break-word]",
+      headerClassName: "whitespace-nowrap",
+      cellClassName: "break-words",
       isStatus: true,
     },
   ];

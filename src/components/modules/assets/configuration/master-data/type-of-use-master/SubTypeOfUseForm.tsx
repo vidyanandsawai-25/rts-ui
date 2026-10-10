@@ -57,7 +57,7 @@ export default function SubTypeOfUseForm({ id, initialData, typeOfUses }: SubTyp
         />
 
         <Card className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} noValidate className="space-y-6">
             {isEdit && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div
@@ -147,7 +147,7 @@ export default function SubTypeOfUseForm({ id, initialData, typeOfUses }: SubTyp
                 required
                 min={0}
                 max={999}
-                value={formData.searchSequence}
+                value={formData.searchSequence === "" ? "" : formData.searchSequence}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 fullWidth

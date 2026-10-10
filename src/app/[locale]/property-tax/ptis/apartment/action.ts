@@ -17,9 +17,12 @@ import {
   getApartmentPropertyTaxDetailsRv,
   getApartmentPropertyTaxDetailsCv,
   getApartmentQCTopSectionBelowFlex,
+  type ApartmentQCTopSectionBelowFlexParams,
   getWingWiseDetails,
   updateApartmentQcWingDetails,
   getApartmentTaxDetails,
+  getApartmentDemandDetails,
+  getApartmentYearWiseDetails,
   type UpdateApartmentQcWingDetailsPayload,
 } from '@/lib/api/ptis/apartment';
 import { getPropertyRuleLogs } from '@/lib/api/rule-engine/property-rule-log.service';
@@ -34,14 +37,24 @@ import type { TaxDetailsData } from '@/types/ptisMain-taxdetails.types';
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 import type { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { createLogger } from '@/lib/utils/server-logger';
-import type { ApartmentTaxDetailsResponse } from '@/types/property-tax/apartment';
-import { getMappedNewProperties, getMappedOldProperties } from '@/lib/api/property-mapping/property-mapping.service';
+import type {
+  ApartmentTaxDetailsResponse,
+  ApartmentDemandDetailsResponse,
+} from '@/types/property-tax/apartment';
+import {
+  getMappedNewProperties,
+  getMappedOldProperties,
+} from '@/lib/api/property-mapping/property-mapping.service';
 import type {
   MappedNewPropertiesApiResponse,
   MappedNewPropertiesParams,
   MappedOldPropertiesApiResponse,
   MappedOldPropertiesParams,
 } from '@/types/property-mapping';
+import { getPropertySocialDetailsByFilters } from '@/lib/api/property-social-details.service';
+import { getSocialAttributes } from '@/lib/api/social-attribute-master/social-attribute-crud.service';
+import type { DiscountData, PropertySocialDetailItem } from '@/types/ptis.types';
+import { normalizeToItem, isConfigured } from '@/lib/utils/ptis/social-details';
 import { ApiError } from 'next/dist/server/api-utils';
 import { getTranslations } from 'next-intl/server';
 
@@ -49,35 +62,55 @@ const logger = createLogger('ApartmentActions');
 
 type ActionResult<T> = { success: boolean; data?: T | null; error?: string; statusCode?: number };
 
-export async function fetchApartmentDetailsWingWiseAction(filters: SearchWingWiseFilters): Promise<ApartmentDetailsWingWiseResponseDto> {
+export async function fetchApartmentDetailsWingWiseAction(
+  filters: SearchWingWiseFilters
+): Promise<ApartmentDetailsWingWiseResponseDto> {
   try {
     return await getApartmentDetailsWingWise(filters);
   } catch (error) {
-    return { success: false, message: error instanceof Error ? error.message : 'Failed to fetch apartment details', errors: [error instanceof Error ? error.message : 'Unknown server action error'] };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch apartment details',
+      errors: [error instanceof Error ? error.message : 'Unknown server action error'],
+    };
   }
 }
 
-export async function fetchApartmentPropertyTaxDetailsRvAction(propertyId: number): Promise<{ success: boolean; data?: Record<string, unknown> | null; error?: string }> {
+export async function fetchApartmentPropertyTaxDetailsRvAction(
+  propertyId: number
+): Promise<{ success: boolean; data?: Record<string, unknown> | null; error?: string }> {
   try {
     return await getApartmentPropertyTaxDetailsRv(propertyId);
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Failed RV tax fetch' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed RV tax fetch',
+    };
   }
 }
 
-export async function fetchApartmentPropertyTaxDetailsCvAction(propertyId: number): Promise<{ success: boolean; data?: Record<string, unknown> | null; error?: string }> {
+export async function fetchApartmentPropertyTaxDetailsCvAction(
+  propertyId: number
+): Promise<{ success: boolean; data?: Record<string, unknown> | null; error?: string }> {
   try {
     return await getApartmentPropertyTaxDetailsCv(propertyId);
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Failed CV tax fetch' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed CV tax fetch',
+    };
   }
 }
 
-export async function fetchApartmentQCTopSectionBelowFlexAction(propertyId: number): Promise<ApartmentQCTopSectionBelowFlexResponseDto> {
-  return await getApartmentQCTopSectionBelowFlex(propertyId);
+export async function fetchApartmentQCTopSectionBelowFlexAction(
+  propertyIdOrParams: number | string | ApartmentQCTopSectionBelowFlexParams
+): Promise<ApartmentQCTopSectionBelowFlexResponseDto> {
+  return await getApartmentQCTopSectionBelowFlex(propertyIdOrParams);
 }
 
-export async function saveSurveyUnitAction(unit: AssessmentUnit): Promise<ApiResponse<AssessmentUnit>> {
+export async function saveSurveyUnitAction(
+  unit: AssessmentUnit
+): Promise<ApiResponse<AssessmentUnit>> {
   try {
     const cookieStore = await cookies();
     const userId = getUserIdFromCookies(cookieStore);
@@ -91,7 +124,11 @@ export async function saveSurveyUnitAction(unit: AssessmentUnit): Promise<ApiRes
   }
 }
 
-export async function fetchPropertyRuleLogsAction(propertyId: number, propertyDetailsId?: number, financeYear?: number): Promise<{ success: boolean; data?: PropertyRuleLogResponse; error?: string }> {
+export async function fetchPropertyRuleLogsAction(
+  propertyId: number,
+  propertyDetailsId?: number,
+  financeYear?: number
+): Promise<{ success: boolean; data?: PropertyRuleLogResponse; error?: string }> {
   try {
     const data = await getPropertyRuleLogs(propertyId, propertyDetailsId, financeYear);
     return { success: true, data };
@@ -100,15 +137,27 @@ export async function fetchPropertyRuleLogsAction(propertyId: number, propertyDe
   }
 }
 
-export async function fetchDiscountDetailsAction(propertyId: number | string): Promise<ApiResponse<PropertyDiscountInfoResponseDto>> {
+export async function fetchDiscountDetailsAction(
+  propertyId: number | string
+): Promise<ApiResponse<PropertyDiscountInfoResponseDto>> {
   try {
     return await getDiscountDetails(String(propertyId));
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Failed discount details' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed discount details',
+    };
   }
 }
 
-export async function fetchUnitTaxDetailsAction(propertyId: number | string): Promise<{ success: boolean; rateable?: TaxDetailsData; capital?: TaxDetailsData; error?: string }> {
+export async function fetchUnitTaxDetailsAction(
+  propertyId: number | string
+): Promise<{
+  success: boolean;
+  rateable?: TaxDetailsData;
+  capital?: TaxDetailsData;
+  error?: string;
+}> {
   const numericId = Number(propertyId);
   if (!numericId || numericId <= 0) return { success: false, error: 'Invalid property ID' };
   try {
@@ -122,7 +171,9 @@ export async function fetchUnitTaxDetailsAction(propertyId: number | string): Pr
   }
 }
 
-export async function fetchUnitQuickDataEntryAction(propertyId: number | string): Promise<{ success: boolean; data?: PropertyBasicDetailsApiItem | null; error?: string }> {
+export async function fetchUnitQuickDataEntryAction(
+  propertyId: number | string
+): Promise<{ success: boolean; data?: PropertyBasicDetailsApiItem | null; error?: string }> {
   try {
     const numericId = Number(propertyId);
     if (!numericId || numericId <= 0) return { success: false, error: 'Invalid property ID' };
@@ -133,57 +184,200 @@ export async function fetchUnitQuickDataEntryAction(propertyId: number | string)
   }
 }
 
-export async function getWingWiseDetailsAction(wardId: string | number, propertyNo: string): Promise<ActionResult<WingWiseDetailsItems>> {
+export async function getWingWiseDetailsAction(
+  wardId: string | number,
+  propertyNo: string
+): Promise<ActionResult<WingWiseDetailsItems>> {
   const safeWardId = String(wardId || '').trim();
   const safePropNo = String(propertyNo || '').trim();
-  if (!safeWardId || !safePropNo) return { success: false, error: 'Ward ID and Property Number are required' };
+  if (!safeWardId || !safePropNo)
+    return { success: false, error: 'Ward ID and Property Number are required' };
   try {
     const data = await getWingWiseDetails(safeWardId, safePropNo);
     return { success: true, data };
   } catch (error) {
     logger.error('Failed to fetch wing wise details', { wardId, propertyNo }, error);
-    if (error instanceof ApiError) return { success: false, error: error.message, statusCode: error.statusCode };
+    if (error instanceof ApiError)
+      return { success: false, error: error.message, statusCode: error.statusCode };
     const t = await getTranslations('ptisRedesign');
-    return { success: false, error: t('errors.fetchWingWiseDetails') || 'Failed to fetch wing wise details', statusCode: 500 };
+    return {
+      success: false,
+      error: t('errors.fetchWingWiseDetails') || 'Failed to fetch wing wise details',
+      statusCode: 500,
+    };
   }
 }
 
-export async function getApartmentTaxDetailsAction(wardId: string | number, propertyNo: string, taxType: string = 'RV'): Promise<ApartmentTaxDetailsResponse> {
+export async function getApartmentTaxDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  taxType: string = 'RV'
+): Promise<ApartmentTaxDetailsResponse> {
   try {
     return await getApartmentTaxDetails({ wardId, propertyNo, taxType });
   } catch (error) {
-    return { success: false, message: error instanceof Error ? error.message : 'Failed to fetch tax details', items: null, totalCount: null, errors: [error instanceof Error ? error.message : 'Unknown error'], correlationId: null };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch tax details',
+      items: null,
+      totalCount: null,
+      errors: [error instanceof Error ? error.message : 'Unknown error'],
+      correlationId: null,
+    };
   }
 }
 
-export async function updateApartmentQcWingDetailsAction(wingDetailId: number, payload: UpdateApartmentQcWingDetailsPayload): Promise<ActionResult<object>> {
+export async function getApartmentDemandDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  taxType: string = 'RV'
+): Promise<ApartmentDemandDetailsResponse> {
+  try {
+    return await getApartmentDemandDetails({ wardId, propertyNo, taxType });
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch demand details',
+      items: null,
+      totalCount: null,
+      errors: [error instanceof Error ? error.message : 'Unknown error'],
+      correlationId: null,
+    };
+  }
+}
+
+export async function getApartmentYearWiseDetailsAction(
+  wardId: string | number,
+  propertyNo: string,
+  taxType: string = 'RV',
+  financeYearId: string | number
+): Promise<ApartmentDemandDetailsResponse> {
+  try {
+    return await getApartmentYearWiseDetails({ wardId, propertyNo, taxType, financeYearId });
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch year wise details',
+      items: null,
+      totalCount: null,
+      errors: [error instanceof Error ? error.message : 'Unknown error'],
+      correlationId: null,
+    };
+  }
+}
+
+export async function updateApartmentQcWingDetailsAction(
+  wingDetailId: number,
+  payload: UpdateApartmentQcWingDetailsPayload
+): Promise<ActionResult<object>> {
   try {
     const response = await updateApartmentQcWingDetails(wingDetailId, payload);
-    if (!response.success) return { success: false, error: response.error || 'Failed to update wing details' };
+    if (!response.success)
+      return { success: false, error: response.error || 'Failed to update wing details' };
     for (const locale of locales) {
       revalidatePath(`/${locale}/property-tax/ptis/apartment`, 'page');
     }
     return { success: true, data: response.data };
   } catch (error) {
     logger.error('Failed to update apartment wing details', { wingDetailId }, error);
-    return { success: false, error: error instanceof Error ? error.message : 'Failed to update wing details' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update wing details',
+    };
   }
 }
 
-export async function fetchMappedNewPropertiesAction(params: MappedNewPropertiesParams): Promise<{ success: boolean; data?: MappedNewPropertiesApiResponse | null; error?: string }> {
+export async function fetchMappedNewPropertiesAction(
+  params: MappedNewPropertiesParams
+): Promise<{ success: boolean; data?: MappedNewPropertiesApiResponse | null; error?: string }> {
   try {
     const data = await getMappedNewProperties(params);
     return { success: true, data };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch mapped properties' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch mapped properties',
+    };
   }
 }
 
-export async function fetchMappedOldPropertiesAction(params: MappedOldPropertiesParams): Promise<{ success: boolean; data?: MappedOldPropertiesApiResponse | null; error?: string }> {
+export async function fetchMappedOldPropertiesAction(
+  params: MappedOldPropertiesParams
+): Promise<{ success: boolean; data?: MappedOldPropertiesApiResponse | null; error?: string }> {
   try {
     const data = await getMappedOldProperties(params);
     return { success: true, data };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch mapped old properties' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch mapped old properties',
+    };
+  }
+}
+
+export async function fetchApartmentSocialAndDiscountDetailsAction(
+  societyDetailId: number,
+  propertyId?: number
+): Promise<{
+  success: boolean;
+  discountData?: DiscountData;
+  socialData?: DiscountData;
+  error?: string;
+}> {
+  try {
+    if (!societyDetailId || societyDetailId <= 0) {
+      return { success: false, error: 'Invalid society detail ID' };
+    }
+
+    const [societySocialRes, socialMasterRes] = await Promise.all([
+      getPropertySocialDetailsByFilters(
+        undefined,
+        societyDetailId,
+        undefined,
+        undefined,
+        undefined,
+        true
+      ).catch(() => null),
+      getSocialAttributes().catch(() => null),
+    ]);
+
+    const masterById = new Map((socialMasterRes || []).map((m) => [m.id, m]));
+    const rawItems = societySocialRes || [];
+    const discountItems: PropertySocialDetailItem[] = [];
+    const socialItems: PropertySocialDetailItem[] = [];
+
+    for (const item of rawItems) {
+      const master = masterById.get(item.socialAttributeId);
+      const mappedItem = normalizeToItem(item, master, {
+        resolvedPropertyId: propertyId,
+        societyDetailId,
+      });
+
+      if (!isConfigured(mappedItem)) continue;
+
+      if (master?.isDiscountApplicable === true) {
+        discountItems.push(mappedItem);
+      } else if (master && master.isDiscountApplicable === false) {
+        socialItems.push(mappedItem);
+      }
+    }
+
+    return {
+      success: true,
+      discountData: { items: discountItems },
+      socialData: { items: socialItems },
+    };
+  } catch (error) {
+    logger.error('Failed to fetch apartment discount/social details', {
+      societyDetailId,
+      error: error as Error,
+    });
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch apartment discount/social details',
+    };
   }
 }

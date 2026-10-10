@@ -42,6 +42,7 @@ export interface AssessmentYearRangeFormModel {
   fromYear: number | string;
   toYear: number | string;
   isActive: boolean;
+  createdBy?: number;
   updatedBy?: number;
 }
 

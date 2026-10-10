@@ -5,6 +5,9 @@ import React, { useCallback } from 'react';
 import type {
   RetrospectiveRule,
   CreateRetrospectiveRuleInput,
+  InitialTaxationData,
+  InitialActionData,
+  RuleComparatorCodeItem,
 } from '@/types/retrospective-rule.types';
 import { useRetrospectiveRuleBuilder } from '@/hooks/retrospective-rule-library/useRetrospectiveRuleBuilder';
 import { RetrospectiveRuleBuilderHeader } from './builder-sections/RetrospectiveRuleBuilderHeader';
@@ -18,6 +21,9 @@ interface RetrospectiveRuleBuilderProps {
   mode: 'create' | 'edit';
   onBack: () => void;
   onPublish: (input: CreateRetrospectiveRuleInput) => Promise<{ success: boolean; errors: Record<string, string> }>;
+  initialTaxationData?: InitialTaxationData;
+  initialActionData?: InitialActionData;
+  initialComparatorCodes?: RuleComparatorCodeItem[];
 }
 
 export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> = ({
@@ -25,6 +31,9 @@ export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> =
   mode,
   onBack,
   onPublish,
+  initialTaxationData,
+  initialActionData,
+  initialComparatorCodes,
 }) => {
   const {
     isDirty,
@@ -106,6 +115,7 @@ export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> =
           onTaxPercentageChange={setTaxPercentage}
           onSaveTaxation={handleSaveTaxation}
           mode={mode}
+          initialData={initialTaxationData}
         />
 
         {/* Sections 2 & 3: Conditions and Actions side-by-side */}
@@ -123,6 +133,7 @@ export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> =
             isAuthorized={isAuthorized}
             formError={formErrors.ruleTitle}
             compareDatesError={formErrors.compareEvidenceDates}
+            initialComparatorCodes={initialComparatorCodes}
           />
 
           {/* Section 3: Actions */}
@@ -156,6 +167,7 @@ export const RetrospectiveRuleBuilder: React.FC<RetrospectiveRuleBuilderProps> =
             availableEvidence={availableEvidence}
             compareEvidenceDates={compareEvidenceDates}
             formErrors={formErrors}
+            initialData={initialActionData}
           />
         </div>
 

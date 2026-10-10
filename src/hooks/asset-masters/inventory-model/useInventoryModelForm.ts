@@ -13,6 +13,7 @@ export function useInventoryModelForm(
       name: "",
       group: "",
       description: "",
+      displayOrder: "",
       isActive: true,
     }
   );
@@ -66,6 +67,11 @@ export function useInventoryModelForm(
 
   const handleToggleStatus = useCallback((checked?: boolean | unknown) => {
     setFormData((p) => ({ ...p, isActive: typeof checked === "boolean" ? checked : !p.isActive }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err.isActive;
+      return err;
+    });
   }, []);
 
   return {

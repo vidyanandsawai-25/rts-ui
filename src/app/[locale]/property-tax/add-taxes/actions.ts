@@ -1,29 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { ApiError } from '@/lib/utils/api';
-import { initOperations, getScopeOptions, searchProperties, getEligibleCount, executeOperation, getJobProperties, getJobStatus, previewOperation, getAuditList, getAuditDetail, getImportTemplate, exportProperties, getServerTime } from '@/lib/api/add-taxes/operations.service';
-import { InitOperationsResponse, ScopeOptionsResponse, ExecuteOperationPayload, SearchPropertiesResponse, OperationPreviewPayload, ImportTemplateResponse } from '@/types/addTaxes.types';
-import type { JobPropertyPaginatedResponse } from '@/types/addTaxes.types';
+import { initOperations, getScopeOptions } from '@/lib/api/add-taxes/operations.service';
+import { InitOperationsResponse, ScopeOptionsResponse } from '@/types/addTaxes.types';
 import { createLogger } from '@/lib/utils/server-logger';
 
-import { fetchZonesAction, getAllWardsForLinkAction } from "../zone-master/actions";
+import { fetchZonesAction } from "../zone-master/actions";
 import { getPropertyTypesPaged } from '@/lib/api/property-type-crud.service';
 
 const logger = createLogger('AddTaxesActions');
 
-export async function getServerTimeAction(): Promise<string | null> {
-    try {
-        return await getServerTime();
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[getServerTimeAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[getServerTimeAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
+// getServerTimeAction/getAuditListAction/getAuditDetailAction/getJobPropertiesAction/
+// getJobStatusAction/fetchAllWardsAction/searchPropertiesAction/searchPropertiesByCategoryAction/
+// previewOperationAction/getImportTemplateAction/getMasterDataChangeSummaryAction/
+// exportMasterDataChangesCsvAction/exportPropertiesAction were removed from here — they're now
+// plain Route Handlers (src/app/api/property-tax/operations/[action]/route.ts, dispatching on the
+// `action` segment) called via fetch() from operations.client.ts (or, for the two CSV exports, the
+// pre-existing dedicated export route.ts files next to this one), since a Server Action call here
+// re-renders page.tsx's slow initOperationsAction stats call as a side effect of every single call —
+// and several of these are polled on short intervals (10s active-job check, 2s execution-progress
+// panel) or fetched repeatedly (Audit & Monitor tab, Ward/Building dropdowns), which compounds it.
 
 export async function initOperationsAction(financeYearId?: string | number): Promise<InitOperationsResponse | null> {
     try {
@@ -57,8 +53,37 @@ export async function fetchAllZonesAction() {
     return await fetchZonesAction(1, -1);
 }
 
-export async function fetchAllWardsAction() {
-    return await getAllWardsForLinkAction();
+interface ZoneResponseItem {
+    id: string | number;
+    description?: string;
+    zoneNo?: string;
+}
+
+interface PropertyTypeResponseItem {
+    id: string | number;
+    propertyDescription?: string;
+}
+
+/** Zone options already mapped to {value,label} — server-prefetched in page.tsx since Zone/Property
+ *  Type/Assessment Status don't depend on any other selection, unlike Ward/Building. */
+export async function fetchZoneOptionsAction(): Promise<{ value: string; label: string }[]> {
+    const res = await fetchAllZonesAction();
+    const items = (res as { items?: ZoneResponseItem[] } | null)?.items;
+    return items
+        ? items.map((z) => ({
+            value: String(z.id),
+            label: z.description && z.zoneNo ? `${z.zoneNo} — ${z.description}` : (z.description || z.zoneNo || ''),
+        }))
+        : [];
+}
+
+/** Property Type options already mapped to {value,label} — server-prefetched, see fetchZoneOptionsAction. */
+export async function fetchPropertyTypeOptionsAction(): Promise<{ value: string; label: string }[]> {
+    const res = await fetchAllPropertyTypesAction();
+    const items = (res as { items?: PropertyTypeResponseItem[] } | null)?.items;
+    return items
+        ? items.map((pt) => ({ value: String(pt.id), label: pt.propertyDescription || '' }))
+        : [];
 }
 
 export async function fetchAllPropertyTypesAction() {
@@ -74,141 +99,14 @@ export async function fetchAllPropertyTypesAction() {
     }
 }
 
-export async function searchPropertiesAction(zoneId: string | number | null, wardId: string | number): Promise<SearchPropertiesResponse | null> {
-    try {
-        const result = await searchProperties(zoneId, wardId);
-        return result;
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[searchPropertiesAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[searchPropertiesAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
-
-export async function searchPropertiesByCategoryAction(searchCategory: number = 2, wardId?: string | number, pageNumber: number = 1, pageSize: number = 100, propertyFrom?: string, propertyTo?: string, zoneId?: string | number): Promise<any> {
-    try {
-        const { searchPropertiesByCategory } = await import('@/lib/api/add-taxes/operations.service');
-        const result = await searchPropertiesByCategory(searchCategory, wardId, pageNumber, pageSize, propertyFrom, propertyTo, zoneId);
-        return result;
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[searchPropertiesByCategoryAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[searchPropertiesByCategoryAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
-
-export async function getEligibleCountAction(payload: any): Promise<any> {
-    try {
-        const result = await getEligibleCount(payload);
-        return result;
-    } catch (error) {
-        let errorMsg = "Failed to calculate eligible properties";
-        if (error instanceof ApiError) {
-            logger.error(`[getEligibleCountAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-            errorMsg = error.responseText || error.message || errorMsg;
-        } else {
-            logger.error("[getEligibleCountAction] Error:", undefined, error);
-            errorMsg = (error as Error).message || errorMsg;
-        }
-        return { eligible: 0, total: 0, skipped: 0, error: errorMsg };
-    }
-}
-
-export async function executeOperationAction(payload: ExecuteOperationPayload): Promise<any> {
-    try {
-        const result = await executeOperation(payload);
-        return result;
-    } catch (error) {
-        let errorMsg = "Failed to execute operation";
-        if (error instanceof ApiError) {
-            logger.error(`[executeOperationAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-            errorMsg = error.responseText || error.message || errorMsg;
-        } else {
-            logger.error("[executeOperationAction] Error:", undefined, error);
-            errorMsg = (error as Error).message || errorMsg;
-        }
-        return { success: false, error: errorMsg };
-    }
-}
-
-export async function getJobPropertiesAction(jobId: string, pageNumber: number = 1, pageSize: number = 10): Promise<JobPropertyPaginatedResponse | null> {
-    try {
-        const result = await getJobProperties(jobId, pageNumber, pageSize);
-        return result;
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[getJobPropertiesAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[getJobPropertiesAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
-
-export async function previewOperationAction(payload: OperationPreviewPayload): Promise<any> {
-    try {
-        const result = await previewOperation(payload);
-        return result;
-    } catch (error) {
-        let errorMsg = "Failed to load preview data";
-        if (error instanceof ApiError) {
-            logger.error(`[previewOperationAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-            errorMsg = error.responseText || error.message || errorMsg;
-        } else {
-            logger.error("[previewOperationAction] Error:", undefined, error);
-            errorMsg = (error as Error).message || errorMsg;
-        }
-        return { records: [], totalSelected: 0, eligible: 0, skipped: 0, requiresApproval: 0, error: errorMsg };
-    }
-}
-
-export async function getAuditListAction(queryParams: Record<string, string | number | undefined>): Promise<any | null> {
-    try {
-        const result = await getAuditList(queryParams);
-        return result;
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[getAuditListAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[getAuditListAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
-
-export async function getAuditDetailAction(jobId: string): Promise<any> {
-    try {
-        const result = await getAuditDetail(jobId);
-        return result;
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[getAuditDetailAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[getAuditDetailAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
-
-export async function getImportTemplateAction(): Promise<ImportTemplateResponse | null> {
-    try {
-        const result = await getImportTemplate();
-        return result;
-    } catch (error) {
-        if (error instanceof ApiError) {
-            logger.error(`[getImportTemplateAction] API Error ${error.statusCode}:`, { responseText: error.responseText }, error);
-        } else {
-            logger.error("[getImportTemplateAction] Error:", undefined, error);
-        }
-        return null;
-    }
-}
+// getEligibleCountAction/executeOperationAction/searchPropertiesAction/
+// searchPropertiesByCategoryAction/previewOperationAction/getImportTemplateAction were removed
+// from here — they're now plain Route Handlers
+// (src/app/api/property-tax/operations/{eligible-count,execute,search-properties,
+// search-properties-by-category,preview,import-template}, the [action]/route.ts dispatcher) called
+// directly via fetch() from useScopeSelection.ts/useExcelImportActions.ts/useExcelImport.ts (see
+// operations.client.ts), since a Server Action call here would cause Next.js to re-render page.tsx
+// (and its initOperationsAction stats call) as a side effect of every call.
 
 export async function fetchAssessmentStatusesAction() {
     try {
@@ -225,30 +123,16 @@ export async function fetchAssessmentStatusesAction() {
     }
 }
 
-export async function exportPropertiesAction(status: string, financeYearId: string | number) {
-    try {
-        const result = await exportProperties(status, financeYearId);
-        return { success: true, data: result };
-    } catch (error) {
-        logger.error('[exportPropertiesAction] Error:', undefined, error);
-        let errorMsg = 'Failed to export properties';
-        if (error instanceof ApiError) {
-            errorMsg = error.responseText || error.message || errorMsg;
-        }
-        return { success: false, error: errorMsg };
-    }
+/** Assessment Status options already mapped to {value,label} — server-prefetched, see fetchZoneOptionsAction. */
+export async function fetchAssessmentStatusOptionsAction(): Promise<{ value: string; label: string }[]> {
+    const res = await fetchAssessmentStatusesAction();
+    const data = (res as { data?: { id: string | number; statusName: string }[] } | null)?.data;
+    return data ? data.map((item) => ({ value: String(item.id), label: item.statusName })) : [];
 }
 
-export async function getJobStatusAction(jobId: string) {
-    try {
-        const result = await getJobStatus(jobId);
-        return { success: true, data: result };
-    } catch (error) {
-        logger.error('[getJobStatusAction] Error:', undefined, error);
-        let errorMsg = 'Failed to fetch job status';
-        if (error instanceof ApiError) {
-            errorMsg = error.responseText || error.message || errorMsg;
-        }
-        return { success: false, error: errorMsg };
-    }
-}
+// exportPropertiesAction was dead code (zero callers — handleExportProperties in
+// AddTaxesConsole.tsx already used the dedicated export-excel/route.ts via plain fetch).
+// getMasterDataChangeSummaryAction/exportMasterDataChangesCsvAction were removed — the summary is
+// now `master-data-summary` on the [action]/route.ts dispatcher (polled independently, see
+// useAddTaxesState.ts), and the CSV export already had its own dedicated
+// master-data-changes-export/route.ts that AddTaxesConsole.tsx now calls directly.

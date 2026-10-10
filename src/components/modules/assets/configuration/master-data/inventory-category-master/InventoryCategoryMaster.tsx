@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryCategoryColumns } from "./InventoryCategoryColumn";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryCategoryAction } from "@/app/[locale]/assets/configuration/master-data/inventory-category/actions";
+import { mapInventoryCategoryApiError } from "@/hooks/asset-masters/inventory-category/validation";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 import type { InventoryCategoryMasterProps } from "@/types/asset-masters/inventory-category.types";
 
@@ -26,14 +27,15 @@ export default function InventoryCategoryMaster({
   const [isPending, startTransition] = useTransition();
 
   const t = useTranslations("inventoryCategory.configuration.masterData.form");
+  const tRoot = useTranslations("inventoryCategory");
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
   const base = `/${locale}/assets/configuration/master-data/inventory-category`;
 
   const searchParams = useSearchParams();
-  const sortBy = searchParams.get("sortBy") || "typeName";
-  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
+  const sortBy = searchParams.get("sortBy") || undefined;
+  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || undefined;
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";
@@ -89,7 +91,7 @@ export default function InventoryCategoryMaster({
           const result = await deleteInventoryCategoryAction(fd);
 
           if (!result.ok) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryCategoryApiError(result, tRoot, tCommon));
             return;
           }
 
@@ -100,11 +102,13 @@ export default function InventoryCategoryMaster({
         }
       },
     });
-  }, [confirm, locale, tCommon, router]);
+  }, [confirm, locale, tRoot, tCommon, router]);
 
   return (
     <div className="space-y-6">
       <MasterTable<MasterDataRecord>
+        theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+        footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
         columns={columns as Column<MasterDataRecord>[]}
         data={data as MasterDataRecord[]}
         loading={isPending}

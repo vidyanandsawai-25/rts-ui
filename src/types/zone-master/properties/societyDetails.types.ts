@@ -1,10 +1,15 @@
 import { PagedResponse } from "@/types/common.types";
 
+/**
+ * A SocietyDetailsMast row represents society-level info for a property
+ * (at most one row per property). Wing identity now lives on WingDetailsMast
+ * (see wingDetailsMast.types.ts) - wingId/wingName here are vestigial/null.
+ */
 export interface SocietyDetailItem {
   propertyId: number;
-  wingId: number;
+  wingId: number | null;
   wingNo?: string;
-  wingName: string;
+  wingName: string | null;
   societyName: string;
   societyAddress: string;
   secretaryName: string;
@@ -31,12 +36,22 @@ export interface SocietyDetailItem {
 
 export type SocietyDetailsListResponse = PagedResponse<SocietyDetailItem>;
 
+/**
+ * Creates a society detail record. Wing identity remains optional for the
+ * QuickDataEntry wing flow; zone-master wing records use WingDetailsMast.
+ */
 export interface CreateSocietyDetailPayload {
   isActive: boolean;
   createdBy: number;
   propertyId: number;
-  wingId: number;
-  wingName: string;
+  wingId?: number;
+  wingName?: string;
+  societyName?: string;
+  societyAddress?: string;
+  secretaryName?: string;
+  managerName?: string;
+  landOwnerName?: string;
+  builderName?: string;
 }
 
 /**

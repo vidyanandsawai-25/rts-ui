@@ -20,18 +20,21 @@ vi.mock('next-intl', () => ({
       'kyc.title': 'Owner & Contact Information',
       'kyc.ownerType': 'Owner Category',
       'kyc.titleLabel': 'Title',
+      'kyc.ownerName': 'Owner Name',
+      'kyc.ownerNameRegional': 'Owner Name (Regional)',
+      'kyc.ownerNameEnglish': 'Owner Name',
       'kyc.propertyHolderName': 'Property Holder Name',
       'kyc.propertyHolderNameMarathi': 'Property Holder Name (Regional)',
-      'kyc.propertyHolderNameEnglish': 'Property Holder Name (English)',
+      'kyc.propertyHolderNameEnglish': 'Property Holder Name',
       'kyc.occupierName': 'Occupier Name',
       'kyc.occupierNameMarathi': 'Occupier Name (Regional)',
-      'kyc.occupierNameEnglish': 'Occupier Name (English)',
+      'kyc.occupierNameEnglish': 'Occupier Name',
       'kyc.shopName': 'Shop Name',
       'kyc.shopNameMarathi': 'Shop Name (Regional)',
-      'kyc.shopNameEnglish': 'Shop Name (English)',
+      'kyc.shopNameEnglish': 'Shop Name',
       'kyc.address': 'Address',
       'kyc.addressMarathi': 'Address (Regional)',
-      'kyc.addressEnglish': 'Address (English)',
+      'kyc.addressEnglish': 'Address',
       'kyc.emailId': 'Email ID',
       'kyc.pinCode': 'Pin Code',
       'kyc.enterPinCode': 'Enter 6 digit pin code',
@@ -44,13 +47,13 @@ vi.mock('next-intl', () => ({
       'kyc.select': 'Select',
       'kyc.enterFullName': 'Enter full name',
       'kyc.enterFullNameMarathi': 'Enter full name (Regional)',
-      'kyc.enterFullNameEnglish': 'Enter full name (English)',
+      'kyc.enterFullNameEnglish': 'Enter full name',
       'kyc.enterOccupierNameMarathi': 'Enter occupier name (Regional)',
-      'kyc.enterOccupierNameEnglish': 'Enter occupier name (English)',
+      'kyc.enterOccupierNameEnglish': 'Enter occupier name',
       'kyc.enterShopNameMarathi': 'Enter shop name (Regional)',
-      'kyc.enterShopNameEnglish': 'Enter shop name (English)',
+      'kyc.enterShopNameEnglish': 'Enter shop name',
       'kyc.enterAddressMarathi': 'Enter complete address (Regional)',
-      'kyc.enterAddressEnglish': 'Enter complete address (English)',
+      'kyc.enterAddressEnglish': 'Enter complete address',
       'commonbuttonmessages.UpdateChanges': 'Update Changes',
       'footer.saving': 'Saving...',
     };
@@ -173,7 +176,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
+    const nameInput = screen.getByLabelText(/Owner Name \(Regional\)|Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();
@@ -191,7 +194,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
+    const nameInput = screen.getByLabelText(/Owner Name \(Regional\)|Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();
@@ -225,7 +228,7 @@ describe('KycFormView', () => {
       />
     );
 
-    const nameInput = screen.getByLabelText(/Property Holder Name \(Regional\)/i);
+    const nameInput = screen.getByLabelText(/Owner Name \(Regional\)|Property Holder Name \(Regional\)/i);
     fireEvent.change(nameInput, { target: { value: 'John Smith' } });
 
     const submitBtn = getSaveButton();

@@ -14,6 +14,7 @@ import {
   normalizeCertificateGridData,
   flattenCertificateRecords,
   getActiveCertificateForLevel,
+  resolveUnitCertificateStatus,
   findWingDetailId,
   type CertificateGridItems,
   type CertificateItem,
@@ -34,8 +35,16 @@ export interface UseCertificateModalStateProps {
   initialLevel?: ApplicationLevel;
   initialWingDetailId?: number | null;
   initialCertificateTypeId?: number;
+  initialCertificateNumber?: string | null;
+  initialCertificateDate?: string | null;
+  initialDocumentGuid?: string | null;
+  initialFileName?: string | null;
+  initialPropertyCertificateId?: number | null;
+  initialUnitNo?: string | null;
   initialData?: CertificateData | null;
 }
+
+const VALID_LEVELS: ApplicationLevel[] = ['Apartment', 'Wing', 'Unit', 'Entire Property', 'Floor'];
 
 export function useCertificateModalState({
   propertyId,
@@ -47,9 +56,39 @@ export function useCertificateModalState({
   initialLevel = 'Apartment',
   initialWingDetailId = null,
   initialCertificateTypeId = 3,
+  initialCertificateNumber = null,
+  initialCertificateDate = null,
+  initialDocumentGuid = null,
+  initialFileName = null,
+  initialPropertyCertificateId = null,
+  initialUnitNo = null,
   initialData = null,
 }: UseCertificateModalStateProps) {
-  const [level, setLevel] = useState<ApplicationLevel>(initialLevel);
+  const [level, setLevelRaw] = useState<ApplicationLevel>(() => {
+    if (initialLevel) return initialLevel;
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('qde_building_level');
+        if (saved && VALID_LEVELS.includes(saved as ApplicationLevel)) {
+          return saved as ApplicationLevel;
+        }
+      } catch (err) {
+        console.warn('sessionStorage access failed', err);
+      }
+    }
+    return 'Apartment';
+  });
+
+  const setLevel = useCallback((newLevel: ApplicationLevel) => {
+    setLevelRaw(newLevel);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('qde_building_level', newLevel);
+      } catch (err) {
+        console.warn('Failed to persist level preference to sessionStorage', err);
+      }
+    }
+  }, []);
   const [dynamicWings] = useState<WingOption[]>(initialWings);
   const [dynamicUnits, setDynamicUnits] = useState<UnitSelectionItem[]>(initialUnits);
   const [dynamicTypes] = useState<CertificateTypeMasterOption[]>(initialTypes);
@@ -63,7 +102,25 @@ export function useCertificateModalState({
   const [hasMoreUnits, setHasMoreUnits] = useState(false);
   const [isLoadingMoreUnits, setIsLoadingMoreUnits] = useState(false);
 
-  const resolvedWings = dynamicWings.length > 0 ? dynamicWings : initialWings;
+  const resolvedWings = useMemo(() => {
+    const source = dynamicWings.length > 0 ? dynamicWings : initialWings;
+    if (!Array.isArray(source)) return [];
+    const seen = new Set<string>();
+    const unique: WingOption[] = [];
+    source.forEach((w) => {
+      if (!w) return;
+      const key = `${w.wingDetailId ?? ''}-${(w.wingName || '').trim().toLowerCase()}`;
+      if (!seen.has(key) && (w.wingName || '').trim()) {
+        seen.add(key);
+        unique.push({
+          ...w,
+          wingName: (w.wingName || '').trim(),
+          wingNo: w.wingNo || (w.wingName || '').trim(),
+        });
+      }
+    });
+    return unique;
+  }, [dynamicWings, initialWings]);
   const resolvedUnits = dynamicUnits.length > 0 ? dynamicUnits : initialUnits;
   const resolvedCertificateTypes = dynamicTypes.length > 0 ? dynamicTypes : initialTypes;
 
@@ -74,31 +131,139 @@ export function useCertificateModalState({
     return resolvedWings.length > 0 ? resolvedWings[0].wingDetailId : null;
   });
 
-  useEffect(() => {
-    if (initialWingDetailId && resolvedWings.some(w => Number(w.wingDetailId) === Number(initialWingDetailId))) {
-      const targetId = Number(initialWingDetailId);
-      if (selectedWingDetailId !== targetId) {
-        queueMicrotask(() => setSelectedWingDetailId(targetId));
-      }
-    } else if (!selectedWingDetailId && resolvedWings.length > 0) {
-      queueMicrotask(() => setSelectedWingDetailId(resolvedWings[0].wingDetailId));
-    }
-  }, [initialWingDetailId, resolvedWings, selectedWingDetailId]);
+  // Certificate selection state
+  const [selectedTypeId, setSelectedTypeId] = useState<number>(
+    initialCertificateTypeId || (resolvedCertificateTypes[0]?.certificateTypeId ?? 3)
+  );
 
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
-  const [wingFilter, setWingFilterRaw] = useState<string>('all');
+  const [wingFilter, setWingFilterRaw] = useState<string>(() => {
+    if (initialWingDetailId && resolvedWings.some(w => Number(w.wingDetailId) === Number(initialWingDetailId))) {
+      return String(initialWingDetailId);
+    }
+    return resolvedWings.length > 0 ? String(resolvedWings[0].wingDetailId) : '';
+  });
   const [floorFilter, setFloorFilter] = useState<string>('all');
   const [useFilter, setUseFilter] = useState<string>('all');
+
+  const [prevInitialWingDetailId, setPrevInitialWingDetailId] = useState<number | null | undefined>(initialWingDetailId);
+  if (initialWingDetailId !== prevInitialWingDetailId) {
+    setPrevInitialWingDetailId(initialWingDetailId);
+    if (initialWingDetailId != null) {
+      const targetId = Number(initialWingDetailId);
+      if (resolvedWings.some(w => Number(w.wingDetailId) === targetId)) {
+        setSelectedWingDetailId(targetId);
+        setWingFilterRaw(String(targetId));
+      }
+    }
+  }
+
+  const [prevResolvedWingsLen, setPrevResolvedWingsLen] = useState<number>(resolvedWings.length);
+  if (resolvedWings.length !== prevResolvedWingsLen) {
+    setPrevResolvedWingsLen(resolvedWings.length);
+    if (resolvedWings.length > 0 && (!wingFilter || wingFilter === 'all')) {
+      const defaultWingId = selectedWingDetailId ?? resolvedWings[0].wingDetailId;
+      setWingFilterRaw(String(defaultWingId));
+    }
+  }
 
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<number>>(() => {
     const set = new Set<number>();
     initialUnits.forEach((u) => {
       if (u.isSelected) set.add(u.propertyDetailsId);
     });
+    if (initialUnitNo && initialLevel === 'Unit') {
+      const tokens = initialUnitNo
+        .split(/[,\s]+/)
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      initialUnits.forEach((u) => {
+        const uNum = (u.unitNo || '').trim().toLowerCase();
+        if (tokens.includes(uNum)) {
+          set.add(u.propertyDetailsId);
+        }
+      });
+    }
     return set;
   });
 
   const gridRecords = useMemo<CertificateItem[]>(() => flattenCertificateRecords(gridItems), [gridItems]);
+
+  // Auto-select exact certificate, wing, and units when opening from Building Permission Edit button
+  const [initialCertApplied, setInitialCertApplied] = useState(false);
+
+  /* eslint-disable react-hooks/set-state-in-effect -- Intentional sync on initial certificate match when editing */
+  useEffect(() => {
+    if (!initialCertApplied && (initialCertificateNumber || initialPropertyCertificateId || initialUnitNo || initialCertificateTypeId)) {
+      const allCerts = gridRecords.length > 0 ? gridRecords : (gridItems ? flattenCertificateRecords(gridItems) : []);
+      const targetCertId = initialPropertyCertificateId ? Number(initialPropertyCertificateId) : null;
+      const targetCertNum = (initialCertificateNumber || '').trim().toLowerCase();
+      const targetUnitTokens = (initialUnitNo || '')
+        .split(/[,\s]+/)
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+
+      const matchedCert = allCerts.find((c) => {
+        if (targetCertId && c.propertyCertificateId === targetCertId) return true;
+        if (targetCertNum && c.certificateNumber && c.certificateNumber.trim().toLowerCase() === targetCertNum) return true;
+        return false;
+      });
+
+      if (matchedCert) {
+        setInitialCertApplied(true);
+        if (matchedCert.certificateTypeId) {
+          setSelectedTypeId(matchedCert.certificateTypeId);
+        }
+        if (matchedCert.wingDetailId) {
+          setSelectedWingDetailId(matchedCert.wingDetailId);
+          setWingFilterRaw(String(matchedCert.wingDetailId));
+        }
+        if (level === 'Unit') {
+          const matchingUnitIds = new Set<number>();
+          resolvedUnits.forEach((u) => {
+            const uNum = (u.unitNo || '').trim().toLowerCase();
+            const pId = u.propertyId;
+            const pdId = u.propertyDetailsId;
+            const matchesByNumber =
+              matchedCert.coveredUnitNumbers?.some((n) => n.trim().toLowerCase() === uNum) ||
+              targetUnitTokens.includes(uNum);
+            const matchesById =
+              (pId != null && matchedCert.coveredPropertyIds?.includes(pId)) ||
+              (pdId != null && matchedCert.coveredPropertyIds?.includes(pdId));
+            if (matchesByNumber || matchesById) {
+              matchingUnitIds.add(u.propertyDetailsId);
+            }
+          });
+          if (matchingUnitIds.size > 0) {
+            setSelectedUnitIds(matchingUnitIds);
+          }
+        }
+      } else if (level === 'Unit' && targetUnitTokens.length > 0 && resolvedUnits.length > 0) {
+        const matchingUnitIds = new Set<number>();
+        resolvedUnits.forEach((u) => {
+          const uNum = (u.unitNo || '').trim().toLowerCase();
+          if (targetUnitTokens.includes(uNum)) {
+            matchingUnitIds.add(u.propertyDetailsId);
+          }
+        });
+        if (matchingUnitIds.size > 0) {
+          setInitialCertApplied(true);
+          setSelectedUnitIds(matchingUnitIds);
+        }
+      }
+    }
+  }, [
+    initialCertApplied,
+    initialCertificateNumber,
+    initialPropertyCertificateId,
+    initialUnitNo,
+    initialCertificateTypeId,
+    gridRecords,
+    gridItems,
+    level,
+    resolvedUnits,
+  ]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Resolve targetWingDetailId dynamically based on level, active wing filter, selected unit, or explicit wing selection
   const targetWingDetailId = useMemo(() => {
@@ -129,6 +294,7 @@ export function useCertificateModalState({
         }
         return selectedId;
       }
+      return null;
     }
     return propertyId ?? null;
   }, [level, selectedUnitIds, resolvedUnits, propertyId]);
@@ -148,13 +314,19 @@ export function useCertificateModalState({
     let targetWingId: number | string | null = null;
     let targetSocId: number | string | null = null;
 
-    if (level === 'Apartment') {
-      targetSocId = societyId ?? null;
-    } else if (level === 'Wing') {
+    if (societyId && Number(societyId) > 0) {
+      targetSocId = Number(societyId);
       targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
-    } else if (level === 'Unit') {
-      targetPropId = null;
-      targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      targetPropId = propertyId ? Number(propertyId) : null;
+    } else {
+      if (level === 'Apartment') {
+        targetSocId = societyId ?? null;
+      } else if (level === 'Wing') {
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      } else if (level === 'Unit') {
+        targetPropId = propertyId ? Number(propertyId) : null;
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      }
     }
 
     if (!targetPropId && !targetWingId && !targetSocId) return;
@@ -165,7 +337,7 @@ export function useCertificateModalState({
     }
 
     // Only refetch if gridItems is not already populated from SSR
-    if (gridItemsRef.current && (level === 'Apartment' && targetSocId === societyId)) {
+    if (gridItemsRef.current && (targetSocId === societyId || (level === 'Apartment' && targetSocId === societyId))) {
       lastFetchedKeyRef.current = requestKey;
       return;
     }
@@ -192,19 +364,31 @@ export function useCertificateModalState({
     return () => {
       isSubscribed = false;
     };
-  }, [level, targetWingDetailId, selectedWingDetailId, targetUnitPropertyId, societyId]);
+  }, [level, targetWingDetailId, selectedWingDetailId, targetUnitPropertyId, societyId, propertyId]);
+
+  // Helper: natural alphanumeric sort for units (e.g. A1, A2, A3, ..., A10, A12)
+  const naturalUnitSort = useCallback((a: UnitSelectionItem, b: UnitSelectionItem): number => {
+    return (a.unitNo || '').localeCompare(b.unitNo || '', undefined, { numeric: true, sensitivity: 'base' });
+  }, []);
 
   // Helper: map raw unit record from API to UnitSelectionItem
-  const mapRawUnitItem = (u: Record<string, unknown>, idx: number): UnitSelectionItem => ({
-    propertyDetailsId: Number(u.propertyDetailsId || u.PropertyDetailsId || u.id || u.Id || idx + 1),
-    propertyId: Number(u.propertyId || u.PropertyId || u.propertyDetailsId || u.PropertyDetailsId || 0),
-    unitNo: String(u.unitNo || u.UnitNo || u.partitionNo || u.PartitionNo || u.flatNo || u.FlatNo || `Unit ${idx + 1}`),
-    wingDetailId: Number(u.wingDetailId || u.WingDetailId || 0),
-    wingName: String(u.wingName || u.WingName || 'Wing'),
-    floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
-    useName: String(u.useName || u.UseName || u.use || 'Residential'),
-    isSelected: false,
-  });
+  const mapRawUnitItem = (u: Record<string, unknown>, idx: number): UnitSelectionItem => {
+    const rawPropId = Number(u.propertyId ?? u.PropertyId ?? 0);
+    const rawDetailsId = Number(u.propertyDetailsId ?? u.PropertyDetailsId ?? u.id ?? u.Id ?? 0);
+    const resolvedId = rawDetailsId > 0 ? rawDetailsId : (rawPropId > 0 ? rawPropId : idx + 1);
+    const resolvedPropId = rawPropId > 0 ? rawPropId : resolvedId;
+    return {
+      propertyDetailsId: resolvedId,
+      propertyId: resolvedPropId,
+      unitNo: String(u.unitNo || u.UnitNo || u.partitionNo || u.PartitionNo || u.flatNo || u.FlatNo || `Unit ${idx + 1}`),
+      wingDetailId: Number(u.wingDetailId || u.WingDetailId || 0),
+      wingName: String(u.wingName || u.WingName || 'Wing'),
+      floorName: String(u.floorName || u.FloorName || u.floor || '1st Floor'),
+      useName: String(u.useName || u.UseName || u.use || 'Residential'),
+      constructionYear: String(u.constructionYear || u.ConstructionYear || u.conYr || '').trim() || undefined,
+      isSelected: false,
+    };
+  };
 
   // Helper: resolve wingDetailId from the current wingFilter value
   const getWingDetailIdFromFilter = useCallback((filterValue: string): number | null => {
@@ -215,14 +399,14 @@ export function useCertificateModalState({
     return matchedWing?.wingDetailId ?? null;
   }, [resolvedWings]);
 
-  // Load next 10 units on scroll (wing-scoped)
+  // Load next units on scroll (wing-scoped)
   const loadNextUnitsPage = useCallback(async () => {
     if (!propertyId || isLoadingMoreUnits || !hasMoreUnits) return;
     setIsLoadingMoreUnits(true);
 
     const nextPage = unitsPage + 1;
     const wingDetailIdParam = getWingDetailIdFromFilter(wingFilter);
-    const res = await getUnitsByPropertyAction(propertyId, wingDetailIdParam, nextPage, 10);
+    const res = await getUnitsByPropertyAction(propertyId, wingDetailIdParam, nextPage, 100);
 
     if (res.success && Array.isArray(res.data) && res.data.length > 0) {
       const newItems: UnitSelectionItem[] = (res.data as Record<string, unknown>[]).map(mapRawUnitItem);
@@ -230,7 +414,7 @@ export function useCertificateModalState({
       setDynamicUnits((prev) => {
         const existingIds = new Set(prev.map((item) => item.propertyDetailsId));
         const filteredNew = newItems.filter((item) => !existingIds.has(item.propertyDetailsId));
-        const updated = [...prev, ...filteredNew];
+        const updated = [...prev, ...filteredNew].sort(naturalUnitSort);
         const total = typeof res.totalCount === 'number' ? res.totalCount : totalUnitsCount;
         setTotalUnitsCount(total);
         setHasMoreUnits(updated.length < total);
@@ -242,9 +426,9 @@ export function useCertificateModalState({
     }
 
     setIsLoadingMoreUnits(false);
-  }, [propertyId, isLoadingMoreUnits, hasMoreUnits, unitsPage, totalUnitsCount, wingFilter, getWingDetailIdFromFilter]);
+  }, [propertyId, isLoadingMoreUnits, hasMoreUnits, unitsPage, totalUnitsCount, wingFilter, getWingDetailIdFromFilter, naturalUnitSort]);
 
-  // When wingFilter changes, re-fetch units from the API server-side
+  // When wingFilter changes, re-fetch units AND grid data in parallel
   const setWingFilter = useCallback((value: string) => {
     setWingFilterRaw(value);
     if (!propertyId) return;
@@ -252,18 +436,35 @@ export function useCertificateModalState({
     setUnitsPage(1);
     setHasMoreUnits(true);
     setIsLoadingMoreUnits(true);
+    setIsLoadingGridRecords(true);
+    // Clear unit selection since the new wing will have different units
+    setSelectedUnitIds(new Set());
 
     // Resolve wingDetailId using findWingDetailId helper
     const wingDetailIdParam = findWingDetailId(value, resolvedWings, gridItems);
     if (wingDetailIdParam != null) {
       setSelectedWingDetailId(wingDetailIdParam);
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        params.set('wingDetailId', String(wingDetailIdParam));
+        window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+      }
     }
 
-    getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 10).then((res) => {
-      if (res.success && Array.isArray(res.data)) {
-        const mappedUnits: UnitSelectionItem[] = (res.data as Record<string, unknown>[]).map(mapRawUnitItem);
+    const targetSocIdParam = societyId ? Number(societyId) : null;
+    const preemptKey = `${level}_${null}_${wingDetailIdParam}_${targetSocIdParam}`;
+    lastFetchedKeyRef.current = preemptKey;
+
+    // Fetch all units in the wing (large page size) and certificate grid in parallel
+    const unitsPromise = getUnitsByPropertyAction(propertyId, wingDetailIdParam, 1, 200);
+    const gridPromise = getApartmentQcCertificateGridAction(null, wingDetailIdParam, targetSocIdParam);
+
+    Promise.all([unitsPromise, gridPromise]).then(([unitsRes, gridRes]) => {
+      // Process units
+      if (unitsRes.success && Array.isArray(unitsRes.data)) {
+        const mappedUnits: UnitSelectionItem[] = (unitsRes.data as Record<string, unknown>[]).map(mapRawUnitItem).sort(naturalUnitSort);
         setDynamicUnits(mappedUnits);
-        const total = typeof res.totalCount === 'number' ? res.totalCount : mappedUnits.length;
+        const total = typeof unitsRes.totalCount === 'number' ? unitsRes.totalCount : mappedUnits.length;
         setTotalUnitsCount(total);
         setHasMoreUnits(mappedUnits.length < total);
       } else {
@@ -272,64 +473,341 @@ export function useCertificateModalState({
         setHasMoreUnits(false);
       }
       setIsLoadingMoreUnits(false);
+
+      // Process grid data
+      if (gridRes.success && gridRes.data) {
+        const normalized = normalizeCertificateGridData(gridRes.data);
+        setGridItems(normalized);
+      }
+      setIsLoadingGridRecords(false);
     });
-  }, [propertyId, resolvedWings, gridItems]);
+  }, [propertyId, resolvedWings, gridItems, level, naturalUnitSort, societyId]);
 
 
 
-  // Certificate selection state
-  const [selectedTypeId, setSelectedTypeId] = useState<number>(
-    initialCertificateTypeId || (resolvedCertificateTypes[0]?.certificateTypeId ?? 3)
-  );
+
+  const initialSelectedUnit = useMemo(() => {
+    return initialUnits.find((u) => {
+      if (u.isSelected) return true;
+      if (initialUnitNo) {
+        const tokens = initialUnitNo.split(/[,\s]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
+        return tokens.includes((u.unitNo || '').trim().toLowerCase());
+      }
+      return false;
+    });
+  }, [initialUnits, initialUnitNo]);
+
+  // 1. Initial certificate matching: resolve from initialCertificateGrid or fallback props
+  const initialResolvedMatch = useMemo(() => {
+    if (!initialCertificateGrid) return null;
+    const norm = normalizeCertificateGridData(initialCertificateGrid);
+    if (initialLevel === 'Unit' && initialSelectedUnit) {
+      const stat = resolveUnitCertificateStatus(norm, initialCertificateTypeId || 3, initialSelectedUnit, societyId ? Number(societyId) : undefined);
+      if (stat.status === 'direct') return { certificate: stat.certificate, inheritedFrom: 'Direct' as const };
+      if (stat.status === 'wing') return { certificate: stat.certificate, inheritedFrom: 'Wing' as const };
+      if (stat.status === 'apartment') return { certificate: stat.certificate, inheritedFrom: 'Apartment' as const };
+      return { certificate: null, inheritedFrom: null };
+    }
+    return getActiveCertificateForLevel(
+      norm,
+      initialLevel,
+      initialCertificateTypeId || 3,
+      initialWingDetailId,
+      initialSelectedUnit?.propertyId || null,
+      societyId
+    );
+  }, [initialCertificateGrid, initialLevel, initialCertificateTypeId, initialWingDetailId, societyId, initialSelectedUnit]);
+
+  const initialDirectCert = initialResolvedMatch?.certificate || null;
+  const isInitialMatchDirect = initialResolvedMatch?.inheritedFrom === 'Direct' || !initialResolvedMatch?.inheritedFrom;
+
+  const rawInitNum =
+    initialDirectCert?.certificateNumber ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.number : '') ||
+    initialCertificateNumber ||
+    '';
+
+  const rawInitDate =
+    initialDirectCert?.certificateDate ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.date : '') ||
+    initialCertificateDate ||
+    '';
+
+  const formattedInitDate = rawInitDate
+    ? rawInitDate.includes('T')
+      ? rawInitDate.split('T')[0]
+      : rawInitDate
+    : '';
+
+  const initDocGuid =
+    initialDirectCert?.documentGuid ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.documentGuid : null) ||
+    initialDocumentGuid ||
+    null;
+
+  const initFileName =
+    initialDirectCert?.fileName ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.fileName : null) ||
+    initialFileName ||
+    null;
+
+  const initPropCertId =
+    (isInitialMatchDirect ? initialDirectCert?.propertyCertificateId : null) ||
+    (initialData && (initialData.certificateTypeId === initialCertificateTypeId || !initialData.certificateTypeId) ? initialData.propertyCertificateId : null) ||
+    (initialPropertyCertificateId ? Number(initialPropertyCertificateId) : null);
 
   // Document form fields
-  const [certificateDate, setCertificateDate] = useState<string>(initialData?.date || '');
-  const [certificateNumber, setCertificateNumber] = useState<string>(initialData?.number || '');
+  const [certificateDate, setCertificateDate] = useState<string>(formattedInitDate);
+  const [certificateNumber, setCertificateNumber] = useState<string>(rawInitNum);
   const [status, setStatus] = useState<CertificateStatus>('Active');
   const [remarks, setRemarks] = useState<string>('');
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [existingDocumentGuid, setExistingDocumentGuid] = useState<string | null>(initDocGuid);
+  const [existingFileName, setExistingFileName] = useState<string | null>(initFileName);
+  const [existingPropertyCertificateId, setExistingPropertyCertificateId] = useState<number | null>(initPropCertId);
+  const [hasExistingDocument, setHasExistingDocument] = useState<boolean>(Boolean(initDocGuid));
 
-  const [inheritedFrom, setInheritedFrom] = useState<'Direct' | 'Wing' | 'Apartment' | null>(null);
-  const [activeCertificate, setActiveCertificate] = useState<CertificateItem | null>(null);
+  const selectedUnitPropertyIds = useMemo(() => {
+    const ids: number[] = [];
+    selectedUnitIds.forEach((id) => {
+      ids.push(id);
+      const matched = resolvedUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+      if (matched) {
+        if (matched.propertyId != null && !ids.includes(matched.propertyId)) ids.push(matched.propertyId);
+        if (matched.propertyDetailsId != null && !ids.includes(matched.propertyDetailsId)) ids.push(matched.propertyDetailsId);
+      }
+    });
+    return ids;
+  }, [selectedUnitIds, resolvedUnits]);
 
+  const selectedUnitNumbers = useMemo(() => {
+    return Array.from(selectedUnitIds).map((id) => {
+      const matched = resolvedUnits.find((u) => u.propertyDetailsId === id || u.propertyId === id);
+      return matched?.unitNo || '';
+    }).filter(Boolean);
+  }, [selectedUnitIds, resolvedUnits]);
 
+  // Derived active certificate and inheritedFrom based on current level & selection
+  const { certificate: activeCertificate, inheritedFrom } = useMemo(() => {
+    if (!gridItems) return { certificate: null, inheritedFrom: null };
+    if (level === 'Unit') {
+      if (selectedUnitIds.size === 1) {
+        const singleId = Array.from(selectedUnitIds)[0];
+        const matchedUnit = resolvedUnits.find((u) => u.propertyDetailsId === singleId || u.propertyId === singleId);
+        if (matchedUnit) {
+          const stat = resolveUnitCertificateStatus(gridItems, selectedTypeId, matchedUnit, societyId ? Number(societyId) : undefined);
+          if (stat.status === 'direct') {
+            return { certificate: stat.certificate, inheritedFrom: 'Direct' };
+          }
+          if (stat.status === 'wing') {
+            return { certificate: stat.certificate, inheritedFrom: 'Wing' };
+          }
+          if (stat.status === 'apartment') {
+            return { certificate: stat.certificate, inheritedFrom: 'Apartment' };
+          }
+          return { certificate: null, inheritedFrom: null };
+        }
+      } else if (selectedUnitIds.size > 1) {
+        // Multi-select batch mode: resolve inherited certificate for selected units
+        const selectedList = resolvedUnits.filter(
+          (u) => selectedUnitIds.has(u.propertyDetailsId) || (u.propertyId != null && selectedUnitIds.has(u.propertyId))
+        );
+        const statuses = selectedList.map((u) =>
+          resolveUnitCertificateStatus(gridItems, selectedTypeId, u, societyId ? Number(societyId) : undefined)
+        );
 
+        const wingMatch = statuses.find((s) => s.status === 'wing')?.certificate;
+        if (wingMatch) {
+          return { certificate: wingMatch, inheritedFrom: 'Wing' };
+        }
 
+        const aptMatch = statuses.find((s) => s.status === 'apartment')?.certificate;
+        if (aptMatch) {
+          return { certificate: aptMatch, inheritedFrom: 'Apartment' };
+        }
 
-  // Automatically update fields when gridItems, level, targetWingDetailId, targetUnitPropertyId, or selectedTypeId changes
-  useEffect(() => {
-    if (!gridItems) return;
-    const { certificate: match, inheritedFrom: source } = getActiveCertificateForLevel(
+        const firstDirect = statuses.find((s) => s.status === 'direct')?.certificate;
+        const allSameDirect = firstDirect && statuses.every((s) => s.certificate?.propertyCertificateId === firstDirect.propertyCertificateId);
+        if (allSameDirect) {
+          return { certificate: firstDirect, inheritedFrom: 'Direct' };
+        }
+
+        return { certificate: null, inheritedFrom: null };
+      } else {
+        const wingId = targetWingDetailId ?? selectedWingDetailId;
+        const wingMatch = (gridItems.wingCertificates || []).find(
+          (r) => (!wingId || r.wingDetailId === wingId) && r.certificateTypeId === selectedTypeId
+        );
+        if (wingMatch && (wingMatch.hasDocument || wingMatch.documentGuid || wingMatch.certificateNumber)) {
+          return { certificate: wingMatch, inheritedFrom: 'Wing' };
+        }
+        const aptMatch = (gridItems.societyCertificates || []).find(
+          (r) => r.certificateTypeId === selectedTypeId
+        );
+        if (aptMatch && (aptMatch.hasDocument || aptMatch.documentGuid || aptMatch.certificateNumber)) {
+          return { certificate: aptMatch, inheritedFrom: 'Apartment' };
+        }
+        return { certificate: null, inheritedFrom: null };
+      }
+      return { certificate: null, inheritedFrom: null };
+    }
+    return getActiveCertificateForLevel(
       gridItems,
       level,
       selectedTypeId,
-      targetWingDetailId,
+      targetWingDetailId ?? selectedWingDetailId,
       targetUnitPropertyId,
-      societyId
+      societyId,
+      selectedUnitPropertyIds,
+      selectedUnitNumbers
     );
+  }, [
+    gridItems,
+    level,
+    selectedTypeId,
+    targetWingDetailId,
+    selectedWingDetailId,
+    targetUnitPropertyId,
+    societyId,
+    selectedUnitIds,
+    resolvedUnits,
+    selectedUnitPropertyIds,
+    selectedUnitNumbers,
+  ]);
 
-    queueMicrotask(() => {
-      setInheritedFrom(source);
-      setActiveCertificate(match);
+  // Automatically update input fields when active certificate / selection targets change
+  const selectedIdsKey = selectedUnitPropertyIds.join(',');
+  const fieldSyncKey = `${level}_${selectedTypeId}_${targetWingDetailId ?? selectedWingDetailId}_${targetUnitPropertyId}_${societyId}_${selectedIdsKey}_${gridItems ? 'loaded' : 'none'}_${activeCertificate?.propertyCertificateId || activeCertificate?.certificateNumber || 'none'}_${activeCertificate?.documentGuid || 'none'}_${inheritedFrom || 'none'}`;
 
-      if (match) {
-        setCertificateNumber(match.certificateNumber || '');
-        const formattedDate = match.certificateDate
-          ? match.certificateDate.includes('T')
-            ? match.certificateDate.split('T')[0]
-            : match.certificateDate
-          : '';
-        setCertificateDate(formattedDate);
-        setStatus((match.status as CertificateStatus) || 'Active');
-      } else {
-        // If selected certificate has no record, reset input fields to empty
-        setCertificateNumber('');
-        setCertificateDate('');
-        setStatus('Active');
-        setAttachedFiles([]);
+  /* eslint-disable react-hooks/set-state-in-effect -- Intentional prop/selection-to-state sync when active certificate or targets change */
+  useEffect(() => {
+    if (activeCertificate) {
+      const isDirectRecord =
+        level === 'Apartment' ||
+        (level === 'Wing' && (inheritedFrom === 'Direct' || !inheritedFrom)) ||
+        (level === 'Unit' && inheritedFrom === 'Direct');
+
+      setCertificateNumber(activeCertificate.certificateNumber || '');
+      const formattedDate = activeCertificate.certificateDate
+        ? activeCertificate.certificateDate.includes('T')
+          ? activeCertificate.certificateDate.split('T')[0]
+          : activeCertificate.certificateDate
+        : '';
+      setCertificateDate(formattedDate);
+      setStatus((activeCertificate.status as CertificateStatus) || 'Active');
+      setExistingDocumentGuid(activeCertificate.documentGuid || null);
+      setExistingFileName(activeCertificate.fileName || null);
+      setExistingPropertyCertificateId(isDirectRecord ? (activeCertificate.propertyCertificateId || null) : null);
+      setHasExistingDocument(Boolean(activeCertificate.hasDocument || activeCertificate.documentGuid));
+      setAttachedFiles([]);
+    } else if (
+      ((initialData && (initialData.certificateTypeId === selectedTypeId || !initialData.certificateTypeId)) ||
+      ((initialCertificateNumber || initialCertificateDate || initialPropertyCertificateId || initialDocumentGuid) && (initialCertificateTypeId === selectedTypeId || !initialCertificateTypeId)))
+    ) {
+      const targetNum = initialData?.number || initialCertificateNumber || '';
+      const rawDate = initialData?.date || initialCertificateDate || '';
+      const formattedDate = rawDate
+        ? rawDate.includes('T')
+          ? rawDate.split('T')[0]
+          : rawDate
+        : '';
+      setCertificateNumber(targetNum);
+      setCertificateDate(formattedDate);
+      setStatus('Active');
+      const docGuid = initialData?.documentGuid || initialDocumentGuid || null;
+      const fName = initialData?.fileName || initialFileName || null;
+      const propCertId = initialData?.propertyCertificateId || (initialPropertyCertificateId ? Number(initialPropertyCertificateId) : null);
+      setExistingDocumentGuid(docGuid);
+      setExistingFileName(fName);
+      setExistingPropertyCertificateId(propCertId);
+      setHasExistingDocument(Boolean(docGuid));
+      setAttachedFiles([]);
+    } else {
+      setCertificateNumber('');
+      setCertificateDate('');
+      setStatus('Active');
+      setExistingDocumentGuid(null);
+      setExistingFileName(null);
+      setExistingPropertyCertificateId(null);
+      setHasExistingDocument(false);
+      setAttachedFiles([]);
+    }
+  }, [fieldSyncKey, activeCertificate, level, inheritedFrom, selectedTypeId, gridItems, initialData, initialCertificateNumber, initialCertificateDate, initialPropertyCertificateId, initialCertificateTypeId, initialDocumentGuid, initialFileName]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const refetchGrid = useCallback(async () => {
+    let targetPropId: string | number | null = null;
+    let targetWingId: number | string | null = null;
+    let targetSocId: number | string | null = null;
+
+    if (societyId && Number(societyId) > 0) {
+      targetSocId = Number(societyId);
+      targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      targetPropId = propertyId ? Number(propertyId) : null;
+    } else {
+      if (level === 'Apartment') {
+        targetSocId = societyId ?? null;
+      } else if (level === 'Wing') {
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
+      } else if (level === 'Unit') {
+        targetPropId = propertyId ? Number(propertyId) : null;
+        targetWingId = targetWingDetailId ?? selectedWingDetailId ?? null;
       }
-    });
-  }, [gridItems, level, selectedTypeId, targetWingDetailId, targetUnitPropertyId, societyId]);
+    }
+
+    if (!targetPropId && !targetWingId && !targetSocId) return null;
+
+    setIsLoadingGridRecords(true);
+    try {
+      const res = await getApartmentQcCertificateGridAction(targetPropId, targetWingId, targetSocId);
+      if (res.success && res.data) {
+        const normalized = normalizeCertificateGridData(res.data);
+        setGridItems(normalized);
+        const { certificate: match, inheritedFrom: refetchInheritedFrom } = getActiveCertificateForLevel(
+          normalized,
+          level,
+          selectedTypeId,
+          targetWingDetailId ?? selectedWingDetailId,
+          targetUnitPropertyId,
+          societyId,
+          selectedUnitPropertyIds,
+          selectedUnitNumbers
+        );
+        const isDirect =
+          level === 'Apartment' ||
+          (level === 'Wing' && (refetchInheritedFrom === 'Direct' || !refetchInheritedFrom)) ||
+          (level === 'Unit' && refetchInheritedFrom === 'Direct');
+
+        if (match && isDirect) {
+          setCertificateNumber(match.certificateNumber || '');
+          const formattedDate = match.certificateDate
+            ? match.certificateDate.includes('T')
+              ? match.certificateDate.split('T')[0]
+              : match.certificateDate
+            : '';
+          setCertificateDate(formattedDate);
+          setStatus((match.status as CertificateStatus) || 'Active');
+          setExistingDocumentGuid(match.documentGuid || null);
+          setExistingFileName(match.fileName || null);
+          setExistingPropertyCertificateId(match.propertyCertificateId || null);
+          setHasExistingDocument(Boolean(match.hasDocument || match.documentGuid));
+        } else {
+          setCertificateNumber('');
+          setCertificateDate('');
+          setStatus('Active');
+          setExistingDocumentGuid(null);
+          setExistingFileName(null);
+          setExistingPropertyCertificateId(null);
+          setHasExistingDocument(false);
+          setAttachedFiles([]);
+        }
+        return normalized;
+      }
+      return null;
+    } finally {
+      setIsLoadingGridRecords(false);
+    }
+  }, [level, targetWingDetailId, selectedWingDetailId, societyId, selectedTypeId, targetUnitPropertyId, selectedUnitPropertyIds, selectedUnitNumbers, propertyId]);
 
   const activeCertificateType = useMemo(
     () => resolvedCertificateTypes.find((t) => t.certificateTypeId === selectedTypeId) || resolvedCertificateTypes[0],
@@ -355,7 +833,7 @@ export function useCertificateModalState({
 
   // Filtered unit list — wing filtering is server-side, floor/use/search are client-side
   const filteredUnits = useMemo(() => {
-    return resolvedUnits.filter((unit) => {
+    const list = resolvedUnits.filter((unit) => {
       if (floorFilter !== 'all' && unit.floorName.toLowerCase() !== floorFilter.toLowerCase()) {
         return false;
       }
@@ -371,7 +849,8 @@ export function useCertificateModalState({
       }
       return true;
     });
-  }, [resolvedUnits, floorFilter, useFilter, unitSearchQuery]);
+    return list.sort(naturalUnitSort);
+  }, [resolvedUnits, floorFilter, useFilter, unitSearchQuery, naturalUnitSort]);
 
   const isAllUnitsSelected = useMemo(() => {
     if (filteredUnits.length === 0) return false;
@@ -390,10 +869,11 @@ export function useCertificateModalState({
     });
   }, []);
 
-  const toggleAllUnits = useCallback(() => {
+  const toggleAllUnits = useCallback((forceSelect?: boolean) => {
     setSelectedUnitIds((prev) => {
       const next = new Set(prev);
-      if (isAllUnitsSelected) {
+      const shouldSelect = typeof forceSelect === 'boolean' ? forceSelect : !isAllUnitsSelected;
+      if (!shouldSelect) {
         filteredUnits.forEach((u) => next.delete(u.propertyDetailsId));
       } else {
         filteredUnits.forEach((u) => next.add(u.propertyDetailsId));
@@ -405,7 +885,9 @@ export function useCertificateModalState({
   return {
     level,
     setLevel,
-    selectedWingDetailId,
+    selectedWingDetailId: targetWingDetailId ?? selectedWingDetailId,
+    rawSelectedWingDetailId: selectedWingDetailId,
+    targetWingDetailId,
     setSelectedWingDetailId,
     unitSearchQuery,
     setUnitSearchQuery,
@@ -430,6 +912,14 @@ export function useCertificateModalState({
     setRemarks,
     attachedFiles,
     setAttachedFiles,
+    existingDocumentGuid,
+    setExistingDocumentGuid,
+    existingFileName,
+    setExistingFileName,
+    existingPropertyCertificateId,
+    setExistingPropertyCertificateId,
+    hasExistingDocument,
+    setHasExistingDocument,
     wings: resolvedWings,
     certificateTypes: resolvedCertificateTypes,
     availableFloors,
@@ -447,5 +937,6 @@ export function useCertificateModalState({
     isLoadingGridRecords,
     inheritedFrom,
     activeCertificate,
+    refetchGrid,
   };
 }

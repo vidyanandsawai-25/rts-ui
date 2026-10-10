@@ -65,12 +65,18 @@ export async function createInventoryNameAction(formData: InventoryNameFormModel
     }
     const inventoryItemCategoryId = rawCatId;
 
+    const rawDisplayOrder = formData.displayOrder;
+    const displayOrder = Number(rawDisplayOrder);
+    if (!Number.isInteger(displayOrder) || displayOrder <= 0 || displayOrder > 99999) {
+      return { success: false, error: "Invalid display order", field: "displayOrder" };
+    }
+
     const result = await inventoryItemNameService.create({
       inventoryItemCategoryId,
       subTypeCode: formData.subTypeCode,
       subTypeName: formData.subTypeName,
       description: formData.description,
-      displayOrder: 1,
+      displayOrder,
       isActive: formData.isActive,
       createdBy: userId,
       updatedBy: userId,
@@ -98,12 +104,18 @@ export async function updateInventoryNameAction(formData: InventoryNameFormModel
     }
     const inventoryItemCategoryId = rawCatId;
     
+    const rawDisplayOrder = formData.displayOrder;
+    const displayOrder = Number(rawDisplayOrder);
+    if (!Number.isInteger(displayOrder) || displayOrder <= 0 || displayOrder > 99999) {
+      return { success: false, error: "Invalid display order", field: "displayOrder" };
+    }
+
     const result = await inventoryItemNameService.update(formData.id, {
       inventoryItemCategoryId,
       subTypeCode: formData.subTypeCode,
       subTypeName: formData.subTypeName,
       description: formData.description,
-      displayOrder: 1,
+      displayOrder,
       isActive: formData.isActive,
       updatedBy: userId,
     });
@@ -149,6 +161,7 @@ export async function getInventoryNameByIdAction(id: string) {
         inventoryItemCategoryId: item.inventoryItemCategoryId || (item as unknown as Record<string, unknown>).categoryId as number || (item as unknown as Record<string, unknown>).inventoryCategoryId as number || 0,
         subTypeCode: item.subTypeCode || (item as unknown as Record<string, unknown>).code as string || "",
         subTypeName: item.subTypeName || (item as unknown as Record<string, unknown>).name as string || "",
+        displayOrder: item.displayOrder ?? 1,
       };
     }
     
@@ -160,6 +173,7 @@ export async function getInventoryNameByIdAction(id: string) {
         inventoryItemCategoryId: data.inventoryItemCategoryId || (data as unknown as Record<string, unknown>).categoryId as number || (data as unknown as Record<string, unknown>).inventoryCategoryId as number || 0,
         subTypeCode: data.subTypeCode || (data as unknown as Record<string, unknown>).code as string || "",
         subTypeName: data.subTypeName || (data as unknown as Record<string, unknown>).name as string || "",
+        displayOrder: data.displayOrder ?? 1,
       };
     }
     return null;

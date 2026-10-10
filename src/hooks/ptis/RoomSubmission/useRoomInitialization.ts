@@ -104,6 +104,8 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
               seen.add(key);
               return true;
             });
+          const isOuter = r.outer === 'Yes' || (r.outer as unknown) === true || r.outerYesNo === true || (r as Record<string, unknown>).OuterYesNo === true;
+          const isOffset = r.offsetMinus === 'Yes' || r.minusYesNo === true || (r as Record<string, unknown>).MinusYesNo === true || offsets.length > 0;
           return {
             ...r,
             tempId: r.tempId || `init-${Date.now()}-${i}`,
@@ -111,6 +113,9 @@ export const useRoomInitialization = (state: RoomSubmissionState, props: RoomWis
             id: r.roomWiseSubmissionId ?? r.id,
             area: Number(r.area || r.areaSqMtr || 0),
             total: Number(r.total || r.totalAreaSqMtr || 0),
+            outer: isOuter ? 'Yes' : 'No',
+            outerYesNo: isOuter,
+            offsetMinus: isOffset ? 'Yes' : 'No',
             offsets
           };
         }

@@ -38,7 +38,10 @@ export default async function EditPage({ params }: PageProps): Promise<React.Rea
     <AssetGrievanceRemarkForm
       id={remarkId}
       initialData={remarkData}
-      categories={categories.map(c => ({ id: c.id, categoryName: c.categoryName }))}
+      categories={categories.map((c) => ({
+        id: c.id,
+        grievanceTypeName: c.grievanceTypeName,
+      }))}
     />
   );
 }

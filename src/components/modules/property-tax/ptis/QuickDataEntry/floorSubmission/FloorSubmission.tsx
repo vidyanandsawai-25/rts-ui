@@ -22,6 +22,7 @@ import {
   filterOpenPlotCategories,
   isOpenPlotCodeTaxable,
 } from '@/lib/utils/floorSubmission/openplot-category';
+import { findOpenPlotFloorItem, findOpenPlotConstructionTypeItem } from '@/lib/utils/floorSubmission/floor-resolvers';
 
 const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
   const {
@@ -86,8 +87,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     return floors.find(
       (f: FloorData) =>
         f.isOpenPlot === true ||
-        String(f.floorId) === '77' ||
-        String(f.floor) === '77'
+        String(f.selectedFloorType).toLowerCase() === 'openplot' ||
+        String((f as any).floorCode || (f as any).code || '').toLowerCase() === 'op' ||
+        String(f.conTyp || (f as any).constructionCode || '').toLowerCase() === 'op' ||
+        String(f.floor || '').toLowerCase().includes('open plot')
     ) as FloorData | undefined;
   }, [localFloors, props.initialFloors]);
 
@@ -236,6 +239,16 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
     }
   }, [hasIncompatibleFloor]);
 
+  const editFloorSectionRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (selectedFloor || isAddingNewFloor) {
+      requestAnimationFrame(() => {
+        editFloorSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }, [selectedFloor, isAddingNewFloor]);
+
   // Show full-screen loader during save/update/delete operations
   if (isOperationLoading) {
     return (
@@ -249,12 +262,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative">
+      <div className="flex flex-col min-h-full bg-slate-50 relative">
         {/* Show overlay loader during save/update/delete operations to keep component tree mounted */}
         <SubmissionOverlayLoader isLoading={isOperationLoading} t={t} />
         {/* Render API errors if any */}
         <SubmissionApiErrors apiErrors={props.apiErrors} t={t} />
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 p-2 sm:p-2.5 space-y-2.5">
           {/* All Floors Table Section */}
           <FloorTable
             t={t}
@@ -293,6 +306,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
               t={t}
               layout="single-row"
               propertyId={props.initialPropertyID}
+              propertyTypeId={props.propertyTypeId || (props.initialPropertyData as any)?.propertyTypeId || (props.initialPropertyData as any)?.propertyTypeID}
               initialPlotArea={dynamicPlotArea}
               isLoading={isAddingArea}
               buttonText={openPlotRecord ? (t('floor.updateArea') || 'Update Area') : (t('floor.applyArea') || 'Add Area')}
@@ -351,6 +365,12 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
                   const propId = Number(props.initialPropertyID || props.initialPropertyData?.propertyId || 0);
 
+                  const openPlotFloor = findOpenPlotFloorItem(props.floorData);
+                  const openPlotCon = findOpenPlotConstructionTypeItem(props.constructionTypeData);
+
+                  const dynamicFloorId = openPlotFloor ? Number(openPlotFloor.floorId ?? (openPlotFloor as Record<string, unknown>).id) : undefined;
+                  const dynamicConTypeId = openPlotCon ? Number(openPlotCon.constructionTypeId ?? openPlotCon.id) : undefined;
+
                   const completePayload = {
                     ...(props.initialPropertyData || {}),
                     propertyId: propId,
@@ -358,8 +378,10 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
                     propertyDetailsId: openPlotRecord?.id || 0,
                     isOpenPlot: true,
                     selectedFloorType: 'OpenPlot',
-                    floorId: 77,
-                    constructionTypeId: 11,
+                    ...(dynamicFloorId ? { floorId: dynamicFloorId } : {}),
+                    ...(dynamicConTypeId ? { constructionTypeId: dynamicConTypeId } : {}),
+                    floorDescription: openPlotFloor?.description || 'Open Plot',
+                    constructionTypeDescription: openPlotCon?.description || 'Open Plot',
                     typeOfUseId: selectedOpenPlotCategory?.id,
                     typeOfUseDescription: selectedOpenPlotCategory?.description || '',
                     selectedOpenPlotCategory: selectedOpenPlotCategory,
@@ -419,7 +441,7 @@ const FloorSubmission: React.FC<EditSidebarProps> = (props) => {
 
           {/* Edit Floor Form Section */}
           {(selectedFloor || isAddingNewFloor) && !showDataEntrySameAsDrawer && (
-            <div className="!mt-2 space-y-3">
+            <div ref={editFloorSectionRef} id="edit-floor-form-section" className="!mt-2 space-y-3">
               <FloorForm
                 t={t}
                 selectedFloor={selectedFloor}

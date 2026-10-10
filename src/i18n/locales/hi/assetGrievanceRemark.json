@@ -49,7 +49,7 @@
       "remarkConsecutiveSpaces": "टिप्पणी में लगातार एकाधिक रिक्त स्थान नहीं हो सकते।",
       "mustBeActive": "नई टिप्पणी सक्रिय होनी चाहिए",
       "remarkFormat": "केवल अक्षरों, संख्याओं और मूल विराम चिह्नों की अनुमति है",
-      "descriptionMaxLength": "विवरण २०० अक्षरों से अधिक नहीं हो सकता।",
+      "descriptionMaxLength": "विवरण 500 अक्षरों से अधिक नहीं हो सकता।",
       "descriptionRequired": "विवरण आवश्यक है।"
     }
   },

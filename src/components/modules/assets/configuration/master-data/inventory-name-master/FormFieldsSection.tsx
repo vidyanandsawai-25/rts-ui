@@ -6,6 +6,7 @@ import { ValidationMessage } from "@/components/common/ValidationMessage";
 import { TextArea } from "@/components/common/Textarea";
 
 import type { InventoryNameFormFieldsSectionProps } from "@/types/asset-masters/inventory-name.types";
+import { DESCRIPTION_MAX } from "@/hooks/asset-masters/inventory-name/validation";
 
 interface ExtendedFormFieldsSectionProps extends InventoryNameFormFieldsSectionProps {
   codeRef?: React.RefObject<HTMLInputElement | null>;
@@ -24,21 +25,6 @@ export function FormFieldsSection({
 }: ExtendedFormFieldsSectionProps) {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-      <div className="space-y-1">
-        <Label className="block text-sm font-medium text-slate-700">
-          {t("configuration.masterData.form.labels.category")} <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          options={categoryOptions}
-          value={String(formData.inventoryItemCategoryId ?? "")}
-          onChange={(_, v) => onSelectChange("inventoryItemCategoryId", String(v))}
-          placeholder={t("configuration.masterData.form.placeholders.category")}
-          error={showError("inventoryItemCategoryId") ? " " : undefined}
-          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-        />
-        <ValidationMessage message={errors.inventoryItemCategoryId} visible={showError("inventoryItemCategoryId")} />
-      </div>
-
       <div>
         <Input
           ref={codeRef}
@@ -54,6 +40,21 @@ export function FormFieldsSection({
           className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
         <ValidationMessage message={errors.subTypeCode} visible={showError("subTypeCode")} />
+      </div>
+
+      <div className="space-y-1">
+        <Label className="block text-sm font-medium text-slate-700">
+          {t("configuration.masterData.form.labels.category")} <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          options={categoryOptions}
+          value={String(formData.inventoryItemCategoryId ?? "")}
+          onChange={(_, v) => onSelectChange("inventoryItemCategoryId", String(v))}
+          placeholder={t("configuration.masterData.form.placeholders.category")}
+          error={showError("inventoryItemCategoryId") ? " " : undefined}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.inventoryItemCategoryId} visible={showError("inventoryItemCategoryId")} />
       </div>
 
       <div>
@@ -73,6 +74,24 @@ export function FormFieldsSection({
       </div>
 
       <div>
+        <Input
+          name="displayOrder"
+          label={t("configuration.masterData.form.labels.displayOrder")}
+          required
+          type="number"
+          min={1}
+          max={99999}
+          value={formData.displayOrder !== undefined ? String(formData.displayOrder) : ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("configuration.masterData.form.placeholders.displayOrder")}
+          error={showError("displayOrder") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.displayOrder} visible={showError("displayOrder")} />
+      </div>
+
+      <div>
         <TextArea
           name="description"
           label={t("configuration.masterData.form.labels.description")}
@@ -81,7 +100,7 @@ export function FormFieldsSection({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={t("configuration.masterData.form.placeholders.description")}
-          maxLength={500}
+          maxLength={DESCRIPTION_MAX}
           error={showError("description") ? true : false}
           className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />

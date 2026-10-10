@@ -4,6 +4,7 @@ import type { MasterDataGroup, MasterDataRecord } from "./master-data.types";
 export interface InventoryModelItem {
   id: number;
   inventoryItemNameId: number;
+  inventoryItemName?: string;
   modelName: string;
   displayOrder: number;
   description: string | null;
@@ -142,6 +143,7 @@ export interface InventoryModelFormModel {
   name: string;
   group: string;
   description: string;
+  displayOrder?: number | string;
   isActive: boolean;
 }
 

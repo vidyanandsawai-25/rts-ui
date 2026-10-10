@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   getTypeOfUseGroupsPaged,
+  getAssetTypeOfUsesPaged,
+  getAssetSubTypeOfUsesPaged,
   createTypeOfUseGroup,
   updateTypeOfUseGroup,
+  updateAssetTypeOfUse,
+  updateAssetSubTypeOfUse,
   deleteTypeOfUseGroup,
   getAssetTypeOfUses,
   getAssetSubTypeOfUses,
@@ -53,6 +57,32 @@ describe("Type of Use API Service", () => {
       });
       await expect(getTypeOfUseGroupsPaged(1, 10)).rejects.toThrow(ApiError);
     });
+
+    it("should reject a paged response without an items array", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: {} });
+
+      await expect(getTypeOfUseGroupsPaged(1, 10)).rejects.toThrow(ApiError);
+    });
+
+    it("should accept a valid empty paged response", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: { items: [] } });
+
+      await expect(getTypeOfUseGroupsPaged(1, 10)).resolves.toEqual({ items: [] });
+    });
+  });
+
+  describe("paged type and sub-type responses", () => {
+    it("should reject paged types when items is missing", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: {} });
+
+      await expect(getAssetTypeOfUsesPaged(1, 10)).rejects.toThrow(ApiError);
+    });
+
+    it("should reject paged sub-types when items is not an array", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: { items: null } });
+
+      await expect(getAssetSubTypeOfUsesPaged(1, 10, 1)).rejects.toThrow(ApiError);
+    });
   });
 
   describe("createTypeOfUseGroup", () => {
@@ -68,11 +98,11 @@ describe("Type of Use API Service", () => {
         groupName: "Group 1",
         groupIcon: "home",
         isActive: true,
+        createdBy: 99,
       };
       await createTypeOfUseGroup(payload);
       expect(apiClient.post).toHaveBeenCalledWith("/asset-management/type-of-use-group", {
         ...payload,
-        createdBy: null,
       });
     });
   });
@@ -91,11 +121,15 @@ describe("Type of Use API Service", () => {
         groupName: "Group 1",
         groupIcon: "home",
         isActive: true,
+        updatedBy: 99,
       };
       await updateTypeOfUseGroup(payload);
       expect(apiClient.put).toHaveBeenCalledWith("/asset-management/type-of-use-group/1", {
-        ...payload,
-        updatedBy: null,
+        typeOfUseGroupCode: "G1",
+        groupName: "Group 1",
+        groupIcon: "home",
+        isActive: true,
+        updatedBy: 99,
       });
     });
   });
@@ -128,6 +162,58 @@ describe("Type of Use API Service", () => {
       );
       expect(result).toEqual(mockResponse.data.items);
     });
+
+    it("returns a valid empty list when the backend returns items: []", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: { items: [] } });
+
+      await expect(getAssetTypeOfUses(1)).resolves.toEqual([]);
+    });
+
+    it("throws when the backend omits items", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true, data: {} });
+
+      await expect(getAssetTypeOfUses(1)).rejects.toThrow(ApiError);
+    });
+  });
+
+  it("does not send the type id in the type update body", async () => {
+    vi.mocked(apiClient.put).mockResolvedValue({ success: true, data: { message: "updated" } });
+
+    await updateAssetTypeOfUse({
+      id: 12,
+      assetCategoryId: 1,
+      assetTypeId: 2,
+      typeOfUseGroupId: 3,
+      typeOfUseCode: "RES",
+      description: "Residential",
+      type: "R",
+      searchSequence: "",
+      isActive: false,
+      updatedBy: 99,
+    });
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      "/asset-management/asset-type-of-use/12",
+      expect.objectContaining({ isActive: false, updatedBy: 99, searchSequence: undefined })
+    );
+  });
+
+  it("does not send the sub-type id in the update body", async () => {
+    vi.mocked(apiClient.put).mockResolvedValue({ success: true, data: { message: "updated" } });
+
+    await updateAssetSubTypeOfUse({
+      id: 15,
+      typeOfUseId: 12,
+      description: "Apartment",
+      searchSequence: 2,
+      isActive: true,
+      updatedBy: 99,
+    });
+
+    expect(apiClient.put).toHaveBeenCalledWith(
+      "/asset-management/asset-sub-type-of-use/15",
+      expect.objectContaining({ typeOfUseId: 12, isActive: true, updatedBy: 99, searchSequence: 2 })
+    );
   });
 
   describe("getAssetSubTypeOfUses", () => {
@@ -145,6 +231,12 @@ describe("Type of Use API Service", () => {
         "/asset-management/asset-sub-type-of-use?TypeOfUseId=1&MarkedForDeletion=false&PageSize=-1"
       );
       expect(result).toEqual(mockResponse.data.items);
+    });
+
+    it("throws when the backend response data is missing", async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({ success: true });
+
+      await expect(getAssetSubTypeOfUses(1)).rejects.toThrow(ApiError);
     });
   });
 });

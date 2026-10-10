@@ -4,6 +4,7 @@ import React from "react";
 import { Badge } from "@/components/common/Badge";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { SortAscButton, SortDescButton, SortDefaultButton } from "@/components/common/ActionButtons";
+import { TruncatedText } from "@/components/common/TruncatedText";
 import type { Column } from "@/components/common/MasterTable";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 
@@ -56,7 +57,7 @@ function SortableHeader({
   };
 
   return (
-    <div className="flex items-center gap-1 justify-start w-full">
+    <div className="flex items-center gap-1 justify-center w-full">
       <span>{label}</span>
       {renderSortButton()}
     </div>
@@ -70,7 +71,7 @@ export function getAssetTypeColumns(
   sortOrder?: string,
   onSort?: (field: string) => void
 ): Column<MasterDataRecord>[] {
-  const sortableColumns = ["typeCode", "typeName", "description"];
+  const sortableColumns = ["typeCode", "typeName", "typeNameLocal", "description"];
 
   const createSortableLabel = (label: string, key: string) => {
     if (onSort && sortableColumns.includes(key)) {
@@ -91,7 +92,8 @@ export function getAssetTypeColumns(
   return [
     {
       key: "id",
-      width: "15%",
+      width: "12%",
+      align: "center",
       label: createSortableLabel(t("labels.code"), "typeCode"),
       render: (_, r) => (
         <Badge variant="secondary" size="sm">
@@ -101,25 +103,85 @@ export function getAssetTypeColumns(
     },
     {
       key: "name",
-      width: "28%",
+      width: "18%",
+      align: "center",
       label: createSortableLabel(t("labels.name"), "typeName"),
       render: (_, r) => (
-        <div className="font-semibold text-sm text-slate-800">{r.name}</div>
+        <div className="font-semibold text-sm text-slate-800">
+          <TruncatedText text={r.name} maxLength={22} />
+        </div>
       ),
     },
     {
       key: "description",
-      width: "37%",
+      width: "16%",
+      align: "center",
       label: createSortableLabel(t("labels.description"), "description"),
       render: (_, r) => (
-        <div className="text-xs text-slate-600 line-clamp-2">
-          {r.description || "-"}
+        <div className="text-sm text-slate-700">
+          <TruncatedText text={r.description} maxLength={22} />
+        </div>
+      ),
+    },
+    {
+      key: "typeNameLocal",
+      width: "15%",
+      align: "center",
+      label: createSortableLabel(t("labels.typeNameLocal"), "typeNameLocal"),
+      render: (_, r) => (
+        <div className="text-sm text-slate-700">
+          <TruncatedText text={(r as Record<string, unknown>).typeNameLocal as string} maxLength={22} />
+        </div>
+      ),
+    },
+    {
+      key: "allowUnitRegistration",
+      width: "14%",
+      align: "center",
+      label: t("labels.unitRegistration"),
+      render: (_, r) => (
+        <Badge variant={(r as Record<string, unknown>).allowUnitRegistration ? "success" : "secondary"} size="sm">
+          {(r as Record<string, unknown>).allowUnitRegistration ? t("labels.yes") : t("labels.no")}
+        </Badge>
+      ),
+    },
+    {
+      key: "allowRoomRegistration",
+      width: "14%",
+      align: "center",
+      label: t("labels.roomRegistration"),
+      render: (_, r) => (
+        <Badge variant={(r as Record<string, unknown>).allowRoomRegistration ? "success" : "secondary"} size="sm">
+          {(r as Record<string, unknown>).allowRoomRegistration ? t("labels.yes") : t("labels.no")}
+        </Badge>
+      ),
+    },
+    {
+      key: "isSubUnit",
+      width: "12%",
+      align: "center",
+      label: t("labels.isSubUnit"),
+      render: (_, r) => (
+        <Badge variant={(r as Record<string, unknown>).isSubUnit ? "success" : "secondary"} size="sm">
+          {(r as Record<string, unknown>).isSubUnit ? t("labels.yes") : t("labels.no")}
+        </Badge>
+      ),
+    },
+    {
+      key: "categoryName",
+      width: "17%",
+      align: "center",
+      label: t("labels.categoryName"),
+      render: (_, r) => (
+        <div className="text-sm text-slate-700">
+          <TruncatedText text={String((r as Record<string, unknown>).categoryName || "-")} maxLength={25} />
         </div>
       ),
     },
     {
       key: "status",
-      width: "15%",
+      width: "10%",
+      align: "center",
       label: t("labels.status"),
       isStatus: true,
       render: (_, r) => <StatusBadge value={r.status} />,

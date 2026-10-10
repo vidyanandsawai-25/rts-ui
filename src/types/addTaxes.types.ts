@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react';
 /* ================================================================
    Scope & Action Identifiers
 ================================================================ */
-export type Scope = 'all' | 'zone' | 'ward' | 'building' | 'property' | 'range';
+export type Scope = 'all' | 'zone' | 'ward' | 'building' | 'property' | 'range' | 'masterDataChange';
 export type Action = 'addTax' | 'quarterlyAdd' | 'removeTax' | 'quarterlyRemove';
 
 /* ================================================================
@@ -12,6 +12,7 @@ export type Action = 'addTax' | 'quarterlyAdd' | 'removeTax' | 'quarterlyRemove'
 export interface AddTaxesStats {
   financeYearId: string;
   totalProperties: number;
+  transmastProperties: number;
   eligibleRecords: number;
   skippedLocked: number;
   runningJobs: number;
@@ -33,6 +34,7 @@ export interface OperationsPermissions {
 
 export interface OperationsSummary {
   totalProperties: number;
+  transmastProperties: number;
   eligibleRecords: number;
   skippedRecords: number;
   runningJobs: number;
@@ -137,6 +139,8 @@ export interface OperationScope {
   toPropertyId?: number;
   wardNames?: string[];
   zoneNames?: string[];
+  overrideAlreadyTaxed?: boolean;
+  forceRecalculate?: boolean;
 }
 
 export interface EligibleCountPayload {
@@ -146,10 +150,17 @@ export interface EligibleCountPayload {
   operation: string;
 }
 
+export interface SkipReasonSummary {
+  code: string;
+  count: number;
+}
+
 export interface EligibleCountResponse {
   eligible: number;
   total: number;
   skipped: number;
+  alreadyTaxed: number;
+  skipReasons?: SkipReasonSummary[];
 }
 
 /* ================================================================
@@ -225,6 +236,8 @@ export interface OperationPreviewRecord {
   propertyTypeId: number;
   isEligible: boolean;
   skipReason: string | null;
+  skipReasonCode?: string | null;
+  missingFieldKeys?: string[];
 }
 
 export interface SkippedReasonBreakdown {
@@ -241,6 +254,7 @@ export interface OperationPreviewResponse {
   totalSelected: number;
   eligible: number;
   skipped: number;
+  alreadyTaxed: number;
   requiresApproval: number;
   records: OperationPreviewRecord[];
   skippedReasons: SkippedReasonBreakdown[];
@@ -282,4 +296,29 @@ export interface ImportTemplateResponse {
   columns: ImportTemplateColumn[];
   scopeCategories: ScopeCategory[];
 }
+
+/* ================================================================
+   Master Data Change Audit / Banner API
+================================================================ */
+export interface MasterDataChangeSummary {
+  affectedCount: number;
+  remarkSummary?: string | null;
+  latestChangedAtUtc?: string | null;
+  activeJobId?: number | null;
+  activeJobCode?: string | null;
+  activeJobStatus?: string | null;
+}
+
+export interface MasterDataChangeAffectedProperty {
+  propertyId: number;
+  zone: string;
+  ward: string;
+  propertyNo: string;
+  partitionNo: string;
+  upicId?: string | null;
+  owner: string;
+  remark?: string | null;
+  flaggedAtUtc: string;
+}
+
 

@@ -36,7 +36,7 @@ export async function getUseGroupsPagedServer(params: {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -67,11 +67,11 @@ export async function getUseGroupById(id: string | number): Promise<UseGroup | n
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       return null;
     }
-    
+
     return response.data ? mapApiGroupToUi(response.data as Record<string, unknown>) : null;
   } catch (error) {
     logger.error(`Error fetching use group ${id}`, { error: error as Error });
@@ -102,7 +102,7 @@ export async function createUseGroupApi(input: {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -111,11 +111,11 @@ export async function createUseGroupApi(input: {
         backendError ? "" : TypeOfUseErrorMessages.CREATE_GROUP_FAILED
       );
     }
-    
+
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    
+
     return mapApiGroupToUi(response.data as Record<string, unknown>);
   } catch (error) {
     logger.error("Error creating use group", { error: error as Error });
@@ -148,7 +148,7 @@ export async function updateUseGroupApi(input: {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -157,11 +157,11 @@ export async function updateUseGroupApi(input: {
         backendError ? "" : TypeOfUseErrorMessages.UPDATE_GROUP_FAILED
       );
     }
-    
+
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
-    
+
     return mapApiGroupToUi(response.data as Record<string, unknown>);
   } catch (error) {
     logger.error("Error updating use group", { error: error as Error });
@@ -178,7 +178,7 @@ export async function deleteUseGroupApi(id: string | number) {
       cache: "no-store",
       headers: { "Accept": "application/json" },
     });
-    
+
     if (!response.success) {
       const backendError = response.error;
       throw new ApiError(
@@ -187,7 +187,7 @@ export async function deleteUseGroupApi(id: string | number) {
         backendError ? "" : TypeOfUseErrorMessages.DELETE_GROUP_FAILED
       );
     }
-    
+
     return true;
   } catch (error) {
     logger.error(`Error deleting use group ${id}`, { error: error as Error });

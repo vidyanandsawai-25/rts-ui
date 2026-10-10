@@ -15,13 +15,23 @@ describe('InventoryName Actions', () => {
   beforeEach(() => { vi.clearAllMocks(); });
   it('creates', async () => {
     vi.mocked(inventoryItemNameService.create).mockResolvedValue({ id: 1 } as any);
-    const result = await createInventoryNameAction({ inventoryItemCategoryId: 1, subTypeCode: "C001", subTypeName: "New", description: "", isActive: true } as any);
+    const result = await createInventoryNameAction({ inventoryItemCategoryId: 1, subTypeCode: "C001", subTypeName: "New", description: "", displayOrder: 1, isActive: true } as any);
     expect(result.success).toBe(true);
+  });
+  it('rejects invalid display order on create', async () => {
+    const result = await createInventoryNameAction({ inventoryItemCategoryId: 1, subTypeCode: "C001", subTypeName: "New", description: "", displayOrder: -1, isActive: true } as any);
+    expect(result.success).toBe(false);
+    expect((result as any).field).toBe('displayOrder');
   });
   it('updates', async () => {
     vi.mocked(inventoryItemNameService.update).mockResolvedValue({ id: 1 } as any);
-    const result = await updateInventoryNameAction({ id: 1, inventoryItemCategoryId: 1, subTypeCode: "C001", subTypeName: "Up", description: "", isActive: true } as any);
+    const result = await updateInventoryNameAction({ id: 1, inventoryItemCategoryId: 1, subTypeCode: "C001", subTypeName: "Up", description: "", displayOrder: 1, isActive: true } as any);
     expect(result.success).toBe(true);
+  });
+  it('rejects invalid display order on update', async () => {
+    const result = await updateInventoryNameAction({ id: 1, inventoryItemCategoryId: 1, subTypeCode: "C001", subTypeName: "Up", description: "", displayOrder: 0, isActive: true } as any);
+    expect(result.success).toBe(false);
+    expect((result as any).field).toBe('displayOrder');
   });
   it('deletes', async () => {
     vi.mocked(inventoryItemNameService.delete).mockResolvedValue(true as any);

@@ -70,6 +70,24 @@ export function FormFieldsSection({
         />
         <ValidationMessage message={errors.description} visible={showError("description")} />
       </div>
+
+      <div>
+        <Input
+          name="displayOrder"
+          label={t("labels.displayOrder")}
+          required
+          type="number"
+          min={1}
+          max={99999}
+          value={formData.displayOrder !== undefined ? String(formData.displayOrder) : ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.displayOrder")}
+          error={showError("displayOrder") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.displayOrder} visible={showError("displayOrder")} />
+      </div>
     </div>
   );
 }

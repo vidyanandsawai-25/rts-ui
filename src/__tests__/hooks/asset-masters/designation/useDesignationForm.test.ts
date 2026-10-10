@@ -103,4 +103,35 @@ describe("useDesignationForm", () => {
     expect(result.current.isActive).toBe(false);
     expect(result.current.formData.isActive).toBe(false);
   });
+
+  it("shows the deactivate reference error under the status toggle and clears it on toggle", async () => {
+    const { updateDesignationAction } = await import("@/app/[locale]/assets/configuration/master-data/designation-master/action");
+    const { toast } = await import("sonner");
+    vi.mocked(updateDesignationAction).mockResolvedValue({
+      success: false,
+      statusCode: 400,
+      message: "This Designation cannot be deactivated because it is in use.",
+    });
+    const initialData = {
+      id: 5,
+      designationCode: "CODE5",
+      designationName: "Name Five",
+      designationLocal: "Local",
+      designationDescription: "Desc",
+      owningDepartmentId: 1,
+      isActive: true,
+    } as Designation;
+    const { result } = renderHook(() => useDesignationForm({ ...mockProps, id: 5, initialData }));
+
+    act(() => result.current.handleToggleStatus(false));
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as never);
+    });
+
+    expect(toast.error).toHaveBeenCalledWith("apiErrors.referenceBlocked.designation.deactivateInUse");
+    expect(result.current.errors.isActive).toBe("apiErrors.referenceBlocked.designation.deactivateInUse");
+
+    act(() => result.current.handleToggleStatus(true));
+    expect(result.current.errors.isActive).toBe("");
+  });
 });

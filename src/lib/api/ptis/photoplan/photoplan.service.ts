@@ -9,7 +9,8 @@ import type {
   PropertyPhotoDto, 
   PropertyPhotoTypeWithStatusDto, 
   PropertyPhotoUploadResponseDto,
-  PropertyPhotoGalleryDto
+  PropertyPhotoGalleryDto,
+  PropertyPhotoTypeRecord
 } from "@/types/photoplan.types";
 import { getAppConfig } from "@/config/app.config";
 
@@ -104,16 +105,24 @@ export const photoPlanService = {
         const photosResponse = await this.getPhotosByProperty(propertyId);
         if (photosResponse.success && Array.isArray(photosResponse.data)) {
           const photosList = photosResponse.data;
-          const newPhoto = photosList.find(
+          let newPhoto = photosList.find(
             (p) =>
               (p.documentGuid && docGuidStr && p.documentGuid.toLowerCase() === docGuidStr.toLowerCase()) ||
-              (p.documentBindingId && targetBindingId && Number(p.documentBindingId) === Number(targetBindingId)) ||
-              (p.photoTypeCode &&
-                photoTypeCode &&
-                p.photoTypeCode.toUpperCase() === String(photoTypeCode).toUpperCase() &&
-                (wingDetailId == null || Number(p.wingDetailId) === Number(wingDetailId)) &&
-                (_societyId == null || Number(p.societyDetailId) === Number(_societyId)))
+              (p.documentBindingId && targetBindingId && Number(p.documentBindingId) === Number(targetBindingId))
           );
+
+          if (!newPhoto && photoTypeCode) {
+            const matchingPhotos = photosList
+              .filter(
+                (p) =>
+                  p.photoTypeCode &&
+                  p.photoTypeCode.toUpperCase() === String(photoTypeCode).toUpperCase() &&
+                  (wingDetailId == null || Number(p.wingDetailId) === Number(wingDetailId)) &&
+                  (_societyId == null || Number(p.societyDetailId) === Number(_societyId))
+              )
+              .sort((a, b) => (b.propertyPhotoId ?? 0) - (a.propertyPhotoId ?? 0));
+            newPhoto = matchingPhotos[0];
+          }
 
           if (newPhoto) {
             resolvedPhotoId = newPhoto.propertyPhotoId || resolvedPhotoId;
@@ -189,15 +198,18 @@ export const photoPlanService = {
         isPrimaryDocument: true
       };
 
-      if (isWingPhoto && wingDetailId && wingDetailId > 0) {
+      // When replacing, always reference the existing PropertyPhotoId directly so
+      // the backend handler (OnAfterUploadAsync) links the new binding to the
+      // existing row instead of creating a new one.
+      if (propertyPhotoId && propertyPhotoId > 0 && !isLikelyPropertyId) {
+        uploadParams.referenceTableId = propertyPhotoId;
+        uploadParams.referencePropertyName = "PropertyPhotoId";
+      } else if (isWingPhoto && wingDetailId && wingDetailId > 0) {
         uploadParams.referenceTableId = wingDetailId;
         uploadParams.referencePropertyName = "WingDetailId";
       } else if (isSocietyPhoto && _societyId && _societyId > 0) {
         uploadParams.referenceTableId = _societyId;
         uploadParams.referencePropertyName = "SocietyDetailId";
-      } else if (propertyPhotoId && propertyPhotoId > 0 && !isLikelyPropertyId) {
-        uploadParams.referenceTableId = propertyPhotoId;
-        uploadParams.referencePropertyName = "PropertyPhotoId";
       } else {
         uploadParams.referenceTableId = propertyId;
         uploadParams.referencePropertyName = "PropertyId";
@@ -315,6 +327,26 @@ export const photoPlanService = {
         error: error instanceof Error ? error.message : String(error)
       };
     }
+  },
+
+  // 5b. GET - All photo types from ptis.PropertyPhotoType table (optionally filtered by photoScope)
+  async getAllPropertyPhotoTypes(scope?: string): Promise<ApiResponse<PropertyPhotoTypeRecord[]>> {
+    const response = await apiClient.get<BackendApiResponseWrapper<PropertyPhotoTypeRecord[]>>(
+      '/PropertyPhotoType',
+      { cache: 'no-store' }
+    );
+    if (response.success && response.data?.items) {
+      let items = response.data.items;
+      if (Array.isArray(items)) {
+        if (scope) {
+          items = items.filter(
+            (item) => item.photoScope?.toUpperCase() === scope.toUpperCase() && item.isActive !== false
+          );
+        }
+        return { success: true, statusCode: response.statusCode, data: items };
+      }
+    }
+    return { success: false, statusCode: response.statusCode, error: response.error, message: response.message };
   },
 
   // 6. PUT - Update a photo type name (rename slot)
@@ -440,13 +472,17 @@ export const photoPlanService = {
         };
       }
 
-      const apiCouncilName = councilName || 'THANE_Survey';
+      const apiCouncilName =
+        (councilName && councilName.trim() !== '' ? councilName : undefined) ??
+        process.env.NEXT_PUBLIC_COUNCIL_NAME ??
+        process.env.COUNCIL_NAME ??
+        '';
 
       // 1. Authenticate user with static credentials
       const authBody = {
         username: 'tejas.d',
         password: '123456',
-        councilName: 'THANE_Survey'
+        councilName: apiCouncilName,
       };
 
       let loginRes = await fetch('https://apiptisplanapp.tabamc.in/api/auth/login', {
@@ -483,7 +519,10 @@ export const photoPlanService = {
         ? (process.env.PHOTO_PLAN_PROD_RETURN_URL || 'https://ptisthane.scipl.info')
         : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
-      const envBackendUrl = process.env.RUNTIME_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || getAppConfig().api.baseUrl || 'https://ptisthaneapi.scipl.info.in/api';
+      const envBackendUrl =
+        getAppConfig().api.baseUrl ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        'https://ptisthaneapi.scipl.info.in/api';
       const resolvedPtisBackendUri = (ptisBackendUri || envBackendUrl).replace(/\/api\/?$/, '') || 'https://ptisthaneapi.scipl.info.in';
 
       let safeReturnUrl: string;

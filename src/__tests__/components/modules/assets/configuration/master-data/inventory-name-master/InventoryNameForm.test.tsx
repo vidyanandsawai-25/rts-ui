@@ -34,6 +34,7 @@ vi.mock("@/components/modules/assets/configuration/master-data/inventory-name-ma
       <input data-testid="category-input" name="inventoryItemCategoryId" value={formData.inventoryItemCategoryId || ""} onChange={(e) => onSelectChange("inventoryItemCategoryId", e.target.value)} />
       <input data-testid="code-input" name="subTypeCode" value={formData.subTypeCode || ""} onChange={onChange} />
       <input data-testid="name-input" name="subTypeName" value={formData.subTypeName || ""} onChange={onChange} />
+      <input data-testid="display-order-input" name="displayOrder" value={formData.displayOrder ?? ""} onChange={onChange} />
     </div>
   ),
 }));
@@ -61,6 +62,7 @@ describe("InventoryNameForm", () => {
     fireEvent.change(screen.getByTestId("category-input"), { target: { value: "1" } });
     fireEvent.change(screen.getByTestId("code-input"), { target: { name: "subTypeCode", value: "C001" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "subTypeName", value: "Name" } });
+    fireEvent.change(screen.getByTestId("display-order-input"), { target: { name: "displayOrder", value: "1" } });
 
     fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
 

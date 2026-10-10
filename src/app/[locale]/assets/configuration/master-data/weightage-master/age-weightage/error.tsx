@@ -21,7 +21,7 @@ export default function AgeWeightageError({ error, reset }: ErrorProps) {
     <ErrorPage
       error={error}
       reset={reset}
-      translationNamespace="ageFactorMaster.error"
+      translationNamespace="assetWeightageMaster.age.error"
     />
   );
 }

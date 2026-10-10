@@ -8,6 +8,7 @@ import { useToast } from "@/components/common";
 import { getColumns } from "@/components/modules/assets/configuration/master-data/owning-department/OwningDepartmentColumns";
 import { deleteOwningDepartmentAction } from "@/app/[locale]/assets/configuration/master-data/owning-department/action";
 import { useOwningDepartmentSearch } from "@/hooks/asset-masters/owning-department/useOwningDepartmentSearch";
+import { getOwningDepartmentErrorMessage } from "@/hooks/asset-masters/owning-department/error-mapping";
 import type { OwningDepartment, OwningDepartmentMasterProps } from "@/types/asset-masters/owning-department.types";
 
 export function useOwningDepartmentList({
@@ -141,7 +142,8 @@ export function useOwningDepartmentList({
               toast.success(t("form.messages.deleteSuccess") || tCommon("messages.deleteSuccess"));
               startTransition(() => router.refresh());
             } else {
-              toast.error(res.message || tCommon("messages.deleteError"));
+              const errorMsg = getOwningDepartmentErrorMessage(res.message, res.statusCode, t, tCommon);
+              toast.error(errorMsg || tCommon("messages.deleteError"));
             }
           } catch (error) {
             toast.error(error instanceof Error ? error.message : tCommon("messages.deleteError"));

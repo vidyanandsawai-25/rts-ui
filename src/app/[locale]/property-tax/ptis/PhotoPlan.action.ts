@@ -11,7 +11,6 @@ import type {
 } from '@/types/photoplan.types';
 import { z } from 'zod';
 import { getTranslations } from 'next-intl/server';
-
 const idSchema = z.number().positive();
 
 export async function getGroupedPhotosAction(
@@ -95,6 +94,16 @@ export async function uploadPropertyPhotoAction(
 
     const displayOrder = Number(formData.get('DisplayOrder') || '1');
 
+    const isSocietyPhoto = Boolean(photoTypeCode?.toUpperCase().includes('SOCIETY'));
+    const isWingPhoto = Boolean(photoTypeCode?.toUpperCase().includes('WING'));
+
+    if (isSocietyPhoto && (!societyId || isNaN(societyId) || societyId <= 0)) {
+      return { success: false, error: t('media.societyIdRequired') || 'Society details are not available for this property to upload society photos.' };
+    }
+    if (isWingPhoto && (!wingDetailId || isNaN(wingDetailId) || wingDetailId <= 0)) {
+      return { success: false, error: t('media.wingDetailIdRequired') || 'Wing details are not available for this property to upload wing photos.' };
+    }
+
     if (!file || file.size === 0) {
       return { success: false, error: t('media.fileRequired') || 'File is required' };
     }
@@ -148,7 +157,17 @@ export async function replacePropertyPhotoAction(
     const societyId = Number(formData.get('SocietyDetailId') || '0');
     const wingName = formData.get('WingName') as string | null;
 
-    if (!propertyPhotoId || isNaN(propertyPhotoId)) {
+    const isSocietyPhoto = Boolean(photoTypeCode?.toUpperCase().includes('SOCIETY'));
+    const isWingPhoto = Boolean(photoTypeCode?.toUpperCase().includes('WING'));
+
+    if (isSocietyPhoto && (!societyId || isNaN(societyId) || societyId <= 0)) {
+      return { success: false, error: t('media.societyIdRequired') || 'Society details are not available for this property to upload society photos.' };
+    }
+    if (isWingPhoto && (!wingDetailId || isNaN(wingDetailId) || wingDetailId <= 0)) {
+      return { success: false, error: t('media.wingDetailIdRequired') || 'Wing details are not available for this property to upload wing photos.' };
+    }
+
+    if (propertyPhotoId === undefined || propertyPhotoId === null || isNaN(propertyPhotoId) || propertyPhotoId < 0) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid PropertyPhotoId is required' };
     }
     if (!file || file.size === 0) {
@@ -187,16 +206,20 @@ export async function deletePropertyPhotoAction(
 ): Promise<ActionResult<object>> {
   const t = await getTranslations({ locale: locale || 'en', namespace: 'ptis' });
   try {
-    if (!documentGuid) {
+    if (!documentGuid || typeof documentGuid !== 'string' || !documentGuid.trim()) {
       return { success: false, error: t('media.propertyPhotoIdRequired') || 'Valid Document GUID is required' };
     }
 
-    const result = await deleteDocument(documentGuid);
+    const cleanGuid = documentGuid.trim();
+    const result = await deleteDocument(cleanGuid);
 
-    if (result.success) {
+    if (result.success || result.statusCode === 404) {
       return { success: true, data: {}, message: t('media.photoDeletedSuccess') || 'Photo deleted successfully' };
     }
-    return { success: false, error: result.error || t('media.failedToDelete') || 'Delete failed' };
+    if (result.statusCode === 403) {
+      return { success: false, error: t('media.deletePermissionDenied') || 'You do not have permission to delete this photo' };
+    }
+    return { success: false, error: result.error || t('media.failedToDelete') || 'Failed to delete photo' };
   } catch (error) {
     return {
       success: false,
@@ -272,9 +295,15 @@ export async function launchPhotoPlanDrawingToolAction(
       }
     }
 
+    const effectiveCouncilName =
+      (councilName && councilName.trim() !== '' ? councilName : undefined) ??
+      process.env.NEXT_PUBLIC_COUNCIL_NAME ??
+      process.env.COUNCIL_NAME ??
+      '';
+
     const result = await photoPlanService.launchDrawingTool({
       propertyId,
-      councilName,
+      councilName: effectiveCouncilName,
       returnUrl,
       ptisUsername,
       ptisDisplayName,

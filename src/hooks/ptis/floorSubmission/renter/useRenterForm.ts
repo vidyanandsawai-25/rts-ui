@@ -125,10 +125,12 @@ export const useRenterForm = ({
             : 0,
         taxLiability: renterDetails.taxLiability || 'Renter',
         documentBindingId: renterDetails.documentBindingId || undefined,
+        documentGuid: renterDetails.documentGuid || undefined,
         renterDetails: calculationResult?.renterDetails || [],
         renterMast: (calculationResult?.fyBreakdown || []).map((m: any) => ({
           ...m,
           documentBindingId: renterDetails.documentBindingId || undefined,
+          documentGuid: renterDetails.documentGuid || undefined,
         })),
         grandTotal: calculationResult?.grandTotal || 0,
         renterCustomIncrements,
@@ -167,6 +169,8 @@ export const useRenterForm = ({
             rentMonthly: payload.rentMonthly ?? savedFloor?.rentMonthly,
             nonCalculateRentMonthly:
               payload.nonCalculateRentMonthly ?? savedFloor?.nonCalculateRentMonthly,
+            documentBindingId: payload.documentBindingId ?? savedFloor?.documentBindingId,
+            documentGuid: payload.documentGuid ?? savedFloor?.documentGuid,
           };
         }
       }
@@ -213,6 +217,16 @@ export const useRenterForm = ({
               renterDetails: (finalPayload as any).renterDetails || parsed.renterDetails || [],
               renterMast: (finalPayload as any).renterMast || parsed.renterMast || [],
               taxLiability: (finalPayload as any).taxLiability || parsed.taxLiability || 'Renter',
+              documentBindingId:
+                (finalPayload as any).documentBindingId ||
+                parsed.documentBindingId ||
+                renterDetails.documentBindingId ||
+                null,
+              documentGuid:
+                (finalPayload as any).documentGuid ||
+                parsed.documentGuid ||
+                renterDetails.documentGuid ||
+                null,
             };
             sessionStorage.setItem('editingFloorForm', JSON.stringify(updatedForm));
           }

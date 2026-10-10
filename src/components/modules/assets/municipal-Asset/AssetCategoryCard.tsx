@@ -19,6 +19,7 @@ export function AssetCategoryCard({
   onVisibleCountChange,
   onSelectCategory,
   onSelectType,
+  onSelectCategoryAssetTypes,
 }: AssetCategoryCardProps) {
   const Icon = meta.icon;
   const tI18n = useTranslations('municipalAsset.categoryCard');
@@ -68,27 +69,45 @@ export function AssetCategoryCard({
 
       {/* ── STAT CARD ── */}
       <div className="relative -mt-7 mx-4 z-10 flex-shrink-0">
-        <div className={`${t.statBg} border ${t.statBorder} rounded-xl shadow-lg overflow-hidden p-2.5`}>
+        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden p-2.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-10 w-full justify-around">
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${t.statBg}`}>
-                  <Layers className={`w-4 h-4 ${t.statText}`} />
+            <div className="flex items-center gap-3 w-full justify-around">
+              {/* CLICKABLE TOTAL ASSET TYPES BUTTON (MATCHING IMAGE DESIGN) */}
+              <button
+                type="button"
+                title={`${category.categoryName ?? 'Category'} - Click to view Asset Types breakdown`}
+                aria-label={`View ${category.categoryName ?? 'Category'} asset types breakdown`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectCategoryAssetTypes?.(category);
+                }}
+                className={`group/typebtn relative flex items-center gap-3 px-3.5 py-1.5 rounded-2xl border ${
+                  meta.id === 'land'
+                    ? 'bg-emerald-50/90 border-emerald-400 hover:bg-emerald-100/80 hover:border-emerald-500'
+                    : meta.id === 'infrastructure'
+                    ? 'bg-violet-50/90 border-violet-400 hover:bg-violet-100/80 hover:border-violet-500'
+                    : meta.id === 'movable'
+                    ? 'bg-orange-50/90 border-orange-400 hover:bg-orange-100/80 hover:border-orange-500'
+                    : 'bg-blue-50/90 border-blue-400 hover:bg-blue-100/80 hover:border-blue-500'
+                } hover:shadow-xs active:scale-[0.98] transition-all duration-200 cursor-pointer select-none text-left`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-white shadow-xs border border-white/90 flex items-center justify-center group-hover/typebtn:scale-105 transition-transform duration-200">
+                  <Layers className={`w-4 h-4 ${t.statLabel}`} />
                 </div>
                 <div>
-                  <p className={`text-[9px] font-bold uppercase tracking-widest ${t.statLabel} leading-none mb-1`}>
+                  <p className={`text-[9px] font-bold uppercase tracking-wider ${t.statLabel} leading-tight mb-0.5`}>
                     {tI18n('totalAssetTypes')}
                   </p>
-                  <p className={`text-xl font-black leading-none ${t.statText}`}>
+                  <p className={`text-2xl font-black leading-none ${t.statText}`}>
                     {catTypes.length.toLocaleString('en-IN')}
                   </p>
                 </div>
-              </div>
+              </button>
 
               <div className={`w-px h-10 opacity-20 ${t.statLabel} bg-current`} />
 
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${t.statBg}`}>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${t.statBg} shadow-2xs`}>
                   <BarChart3 className={`w-4 h-4 ${t.statText}`} />
                 </div>
                 <div>

@@ -8,21 +8,22 @@ describe("AssetGrievanceRemarkColumns", () => {
   it("should return correct columns with remark and grievanceCategoryName mapping", () => {
     const columns = getAssetGrievanceRemarkColumns(t, tCommon);
     expect(columns).toHaveLength(4);
-    expect(columns[0].key).toBe("grievanceCategoryName");
-    expect(columns[1].key).toBe("remark");
-    expect(columns[2].key).toBe("description");
+    expect(columns[0].key).toBe("remark");
+    expect(columns[1].key).toBe("description");
+    expect(columns[2].key).toBe("grievanceCategoryName");
     expect(columns[3].key).toBe("isActive");
   });
 
-  it("should configure sorting with grievanceCategoryName mapping to grievanceCategoryId", () => {
+  it("should configure sorting with remark as sortable while grievanceCategoryName is non-sortable", () => {
     const onSortMock = vi.fn();
-    const columns = getAssetGrievanceRemarkColumns(t, tCommon, "grievanceCategoryId", "desc", onSortMock);
+    const columns = getAssetGrievanceRemarkColumns(t, tCommon, "remark", "desc", onSortMock);
 
-    // remark and grievanceCategoryName should have sortable headers (React objects)
+    // remark (index 0) should have sortable header (React object)
     expect(typeof columns[0].label).toBe("object");
-    expect(typeof columns[1].label).toBe("object");
 
-    // description should be static text
+    // description (index 1), grievanceCategoryName (index 2), and isActive (index 3) should be static text
+    expect(typeof columns[1].label).toBe("string");
     expect(typeof columns[2].label).toBe("string");
+    expect(typeof columns[3].label).toBe("string");
   });
 });

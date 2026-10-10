@@ -158,6 +158,7 @@ export function PropertyTypeMaster({
               <DeleteButton
                 aria-label={tCommon("table.actions.delete")}
                 onClick={() => handleDelete(row)}
+                hidden
               />
             </>
           )}

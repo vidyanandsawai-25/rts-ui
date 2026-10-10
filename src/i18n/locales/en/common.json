@@ -1,10 +1,16 @@
 {
+  "yes": "Yes",
+  "no": "No",
+  "select": {
+    "placeholder": "Select..."
+  },
   "buttons": {
     "save": "Save",
     "update": "Update",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "userManual": "User Manual",
     "close": "Close",
     "submit": "Submit",
     "add": "Add",
@@ -48,7 +54,9 @@
     "nameAllZeros": "Name cannot be all zeros",
     "nameFormat": "Invalid format for name",
     "descriptionAllZeros": "Description cannot be all zeros",
-    "descriptionFormat": "Invalid format for description"
+    "descriptionFormat": "Invalid format for description",
+    "documentRequired": "Document is required.",
+    "photoRequired": "Photo is required."
   },
   "form": {
     "validation": {
@@ -201,6 +209,7 @@
     "title": "App",
     "noServicesAvailable": "No services available",
     "departmentName": "Property Tax Department",
+    "waterBillDepartmentName": "Water Bill Department",
     "defaultUser": "Default User",
     "assessmentSystem": "Property Tax Assessment & Management System",
     "welcome": "Welcome,",
@@ -354,5 +363,33 @@
     "errorIcon": "Error icon",
     "zoomLevel": "Zoom level",
     "loadError": "Failed to load image. Please try again."
+  },
+  "taxCalculation": {
+    "backgroundTitle": "Background Tax Recalculation",
+    "completedTitle": "Tax Recalculation Complete",
+    "failedTitle": "Tax Calculation Failed",
+    "pausedTitle": "Tax Calculation Paused",
+    "cancelledTitle": "Tax Calculation Terminated",
+    "progress": "Progress",
+    "dismiss": "Dismiss notification",
+    "processingUnits": "Processing {processed} of {total} units...",
+    "recalculatedUnits": "Recalculated {count} unit(s)",
+    "pausedMessage": "Tax calculation is paused. Click Resume to continue.",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "failed": "Failed",
+    "paused": "Paused",
+    "cancelled": "Terminated",
+    "pause": "Pause",
+    "resume": "Resume",
+    "terminate": "Terminate",
+    "close": "Close",
+    "minimize": "Minimize",
+    "expand": "Expand details",
+    "minimizedHint": "Click to expand calculation details",
+    "activeProcesses": "Tax Calculations",
+    "units": "Units",
+    "ready": "Ready",
+    "confirmTerminate": "Are you sure you want to terminate this tax calculation?"
   }
 }

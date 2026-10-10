@@ -14,6 +14,7 @@ export interface PropertyDetailsData {
   totalCarpetArea: string;
   builtupArea: string;
   category?: string;
+  categoryId?: number;
   wingNo?: string;
   moujaNo?: string;
   moujaDescription?: string;
@@ -24,6 +25,9 @@ export interface PropertyDetailsData {
 export interface KYCDetailsData {
   ownerType: string;
   title: string;
+  ownerName?: string;
+  ownerNameEnglish?: string;
+  ownerNameRegional?: string;
   propertyHolderName: string;
   propertyHolderNameMarathi: string;
   propertyHolderNameEnglish?: string;
@@ -60,6 +64,10 @@ export interface SocietyDetailsData {
   managerName: string;
   managerEmail: string;
   managerMobileNo: string;
+  societyDetailId?: number | null;
+  societyId?: number | null;
+  wingDetailId?: number | null;
+  wingId?: number | null;
 }
 
 export interface BuildingPermissionItem {
@@ -76,6 +84,16 @@ export interface BuildingPermissionItem {
   documentViewUrl?: string | null;
   propertyDetailsId?: number | null;
   floorDescription?: string | null;
+  entityType?: string | null;
+  level?: string | null;
+  sourceLevel?: string | null;
+  wingDetailId?: number | null;
+  societyDetailId?: number | null;
+  wingName?: string | null;
+  unitNo?: string | null;
+  partitionNo?: string | null;
+  applicableToLabel?: string | null;
+  inheritedFrom?: string | null;
 }
 
 export interface BuildingPermissionData {
@@ -148,6 +166,15 @@ export interface PropertySocialDetailItem {
   documentGuid?: string | null;
   percentage?: number | null;
   amount?: number | null;
+  level?: string;
+  wingDetailId?: number | null;
+  societyDetailId?: number | null;
+  wingName?: string | null;
+  unitNo?: string | null;
+  partitionNo?: string | null;
+  applicableToLabel?: string;
+  entityType?: string | null;
+  inheritedFrom?: string | null;
 }
 
 export interface DiscountData {

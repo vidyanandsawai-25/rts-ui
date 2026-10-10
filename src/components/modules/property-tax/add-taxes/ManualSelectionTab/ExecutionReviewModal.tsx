@@ -3,7 +3,7 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/ActionButton';
 import { CancelButton, PreviewButton } from '@/components/common/ActionButtons';
 import { Info, Calendar as CalendarIcon, Play } from 'lucide-react';
-import { DatePicker, TimePicker } from '@/components/common';
+import { DatePicker, TimePicker, Checkbox } from '@/components/common';
 import { ScopeOptionItem } from '@/types/addTaxes.types';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -13,10 +13,11 @@ interface ExecutionReviewModalProps {
   setIsModalOpen: (val: boolean) => void;
   currentScopeData: ScopeOptionItem | undefined;
   eligibleCount: number | null;
-  onStartExecution?: (isScheduled: boolean, scheduledDateTime?: string) => void;
+  onStartExecution?: (isScheduled: boolean, scheduledDateTime?: string, forceRecalculate?: boolean) => void;
   onPreview?: () => void;
   isPreviewLoading?: boolean;
   financeYear?: string;
+  selectedScope?: string;
 }
 
 export function ExecutionReviewModal({
@@ -27,10 +28,13 @@ export function ExecutionReviewModal({
   onStartExecution,
   onPreview,
   isPreviewLoading,
-  financeYear
+  financeYear,
+  selectedScope
 }: ExecutionReviewModalProps) {
   const t = useTranslations('addTaxes');
+  const activeScope = selectedScope || currentScopeData?.scopeType;
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [forceRecalculate, setForceRecalculate] = useState(false);
 
   // Get date options dynamically for today and tomorrow
   const getDates = () => {
@@ -138,7 +142,7 @@ export function ExecutionReviewModal({
     }
 
     if (onStartExecution) {
-      onStartExecution(true, scheduledDateObj.toISOString());
+      onStartExecution(true, scheduledDateObj.toISOString(), forceRecalculate);
     }
     setShowScheduleModal(false);
     setIsModalOpen(false);
@@ -174,7 +178,7 @@ export function ExecutionReviewModal({
                 icon={Play}
                 onClick={() => {
                   if (onStartExecution) {
-                    onStartExecution(false);
+                    onStartExecution(false, undefined, forceRecalculate);
                   }
                 }}
               >
@@ -196,12 +200,29 @@ export function ExecutionReviewModal({
             </div>
             <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
               <span className="text-gray-500 text-sm">{t('executionValidation.tags.scope')}</span>
-              <span className="font-semibold text-gray-900 text-sm">{currentScopeData?.displayName}</span>
+              <span className="font-semibold text-gray-900 text-sm">{currentScopeData?.displayName || (activeScope === 'masterDataChange' ? 'Master Change Batch' : '')}</span>
             </div>
             <div className="flex justify-between items-center px-4 py-3 bg-gray-50">
               <span className="text-gray-500 text-sm">{t('stats.eligibleRecords')}</span>
               <span className="font-bold text-blue-600 text-lg">{eligibleCount}</span>
             </div>
+          </div>
+
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={forceRecalculate}
+                onCheckedChange={setForceRecalculate}
+              />
+              <span className="text-sm font-medium text-gray-900">{t('reviewModal.forceRecalculate')}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1 ml-6">{t('reviewModal.forceRecalculateHint')}</p>
+          {activeScope === 'masterDataChange' && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mt-2 font-medium flex items-center gap-1.5">
+              <Info className="h-4 w-4 text-amber-600 flex-shrink-0" />
+              <span>{t('reviewModal.masterDataNotice', { financeYear: financeYear || '2026-2027' })}</span>
+            </p>
+          )}
           </div>
 
           <div className="bg-orange-50 rounded-lg border border-orange-200 p-4 mt-2">

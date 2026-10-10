@@ -7,17 +7,16 @@ import { Select } from '@/components/common/select';
 import { SearchSelect } from '@/components/common/SearchSelect';
 import { getAuditColumns, JobAuditItem } from './AuditMonitorColumns';
 import { JobDetailModal } from './JobDetailModal';
-import { useAuditMonitor, AuditMonitorActions } from '@/hooks/add-taxes/useAuditMonitor';
+import { useAuditMonitor } from '@/hooks/add-taxes/useAuditMonitor';
 
 type JobAuditRow = JobAuditItem & Record<string, unknown>;
 
 interface AuditMonitorTabProps {
   financeYearId?: string;
   refreshKey?: number;
-  actions: AuditMonitorActions;
 }
 
-export function AuditMonitorTab({ financeYearId, refreshKey, actions }: AuditMonitorTabProps) {
+export function AuditMonitorTab({ financeYearId, refreshKey }: AuditMonitorTabProps) {
   const {
     t,
     selectedJobCode,
@@ -48,7 +47,7 @@ export function AuditMonitorTab({ financeYearId, refreshKey, actions }: AuditMon
     isDetailLoading,
     setDetailPage,
     setDetailPageSize,
-  } = useAuditMonitor({ financeYearId, refreshKey, actions });
+  } = useAuditMonitor({ financeYearId, refreshKey });
 
   return (
     <div className="flex flex-col gap-6">

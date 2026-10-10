@@ -58,6 +58,11 @@ export {
   isAllZeros,
   YEAR_REGEX,
   HAS_LETTER_REGEX,
+  UPLOAD_COUNT_REGEX,
+  UPLOAD_COUNT_SANITIZE,
+  UPLOAD_COUNT_MIN,
+  UPLOAD_COUNT_MAX,
+  sanitizeUploadCount,
 } from './validation-rules';
 
 // Re-export from validation-helpers.ts

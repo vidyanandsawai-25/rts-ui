@@ -17,6 +17,54 @@ interface BackendApiResponseWrapper<T> {
     errors?: string[];
 }
 
+function normalizePropertyCertificateWithStatus(raw: unknown): PropertyCertificateWithStatusDto | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const item = raw as Record<string, unknown>;
+    const certificateTypeId = Number(item.certificateTypeId ?? item.CertificateTypeId ?? item.id ?? item.Id ?? 0);
+    if (!certificateTypeId) return null;
+
+    const propertyCertificateId = (item.propertyCertificateId ?? item.PropertyCertificateId) != null
+        ? Number(item.propertyCertificateId ?? item.PropertyCertificateId)
+        : null;
+    const certificateNo = (item.certificateNo ?? item.CertificateNo ?? item.certificateNumber ?? item.CertificateNumber ?? item.number ?? item.Number) as string | null | undefined;
+    const issueDate = (item.issueDate ?? item.IssueDate ?? item.certificateIssueDate ?? item.CertificateIssueDate ?? item.certificateDate ?? item.CertificateDate ?? item.date ?? item.Date) as string | null | undefined;
+    const documentGuid = (item.documentGuid ?? item.DocumentGuid ?? item.guid ?? item.Guid ?? item.documentPath ?? item.DocumentPath) as string | null | undefined;
+    const fileName = (item.fileName ?? item.FileName ?? item.documentName ?? item.DocumentName ?? item.name ?? item.Name) as string | null | undefined;
+    const propertyDetailsId = (item.propertyDetailsId ?? item.PropertyDetailsId) != null
+        ? Number(item.propertyDetailsId ?? item.PropertyDetailsId)
+        : null;
+    const societyDetailId = (item.societyDetailId ?? item.SocietyDetailId) != null
+        ? Number(item.societyDetailId ?? item.SocietyDetailId)
+        : null;
+    const wingDetailId = (item.wingDetailId ?? item.WingDetailId) != null
+        ? Number(item.wingDetailId ?? item.WingDetailId)
+        : null;
+
+    const isActiveVal = item.isActive ?? item.IsActive;
+    const hasCertVal = item.hasCertificate ?? item.HasCertificate;
+    const hasAttachedData = Boolean(hasCertVal || (propertyCertificateId && propertyCertificateId > 0) || (certificateNo && String(certificateNo).trim() !== '') || (issueDate && String(issueDate).trim() !== '') || (documentGuid && String(documentGuid).trim() !== ''));
+
+    return {
+        certificateTypeId,
+        certificateTypeName: String(item.certificateTypeName ?? item.CertificateTypeName ?? ''),
+        certificateTypeCode: item.certificateTypeCode ? String(item.certificateTypeCode) : (item.CertificateTypeCode ? String(item.CertificateTypeCode) : undefined),
+        displayOrder: Number(item.displayOrder ?? item.DisplayOrder ?? 0),
+        hasCertificate: hasCertVal !== undefined ? Boolean(hasCertVal) : hasAttachedData,
+        propertyCertificateId,
+        isActive: isActiveVal !== undefined ? Boolean(isActiveVal) : hasAttachedData,
+        certificateNo: certificateNo ? String(certificateNo).trim() : null,
+        issueDate: issueDate ? String(issueDate).trim() : null,
+        documentGuid: documentGuid ? String(documentGuid).trim() : null,
+        fileName: fileName ? String(fileName).trim() : null,
+        propertyDetailsId,
+        isProtected: item.isProtected !== undefined ? Boolean(item.isProtected) : (item.IsProtected !== undefined ? Boolean(item.IsProtected) : undefined),
+        isRequired: item.isRequired !== undefined ? Boolean(item.isRequired) : (item.IsRequired !== undefined ? Boolean(item.IsRequired) : undefined),
+        entityType: item.entityType ? String(item.entityType) : (item.EntityType ? String(item.EntityType) : undefined),
+        societyDetailId,
+        wingDetailId,
+    };
+}
+
 /* ---------------- BUILDING PERMISSIONS / PROPERTY CERTIFICATES ---------------- */
 
 // 1. GET - Load all certificate types with their current status for a property
@@ -30,11 +78,16 @@ export async function getCertificateTypesWithStatus(
     const response = await apiClient.get<BackendApiResponseWrapper<PropertyCertificateWithStatusDto[]>>(url);
     
     if (response.success && response.data) {
+        const raw = response.data as unknown as Record<string, unknown>;
+        const rawItems = (raw.items ?? raw.Items ?? raw.data ?? raw) as unknown[];
+        const items = Array.isArray(rawItems)
+            ? rawItems.map(normalizePropertyCertificateWithStatus).filter((item): item is PropertyCertificateWithStatusDto => item !== null)
+            : [];
         return {
-            success: response.data.success,
+            success: (raw.success as boolean) ?? response.data.success ?? true,
             statusCode: response.statusCode,
-            data: response.data.items,
-            message: response.data.message || response.message
+            data: items,
+            message: (raw.message as string) || response.message
         };
     }
     
@@ -63,11 +116,16 @@ export async function getSocietyWingTypesWithStatus(
     const response = await apiClient.get<BackendApiResponseWrapper<PropertyCertificateWithStatusDto[]>>(url);
     
     if (response.success && response.data) {
+        const raw = response.data as unknown as Record<string, unknown>;
+        const rawItems = (raw.items ?? raw.Items ?? raw.data ?? raw) as unknown[];
+        const items = Array.isArray(rawItems)
+            ? rawItems.map(normalizePropertyCertificateWithStatus).filter((item): item is PropertyCertificateWithStatusDto => item !== null)
+            : [];
         return {
-            success: response.data.success,
+            success: (raw.success as boolean) ?? response.data.success ?? true,
             statusCode: response.statusCode,
-            data: response.data.items,
-            message: response.data.message || response.message
+            data: items,
+            message: (raw.message as string) || response.message
         };
     }
     
@@ -84,11 +142,13 @@ export async function getCertificateTypeMaster(): Promise<ApiResponse<unknown[]>
     try {
         const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>('/property-certificates/type-master');
         if (response.success && response.data) {
+            const raw = response.data as unknown as Record<string, unknown>;
+            const items = (raw.items ?? raw.Items ?? raw.data ?? raw) as unknown[];
             return {
-                success: response.data.success,
+                success: (raw.success as boolean) ?? response.data.success ?? true,
                 statusCode: response.statusCode,
-                data: response.data.items,
-                message: response.data.message || response.message
+                data: items,
+                message: (raw.message as string) || response.message
             };
         }
         return {
@@ -106,9 +166,101 @@ export async function getCertificateTypeMaster(): Promise<ApiResponse<unknown[]>
 }
 
 // 2b. GET - Load Wings dynamically by propertyId
-export async function getWingsByProperty(propertyId: string): Promise<ApiResponse<unknown[]>> {
+export async function getWingsByProperty(
+    propertyId: string,
+    societyId?: number | string | null
+): Promise<ApiResponse<unknown[]>> {
     try {
-        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>(`/property-certificates/wings/${propertyId}`);
+        const propIdNum = Number(propertyId);
+        const socIdNum = societyId ? Number(societyId) : null;
+        if (socIdNum && socIdNum > 0) {
+            try {
+                const { getWingDetailsMastBySocietyDetailsMastId } = await import("./wingDetailsMast.services");
+                const wingDetailsRes = await getWingDetailsMastBySocietyDetailsMastId(socIdNum);
+                const mastItems = Array.isArray(wingDetailsRes?.wingDetailsMast)
+                    ? wingDetailsRes.wingDetailsMast
+                    : Array.isArray((wingDetailsRes as unknown as Record<string, unknown>)?.items)
+                    ? (wingDetailsRes as unknown as Record<string, unknown>).items as Array<{ id: number; wingMasterId?: number; wingName: string; isActive?: boolean }>
+                    : [];
+                
+                const seen = new Set<string>();
+                const distinctWings: Array<{ wingDetailId: number; wingMasterId?: number; wingName: string; wingNo?: string }> = [];
+                for (const item of mastItems) {
+                    if (!item || item.isActive === false) continue;
+                    const name = (item.wingName || '').trim();
+                    const key = `${item.id}-${name.toLowerCase()}`;
+                    if (!seen.has(key) && name) {
+                        seen.add(key);
+                        distinctWings.push({
+                            wingDetailId: item.id,
+                            wingMasterId: item.wingMasterId,
+                            wingName: name,
+                            wingNo: name,
+                        });
+                    }
+                }
+                if (distinctWings.length > 0) {
+                    return {
+                        success: true,
+                        statusCode: 200,
+                        data: distinctWings,
+                    };
+                }
+            } catch {
+                // Try societyDetails lookup by propertyId
+            }
+        }
+
+        if (propIdNum > 0) {
+            try {
+                const { getSocietyDetailsByProperty } = await import("./societyDetails.services");
+                const socRes = await getSocietyDetailsByProperty(propIdNum);
+                const socItems = Array.isArray(socRes?.items) ? socRes.items : [];
+                for (const soc of socItems) {
+                    if (soc?.id && soc.id !== socIdNum) {
+                        const { getWingDetailsMastBySocietyDetailsMastId } = await import("./wingDetailsMast.services");
+                        const wingDetailsRes = await getWingDetailsMastBySocietyDetailsMastId(soc.id);
+                        const mastItems = Array.isArray(wingDetailsRes?.wingDetailsMast)
+                            ? wingDetailsRes.wingDetailsMast
+                            : Array.isArray((wingDetailsRes as unknown as Record<string, unknown>)?.items)
+                            ? (wingDetailsRes as unknown as Record<string, unknown>).items as Array<{ id: number; wingMasterId?: number; wingName: string; isActive?: boolean }>
+                            : [];
+                        
+                        const seen = new Set<string>();
+                        const distinctWings: Array<{ wingDetailId: number; wingMasterId?: number; wingName: string; wingNo?: string }> = [];
+                        for (const item of mastItems) {
+                            if (!item || item.isActive === false) continue;
+                            const name = (item.wingName || '').trim();
+                            const key = `${item.id}-${name.toLowerCase()}`;
+                            if (!seen.has(key) && name) {
+                                seen.add(key);
+                                distinctWings.push({
+                                    wingDetailId: item.id,
+                                    wingMasterId: item.wingMasterId,
+                                    wingName: name,
+                                    wingNo: name,
+                                });
+                            }
+                        }
+                        if (distinctWings.length > 0) {
+                            return {
+                                success: true,
+                                statusCode: 200,
+                                data: distinctWings,
+                            };
+                        }
+                    }
+                }
+            } catch {
+                // Fall back to /property-certificates/wings
+            }
+        }
+
+        let url = `/property-certificates/wings/${encodeURIComponent(propertyId)}`;
+        if (societyId && String(societyId).trim() !== '') {
+            url += `?societyId=${encodeURIComponent(String(societyId))}`;
+        }
+        const response = await apiClient.get<BackendApiResponseWrapper<unknown[]>>(url);
         if (response.success && response.data) {
             const rawData = response.data as unknown as Record<string, unknown>;
             const items = Array.isArray(rawData.items)
@@ -118,10 +270,31 @@ export async function getWingsByProperty(propertyId: string): Promise<ApiRespons
                 : Array.isArray(response.data)
                 ? (response.data as unknown[])
                 : [];
+            
+            const seenNames = new Set<string>();
+            const distinctWings: Array<{ wingDetailId: number; wingMasterId?: number; wingName: string; wingNo?: string }> = [];
+            for (const item of items) {
+                const w = item as Record<string, unknown>;
+                if (!w) continue;
+                const wName = String(w.wingName || w.WingName || '').trim();
+                const wDetailId = Number(w.wingDetailId ?? w.WingDetailId ?? w.id ?? w.Id ?? 0);
+                const wMasterId = w.wingMasterId != null ? Number(w.wingMasterId) : undefined;
+                const key = wName.toLowerCase();
+                if (!seenNames.has(key) && wName) {
+                    seenNames.add(key);
+                    distinctWings.push({
+                        wingDetailId: wDetailId,
+                        wingMasterId: wMasterId,
+                        wingName: wName,
+                        wingNo: String(w.wingNo || w.WingNo || wName),
+                    });
+                }
+            }
+
             return {
                 success: true,
                 statusCode: response.statusCode,
-                data: items,
+                data: distinctWings,
                 message: rawData.message ? String(rawData.message) : response.message
             };
         }
@@ -369,6 +542,36 @@ export async function deletePropertyCertificate(
     }
 }
 
+// 7b. DELETE - Soft delete PropertyCertificate, DocumentBinding, and Document using DocumentId
+export async function deletePropertyCertificateByDocumentId(
+    documentId: number
+): Promise<ApiResponse<void>> {
+    try {
+        const response = await apiClient.delete<BackendApiResponseWrapper<void>>(
+            `/property-certificates/by-document/${documentId}`
+        );
+        if (response.success) {
+            return {
+                success: response.data ? response.data.success : true,
+                statusCode: response.statusCode,
+                message: response.data?.message || response.message || "Certificate deleted successfully"
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error || response.message || "Failed to delete certificate",
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}
+
+
 // 8. POST - Add Certificate Record (/api/ApartmentQC/certificate-record)
 export interface ApartmentQcCertificateRecordPayload {
     entityScope?: 'Society' | 'Wing' | 'Property';
@@ -385,22 +588,37 @@ export interface ApartmentQcCertificateRecordPayload {
     certificateIssueDate?: string;
     status?: string;
     documentGuid?: string | null;
+    existingDocumentGuid?: string | null;
+    propertyCertificateId?: number | null;
+    isFileModified?: boolean;
+    hasDocument?: boolean;
+    fileName?: string | null;
 }
+
+import type { 
+    CreateCertificateRecordResponseDto,
+    DeleteCertificateRecordRequestDto,
+    DeleteCertificateRecordResponseDto,
+} from "@/types/building-permission.types";
+
+export type DeleteApartmentQcCertificateRecordPayload = DeleteCertificateRecordRequestDto;
 
 export async function postApartmentQcCertificateRecord(
     payload: ApartmentQcCertificateRecordPayload
-): Promise<ApiResponse<unknown>> {
+): Promise<ApiResponse<CreateCertificateRecordResponseDto>> {
     try {
-        const response = await apiClient.post<BackendApiResponseWrapper<unknown>>(
+        const response = await apiClient.post<BackendApiResponseWrapper<CreateCertificateRecordResponseDto>>(
             '/ApartmentQC/certificate-record',
             payload
         );
         if (response.success && response.data) {
+            const rawBody = response.data as unknown as Record<string, unknown>;
+            const rawItems = (rawBody.items ?? rawBody.Items ?? rawBody.data ?? rawBody) as CreateCertificateRecordResponseDto;
             return {
-                success: response.data.success ?? true,
+                success: (rawBody.success as boolean) ?? true,
                 statusCode: response.statusCode,
-                data: response.data.items,
-                message: response.data.message || response.message
+                data: rawItems,
+                message: (rawBody.message as string) || response.message
             };
         }
         return {
@@ -416,3 +634,36 @@ export async function postApartmentQcCertificateRecord(
         };
     }
 }
+
+// 9. POST/DELETE - Delete Certificate Record (/api/ApartmentQC/delete-certificate-record)
+export async function deleteApartmentQcCertificateRecord(
+    payload: DeleteApartmentQcCertificateRecordPayload
+): Promise<ApiResponse<DeleteCertificateRecordResponseDto>> {
+    try {
+        const response = await apiClient.post<BackendApiResponseWrapper<DeleteCertificateRecordResponseDto>>(
+            '/ApartmentQC/delete-certificate-record',
+            payload
+        );
+        if (response.success && response.data) {
+            const rawBody = response.data as unknown as Record<string, unknown>;
+            const rawItems = (rawBody.items ?? rawBody.Items ?? rawBody.data ?? rawBody) as DeleteCertificateRecordResponseDto;
+            return {
+                success: (rawBody.success as boolean) ?? true,
+                statusCode: response.statusCode,
+                data: rawItems,
+                message: (rawBody.message as string) || response.message
+            };
+        }
+        return {
+            success: false,
+            statusCode: response.statusCode,
+            error: response.error || response.message || 'Failed to delete certificate record',
+            message: response.message
+        };
+    } catch (error: unknown) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+}

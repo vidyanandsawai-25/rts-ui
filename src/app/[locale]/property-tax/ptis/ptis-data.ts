@@ -20,8 +20,14 @@ import { PTIS_TABS, PtisTabId } from '@/types/ptis.types';
 
 /** Validate and coerce a raw tab param into a typed PtisTabId. */
 export const toValidTab = (value: unknown): PtisTabId => {
-  return typeof value === 'string' && (PTIS_TABS as readonly string[]).includes(value)
-    ? (value as PtisTabId)
+  const tabStr = typeof value === 'string' ? value.toLowerCase().trim() : '';
+  if (tabStr === 'discount' || tabStr === 'discountdetails') return 'discountdetails';
+  if (tabStr === 'building' || tabStr === 'buildingpermission') return 'buildingpermission';
+  if (tabStr === 'old' || tabStr === 'olddetails') return 'olddetails';
+  if (tabStr === 'kyc' || tabStr === 'kycdetails') return 'kycdetails';
+  if (tabStr === 'society' || tabStr === 'societydetails') return 'societydetails';
+  return (PTIS_TABS as readonly string[]).includes(tabStr)
+    ? (tabStr as PtisTabId)
     : 'propertydetails';
 };
 
@@ -131,7 +137,7 @@ export function buildDetailsFromResults(
   societyResult: { success: boolean; data?: SocietyDetailsData } | null,
   oldDetailsResult: { success: boolean; data?: OldDetailsData } | null,
   oldFloorResult: { success: boolean; data?: OldFloorDetailsData[] } | null,
-  oldTaxesResult: { success: boolean; data?: OldTaxesData } | null
+  oldTaxesResult: { success: boolean; data?: OldTaxesData | OldTaxesData[] } | null
 ): {
   kycDetails: KYCDetailsData;
   societyDetails: SocietyDetailsData;
@@ -149,6 +155,7 @@ export function buildDetailsFromResults(
     oldFloorTableData: oldFloorResult?.success && Array.isArray(oldFloorResult.data)
       ? oldFloorResult.data : [],
     oldTaxesData: oldTaxesResult?.success && oldTaxesResult.data
-      ? oldTaxesResult.data : null,
+      ? (Array.isArray(oldTaxesResult.data) ? oldTaxesResult.data[0] ?? null : oldTaxesResult.data)
+      : null,
   };
 }

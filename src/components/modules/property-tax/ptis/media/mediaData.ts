@@ -37,18 +37,39 @@ export function mapPropertyPhotoToAdditionalImage(p: PropertyPhotoDto, categoryN
     'sign board photo', 'sign board', 'signboard', 'advertisement board photo', 'advertisement board', 'advertisement',
     'owner signature photo', 'owner signature', 'signature', 'other photo', 'other', 'floor plan', 'floor',
     'gis / satellite view', 'gis', 'satellite view', 'gis / satellite', 'rear elevation', 'back', 'living room', 'living',
-    'kitchen', 'bedroom', 'bathroom', 'balcony', 'terrace view', 'terrace', 'parking view', 'parking'
+    'kitchen', 'bedroom', 'bathroom', 'balcony', 'terrace view', 'terrace', 'parking view', 'parking',
+    'society photo', 'society place photo', 'society board photo', 'society sign board photo', 'society place', 'society board', 'society sign board',
+    'wing photo', 'wing building photo', 'wing place photo', 'wing board photo', 'wing sign board photo', 'wing building', 'wing place', 'wing board', 'wing sign board',
+    'amenity photo', 'amenity'
   ];
+
+  const checkIsDefault = (nameStr: string) => {
+    const lower = nameStr.toLowerCase();
+    return (
+      !nameStr ||
+      defaultEnglishNames.includes(lower) ||
+      lower === p.photoTypeCode?.toLowerCase() ||
+      lower.startsWith('wing building photo') ||
+      lower.startsWith('wing place photo') ||
+      lower.startsWith('wing board photo') ||
+      lower.startsWith('wing sign board photo') ||
+      lower.startsWith('society place photo') ||
+      lower.startsWith('society board photo') ||
+      lower.startsWith('society sign board photo') ||
+      lower.startsWith('property photo') ||
+      lower.startsWith('photo plan')
+    );
+  };
 
   if (remarksStr.includes(' | ')) {
     const [namePart, ...remarkParts] = remarksStr.split(' | ');
     const trimmedName = namePart?.trim() || '';
-    const isDefault = !trimmedName || defaultEnglishNames.includes(trimmedName.toLowerCase()) || trimmedName.toLowerCase() === p.photoTypeCode?.toLowerCase() || trimmedName.toLowerCase().startsWith('wing building photo');
+    const isDefault = checkIsDefault(trimmedName);
     parsedTitle = isDefault ? categoryName : trimmedName;
     parsedRemarks = remarkParts.join(' | ');
   } else if (remarksStr) {
     const trimmedRemarks = remarksStr.trim();
-    const isDefault = defaultEnglishNames.includes(trimmedRemarks.toLowerCase()) || trimmedRemarks.toLowerCase() === p.photoTypeCode?.toLowerCase() || trimmedRemarks.toLowerCase().startsWith('wing building photo');
+    const isDefault = checkIsDefault(trimmedRemarks);
     parsedTitle = isDefault ? categoryName : trimmedRemarks;
   }
 
@@ -62,6 +83,7 @@ export function mapPropertyPhotoToAdditionalImage(p: PropertyPhotoDto, categoryN
     downloadUrl: p.downloadUrl || (p.documentGuid ? getDownloadDocumentUrl(p.documentGuid.toString()) : undefined),
     wingDetailId: p.wingDetailId,
     wingName: p.wingName,
+    societyDetailId: p.societyDetailId,
   };
 }
 
@@ -70,6 +92,46 @@ export function findCategory(categories: PhotoCategory[], codeKeywords: string[]
     const code = c.photoTypeCode?.toUpperCase() || '', name = c.photoTypeName?.toLowerCase() || '';
     return codeKeywords.some(kw => code.includes(kw)) || nameKeywords.some(kw => name.includes(kw));
   });
+}
+
+export function formatWingCardLabel(baseLabel: string, wingName?: string | null): string {
+  if (!baseLabel) return baseLabel || '';
+  if (!wingName || !wingName.trim()) return baseLabel;
+
+  const trimmed = wingName.trim();
+  const cleanWing = trimmed
+    .replace(/^(?:wing|विंग|विग)\s+/gi, '')
+    .replace(/\s+(?:wing|विंग|विग)$/gi, '')
+    .trim() || trimmed;
+
+  if (!cleanWing) return baseLabel;
+
+  // Escape special regex characters in cleanWing
+  const escapedWing = cleanWing.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Check if cleanWing is already present as a distinct word in baseLabel
+  const wordBoundaryRegex = new RegExp(`(?:^|[\\s_\\-–—/\\\\(\\[{])${escapedWing}(?:$|[\\s_\\-–—/\\\\)\\]}])`, 'i');
+  if (wordBoundaryRegex.test(baseLabel)) {
+    return baseLabel;
+  }
+
+  const isDevanagari = /[\u0900-\u097F]/.test(baseLabel);
+
+  // If baseLabel starts with "Wing " or "विंग " or "विग "
+  if (/^(?:wing)\s+/i.test(baseLabel)) {
+    return baseLabel.replace(/^(?:wing)\s+/i, `Wing ${cleanWing} `).trim();
+  }
+  if (/^(?:विंग|विग)\s+/i.test(baseLabel)) {
+    return baseLabel.replace(/^(?:विंग|विग)\s+/i, `विंग ${cleanWing} `).trim();
+  }
+
+  // If baseLabel is just "Wing" or "विंग" or generic wing photo terms
+  if (/^(?:wing|विंग|विग)$/i.test(baseLabel.trim())) {
+    return isDevanagari ? `विंग ${cleanWing}` : `Wing ${cleanWing}`;
+  }
+
+  // Prepend Wing {cleanWing}
+  return isDevanagari ? `विंग ${cleanWing} ${baseLabel}` : `Wing ${cleanWing} ${baseLabel}`;
 }
 
 export function mapSlotsToCategories(
@@ -82,7 +144,14 @@ export function mapSlotsToCategories(
   isMainProperty: boolean = false,
   categoryId: number | null = null,
   _propertyTypeId: number | null = null,
-  entityType?: string
+  entityType?: string,
+  isAmenityProp?: boolean,
+  societyPhotoFallbackGuid?: string,
+  societyPhotoFallbackUrl?: string,
+  isQuickDataEntry: boolean = false,
+  partitionNo?: string | null,
+  _hasExplicitWing: boolean = false,
+  societyDetailId?: number | null
 ): PhotoCategory[] {
   const systemCodes = [
     'FRONT', 'FLOOR', 'GIS', 'BACK', 'LIVING', 'KITCHEN', 'BEDROOM', 'BATHROOM', 'BALCONY', 'TERRACE', 'PARKING', 'CHANGE_DETECTION',
@@ -104,12 +173,19 @@ export function mapSlotsToCategories(
       name.includes('property_plan')
     );
   };
+  const normalizeCode = (c?: string) =>
+    (c || '').toUpperCase().trim().replace(/_PHOTO$/, '').replace(/PHOTO$/, '').replace(/_/g, '');
+
   const isPhotoMatch = (targetCode?: string, targetTypeId?: number, photoCode?: string, photoTypeId?: number) => {
-    if (targetCode && photoCode && targetCode.toUpperCase() === photoCode.toUpperCase()) {
+    if (targetTypeId && photoTypeId && Number(targetTypeId) > 0 && Number(targetTypeId) === Number(photoTypeId)) {
       return true;
     }
-    if (targetTypeId && photoTypeId && Number(targetTypeId) === Number(photoTypeId)) {
-      return true;
+    if (targetCode && photoCode) {
+      const tNorm = normalizeCode(targetCode);
+      const pNorm = normalizeCode(photoCode);
+      if (tNorm && pNorm && tNorm === pNorm) {
+        return true;
+      }
     }
     return false;
   };
@@ -117,8 +193,12 @@ export function mapSlotsToCategories(
   const baseCats = slots.map(s => {
     const nameFallback = s.photoTypeName || '';
     let nameVal = t ? getLocalizedCategoryName(s.photoTypeCode, nameFallback, t) : nameFallback;
-    if (wingName && s.photoTypeCode?.toUpperCase().startsWith('WING_') && !nameVal.includes(`(${wingName})`)) {
-      nameVal = `${nameVal} (${wingName})`;
+    const isWingSlot = Boolean(
+      s.photoTypeCode?.toUpperCase().includes('WING') ||
+      s.photoTypeName?.toLowerCase().includes('wing')
+    );
+    if (wingName && isWingSlot) {
+      nameVal = formatWingCardLabel(nameVal, wingName);
     }
     nameVal = nameVal.replace(/(\([^)]+\))\s*\1+/g, '$1');
 
@@ -127,34 +207,38 @@ export function mapSlotsToCategories(
     let viewUrl = s.viewUrl;
     let propertyPhotoId = s.propertyPhotoId;
 
-    const isWingCat = Boolean(
-      s.photoTypeCode?.toUpperCase().includes('WING') ||
-      s.photoTypeName?.toLowerCase().includes('wing')
-    );
-    const isSocietyCat = Boolean(
-      s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      s.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      s.photoTypeName?.toLowerCase().includes('society') ||
-      s.photoTypeName?.toLowerCase().includes('amenity')
-    );
+    const slotScope = (s.photoScope || '').toUpperCase().trim();
+    const isAmenityCat = slotScope === 'AMENITY' || (!slotScope && Boolean(s.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    const isWingCat = !isAmenityCat && (slotScope === 'WING' || (!slotScope && Boolean(s.photoTypeCode?.toUpperCase().includes('WING'))));
+    const isSocietyCat = !isAmenityCat && (slotScope === 'SOCIETY' || (!slotScope && Boolean(s.photoTypeCode?.toUpperCase().includes('SOCIETY'))));
 
-    const checkIsWingPhoto = (p: PropertyPhotoDto) => Boolean(
-      p.photoTypeCode?.toUpperCase().includes('WING') ||
-      p.photoTypeName?.toLowerCase().includes('wing')
-    );
+    const checkIsAmenityPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'AMENITY' || (!pScope && Boolean(p.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    };
 
-    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
-      p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      p.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      p.photoTypeName?.toLowerCase().includes('society') ||
-      p.photoTypeName?.toLowerCase().includes('amenity')
-    );
+    const checkIsWingPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'WING' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('WING')));
+    };
+
+    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'SOCIETY' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('SOCIETY')));
+    };
 
     let matchingPhoto: PropertyPhotoDto | undefined;
-    if (isWingCat) {
+    if (isAmenityCat) {
+      matchingPhoto = uploadedPhotos.find(p => {
+        if (!checkIsAmenityPhoto(p)) return false;
+        return isPhotoMatch(s.photoTypeCode, s.photoTypeId, p.photoTypeCode, p.photoTypeId);
+      });
+    } else if (isWingCat) {
       matchingPhoto = uploadedPhotos.find(p => {
         if (!checkIsWingPhoto(p)) return false;
-        if (selectedWingDetailId && p.wingDetailId && p.wingDetailId !== selectedWingDetailId) return false;
+        if (selectedWingDetailId) {
+          if (!p.wingDetailId || Number(p.wingDetailId) !== Number(selectedWingDetailId)) return false;
+        }
         return isPhotoMatch(s.photoTypeCode, s.photoTypeId, p.photoTypeCode, p.photoTypeId);
       });
     } else if (isSocietyCat) {
@@ -162,9 +246,21 @@ export function mapSlotsToCategories(
         if (!checkIsSocietyPhoto(p)) return false;
         return isPhotoMatch(s.photoTypeCode, s.photoTypeId, p.photoTypeCode, p.photoTypeId);
       });
+      const isPrimarySocietySlot = !Boolean(
+        s.photoTypeCode?.toUpperCase().includes('BOARD') ||
+        s.photoTypeName?.toLowerCase().includes('board') ||
+        s.photoTypeCode?.toUpperCase().includes('SIGN') ||
+        s.photoTypeName?.toLowerCase().includes('sign')
+      );
+      const isFullyLoaded = fullyLoadedIds?.has(s.photoTypeId);
+      if (!matchingPhoto && isPrimarySocietySlot && s.hasPhoto && !isFullyLoaded && uploadedPhotos.length === 0 && (societyPhotoFallbackGuid || societyPhotoFallbackUrl)) {
+        hasPhoto = true;
+        documentGuid = societyPhotoFallbackGuid || documentGuid;
+        viewUrl = societyPhotoFallbackUrl || (societyPhotoFallbackGuid ? getViewDocumentUrl(societyPhotoFallbackGuid) : viewUrl);
+      }
     } else {
       matchingPhoto = uploadedPhotos.find(p => {
-        if (checkIsWingPhoto(p) || checkIsSocietyPhoto(p)) return false;
+        if (checkIsAmenityPhoto(p) || checkIsWingPhoto(p) || checkIsSocietyPhoto(p)) return false;
         const isPlanPhoto = isPhotoPlanCat(p) || p.remarks?.toLowerCase().includes('property plan') || p.remarks?.toLowerCase().includes('photo plan') || p.photoTypeCode?.toUpperCase().includes('PLAN');
         if (!isPhotoPlanCat(s) && isPlanPhoto) return false;
         if (isPhotoPlanCat(s) && isPlanPhoto) return true;
@@ -178,8 +274,19 @@ export function mapSlotsToCategories(
       documentGuid = matchingPhoto.documentGuid || documentGuid;
       viewUrl = matchingPhoto.documentGuid ? getViewDocumentUrl(matchingPhoto.documentGuid) : (matchingPhoto.viewUrl || viewUrl);
       propertyPhotoId = matchingPhoto.propertyPhotoId || propertyPhotoId;
+    } else if (isWingCat && selectedWingDetailId) {
+      hasPhoto = false;
+      documentGuid = undefined;
+      viewUrl = undefined;
+      propertyPhotoId = undefined;
     } else if (!isPlanCat) {
-      // For non-plan slots, keep slot's initial values
+      // For non-plan slots without matching photo: if slot is explicitly marked hasPhoto=false, or uploadedPhotos is populated/loaded, or category is fully loaded, clear values
+      if (!s.hasPhoto || (fullyLoadedIds && fullyLoadedIds.has(s.photoTypeId)) || (uploadedPhotos.length > 0 && !hasPhoto)) {
+        hasPhoto = false;
+        documentGuid = undefined;
+        viewUrl = undefined;
+        propertyPhotoId = undefined;
+      }
     } else {
       // For plan slots without a matching uploaded plan, clear default fallback photo values to avoid fallback bleeding
       hasPhoto = false;
@@ -192,6 +299,7 @@ export function mapSlotsToCategories(
       photoTypeId: s.photoTypeId,
       photoTypeCode: s.photoTypeCode,
       photoTypeName: nameVal,
+      photoScope: s.photoScope,
       isCustom: !systemCodes.includes(s.photoTypeCode.toUpperCase()),
       hasPhoto,
       photoCount: s.photoCount,
@@ -201,19 +309,312 @@ export function mapSlotsToCategories(
     };
   });
 
-  const hasCD = baseCats.some(c => c.photoTypeCode === 'CHANGE_DETECTION');
-  if (!hasCD) {
+  const hasCD = baseCats.some((c) => c.photoTypeCode === 'CHANGE_DETECTION');
+  if (!isQuickDataEntry && !hasCD) {
     const cdName = t ? (t.has?.('media.changeDetection') ? t('media.changeDetection') : 'Change Detection') : 'Change Detection';
-    baseCats.push({ photoTypeId: 9999, photoTypeCode: 'CHANGE_DETECTION', photoTypeName: cdName, isCustom: false, hasPhoto: true, photoCount: 2, propertyPhotoId: undefined, documentGuid: undefined, viewUrl: undefined });
+    baseCats.push({
+      photoTypeId: 9999,
+      photoTypeCode: 'CHANGE_DETECTION',
+      photoTypeName: cdName,
+      photoScope: undefined,
+      isCustom: false,
+      hasPhoto: true,
+      photoCount: 2,
+      propertyPhotoId: undefined,
+      documentGuid: undefined,
+      viewUrl: undefined,
+    });
   }
 
-  const isWingMaster = (categoryId === 4 && isMainProperty) || (isMainProperty && Boolean(selectedWingDetailId)) || entityType === 'W';
-  const isSocietyMaster = (categoryId === 3 && isMainProperty) || (isMainProperty && !selectedWingDetailId) || entityType === 'S';
+  const isAmenity =
+    isAmenityProp === true ||
+    categoryId === 140 ||
+    _propertyTypeId === 140 ||
+    entityType === 'AMENITY' ||
+    entityType === 'A';
+
+  const isPartitionEmptyOrMain =
+    !partitionNo ||
+    partitionNo === '0' ||
+    String(partitionNo).trim() === '' ||
+    String(partitionNo).trim() === '-';
+
+  const hasSociety = Boolean(societyDetailId && Number(societyDetailId) > 0);
+  const hasWing = Boolean(selectedWingDetailId && Number(selectedWingDetailId) > 0);
+  const hasNeitherSocietyNorWing = !hasSociety && !hasWing;
+
+  const hasBothSocietyAndWing = Boolean(
+    hasSociety &&
+    hasWing &&
+    !isMainProperty
+  );
+
+  const isIndividual =
+    !isAmenity &&
+    !isMainProperty &&
+    categoryId !== 4 &&
+    entityType !== 'W' &&
+    (categoryId === 2 || (entityType === 'P' && categoryId !== 1 && categoryId !== 3 && !selectedWingDetailId && !societyDetailId));
+
+  const isSocietyMaster =
+    !isAmenity &&
+    !isIndividual &&
+    ((categoryId === 3 && isMainProperty) || (entityType === 'S' && isMainProperty) || (isMainProperty && hasSociety && !selectedWingDetailId && !wingName));
+
+  const isWingMaster =
+    !isAmenity &&
+    !isIndividual &&
+    ((categoryId === 4 && isMainProperty) || (entityType === 'W' && isMainProperty) || (isMainProperty && hasWing));
+
+  const isSocietyMainProperty =
+    !isAmenity &&
+    (isMainProperty || isPartitionEmptyOrMain) &&
+    (hasSociety || entityType === 'S' || categoryId === 3) &&
+    (categoryId === 1 || categoryId === 3 || entityType === 'S' || Boolean(societyPhotoFallbackGuid) || Boolean(societyPhotoFallbackUrl));
+
+  const isApartmentProp =
+    !isAmenity &&
+    !isSocietyMaster &&
+    !isWingMaster &&
+    entityType !== 'S' &&
+    entityType !== 'W' &&
+    categoryId !== 3 &&
+    (categoryId === 1 ||
+      categoryId === 4 ||
+      entityType === 'APARTMENT' ||
+      entityType === 'P');
+
+  const isInnerSocietyWingProperty =
+    !isAmenity &&
+    !isSocietyMainProperty &&
+    !isMainProperty &&
+    categoryId !== 4 &&
+    entityType !== 'W' &&
+    (hasBothSocietyAndWing || (categoryId === 1 && (Boolean(selectedWingDetailId) || Boolean(wingName))));
+
+  const isUnitOrIndividual = isInnerSocietyWingProperty || isIndividual;
+
+  const hasAmenitySlot = baseCats.some(
+    (c) =>
+      c.photoTypeCode?.toUpperCase() === 'AMENITY_PHOTO' ||
+      c.photoTypeCode?.toUpperCase() === 'AMENITY' ||
+      c.photoTypeName?.toLowerCase().includes('amenity')
+  );
+  if (!isQuickDataEntry && isAmenity && !hasAmenitySlot) {
+    const amenityName = t ? (t.has?.('media.amenityPhoto') ? t('media.amenityPhoto') : 'Amenity Photo') : 'Amenity Photo';
+    baseCats.unshift({
+      photoTypeId: 14,
+      photoTypeCode: 'AMENITY_PHOTO',
+      photoTypeName: amenityName,
+      photoScope: undefined,
+      isCustom: false,
+      hasPhoto: false,
+      photoCount: 0,
+      propertyPhotoId: undefined,
+      documentGuid: undefined,
+      viewUrl: undefined,
+    });
+  }
+
+  const hasPlan = baseCats.some(isPhotoPlanCat);
+  const shouldInjectPlan =
+    !hasPlan &&
+    ((!isMainProperty && (isIndividual || isAmenity || isApartmentProp)) ||
+      (isApartmentProp && hasNeitherSocietyNorWing) ||
+      isQuickDataEntry);
+
+  const corePropertySlotTemplates = [
+    { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', defaultName: 'Property Front Photo', displayOrder: 1 },
+    { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', defaultName: 'Property Side Photo', displayOrder: 2 },
+    { photoTypeId: 3, photoTypeCode: 'PROPERTY_INSIDE', defaultName: 'Property Inside Photo', displayOrder: 3 },
+    { photoTypeId: 4, photoTypeCode: 'PROPERTY_BOARD', defaultName: 'Property Board Photo', displayOrder: 4 },
+  ];
+
+  const shouldInjectCorePropertySlots =
+    (isApartmentProp && (!isMainProperty || hasNeitherSocietyNorWing || hasBothSocietyAndWing)) ||
+    isIndividual;
+
+  if (shouldInjectCorePropertySlots) {
+    corePropertySlotTemplates.forEach((tpl) => {
+      const exists = baseCats.some(
+        (c) =>
+          c.photoTypeId === tpl.photoTypeId ||
+          c.photoTypeCode?.toUpperCase() === tpl.photoTypeCode
+      );
+      if (!exists) {
+        const localizedName = t
+          ? getLocalizedCategoryName(tpl.photoTypeCode, tpl.defaultName, t)
+          : tpl.defaultName;
+        const matchingPhoto = uploadedPhotos.find((p) =>
+          isPhotoMatch(tpl.photoTypeCode, tpl.photoTypeId, p.photoTypeCode, p.photoTypeId)
+        );
+        const hasPhoto = Boolean(matchingPhoto);
+        const documentGuid = matchingPhoto?.documentGuid;
+        const viewUrl = documentGuid
+          ? getViewDocumentUrl(documentGuid)
+          : matchingPhoto?.viewUrl;
+        const propertyPhotoId = matchingPhoto?.propertyPhotoId;
+
+        baseCats.push({
+          photoTypeId: tpl.photoTypeId,
+          photoTypeCode: tpl.photoTypeCode,
+          photoTypeName: localizedName,
+          photoScope: 'PROPERTY',
+          isCustom: false,
+          hasPhoto,
+          photoCount: hasPhoto ? 1 : 0,
+          propertyPhotoId,
+          documentGuid,
+          viewUrl,
+        });
+      }
+    });
+  }
+
+  if (shouldInjectPlan) {
+    const planName = isQuickDataEntry
+      ? (t ? (t.has?.('media.propertyPlan') ? t('media.propertyPlan') : 'Property Plan') : 'Property Plan')
+      : (t ? (t.has?.('media.photoPlan') ? t('media.photoPlan') : 'Photo Plan') : 'Photo Plan');
+    const newPlanCat = {
+      photoTypeId: 13,
+      photoTypeCode: isQuickDataEntry ? 'PROPERTY_PLAN' : 'PHOTO_PLAN',
+      photoTypeName: planName,
+      photoScope: 'PROPERTY',
+      isCustom: false,
+      hasPhoto: false,
+      photoCount: 0,
+      propertyPhotoId: undefined,
+      documentGuid: undefined,
+      viewUrl: undefined,
+    };
+    if (isQuickDataEntry) {
+      const sideIdx = baseCats.findIndex((c) => (c.photoTypeCode || '').toUpperCase() === 'PROPERTY_SIDE');
+      if (sideIdx !== -1) {
+        baseCats.splice(sideIdx + 1, 0, newPlanCat);
+      } else {
+        const frontIdx = baseCats.findIndex((c) => (c.photoTypeCode || '').toUpperCase() === 'PROPERTY_FRONT');
+        if (frontIdx !== -1) {
+          baseCats.splice(frontIdx + 1, 0, newPlanCat);
+        } else {
+          baseCats.push(newPlanCat);
+        }
+      }
+    } else {
+      baseCats.unshift(newPlanCat);
+    }
+  }
+
+  if (isQuickDataEntry) {
+    baseCats.forEach((c) => {
+      if (isPhotoPlanCat(c)) {
+        c.photoTypeName = t ? (t.has?.('media.propertyPlan') ? t('media.propertyPlan') : 'Property Plan') : 'Property Plan';
+      }
+    });
+  }
 
   const filteredCats = baseCats.filter(c => {
     const code = c.photoTypeCode?.toUpperCase() || '';
     const isPlan = isPhotoPlanCat(c);
-    const isPropScope = !c.isCustom && (code.startsWith('PROPERTY_') || isPlan);
+    const scope = (c.photoScope || '').toUpperCase().trim();
+    const isPropScope = !c.isCustom && (scope === 'PROPERTY' || isPlan || (!scope && code.startsWith('PROPERTY_')));
+    const isSocietySlot = scope === 'SOCIETY' || (!scope && (code.startsWith('SOCIETY_') || c.photoTypeName?.toLowerCase().includes('society')));
+    const isWingSlot = scope === 'WING' || (!scope && (code.startsWith('WING_') || c.photoTypeName?.toLowerCase().includes('wing')));
+
+    if (isQuickDataEntry) {
+      // Always exclude GIS / Satellite View and Change Detection from QDE
+      if (
+        code === 'GIS' ||
+        code === 'CHANGE_DETECTION' ||
+        code.includes('SATELLITE') ||
+        c.photoTypeName?.toLowerCase().includes('satellite view') ||
+        c.photoTypeName?.toLowerCase().includes('change detection')
+      ) {
+        return false;
+      }
+
+      // 1. Inner property of society wings: only load property scope slots in QDE
+      if (isInnerSocietyWingProperty || isUnitOrIndividual) {
+        if (scope) {
+          return scope === 'PROPERTY' || isPlan;
+        }
+        return code.startsWith('PROPERTY_') || isPlan;
+      }
+
+      // 2. Society main property: only load society scope slots in QDE
+      if (isSocietyMainProperty) {
+        if (scope) {
+          return scope === 'SOCIETY';
+        }
+        return code.startsWith('SOCIETY_') || c.photoTypeName?.toLowerCase().includes('society');
+      }
+
+      // Fall through to entity-based filtering below (same as main PTIS screen)
+    }
+
+    if (isAmenity) {
+      const isAmenitySlot = scope === 'AMENITY' || (!scope && (code.startsWith('AMENITY') || c.photoTypeName?.toLowerCase().includes('amenity')));
+      const isCD = code === 'CHANGE_DETECTION';
+      if (isAmenitySlot || isSocietySlot || isPlan || isCD || c.isCustom) return true;
+      return false;
+    }
+
+    // When an individual property is loaded: only property scope slots should be rendered (no society or wing slots)
+    if (isIndividual) {
+      const isCD = code === 'CHANGE_DETECTION';
+      const isGIS = code === 'GIS' || code.includes('SATELLITE') || c.photoTypeName?.toLowerCase().includes('satellite view');
+      if (scope) {
+        return scope === 'PROPERTY' || isPlan || isCD || isGIS;
+      }
+      const isSocietyOrWing =
+        code.startsWith('SOCIETY_') ||
+        code.startsWith('WING_') ||
+        c.photoTypeName?.toLowerCase().includes('society') ||
+        c.photoTypeName?.toLowerCase().includes('wing');
+      const isAmenitySlot =
+        code.startsWith('AMENITY') ||
+        c.photoTypeName?.toLowerCase().includes('amenity');
+      if (isSocietyOrWing || isAmenitySlot) return false;
+      return true;
+    }
+
+    // For Apartment properties:
+    if (isApartmentProp) {
+      if (hasNeitherSocietyNorWing) {
+        // If neither societyDetailId nor wingDetailId is available:
+        // Don't show society and wing slots; only property scope slots should be rendered
+        if (isSocietySlot || isWingSlot) return false;
+        if (isPropScope || isPlan || code === 'CHANGE_DETECTION' || code === 'GIS' || c.isCustom) return true;
+        return false;
+      }
+
+      // Any inner unit property (!isMainProperty) must show property-scope slots
+      if (!isMainProperty && isPropScope) {
+        return true;
+      }
+
+      if (hasBothSocietyAndWing) {
+        // Unit property with both society and wing: property-scope slots are rendered
+        if (isPropScope) return true;
+        return true;
+      }
+
+      // Society level (societyDetailId without wingDetailId)
+      if (hasSociety && !hasWing) {
+        if (isMainProperty && isPropScope) return false;
+        if (isSocietySlot) return true;
+        if (isWingSlot) return true;
+        return true;
+      }
+
+      // Wing level (wingDetailId without societyDetailId)
+      if (!hasSociety && hasWing) {
+        if (isSocietySlot) return false;
+        if (isMainProperty && isPropScope) return false;
+        return true;
+      }
+
+      return true;
+    }
 
     if (isWingMaster || isSocietyMaster) {
       if (isPropScope) return false;
@@ -229,41 +630,44 @@ export function mapSlotsToCategories(
   });
 
   return filteredCats.map(cat => {
-    const isWingCat = Boolean(
-      cat.photoTypeCode?.toUpperCase().includes('WING') ||
-      cat.photoTypeName?.toLowerCase().includes('wing')
-    );
-    const isSocietyCat = Boolean(
-      cat.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      cat.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      cat.photoTypeName?.toLowerCase().includes('society') ||
-      cat.photoTypeName?.toLowerCase().includes('amenity')
-    );
+    const catScope = (cat.photoScope || '').toUpperCase().trim();
+    const isAmenityCat = catScope === 'AMENITY' || (!catScope && Boolean(cat.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    const isWingCat = !isAmenityCat && (catScope === 'WING' || (!catScope && Boolean(cat.photoTypeCode?.toUpperCase().includes('WING'))));
+    const isSocietyCat = !isAmenityCat && (catScope === 'SOCIETY' || (!catScope && Boolean(cat.photoTypeCode?.toUpperCase().includes('SOCIETY'))));
 
-    const checkIsWingPhoto = (p: PropertyPhotoDto) => Boolean(
-      p.photoTypeCode?.toUpperCase().includes('WING') ||
-      p.photoTypeName?.toLowerCase().includes('wing')
-    );
+    const checkIsAmenityPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'AMENITY' || (!pScope && Boolean(p.photoTypeCode?.toUpperCase().includes('AMENITY')));
+    };
 
-    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => Boolean(
-      p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-      p.photoTypeCode?.toUpperCase().includes('AMENITY') ||
-      p.photoTypeName?.toLowerCase().includes('society') ||
-      p.photoTypeName?.toLowerCase().includes('amenity')
-    );
+    const checkIsWingPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'WING' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('WING')));
+    };
+
+    const checkIsSocietyPhoto = (p: PropertyPhotoDto) => {
+      const pScope = (p.photoScope || '').toUpperCase().trim();
+      return pScope === 'SOCIETY' || (!pScope && !checkIsAmenityPhoto(p) && Boolean(p.photoTypeCode?.toUpperCase().includes('SOCIETY')));
+    };
 
     let catPhotos = uploadedPhotos
       .filter(p => {
+        const pIsAmenity = checkIsAmenityPhoto(p);
         const pIsWing = checkIsWingPhoto(p);
         const pIsSociety = checkIsSocietyPhoto(p);
 
-        if (isWingCat) {
+        if (isAmenityCat) {
+          if (!pIsAmenity) return false;
+        } else if (isWingCat) {
           if (!pIsWing) return false;
-          if (selectedWingDetailId && p.wingDetailId && p.wingDetailId !== selectedWingDetailId) return false;
+          if (selectedWingDetailId) {
+            if (!p.wingDetailId || Number(p.wingDetailId) !== Number(selectedWingDetailId)) return false;
+          }
         } else if (isSocietyCat) {
           if (!pIsSociety) return false;
+          return isPhotoMatch(cat.photoTypeCode, cat.photoTypeId, p.photoTypeCode, p.photoTypeId);
         } else {
-          if (pIsWing || pIsSociety) return false;
+          if (pIsAmenity || pIsWing || pIsSociety) return false;
           const isPlanPhoto = isPhotoPlanCat(p) || p.remarks?.toLowerCase().includes('property plan') || p.remarks?.toLowerCase().includes('photo plan') || p.photoTypeCode?.toUpperCase().includes('PLAN');
           if (isPhotoPlanCat(cat) && isPlanPhoto) return true;
           if (!isPhotoPlanCat(cat) && isPlanPhoto) return false;
@@ -284,19 +688,23 @@ export function mapSlotsToCategories(
       const isPlanCat = isPhotoPlanCat(cat);
       const isPlanSlot = isPlanCat || cat.photoTypeCode?.toUpperCase().includes('PLAN');
       if (!isPlanSlot) {
-        const resolvedUrl = cat.documentGuid ? getViewDocumentUrl(cat.documentGuid) : cat.viewUrl;
-        catPhotos = [{
-          src: resolvedUrl || '',
-          fullSrc: resolvedUrl || '',
-          alt: cat.photoTypeName,
-          title: cat.photoTypeName,
-          photoTypeId: cat.photoTypeId,
-          photoTypeCode: cat.photoTypeCode,
-          propertyPhotoId: cat.propertyPhotoId,
-          hasPhoto: true,
-          documentGuid: cat.documentGuid?.toString(),
-          downloadUrl: cat.documentGuid ? getDownloadDocumentUrl(cat.documentGuid.toString()) : (cat.viewUrl ? cat.viewUrl.replace('/view', '/download') : undefined),
-        }];
+        const effectiveGuid = cat.documentGuid;
+        const effectiveViewUrl = cat.viewUrl || (effectiveGuid ? getViewDocumentUrl(effectiveGuid) : undefined);
+        const resolvedUrl = effectiveGuid ? getViewDocumentUrl(effectiveGuid) : effectiveViewUrl;
+        if (resolvedUrl || effectiveGuid) {
+          catPhotos = [{
+            src: resolvedUrl || '',
+            fullSrc: resolvedUrl || '',
+            alt: cat.photoTypeName,
+            title: cat.photoTypeName,
+            photoTypeId: cat.photoTypeId,
+            photoTypeCode: cat.photoTypeCode,
+            propertyPhotoId: cat.propertyPhotoId,
+            hasPhoto: true,
+            documentGuid: effectiveGuid?.toString(),
+            downloadUrl: effectiveGuid ? getDownloadDocumentUrl(effectiveGuid.toString()) : (effectiveViewUrl ? effectiveViewUrl.replace('/view', '/download') : undefined),
+          }];
+        }
       }
     }
 
@@ -319,10 +727,16 @@ export function mapSlotsToCategories(
       ];
     }
 
-    const count = catPhotos.length > 0 ? catPhotos.length : (cat.hasPhoto ? 1 : 0);
+    const count = catPhotos.length;
+
+    let catName = cat.photoTypeName;
+    if (wingName && isWingCat) {
+      catName = formatWingCardLabel(catName, wingName).replace(/(\([^)]+\))\s*\1+/g, '$1');
+    }
 
     return {
       ...cat,
+      photoTypeName: catName,
       photoCount: count,
       images: catPhotos,
       ...(uploadedCDCount !== undefined ? { photoCount: uploadedCDCount } : {}),

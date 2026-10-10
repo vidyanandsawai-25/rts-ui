@@ -88,7 +88,7 @@ export function useTypeOfUseMasterActions({
       variant: "delete",
       title: `${t("type.fields.code.label", { default: "Code" })}: ${typeOfUse.typeOfUseCode}`,
       description: t("type.deleteConfirmDescription", { default: "Are you sure you want to delete this type of use?" }),
-      meta: { name: typeOfUse.description },
+      meta: { name: typeOfUse.description ?? "" },
       onConfirm: async () => {
         const fd = new FormData();
         fd.append("id", String(typeOfUse.id));
@@ -120,9 +120,9 @@ export function useTypeOfUseMasterActions({
   const handleDeleteSubtype = useCallback((subType: AssetSubTypeOfUse) => {
     confirm({
       variant: "delete",
-      title: `${t("messages.subTypeNameLabel", { default: "Sub-Type Name" })}: ${subType.description}`,
+      title: `${t("messages.subTypeNameLabel", { default: "Sub-Type Name" })}: ${subType.description ?? ""}`,
       description: t("subtype.deleteConfirmDescription", { default: "Are you sure you want to delete this sub-type of use?" }),
-      meta: { name: subType.description },
+      meta: { name: subType.description ?? "" },
       onConfirm: async () => {
         const fd = new FormData();
         fd.append("id", String(subType.id));

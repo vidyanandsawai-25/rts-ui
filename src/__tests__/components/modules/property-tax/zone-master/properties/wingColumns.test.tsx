@@ -29,9 +29,9 @@ describe("wingColumns", () => {
   const mockRow: WingSummary = {
     wingName: "Wing A",
     count: 5,
-    wingId: 101,
+    wingMasterId: 101,
     wingNo: "01",
-    societyDetailId: 201,
+    wingDetailId: 201,
   };
 
   it("should return the correct number of columns", () => {
@@ -64,7 +64,7 @@ describe("wingColumns", () => {
 
   it("should correctly render action buttons and handle clicks", () => {
     const columns = getWingColumns(params);
-    const actionsColumn = columns.find((c) => c.key === "wingId");
+    const actionsColumn = columns.find((c) => c.key === "wingDetailId");
     
     const result = actionsColumn?.render?.(101, mockRow as WingSummary & Record<string, unknown>, 0);
     const { getByLabelText } = render(<>{result}</>);

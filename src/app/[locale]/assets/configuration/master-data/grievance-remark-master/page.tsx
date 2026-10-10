@@ -12,7 +12,7 @@ interface PageProps {
   }>;
 }
 
-const ALLOWED_SORT_COLUMNS = ["remark", "grievanceCategoryId"] as const;
+const ALLOWED_SORT_COLUMNS = ["remark"] as const;
 const ALLOWED_SORT_ORDERS = ["asc", "desc"] as const;
 
 const MIN_PAGE = 1;

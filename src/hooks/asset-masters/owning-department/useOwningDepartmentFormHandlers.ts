@@ -2,10 +2,12 @@
 
 import React, { useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { OwningDepartmentFormModel } from "@/types/asset-masters/owning-department.types";
 import { saveOwningDepartment } from "@/app/[locale]/assets/configuration/master-data/owning-department/action";
-import { ASSET_MASTER_NAME_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/asset-validation-rules";
+import { ALPHANUMERIC_WITH_SPACES_SANITIZE, DESCRIPTION_SANITIZE } from "@/lib/utils/asset-validation-rules";
+import { getOwningDepartmentErrorMessage, parseOwningDepartmentApiErrors } from "./error-mapping";
 
 interface UseOwningDepartmentFormHandlersProps {
   formData: OwningDepartmentFormModel;
@@ -37,6 +39,7 @@ export function useOwningDepartmentFormHandlers({
   initialFormData,
 }: UseOwningDepartmentFormHandlersProps) {
   const router = useRouter();
+  const tCommon = useTranslations("common");
   const [, startTransition] = useTransition();
 
   const handleClose = useCallback(() => {
@@ -55,7 +58,7 @@ export function useOwningDepartmentFormHandlers({
     const { name, value } = e.target;
     let sanitizedValue = value;
     if (name === "owningDepartmentName") {
-      sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+      sanitizedValue = value.replace(ALPHANUMERIC_WITH_SPACES_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
       if (sanitizedValue.length > 100) {
         sanitizedValue = sanitizedValue.substring(0, 100);
       }
@@ -67,6 +70,11 @@ export function useOwningDepartmentFormHandlers({
     }
     setFormData((p) => ({ ...p, [name]: sanitizedValue }));
     setErrors((p) => ({ ...p, [name]: "" }));
+  }, [setFormData, setErrors]);
+
+  const handleStatusToggle = useCallback(() => {
+    setFormData((p) => ({ ...p, isActive: !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, [setFormData, setErrors]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -121,20 +129,35 @@ export function useOwningDepartmentFormHandlers({
         return;
       }
 
-      if (res?.error === "duplicate") {
-        toast.error(t("form.messages.duplicate"));
-        return;
+      const { fieldErrors, globalMessage } = parseOwningDepartmentApiErrors(
+        res?.message || res?.error,
+        res?.statusCode,
+        t,
+        tCommon
+      );
+
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...fieldErrors }));
+        setTouched((prev) => {
+          const nextTouched = { ...prev };
+          for (const key of Object.keys(fieldErrors)) {
+            nextTouched[key] = true;
+          }
+          return nextTouched;
+        });
       }
-      toast.error(res?.message || res?.error || t("form.messages.error"));
+
+      toast.error(globalMessage);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("form.messages.error"));
+      toast.error(getOwningDepartmentErrorMessage(err instanceof Error ? err.message : undefined, undefined, t, tCommon));
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, isEdit, locale, t, validate, setErrors, setSubmittedOnce, setIsSubmitting, setOpen, router]);
+  }, [formData, isEdit, locale, t, tCommon, validate, setErrors, setTouched, setSubmittedOnce, setIsSubmitting, setOpen, router]);
 
   return {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

@@ -12,7 +12,7 @@ interface ValidationResult {
     incompleteDiscounts: IncompleteDiscount[];
 }
 
-const TEXT_PATTERN = /^[a-zA-Z0-9\s\-()&'\./,]*$/;
+const TEXT_PATTERN = /^[^<>]*$/;
 const REMARK_PATTERN = /^[^<>]*$/;
 
 /**
@@ -31,7 +31,16 @@ export const validateDiscountForm = (
     let isValid = true;
 
     Object.values(state).forEach((item: DiscountAttributeState) => {
-        if (!item.enabled) return;
+        const isBitType = item.dataType?.toUpperCase() === "BIT";
+        const isActive = isBitType ? item.bitValue === true : item.enabled;
+        const hasPendingData = Boolean(
+            item.pendingFile !== undefined ||
+            (item.intValue !== null && item.intValue !== "") ||
+            (item.decimalValue !== null && item.decimalValue !== "") ||
+            (item.textValue !== null && typeof item.textValue === "string" && item.textValue.trim() !== "") ||
+            (typeof item.remark === "string" && item.remark.trim() !== "")
+        );
+        if (!isActive && !hasPendingData) return;
 
         const missingFields: string[] = [];
         const displayName = item.socialAttributeName || `Discount #${item.id}`;
@@ -142,10 +151,21 @@ export const validateDiscountForm = (
             }
         }
 
-        // 2. Validate document attachment (accept documentGuid OR documentBindingId as proof)
+        // 2. Validate document attachment (require valid guid, pendingFile, or fileName with bindingId)
+        const EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
+        const isValidGuid = (guid?: string | null): boolean => {
+            if (!guid || typeof guid !== "string") return false;
+            const trimmed = guid.trim();
+            return trimmed !== "" && trimmed !== EMPTY_GUID && trimmed !== "pending" && trimmed !== "null" && trimmed !== "undefined";
+        };
+
         const isDocReq = item.isDocumentRequired === true;
-        const hasDocument = (item.documentGuid && item.documentGuid.trim() !== "") || !!item.documentBindingId;
-        if (isDocReq && !hasDocument) {
+        const hasValidDocument = Boolean(
+            (item.pendingFile && !item.isUploading) ||
+            isValidGuid(item.documentGuid) ||
+            (Boolean(item.fileName?.trim()) && Boolean(item.documentBindingId && item.documentBindingId > 0))
+        );
+        if (isDocReq && !hasValidDocument) {
             missingFields.push(t("common.validation.documentRequired") || "Document is required.");
         }
 

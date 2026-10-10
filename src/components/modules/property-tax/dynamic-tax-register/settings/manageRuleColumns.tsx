@@ -22,7 +22,14 @@ export function getManageRuleColumns({
   handleDelete,
 }: GetManageRuleColumnsParams): Column<DynamicTaxRule>[] {
   return [
-    { key: 'id', label: t('manageRule.columns.id'), width: '40px', align: 'center', cellClassName: 'text-slate-400 font-mono text-xs' },
+    {
+      key: 'id',
+      label: t('manageRule.columns.id'),
+      width: '40px',
+      align: 'center',
+      cellClassName: 'text-slate-400 font-mono text-xs',
+      render: (_val: unknown, _row: DynamicTaxRule, rowIndex: number) => <span>{rowIndex + 1}</span>,
+    },
     { key: 'displayName', label: t('manageRule.columns.displayName'), width: '200px', align: 'left', cellClassName: 'font-bold text-slate-800 text-[11px]' },
     {
       key: 'ruleType',
@@ -40,14 +47,14 @@ export function getManageRuleColumns({
         const tone = !mode
           ? 'bg-slate-50 text-slate-600 border-slate-200'
           : mode.usesHybridConfig
-          ? 'bg-blue-50 text-blue-600 border-blue-100'
-          : mode.usesMasterConfig
-          ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
-          : mode.usesConditionConfig
-          ? 'bg-amber-50 text-amber-600 border-amber-100'
-          : mode.usesValueConfig
-          ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-          : 'bg-slate-50 text-slate-600 border-slate-200';
+            ? 'bg-blue-50 text-blue-600 border-blue-100'
+            : mode.usesMasterConfig
+              ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
+              : mode.usesConditionConfig
+                ? 'bg-amber-50 text-amber-600 border-amber-100'
+                : mode.usesValueConfig
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                  : 'bg-slate-50 text-slate-600 border-slate-200';
         return <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold border ${tone}`}>{label}</span>;
       },
     },

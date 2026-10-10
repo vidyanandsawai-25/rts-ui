@@ -96,6 +96,8 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
     const safeDetailsId = rawDetailsId > 0 && rawDetailsId < 1_000_000_000_000 ? rawDetailsId : 0;
 
     // Check both raw API keys and UI normalized keys
+    const isActualOpenPlot = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
+
     const rawFloorId = payload.floorId !== undefined ? payload.floorId : payload.floorID;
     const floorIdVal = (rawFloorId === undefined || rawFloorId === null || rawFloorId === "" || rawFloorId === 0 || rawFloorId === "0" || String(rawFloorId).toLowerCase() === "select floor" || String(rawFloorId) === "-Select-")
         ? null
@@ -110,7 +112,6 @@ const sanitizeFloorBase = (payload: Record<string, any>) => {
     const constructionTypeIdVal = (rawConstructionTypeId === undefined || rawConstructionTypeId === null || rawConstructionTypeId === "" || rawConstructionTypeId === 0 || rawConstructionTypeId === "0" || String(rawConstructionTypeId).toLowerCase() === "select type" || String(rawConstructionTypeId) === "-Select-")
         ? null
         : parseSafeInt(rawConstructionTypeId);
-    const isActualOpenPlot = payload.isOpenPlot === true || payload.selectedFloorType === 'OpenPlot';
 
     const rawOpenPlotCategoryId =
         payload.selectedOpenPlotCategory?.id ??

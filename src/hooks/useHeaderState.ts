@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useParams } from 'next/navigation';
 import { logoutAction } from '@/app/[locale]/login/actions';
-import { clearLegacyAuthClientStorage } from '@/lib/utils/legacy-auth-storage';
+import { clearAllAuthClientStorage } from '@/lib/utils/legacy-auth-storage';
 
 export type LanguageType = 'English' | 'हिन्दी (Hindi)' | 'मराठी (Marathi)';
 
@@ -44,7 +44,7 @@ export function useHeaderState(initialIp = '') {
         setIsLoggingOut(true);
         toast.info('Logging out...');
 
-        clearLegacyAuthClientStorage();
+        clearAllAuthClientStorage();
 
         try {
             // Call Server Action to clear cookies

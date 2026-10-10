@@ -44,7 +44,11 @@ export async function fetchOwnershipTypePagedServerAction(
 
 export async function createOwnershipTypeAction(formData: OwnershipTypeFormModel) {
   try {
-    const userId = getUserIdFromCookies(await cookies()) ?? 1;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, error: "you are unauthorized", statusCode: 401 };
+    }
     const result = await ownershipTypeService.create({
       ownershipTypeName: formData.ownershipTypeName ? String(formData.ownershipTypeName).trim() : "",
       description: formData.description ? String(formData.description).trim() : "",
@@ -71,7 +75,11 @@ export async function createOwnershipTypeAction(formData: OwnershipTypeFormModel
 export async function updateOwnershipTypeAction(formData: OwnershipTypeFormModel) {
   try {
     if (!formData.id) throw new Error("ID is required for update");
-    const userId = getUserIdFromCookies(await cookies()) ?? 1;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, error: "you are unauthorized", statusCode: 401 };
+    }
     
     const result = await ownershipTypeService.update(formData.id, {
       ownershipTypeName: formData.ownershipTypeName ? String(formData.ownershipTypeName).trim() : "",
@@ -97,6 +105,11 @@ export async function updateOwnershipTypeAction(formData: OwnershipTypeFormModel
 
 export async function deleteOwnershipTypeAction(id: string) {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, error: "you are unauthorized", statusCode: 401 };
+    }
     await ownershipTypeService.delete(id);
     const { locales } = await import("@/i18n/config");
     for (const locale of locales) {

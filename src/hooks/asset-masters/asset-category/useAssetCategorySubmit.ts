@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveAssetCategoryAction } from "@/app/[locale]/assets/configuration/master-data/asset-category/actions";
 import type { AssetCategoryFormModel } from "@/types/asset-masters/asset-category.types";
-import { mapAssetCategoryApiError } from "./validation";
+import { mapAssetCategoryApiError, isDeactivateBlockedMessage } from "./validation";
 import { getSafeMessage } from "@/lib/utils/asset-utils/createSafeMasterTranslator";
 
 interface UseAssetCategorySubmitProps {
@@ -42,6 +42,7 @@ export function useAssetCategorySubmit({
       code: true,
       name: true,
       description: true,
+      valuationType: true,
     });
 
     const v = validate(formData);
@@ -89,12 +90,44 @@ export function useAssetCategorySubmit({
       }
 
       if (res && !res.ok) {
-        toast.error(mapAssetCategoryApiError(res, t, tCommon));
+        const errorMessage = mapAssetCategoryApiError(res, t, tCommon);
+        if (isDeactivateBlockedMessage(res.message || res.error)) {
+          setErrors({ isActive: errorMessage });
+        }
+        toast.error(errorMessage);
         if (res.error === "duplicate") {
-          setErrors({
-            code: t("validation.duplicateRecord") || "Already exists",
-            name: t("validation.duplicateRecord") || "Already exists",
-          });
+          const newErrors: Partial<Record<keyof AssetCategoryFormModel, string>> = {};
+          const duplicateFields = (res as { duplicateFields?: { code?: string | boolean | null; name?: string | boolean | null } }).duplicateFields;
+          const field = (res as { field?: string }).field;
+
+          const getCodeDuplicateMsg = () =>
+            t("validation.codeDuplicate") || t("errors.codeDuplicate") || t("errors.duplicateCode") || "This code already exists";
+
+          const getNameDuplicateMsg = () =>
+            t("validation.nameDuplicate") || t("errors.nameDuplicate") || t("errors.duplicateName") || "This name already exists";
+
+          if (duplicateFields) {
+            if (duplicateFields.code) {
+              newErrors.code = getCodeDuplicateMsg();
+              setTouched({ code: true });
+            }
+            if (duplicateFields.name) {
+              newErrors.name = getNameDuplicateMsg();
+              setTouched({ name: true });
+            }
+          } else if (field === "code") {
+            newErrors.code = getCodeDuplicateMsg();
+            setTouched({ code: true });
+          } else if (field === "name") {
+            newErrors.name = getNameDuplicateMsg();
+            setTouched({ name: true });
+          } else {
+            newErrors.code = getCodeDuplicateMsg();
+            newErrors.name = getNameDuplicateMsg();
+            setTouched({ code: true, name: true });
+          }
+
+          setErrors(newErrors);
         }
         return;
       }

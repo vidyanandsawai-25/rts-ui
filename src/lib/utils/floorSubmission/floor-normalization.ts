@@ -139,6 +139,9 @@ export function normalizeRoomData(raw: Record<string, unknown>): RoomData {
   const w = getProp(raw, 'widthMtr') || getProp(raw, 'width');
   if (w !== undefined && w !== null && !params.width) params.width = String(w);
 
+  const s = getProp(raw, 'side') || (String(shape).toLowerCase() === 'square' ? (l || w || b1) : undefined);
+  if (s !== undefined && s !== null && !params.side) params.side = String(s);
+
   const rawOffsets = (raw.roomWiseMinusData || raw.offsets || []) as Record<string, unknown>[];
   const normalizedOffsets = Array.isArray(rawOffsets) ? rawOffsets.map(normalizeOffsetData) : [];
 
@@ -211,7 +214,7 @@ export function normalizeFloorData(
   const rawIsOpenPlot = raw.isOpenPlot !== undefined ? raw.isOpenPlot : (raw as any).IsOpenPlot;
   const isActualOpenPlot = rawIsOpenPlot === true || String(rawIsOpenPlot).toLowerCase() === 'true' || rawIsOpenPlot === 1 || String(rawIsOpenPlot) === '1';
 
-  const isOpenPlotVal = isActualOpenPlot || String(raw.selectedFloorType).toLowerCase() === 'openplot' || String(floorId) === '77';
+  const isOpenPlotVal = isActualOpenPlot || String(raw.selectedFloorType).toLowerCase() === 'openplot' || String(floorDesc || '').toLowerCase().includes('open plot') || String(conTypDesc || '').toLowerCase().includes('open plot');
   if (isOpenPlotVal) {
     const rooms = (raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as Record<string, unknown>[];
     if (rooms && rooms.length > 0) {
@@ -301,5 +304,7 @@ export function normalizeFloorData(
     roomWiseSubmissionDetails: ((raw.roomWiseSubmissionDetails || raw.roomData || raw.propertyRooms || []) as unknown[]).map(r => normalizeRoomData(r as Record<string, unknown>)),
     renterDetails: (raw.renterDetails || []) as RenterDetailItem[],
     renterMast: rentersList,
+    documentBindingId: getNumber(raw.documentBindingId) || getNumber(firstRenter?.documentBindingId) || undefined,
+    documentGuid: getString(raw.documentGuid) || getString(firstRenter?.documentGuid) || undefined,
   };
 }

@@ -123,8 +123,17 @@ export async function savePenaltyRule(id: string, formData: FormData) {
     for (const loc of locales) revalidatePath(`/${loc}${PAGE_PATH}`, "page");
     return { ok: true, mode: "create" as const };
   } catch (error) {
-    if (error instanceof ApiError && error.statusCode === 409) return { ok: false, error: "duplicate" };
-    if (error instanceof ApiError) return { ok: false, error: "api_error", message: error.message };
+    if (error instanceof ApiError) {
+      const msg = error.responseText || error.error || error.message;
+      const lower = msg.toLowerCase();
+      const isDup = error.statusCode === 409 || lower.includes("duplicate") || lower.includes("already exist") || lower.includes("penaltyrule_code_duplicate") || lower.includes("penaltyrule_name_duplicate");
+      return {
+        ok: false,
+        error: isDup ? "duplicate" : "api_error",
+        message: msg,
+        statusCode: error.statusCode || (isDup ? 409 : 400),
+      };
+    }
     return { ok: false, error: "unknown", message: error instanceof Error ? error.message : "An unexpected error occurred." };
   }
 }

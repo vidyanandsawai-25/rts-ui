@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchMunicipalAssetDashboardStats, fetchAssetsByFilter, fetchSubUnitsByAsset, fetchAssetsByTypeDetails } from '@/app/[locale]/assets/municipal-Asset/actions';
+import {
+  fetchMunicipalAssetDashboardStats,
+  fetchAssetsByFilter,
+  fetchSubUnitsByAsset,
+  fetchAssetsByTypeDetails,
+  fetchAssetCategoryTypeDetails,
+} from '@/app/[locale]/assets/municipal-Asset/actions';
 import { apiClient } from '@/services/api.service';
 import * as dashboardService from '@/lib/api/asset/municipal-Asset/asset-dashboard.service';
 
@@ -12,6 +18,7 @@ vi.mock('@/services/api.service', () => ({
 vi.mock('@/lib/api/asset/municipal-Asset/asset-dashboard.service', () => ({
   getMunicipalDashboardStats: vi.fn(),
   getAssetsByTypeDetails: vi.fn(),
+  getAssetCategoryTypeDetails: vi.fn(),
 }));
 
 describe('municipal-Asset actions', () => {
@@ -127,4 +134,37 @@ describe('municipal-Asset actions', () => {
       expect(console.error).toHaveBeenCalledWith('fetchAssetsByTypeDetails failed:', err);
     });
   });
+
+  describe('fetchAssetCategoryTypeDetails', () => {
+    it('should call getAssetCategoryTypeDetails service and return wrapped data', async () => {
+      const mockData = {
+        assetCategoryId: 1,
+        types: [
+          {
+            assetTypeId: 10,
+            assetTypeName: 'Municipal School',
+            assetCount: 5,
+            totalCapitalValue: 1000000,
+          },
+        ],
+      };
+      vi.mocked(dashboardService.getAssetCategoryTypeDetails).mockResolvedValue(mockData);
+
+      const result = await fetchAssetCategoryTypeDetails(1);
+
+      expect(dashboardService.getAssetCategoryTypeDetails).toHaveBeenCalledWith(1);
+      expect(result).toEqual({ success: true, data: mockData });
+    });
+
+    it('should return error response and log error on exception', async () => {
+      const err = new Error('Category Details Failed');
+      vi.mocked(dashboardService.getAssetCategoryTypeDetails).mockRejectedValue(err);
+
+      const result = await fetchAssetCategoryTypeDetails(1);
+
+      expect(result).toEqual({ success: false, error: 'Category Details Failed', data: null });
+      expect(console.error).toHaveBeenCalledWith('fetchAssetCategoryTypeDetails failed:', err);
+    });
+  });
 });
+

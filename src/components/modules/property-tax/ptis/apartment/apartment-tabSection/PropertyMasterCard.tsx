@@ -6,6 +6,7 @@ import { Building2 } from 'lucide-react';
 import type { PropertyMasterData } from '@/types/property-tax/apartment';
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import { isSocietyPhoto } from '@/lib/utils/ptis-photo-match.utils';
 import { DocumentViewerModal } from '@/components/common/DocumentViewerModal';
 import { PropertyMasterHeader } from './components/PropertyMasterHeader';
 import { PropertyMasterDetailsGrid } from './components/PropertyMasterDetailsGrid';
@@ -17,7 +18,6 @@ interface PropertyMasterCardProps {
   data?: PropertyMasterData;
   onEdit?: () => void;
   propertyId?: number;
-  wardNo?: string;
   isLoading?: boolean;
 }
 
@@ -25,7 +25,6 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   data,
   onEdit,
   propertyId,
-  wardNo,
   isLoading = false,
 }) => {
   const [masterData, setMasterData] = useState<PropertyMasterData | undefined>(data);
@@ -43,11 +42,9 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   const effectiveWardNo =
     (masterData?.wardNo && masterData.wardNo !== '-')
       ? masterData.wardNo
-      : (wardNo && wardNo !== '-')
-        ? wardNo
-        : (data?.wardNo && data.wardNo !== '-')
-          ? data.wardNo
-          : '-';
+      : (data?.wardNo && data.wardNo !== '-')
+        ? data.wardNo
+        : '-';
 
   const currentData: PropertyMasterData = {
     ...(masterData || data || {}),
@@ -85,12 +82,16 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
     router.push(`/${locale}/property-tax/ptis/QuickDataEntry/${activePropertyId}/Society?${params.toString()}`);
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const [prevData, setPrevData] = useState(data);
+
+  if (data !== prevData) {
+    setPrevData(data);
     setMasterData(data);
-    setPhotoGuid(data?.societyBuildingPhotoGuid);
-    setImageUrl(data?.imageUrl);
-  }, [data]);
+    if (data?.propertyId !== prevData?.propertyId) {
+      setPhotoGuid(data?.societyBuildingPhotoGuid);
+      setImageUrl(data?.imageUrl);
+    }
+  }
 
   useEffect(() => {
     const handleTopSectionUpdated = (e: Event) => {
@@ -104,13 +105,58 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   useEffect(() => {
     const handleMediaUpdated = (e: Event) => {
       const customEvent = e as CustomEvent;
+      const cat = customEvent.detail?.category || customEvent.detail?.photoCategory || customEvent.detail?.imageCategory;
+      const catCode = customEvent.detail?.photoTypeCode;
+
+      // Only allow Society Photos to update the main society photo placeholder
+      if (cat || catCode) {
+        if (!isSocietyPhoto(catCode, cat)) {
+          return;
+        }
+      }
+
       const docGuid = customEvent.detail?.documentGuid;
       const pUrl = customEvent.detail?.photoUrl || customEvent.detail?.viewUrl;
-      if (docGuid) {
-        setPhotoGuid(docGuid);
-        setImageUrl(pUrl || getViewDocumentUrl(docGuid));
+      const isDeleted = customEvent.detail?.isDeleted || customEvent.detail?.deleted || (!docGuid && !pUrl);
+
+      if (isDeleted || (!docGuid && !pUrl)) {
+        setPhotoGuid(undefined);
+        setImageUrl(undefined);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: undefined,
+                imageUrl: undefined,
+              }
+            : undefined
+        );
+      } else if (docGuid) {
+        const resolvedGuid = String(docGuid);
+        const resolvedUrl = pUrl || getViewDocumentUrl(resolvedGuid);
+        setPhotoGuid(resolvedGuid);
+        setImageUrl(resolvedUrl);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: resolvedGuid,
+                imageUrl: resolvedUrl,
+              }
+            : undefined
+        );
       } else if (pUrl) {
+        setPhotoGuid(undefined);
         setImageUrl(pUrl);
+        setMasterData((prev) =>
+          prev
+            ? {
+                ...prev,
+                societyBuildingPhotoGuid: undefined,
+                imageUrl: pUrl,
+              }
+            : undefined
+        );
       }
     };
     window.addEventListener('ptis:sync-thumbnail', handleMediaUpdated);
@@ -126,12 +172,12 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
   }
 
   return (
-    <div className="flex flex-col xl:flex-row items-stretch gap-2 font-sans text-slate-800">
+    <div className="flex flex-col lg:flex-row items-stretch gap-2 font-sans text-slate-800">
       {/* 1. LEFT / CENTER: MAIN PROPERTY MASTER CARD */}
-      <div className="flex-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs px-2 pt-1.5 pb-2 flex flex-col sm:flex-row items-stretch gap-2 min-w-0">
+      <div className="flex-1 bg-white rounded-xl border border-slate-200/90 shadow-2xs px-1.5 xl:px-2 pt-1 pb-1.5 xl:pt-1.5 xl:pb-2 flex flex-col sm:flex-row items-stretch gap-1.5 xl:gap-2 min-w-0">
         {/* Building Photo Thumbnail */}
         <div
-          className={`relative w-full sm:w-[120px] xl:w-[125px] h-[155px] sm:h-auto rounded-lg overflow-hidden border border-slate-200/80 bg-slate-100 shrink-0 flex items-center justify-center group ${
+          className={`relative w-full sm:w-[70px] md:w-[75px] lg:w-[70px] xl:w-[80px] 2xl:w-[115px] h-[135px] sm:h-auto rounded-lg overflow-hidden border border-slate-200/80 bg-slate-100 shrink-0 flex items-center justify-center group ${
             photoUrl || photoGuid ? 'cursor-pointer hover:border-blue-400' : ''
           }`}
           onClick={() => {
@@ -149,15 +195,15 @@ export const PropertyMasterCard: React.FC<PropertyMasterCardProps> = ({
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 p-2 text-center bg-slate-50">
-              <Building2 className="w-8 h-8 text-slate-300" />
-              <span className="text-[10px] font-medium text-slate-400 leading-tight">No Photo</span>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-400 p-1 text-center bg-slate-50">
+              <Building2 className="w-6 h-6 xl:w-7 xl:h-7 text-slate-300" />
+              <span className="text-[9px] xl:text-[10px] font-medium text-slate-400 leading-tight">No Photo</span>
             </div>
           )}
         </div>
 
         {/* Center: Main Metadata & 3 Sections */}
-        <div className="flex-1 flex flex-col justify-start gap-1 min-w-0 pt-0 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between gap-1.5 min-w-0 pt-0 overflow-hidden">
           {/* Top Identifiers Row */}
           <PropertyMasterHeader
             propertyNo={displayPropertyNo}

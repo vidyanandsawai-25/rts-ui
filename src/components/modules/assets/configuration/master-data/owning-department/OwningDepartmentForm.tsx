@@ -20,12 +20,12 @@ export default function OwningDepartmentForm({
 
   const {
     formData,
-    setFormData,
     errors,
     isSubmitting,
     open,
     isEdit,
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClose,
@@ -78,7 +78,7 @@ export default function OwningDepartmentForm({
             <StatusToggleCard
               ref={statusToggleRef}
               isActive={formData.isActive}
-              onToggle={() => setFormData((p) => ({ ...p, isActive: !p.isActive }))}
+              onToggle={handleStatusToggle}
               error={errors.isActive}
               activeLabel={t("form.status.active")}
               inactiveLabel={t("form.status.inactive")}

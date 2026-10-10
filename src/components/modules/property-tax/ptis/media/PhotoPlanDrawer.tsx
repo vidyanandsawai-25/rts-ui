@@ -32,6 +32,7 @@ interface PhotoPlanDrawerProps {
   onDrawPlan?: (e: React.MouseEvent) => void;
   onRequestTypeModal?: () => void;
   isMainProperty?: boolean;
+  zIndex?: number;
 }
 
 export function PhotoPlanDrawer({
@@ -56,6 +57,7 @@ export function PhotoPlanDrawer({
   onDrawPlan,
   onRequestTypeModal,
   isMainProperty = false,
+  zIndex = 130,
 }: PhotoPlanDrawerProps): React.ReactNode {
   const t = useTranslations('ptis');
 
@@ -94,7 +96,14 @@ export function PhotoPlanDrawer({
   );
 
   return createPortal(
-    <Drawer open={open} onClose={onClose} title={titleNode} width="xl">
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title={titleNode}
+      width="xl"
+      zIndex={zIndex}
+      bodyClassName="overflow-hidden flex flex-col flex-1 min-h-0 h-full"
+    >
       <PhotoPlanDrawerBody
         categories={categories}
         onCategoriesChange={onCategoriesChange}

@@ -59,6 +59,8 @@
     "kyc": "केवाईसी"
   },
   "taxDetails": {
+    "taxDetailsTab": "कर विवरण ({type})",
+    "arrearsTab": "बकाया",
     "title": "संपत्ति कर विवरण सारांश",
     "subtitle": "संपत्ति प्रकार के अनुसार समेकित कर विवरण",
     "propertyType": "संपत्ति का प्रकार",
@@ -66,7 +68,11 @@
     "total": "कुल",
     "columnTotal": "कॉलम कुल",
     "noData": "कोई कर विवरण उपलब्ध नहीं है",
+    "loadingDetails": "मांग विवरण लोड हो रहे हैं...",
+    "noBreakdown": "कोई विवरण जानकारी उपलब्ध नहीं है",
     "taxes": "कर",
+    "taxTypes": "कर के प्रकार",
+    "years": "वर्ष",
     "method": "विधि",
     "generalTax": "सामान्य कर",
     "stateEducationTax": "राज्य शिक्षा कर",
@@ -456,6 +462,7 @@
     "plotNo": "भूखंड नं.:",
     "landOwnerName": "भूमि मालिक का नाम:",
     "builderName": "बिल्डर का नाम:",
+    "managerNameEnglish": "प्रबंधक का नाम:",
     "societyEmail": "सोसायटी ईमेल:",
     "secretaryName": "सचिव का नाम:",
     "secretaryMobile": "सचिव मोबाइल:",
@@ -463,9 +470,18 @@
     "address": "पता:",
     "plotArea": "भूखंड क्षेत्रफल:",
     "carpetBuiltUp": "कार्पेट / निर्मित क्षेत्रफल:",
-    "oldCarpetBuiltUp": "पुराना कार्पेट/निर्मित:",
+    "oldCarpetBuiltUp": "पुराना कार्पेट / निर्मित:",
     "totalFloors": "कुल मंजिलें:",
-    "totalProperties": "कुल संपत्तियां:"
+    "totalProperties": "कुल संपत्तियां:",
+    "resCommAmen": "(आवासीय/व्यावसायिक/सुविधा)",
+    "carpet": "कार्पेट:",
+    "builtUp": "निर्मित:",
+    "oldCarpet": "पुराना कार्पेट:",
+    "oldBuiltUp": "पुराना निर्मित:",
+    "carpetArea": "कार्पेट क्षेत्रफल:",
+    "builtUpArea": "निर्मित क्षेत्रफल:",
+    "current": "वर्तमान:",
+    "old": "पुराना:"
   },
   "revenueCard": {
     "addRevenue": "अतिरिक्त राजस्व",
@@ -473,6 +489,7 @@
     "oldCurrentTax": "पुराना वर्तमान कर"
   },
   "stats": {
+    "oldCurrentTax": "पुराना वर्तमान कर",
     "currentTax": "वर्तमान कर",
     "retroTax": "बकाया कर",
     "retroTaxTooltip": "बकाया कर (पिछला)",

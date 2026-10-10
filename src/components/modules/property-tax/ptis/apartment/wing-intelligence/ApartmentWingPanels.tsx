@@ -2,19 +2,27 @@
 
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import BuildingPermissionTab from '@/components/modules/property-tax/ptis/tabs/BuildingPermissionTab';
 import DiscountDataTab from '@/components/modules/property-tax/ptis/tabs/DiscountDataTab';
 import { OldDetailsPanel } from '../old-details/OldDetailsPanel';
+import { BuildingPermissionRecords } from '../building-permission/BuildingPermissionRecords';
 import type { BuildingPermissionData, DiscountData } from '@/types/ptis.types';
 import { WingIntelligenceTopNavSection } from './ApartmentWingTopNav';
+import { useTranslations } from 'next-intl';
 
 export interface WingIntelligencePanelsProps {
   activeSection: WingIntelligenceTopNavSection;
   isExpanded: boolean;
   onToggleExpand: () => void;
   buildingPermissionData?: BuildingPermissionData | null;
+  rawGridData?: unknown;
+  masterTypes?: unknown[] | null;
+  initialCertificateType?: string | null;
   discountData?: DiscountData | null;
+  socialData?: DiscountData | null;
   propertyId?: number | string | null;
+  wardId?: string | number | null;
+  wardNo?: string | null;
+  propertyNo?: string | null;
   wingDetailsId?: number | null;
   societyDetailId?: number | null;
   wingName?: string | null;
@@ -26,21 +34,73 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
   isExpanded,
   onToggleExpand,
   buildingPermissionData,
+  rawGridData,
+  masterTypes,
+  initialCertificateType,
   discountData,
+  socialData,
   propertyId,
+  wardId,
+  wardNo,
+  propertyNo,
   wingDetailsId,
   societyDetailId,
   wingName,
   selectedFloor,
 }) => {
+  const tPanels = useTranslations('ptisRedesign.panels');
   const titles = {
-    building: 'BUILDING PERMISSION (Certificates & Clearances)',
-    discount: 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)',
-    oldDetails: 'OLD DETAILS (Mapped Properties Society / Wing Wise)',
+    building: tPanels('building') || 'BUILDING PERMISSION RECORDS',
+    discount: tPanels('discount') || 'DISCOUNT & SOCIAL DATA (Discounts & Concessions)',
+    oldDetails: tPanels('oldDetails') || 'OLD DETAILS (Mapped Properties Society / Wing Wise)',
   };
 
   const title = titles[activeSection as 'building' | 'discount' | 'oldDetails'];
   if (!title) return null;
+
+  if (activeSection === 'building') {
+    return (
+      <div className="pt-1">
+        <BuildingPermissionRecords
+          buildingPermissionData={buildingPermissionData}
+          rawGridData={rawGridData}
+          masterTypes={masterTypes}
+          initialCertificateType={initialCertificateType}
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+          propertyId={propertyId}
+          wardId={wardId}
+          wardNo={wardNo}
+          propertyNo={propertyNo}
+          societyDetailId={societyDetailId}
+          wingDetailsId={wingDetailsId}
+          wingName={wingName}
+        />
+      </div>
+    );
+  }
+
+  if (activeSection === 'discount') {
+    return (
+      <div className="pt-1">
+        <DiscountDataTab
+          isExpanded={isExpanded}
+          onToggleExpand={onToggleExpand}
+          propertyId={typeof propertyId === 'number' ? propertyId : propertyId ? Number(propertyId) : undefined}
+          initialData={discountData ?? undefined}
+          initialSocialData={socialData ?? undefined}
+          wardId={wardId}
+          wardNo={wardNo}
+          propertyNo={propertyNo}
+          societyDetailId={societyDetailId}
+          wingDetailsId={wingDetailsId}
+          wingName={wingName}
+          selectedFloor={selectedFloor}
+          isApartmentScreen={true}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="pt-1">
@@ -58,21 +118,6 @@ export const ApartmentWingPanels: React.FC<WingIntelligencePanelsProps> = ({
 
       {isExpanded && (
         <>
-          {activeSection === 'building' && (
-            <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
-              <BuildingPermissionTab data={buildingPermissionData ?? undefined} />
-            </div>
-          )}
-
-          {activeSection === 'discount' && (
-            <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200">
-              <DiscountDataTab
-                propertyId={typeof propertyId === 'number' ? propertyId : propertyId ? Number(propertyId) : undefined}
-                initialData={discountData ?? undefined}
-              />
-            </div>
-          )}
-
           {activeSection === 'oldDetails' && (
             <OldDetailsPanel
               wingDetailsId={wingDetailsId}

@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { locales } from "@/i18n/config";
 import {
@@ -13,6 +14,7 @@ import { capitalValueConfig } from "@/components/modules/assets/configuration/ma
 import { ApiError } from "@/lib/utils/api";
 import { AssessmentYearRangeCV, AssessmentYearRangeFormModel } from "@/types/asset-masters/assessment-year-range.types";
 import { PagedResponse } from "@/types/common.types";
+import { getUserIdFromCookies } from "@/lib/utils/cookie";
 
 const config = capitalValueConfig;
 
@@ -69,6 +71,12 @@ export async function createAssessmentYearRangeCVAction(
   data: AssessmentYearRangeFormModel
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
+    data.createdBy = userId;
     await createAssessmentYearRange(config, data);
     // Revalidate all locale variants
     for (const locale of locales) {
@@ -93,6 +101,12 @@ export async function updateAssessmentYearRangeCVAction(
   data: AssessmentYearRangeFormModel
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
+    data.updatedBy = userId;
     await updateAssessmentYearRange(config, data);
     // Revalidate all locale variants
     for (const locale of locales) {
@@ -116,6 +130,12 @@ export async function updateAssessmentYearRangeCVAction(
 export async function deleteAssessmentYearRangeCVAction(
   formData: FormData
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
+  const cookieStore = await cookies();
+  const userId = getUserIdFromCookies(cookieStore);
+  if (!userId) {
+    return { success: false, message: "you are unauthorized", statusCode: 401 };
+  }
+
   const rawId = formData.get("id");
   const id = typeof rawId === "string" ? parseInt(rawId, 10) : 0;
 

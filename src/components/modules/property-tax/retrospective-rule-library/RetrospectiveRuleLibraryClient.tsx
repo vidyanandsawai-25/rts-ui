@@ -13,6 +13,9 @@ export const RetrospectiveRuleLibraryClient: React.FC<RetrospectiveRuleLibraryPr
   initialRules,
   initialStats,
   fetchError,
+  initialTaxationData,
+  initialActionData,
+  initialComparatorCodes,
 }) => {
   const {
     rules,
@@ -39,6 +42,9 @@ export const RetrospectiveRuleLibraryClient: React.FC<RetrospectiveRuleLibraryPr
           mode={builderMode}
           onBack={backToLibrary}
           onPublish={handlePublishRule}
+          initialTaxationData={initialTaxationData}
+          initialActionData={initialActionData}
+          initialComparatorCodes={initialComparatorCodes}
         />
       ) : (
         <div className="bg-slate-50/50 p-3 sm:p-4 w-full">
@@ -60,21 +66,27 @@ export const RetrospectiveRuleLibraryClient: React.FC<RetrospectiveRuleLibraryPr
 
             {/* Default Date Rules Section */}
             <DefaultDateRulesSection
-              initialRules={initialRules}
+              initialRules={rules}
               onEditRule={(ruleItem) => {
                 const existingRule = rules.find((r) => r.id === ruleItem.id);
+                const isAuth = ruleItem.appliesTo.toLowerCase().includes('authorized');
                 const targetRule: RetrospectiveRule = existingRule || {
                   id: ruleItem.id,
-                  ruleCode: `RULE-0${ruleItem.priority}`,
+                  ruleCode: ruleItem.ruleCode || `RULE-${ruleItem.priority}`,
                   ruleTitle: ruleItem.ruleName,
                   conditionDescription: ruleItem.condition,
-                  evidenceCategory: 'Authorized: OC or CC available',
+                  evidenceCategory: isAuth
+                    ? 'Authorized: OC or CC available'
+                    : 'Unauthorized: OC & CC unavailable',
                   startLogicTitle: ruleItem.defaultDateLogic,
-                  startLogicBoundary: `Effective From ${ruleItem.effectiveFrom}`,
-                  commonTaxationBadge: 'Common Rates Applied',
-                  commonTaxationDescription: 'Standard taxation rules applied.',
-                  unauthorizedPenalty: 'No Penalty',
+                  startLogicBoundary: ruleItem.effectiveFrom,
+                  commonTaxationBadge: 'Current-year for all years',
+                  commonTaxationDescription: 'Current-year percentage for all years',
+                  unauthorizedPenalty: isAuth
+                    ? 'Not applicable — OC/CC available'
+                    : 'Apply penalty as per the Act',
                   status: ruleItem.status,
+                  priorityNo: ruleItem.priority,
                   availableEvidence: [],
                   unavailableEvidence: [],
                   compareEvidenceDates: '',

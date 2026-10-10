@@ -40,6 +40,17 @@ export function useIsAuthPage(initialValue = false) {
     "aaple-sarkar-dashboard",
     "AapleSarkarDashboard",
   ];
+  if (firstRealSegment === 'water-bill') {
+
+    const secondSegment = locales.includes(segments[0] as typeof locales[number])
+
+      ? segments[2]
+
+      : segments[1];
+
+    return secondSegment === 'portal';
+
+  }
 
   return noShellSegments.includes(firstRealSegment);
 }

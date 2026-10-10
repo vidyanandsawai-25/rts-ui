@@ -1,20 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
+import { createElement, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronRight,
-  FileText,
-} from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import { resolveIcon } from '@/lib/utils/icon-mapping';
 import { locales } from '@/i18n/config';
 import type { MenuItem } from '@/types/menu.types';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
+import { resolveDepartmentContext, isConfigurationSettingsItem } from '@/lib/utils/department-context';
 import { SidebarFrame } from './SidebarFrame';
 
 export interface SidebarProps {
@@ -34,6 +30,7 @@ function withLocale(locale: string, href: string): string {
  */
 export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const localePattern = new RegExp(`^/(${locales.join('|')})`);
   const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
 
@@ -42,74 +39,103 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
     () => resolveActiveScreenContext(screens, pathname),
     [screens, pathname]
   );
-  const brandTitle = activeScreenContext?.moduleName || t('sidebar.brandTitle');
-  const brandSubtitle = activeScreenContext?.departmentName || t('sidebar.brandSubtitle');
+
+  const deptContext = useMemo(() => {
+    return resolveDepartmentContext({
+      pathname,
+      searchParams,
+      menuItems,
+    });
+  }, [pathname, searchParams, menuItems]);
 
   const isAssetRoute = pathname.includes('/assets');
   const isDarkTheme = isAssetRoute || pathname.includes('/property-tax/ptis');
 
-  // Helper to extract the department segment (e.g. 'configuration-settings', 'property-tax')
-  const getDepartment = (path: string): string => {
-    const cleaned = path.replace(/^\//, '');
-    const parts = cleaned.split('/');
-    return parts[0] || '';
-  };
-
-  const currentDept = getDepartment(pathWithoutLocale);
-
-  const filterableDepartments = useMemo(() => {
-    const depts = new Set<string>(['configuration-settings']);
-    menuItems.forEach((item) => {
-      if (item.href && item.href !== '#') {
-        const dept = getDepartment(item.href);
-        if (dept && dept !== 'home' && dept !== 'dashboard') {
-          depts.add(dept);
-        }
-      }
-      if (item.subItems) {
-        item.subItems.forEach((sub) => {
-          if (sub.href && sub.href !== '#') {
-            const dept = getDepartment(sub.href);
-            if (dept && dept !== 'home' && dept !== 'dashboard') {
-              depts.add(dept);
-            }
-          }
-        });
-      }
-    });
-    return Array.from(depts);
-  }, [menuItems]);
-
-  const isFilterable = filterableDepartments.includes(currentDept);
-
   const filteredMenuItems = useMemo(() => {
-    if (!isFilterable) return menuItems;
+    // 1. If viewing Configuration Settings, isolate configuration-settings screens
+    if (deptContext.isConfigurationSettings) {
+      return menuItems
+        .map((item) => {
+          if (item.subItems && item.subItems.length > 0) {
+            const filteredSub = item.subItems.filter((sub) => isConfigurationSettingsItem(sub));
+            if (filteredSub.length > 0) {
+              return { ...item, subItems: filteredSub };
+            }
+            return null;
+          }
+          if (isConfigurationSettingsItem(item)) {
+            return item;
+          }
+          return null;
+        })
+        .filter((item): item is MenuItem => item !== null);
+    }
 
+    // 2. Identity-driven filtering: match by active departmentId
+    if (deptContext.departmentId != null) {
+      const activeDeptId = deptContext.departmentId;
+      return menuItems
+        .map((item) => {
+          // Categorically exclude configuration settings items/groups from business departments
+          if (isConfigurationSettingsItem(item)) {
+            return null;
+          }
+
+          if (item.subItems && item.subItems.length > 0) {
+            const filteredSub = item.subItems.filter((sub) => {
+              // Exclude configuration settings screens even if assigned this departmentId in DB
+              if (isConfigurationSettingsItem(sub)) {
+                return false;
+              }
+              if (sub.departmentId != null) {
+                return sub.departmentId === activeDeptId;
+              }
+              if (item.departmentId != null) {
+                return item.departmentId === activeDeptId;
+              }
+              return false;
+            });
+
+            if (filteredSub.length > 0) {
+              return {
+                ...item,
+                subItems: filteredSub,
+              };
+            }
+            return null;
+          }
+
+          // Standalone item: match departmentId and ensure it is not configuration settings
+          if (item.departmentId != null && item.departmentId === activeDeptId) {
+            return item;
+          }
+
+          return null;
+        })
+        .filter((item): item is MenuItem => item !== null);
+    }
+
+    // 3. Fallback: exclude configuration-settings from general department views
     return menuItems
+      .filter((item) => !isConfigurationSettingsItem(item))
       .map((item) => {
         if (item.subItems && item.subItems.length > 0) {
-          const filteredSub = item.subItems.filter((sub) => {
-            const subPath = sub.href ? (sub.href.startsWith('/') ? sub.href : `/${sub.href}`) : '';
-            return getDepartment(subPath) === currentDept;
-          });
-          return {
-            ...item,
-            subItems: filteredSub,
-          };
+          const filteredSub = item.subItems.filter((sub) => !isConfigurationSettingsItem(sub));
+          return filteredSub.length > 0 ? { ...item, subItems: filteredSub } : null;
         }
         return item;
       })
-      .filter((item) => {
-        if (item.subItems && item.subItems.length > 0) {
-          return true;
-        }
-        if (item.href && item.href !== '#') {
-          const itemPath = item.href.startsWith('/') ? item.href : `/${item.href}`;
-          return getDepartment(itemPath) === currentDept;
-        }
-        return false;
-      });
-  }, [menuItems, currentDept, isFilterable]);
+      .filter((item): item is MenuItem => item !== null);
+  }, [menuItems, deptContext]);
+
+  const brandTitle = deptContext.departmentName || t('sidebar.brandTitle');
+  const brandSubtitle = deptContext.isConfigurationSettings
+    ? 'System Administration'
+    : deptContext.departmentName
+      ? deptContext.departmentName.toLowerCase().includes('department')
+        ? deptContext.departmentName
+        : `${deptContext.departmentName} Department`
+      : t('sidebar.brandSubtitle');
 
   const allPaths: string[] = [];
   filteredMenuItems.forEach((item) => {
@@ -141,21 +167,31 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
   };
 
   return (
-    <SidebarFrame
-      openMenuLabel={t('sidebar.openMenu')}
-      closeMenuLabel={t('sidebar.closeMenu')}
-    >
+    <SidebarFrame openMenuLabel={t('sidebar.openMenu')} closeMenuLabel={t('sidebar.closeMenu')}>
       <div
-        className={`p-4 flex items-center gap-3 border-b transition-all duration-300 ease-in-out sidebar-brand-row ${
+        className={`px-3.5 py-4 flex items-center gap-2.5 border-b transition-all duration-300 ease-in-out sidebar-brand-row ${
           isDarkTheme ? 'border-slate-800 bg-[#0B132B]' : 'border-gray-100 bg-white/50'
         }`}
       >
-        <div className={`p-2 rounded-xl shadow-md shrink-0 ${isDarkTheme ? 'bg-blue-600' : 'bg-[#4b70a6]'}`}>
-          <FileText className="h-6 w-6 text-white" />
+        <div
+          className={`p-2 rounded-xl shadow-md shrink-0 ${isDarkTheme ? 'bg-blue-600' : 'bg-[#4b70a6]'}`}
+        >
+          {createElement(resolveIcon(deptContext.departmentIcon, deptContext.departmentName), {
+            className: 'h-6 w-6 text-white',
+          })}
         </div>
-        <div className="sidebar-expandable-label flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
-          <span className={`text-[17px] font-bold leading-tight whitespace-nowrap ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>
+        <div className="sidebar-expandable-label flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-hidden min-w-0">
+          <span
+            className={`text-[16px] font-bold leading-tight truncate ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}
+            title={brandTitle}
+          >
             {brandTitle}
+          </span>
+          <span
+            className={`text-[12px] font-medium leading-normal truncate ${isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}
+            title={brandSubtitle}
+          >
+            {brandSubtitle}
           </span>
           <span className={`text-[12px] font-medium whitespace-nowrap ${isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}>{brandSubtitle}</span>
         </div>
@@ -202,38 +238,73 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
                     <IconComponent
                       className={`h-6 w-6 shrink-0 ${
                         hasActiveChild
-                          ? 'text-white'
-                          : isDarkTheme ? 'text-slate-400' : 'text-gray-500'
+                          ? isDarkTheme
+                            ? 'text-white'
+                            : 'text-[#4b70a6]'
+                          : isDarkTheme
+                            ? 'text-slate-400'
+                            : 'text-gray-500'
                       }`}
                     />
                     <div className="sidebar-expandable-label flex-1 min-w-0 transition-all duration-300 ease-in-out overflow-hidden">
                       <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <span className="block whitespace-nowrap text-[15px] font-medium leading-tight">{item.name}</span>
+                        <div className="min-w-0 flex-1">
+                          <span
+                            className="block whitespace-nowrap text-[15px] font-medium leading-tight truncate"
+                            title={item.name}
+                          >
+                            {item.name}
+                          </span>
                           {item.nameHi && item.nameHi !== item.name && (
                             <span
                               className={`block whitespace-nowrap text-[11px] ${
                                 hasActiveChild
-                                  ? 'text-white/80'
-                                  : isDarkTheme ? 'text-slate-400' : 'text-gray-400'
+                                  ? isDarkTheme
+                                    ? 'text-white/80'
+                                    : 'text-[#4b70a6]/80'
+                                  : isDarkTheme
+                                    ? 'text-slate-400'
+                                    : 'text-gray-400'
                               }`}
                             >
                               {item.nameHi}
                             </span>
                           )}
                         </div>
-                        <span className={`${isDarkTheme ? 'text-slate-400' : 'text-gray-400'} shrink-0 group-open/sub:hidden`}>
+                        <span
+                          className={`${
+                            hasActiveChild
+                              ? isDarkTheme
+                                ? 'text-white/80'
+                                : 'text-[#4b70a6]'
+                              : isDarkTheme
+                                ? 'text-slate-400'
+                                : 'text-gray-400'
+                          } shrink-0 group-open/sub:hidden`}
+                        >
                           <ChevronRight size={14} />
                         </span>
-                        <span className={`${isDarkTheme ? 'text-slate-400' : 'text-gray-400'} shrink-0 hidden group-open/sub:inline`}>
+                        <span
+                          className={`${
+                            hasActiveChild
+                              ? isDarkTheme
+                                ? 'text-white/80'
+                                : 'text-[#4b70a6]'
+                              : isDarkTheme
+                                ? 'text-slate-400'
+                                : 'text-gray-400'
+                          } shrink-0 hidden group-open/sub:inline`}
+                        >
                           <ChevronDown size={14} />
                         </span>
                       </div>
                     </div>
                   </summary>
-                  <div className={`sidebar-expandable-label ml-5 border-l-2 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full ${
-                    isDarkTheme ? 'border-slate-700/80' : 'border-gray-200'
-                  }`}>
+                  <div
+                    className={`sidebar-expandable-label ml-5 border-l-2 pl-2 space-y-1 my-1 max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full ${
+                      isDarkTheme ? 'border-slate-700/80' : 'border-gray-200'
+                    }`}
+                  >
                     {item.subItems!.map((sub, sIdx) => {
                       const subPath = sub.href.startsWith('/') ? sub.href : `/${sub.href}`;
                       const subActive = isPathActive(subPath);
@@ -277,11 +348,20 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
                     }
                   `}
                 >
-                  <IconComponent className={`h-6 w-6 shrink-0 ${active ? 'text-white' : isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`} />
-                  <div className="sidebar-expandable-label transition-all duration-300 ease-in-out overflow-hidden min-w-0">
-                    <span className="block whitespace-nowrap text-[15px] font-medium leading-tight">{item.name}</span>
+                  <IconComponent
+                    className={`h-6 w-6 shrink-0 ${active ? 'text-white' : isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}
+                  />
+                  <div className="sidebar-expandable-label flex-1 min-w-0 transition-all duration-300 ease-in-out overflow-hidden">
+                    <span
+                      className="block whitespace-nowrap text-[15px] font-medium leading-tight truncate"
+                      title={item.name}
+                    >
+                      {item.name}
+                    </span>
                     {item.nameHi && item.nameHi !== item.name && (
-                      <span className={`block whitespace-nowrap text-[11px] ${active ? 'text-white/70' : isDarkTheme ? 'text-slate-400' : 'text-gray-400'}`}>
+                      <span
+                        className={`block whitespace-nowrap text-[11px] ${active ? 'text-white/70' : isDarkTheme ? 'text-slate-400' : 'text-gray-400'}`}
+                      >
                         {item.nameHi}
                       </span>
                     )}
@@ -295,7 +375,7 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
 
       <div className="px-2 mt-auto mb-2">
         <Link
-          href={withLocale(locale, isAssetRoute ? '/assets/municipal-Asset' : '/home')}
+          href={withLocale(locale, '/home')}
           className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[15px] font-semibold transition-all duration-300 border shadow-md hover:shadow-lg hover:-translate-y-0.5 ${
             isDarkTheme
               ? 'bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700/80'
@@ -304,7 +384,9 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
         >
           <ArrowLeft className="h-5 w-5 shrink-0 sidebar-back-icon" />
           <div className="sidebar-expandable-label flex flex-col items-start transition-all duration-300 ease-in-out overflow-hidden min-w-0">
-            <span className="block whitespace-nowrap leading-tight">{t('sidebar.backToDashboard')}</span>
+            <span className="block whitespace-nowrap leading-tight">
+              {t('sidebar.backToDashboard')}
+            </span>
             <span className="block whitespace-nowrap text-[11px] text-blue-100 font-normal">
               {t('sidebar.backToDashboardSecondary')}
             </span>

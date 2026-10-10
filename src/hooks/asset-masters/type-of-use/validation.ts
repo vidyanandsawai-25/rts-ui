@@ -143,8 +143,11 @@ export const validateTypeOfUseForm = (
       return undefined;
     },
     searchSequence: (val: unknown) => {
+      if (val === "" || val === undefined || val === null || String(val).trim() === "") {
+        return t("messages.sequenceRequired", { default: "Sequence is required" });
+      }
       const n = Number(val);
-      if (val === undefined || val === null || isNaN(n) || n < 0) {
+      if (isNaN(n) || n < 0) {
         return t("messages.sequenceNonNegative", { default: "Sequence must be 0 or greater" });
       }
       if (n > 999) {
@@ -154,7 +157,7 @@ export const validateTypeOfUseForm = (
     },
     type: (val: unknown) => {
       const strVal = String(val ?? "").trim();
-      if (!strVal) return t("type.selectType", { default: "Type is required" });
+      if (!strVal) return t("type.fields.selectType", { default: "Type is required" });
       return undefined;
     },
     isActive: (val: unknown) => {
@@ -175,7 +178,7 @@ export const validateSubTypeOfUseForm = (
   const schema = {
     typeOfUseId: (val: unknown) => {
       const n = Number(val);
-      if (!n || n <= 0) return t("type.selectType", { default: "Type is required" });
+      if (!n || n <= 0) return t("type.fields.selectType", { default: "Type is required" });
       return undefined;
     },
     description: (val: unknown) => {
@@ -186,8 +189,11 @@ export const validateSubTypeOfUseForm = (
       return undefined;
     },
     searchSequence: (val: unknown) => {
+      if (val === "" || val === undefined || val === null || String(val).trim() === "") {
+        return t("messages.sequenceRequired", { default: "Sequence is required" });
+      }
       const n = Number(val);
-      if (val === undefined || val === null || isNaN(n) || n < 0) {
+      if (isNaN(n) || n < 0) {
         return t("messages.sequenceNonNegative", { default: "Sequence must be 0 or greater" });
       }
       if (n > 999) {

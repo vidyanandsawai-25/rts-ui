@@ -7,8 +7,9 @@ import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 import { usePhotoPlanMutations } from './usePhotoPlanMutations';
 import { useMediaDrawerState } from './useMediaDrawerState';
 import type { PropertyPhotoDto } from '@/types/photoplan.types';
-import { propertyMediaCache, isCacheValid, evictOldestCacheEntry } from './usePropertyPhotosQuery';
 import { getPhotosByPropertyAction } from '@/app/[locale]/property-tax/ptis/PhotoPlan.action';
+import { getPhotosByWingAction } from '@/app/[locale]/property-tax/ptis/WingPhoto.action';
+import { getPhotosBySocietyAction } from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
 
 export interface UsePhotoPlanDrawerStateProps {
   categories: PhotoCategory[];
@@ -53,16 +54,20 @@ export function usePhotoPlanDrawerState({
   const initialHasImages = initialCat?.images && initialCat.images.length > 0;
 
   const [selectedImageIndex, setSelectedImageIndexState] = useState<number | null>(() => {
-    const val = searchParams.get('selectedImageIndex');
+    const val = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))
+      : searchParams.get('selectedImageIndex');
     if (val !== null) {
       const parsed = parseInt(val, 10);
-      return !isNaN(parsed) ? parsed : (initialHasImages ? 0 : null);
+      return !isNaN(parsed) ? parsed : (initialHasImages ? initialCat.images.length - 1 : null);
     }
-    return initialHasImages ? 0 : null;
+    return initialHasImages ? initialCat.images.length - 1 : null;
   });
 
   const [viewMode, setViewModeState] = useState<'grid' | 'viewer' | 'compare'>(() => {
-    const val = searchParams.get('viewMode');
+    const val = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('viewMode') ?? searchParams.get('viewMode'))
+      : searchParams.get('viewMode');
     if (val === 'grid' || val === 'viewer' || val === 'compare') return val;
     if (initialCat?.photoTypeCode === 'CHANGE_DETECTION') {
       return initialHasImages ? 'compare' : 'grid';
@@ -82,86 +87,112 @@ export function usePhotoPlanDrawerState({
     categoriesRef.current = categories;
   }, [categories]);
 
+  function normalizeToPropertyPhoto(item: Record<string, unknown>, fallbackPropId: number): PropertyPhotoDto {
+    return {
+      propertyPhotoId: Number(item.propertyPhotoId || item.societyPhotoId || item.wingPhotoId || 0),
+      propertyId: Number(item.propertyId || fallbackPropId || 0),
+      photoTypeId: Number(item.photoTypeId || 0),
+      photoTypeCode: String(item.photoTypeCode || ''),
+      photoTypeName: String(item.photoTypeName || ''),
+      displayOrder: Number(item.displayOrder || 1),
+      remarks: item.remarks ? String(item.remarks) : undefined,
+      documentBindingId: item.documentBindingId ? Number(item.documentBindingId) : undefined,
+      documentGuid: item.documentGuid ? String(item.documentGuid) : undefined,
+      fileName: item.fileName ? String(item.fileName) : undefined,
+      mimeType: item.mimeType ? String(item.mimeType) : undefined,
+      viewUrl: item.viewUrl ? String(item.viewUrl) : undefined,
+      downloadUrl: item.downloadUrl ? String(item.downloadUrl) : undefined,
+      wingDetailId: item.wingDetailId ? Number(item.wingDetailId) : undefined,
+      wingName: item.wingName ? String(item.wingName) : undefined,
+      societyDetailId: item.societyDetailId ? Number(item.societyDetailId) : undefined,
+    };
+  }
+
   const loadPhotos = useCallback(async () => {
     if (!propertyId) return;
     setIsLoadingPhotos(true);
     setFetchError(null);
     try {
-      const res = await getPhotosByPropertyAction(propertyId);
-      if (res.success && res.data) {
-        const fetchedPhotos = res.data;
-        onPhotosChange?.(fetchedPhotos);
-
-        const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-        onFullyLoadedIdsChange?.(allCatIds);
-
-        const cached = propertyMediaCache.get(propertyId);
-        propertyMediaCache.set(propertyId, {
-          photoSlots: cached?.photoSlots || [],
-          photos: fetchedPhotos,
-          timestamp: Date.now(),
+      const [propRes, wingRes, socRes] = await Promise.all([
+        getPhotosByPropertyAction(propertyId),
+        wingDetailId ? getPhotosByWingAction(wingDetailId) : Promise.resolve(null),
+        societyId ? getPhotosBySocietyAction(societyId) : Promise.resolve(null),
+      ]);
+      const fetchedPhotos: PropertyPhotoDto[] = [];
+      if (propRes.success && propRes.data) fetchedPhotos.push(...propRes.data);
+      if (wingRes?.success && wingRes.data) {
+        wingRes.data.forEach((wp) => {
+          const norm = normalizeToPropertyPhoto(wp as unknown as Record<string, unknown>, propertyId);
+          const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+          if (isPlan) return;
+          if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+            fetchedPhotos.push(norm);
+          }
         });
-        evictOldestCacheEntry();
-      } else {
-        setFetchError(res.error || res.message || 'Failed to load photos');
       }
+      if (socRes?.success && socRes.data) {
+        socRes.data.forEach((sp) => {
+          const norm = normalizeToPropertyPhoto(sp as unknown as Record<string, unknown>, propertyId);
+          const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+          if (isPlan) return;
+          if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+            fetchedPhotos.push(norm);
+          }
+        });
+      }
+
+      onPhotosChange?.(fetchedPhotos);
+
+      const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+      onFullyLoadedIdsChange?.(allCatIds);
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : 'Failed to load photos');
     } finally {
       setIsLoadingPhotos(false);
     }
-  }, [propertyId, onPhotosChange, onFullyLoadedIdsChange]);
+  }, [propertyId, wingDetailId, societyId, onPhotosChange, onFullyLoadedIdsChange]);
 
   useEffect(() => {
     if (!propertyId) return;
     let isSubscribed = true;
 
     if (fullyLoadedIds.size === 0) {
-      if (propertyMediaCache.has(propertyId) && isCacheValid(propertyId)) {
-        const cached = propertyMediaCache.get(propertyId);
-        if (cached && cached.photos) {
-          onPhotosChange?.(cached.photos);
-          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-          onFullyLoadedIdsChange?.(allCatIds);
-          setIsLoadingPhotos(false);
-          return;
-        }
-      }
-
-      if (categoriesRef.current.length > 0) {
-        const hasLoadedContent = categoriesRef.current.some((c) =>
-          c.photoTypeCode !== 'CHANGE_DETECTION' && c.images && c.images.some((img) => img.hasPhoto && !!img.src)
-        );
-        if (hasLoadedContent) {
-          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-          onFullyLoadedIdsChange?.(allCatIds);
-          setIsLoadingPhotos(false);
-          return;
-        }
-      }
-
       setIsLoadingPhotos(true);
       setFetchError(null);
-      getPhotosByPropertyAction(propertyId)
-        .then((res) => {
+      Promise.all([
+        getPhotosByPropertyAction(propertyId),
+        wingDetailId ? getPhotosByWingAction(wingDetailId) : Promise.resolve(null),
+        societyId ? getPhotosBySocietyAction(societyId) : Promise.resolve(null),
+      ])
+        .then(([propRes, wingRes, socRes]) => {
           if (!isSubscribed) return;
-          if (res.success && res.data) {
-            const fetchedPhotos = res.data;
-            onPhotosChange?.(fetchedPhotos);
-
-            const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
-            onFullyLoadedIdsChange?.(allCatIds);
-
-            const cachedEntry = propertyMediaCache.get(propertyId);
-            propertyMediaCache.set(propertyId, {
-              photoSlots: cachedEntry?.photoSlots || [],
-              photos: fetchedPhotos,
-              timestamp: Date.now(),
+          const fetchedPhotos: PropertyPhotoDto[] = [];
+          if (propRes.success && propRes.data) fetchedPhotos.push(...propRes.data);
+          if (wingRes?.success && wingRes.data) {
+            wingRes.data.forEach((wp) => {
+              const norm = normalizeToPropertyPhoto(wp as unknown as Record<string, unknown>, propertyId);
+              const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+              if (isPlan) return;
+              if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+                fetchedPhotos.push(norm);
+              }
             });
-            evictOldestCacheEntry();
-          } else {
-            setFetchError(res.error || res.message || 'Failed to load photos');
           }
+          if (socRes?.success && socRes.data) {
+            socRes.data.forEach((sp) => {
+              const norm = normalizeToPropertyPhoto(sp as unknown as Record<string, unknown>, propertyId);
+              const isPlan = norm.photoTypeCode?.toUpperCase().includes('PLAN') || norm.photoTypeId === 13;
+              if (isPlan) return;
+              if (!fetchedPhotos.some((p) => (p.documentGuid && p.documentGuid === norm.documentGuid) || (p.propertyPhotoId && p.propertyPhotoId === norm.propertyPhotoId))) {
+                fetchedPhotos.push(norm);
+              }
+            });
+          }
+
+          onPhotosChange?.(fetchedPhotos);
+
+          const allCatIds = new Set(categoriesRef.current.map((c) => c.photoTypeId));
+          onFullyLoadedIdsChange?.(allCatIds);
         })
         .catch((err) => {
           if (isSubscribed) {
@@ -180,7 +211,7 @@ export function usePhotoPlanDrawerState({
     return () => {
       isSubscribed = false;
     };
-  }, [propertyId, fullyLoadedIds.size, onPhotosChange, onFullyLoadedIdsChange]);
+  }, [propertyId, wingDetailId, societyId, fullyLoadedIds.size, onPhotosChange, onFullyLoadedIdsChange]);
 
   const prevDrawerPropIdRef = useRef(propertyId);
   useEffect(() => {
@@ -191,14 +222,25 @@ export function usePhotoPlanDrawerState({
     }
   }, [propertyId]);
 
-  useEffect(() => {
-    if (!areCategoriesEqual(categories, prevCategories)) {
-      Promise.resolve().then(() => {
-        setPrevCategories(categories);
-        setCachedCategories((prev) => mergeCategories(prev, categories));
-      });
+  if (!areCategoriesEqual(categories, prevCategories)) {
+    const merged = mergeCategories(cachedCategories, categories);
+    const prevActiveCat = prevCategories[selectedCategoryIndex];
+    const nextActiveCat = merged[selectedCategoryIndex];
+    const prevCount = prevActiveCat?.images?.length ?? 0;
+    const nextCount = nextActiveCat?.images?.length ?? 0;
+
+    setPrevCategories(categories);
+    setCachedCategories(merged);
+
+    if (nextCount > prevCount && nextCount > 0) {
+      setSelectedImageIndexState(nextCount - 1);
+      setViewModeState('viewer');
+    } else if (selectedImageIndex !== null && nextCount > 0 && selectedImageIndex >= nextCount) {
+      setSelectedImageIndexState(nextCount - 1);
+    } else if (nextCount === 0) {
+      setSelectedImageIndexState(null);
     }
-  }, [categories, prevCategories]);
+  }
 
   const updateUrlParams = useCallback((newParams: Record<string, string | null>) => {
     if (typeof window === 'undefined') return;
@@ -218,7 +260,7 @@ export function usePhotoPlanDrawerState({
     setSelectedCategoryIndexState(idx);
     const targetCat = cachedCategories[idx];
     const hasImgs = targetCat?.images && targetCat.images.length > 0;
-    const nextImgIdx = hasImgs ? 0 : null;
+    const nextImgIdx = hasImgs ? targetCat.images.length - 1 : null;
     const nextViewMode = targetCat?.photoTypeCode === 'CHANGE_DETECTION'
       ? (hasImgs ? 'compare' : 'grid')
       : (hasImgs ? 'viewer' : 'grid');
@@ -230,27 +272,32 @@ export function usePhotoPlanDrawerState({
   const setViewerIndexAndMode = useCallback((idx: number | null, mode: 'grid' | 'viewer' | 'compare') => {
     setSelectedImageIndexState(idx);
     setViewModeState(mode);
-  }, [setSelectedImageIndexState, setViewModeState]);
+    updateUrlParams({
+      photoCategoryIndex: selectedCategoryIndex.toString(),
+      selectedImageIndex: idx !== null ? idx.toString() : null,
+      viewMode: mode,
+    });
+  }, [setSelectedImageIndexState, setViewModeState, selectedCategoryIndex, updateUrlParams]);
 
   const [prevInitialCategoryIndex, setPrevInitialCategoryIndex] = useState(initialCategoryIndex);
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (initialCategoryIndex !== prevInitialCategoryIndex) {
-      setPrevInitialCategoryIndex(initialCategoryIndex);
-      setSelectedCategoryIndexState(initialCategoryIndex);
-      const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
-      const hasImages = targetCat?.images && targetCat.images.length > 0;
-      let targetIdx: number | null = hasImages ? 0 : null;
-      let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
-      const selParam = searchParams.get('selectedImageIndex');
-      if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
-      const modeParam = searchParams.get('viewMode');
-      if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
-      setSelectedImageIndexState(targetIdx);
-      setViewModeState(targetMode);
-    }
-  }, [initialCategoryIndex, prevInitialCategoryIndex, categories, searchParams]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  if (initialCategoryIndex !== prevInitialCategoryIndex) {
+    setPrevInitialCategoryIndex(initialCategoryIndex);
+    setSelectedCategoryIndexState(initialCategoryIndex);
+    const targetCat = categories[initialCategoryIndex >= 0 && initialCategoryIndex < categories.length ? initialCategoryIndex : 0];
+    const hasImages = targetCat?.images && targetCat.images.length > 0;
+    let targetIdx: number | null = hasImages ? targetCat.images.length - 1 : null;
+    let targetMode: 'grid' | 'viewer' | 'compare' = targetCat?.photoTypeCode === 'CHANGE_DETECTION' ? (hasImages ? 'compare' : 'grid') : (hasImages ? 'viewer' : 'grid');
+    const selParam = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('selectedImageIndex') ?? searchParams.get('selectedImageIndex'))
+      : searchParams.get('selectedImageIndex');
+    if (selParam !== null && !isNaN(parseInt(selParam, 10))) targetIdx = parseInt(selParam, 10);
+    const modeParam = typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('viewMode') ?? searchParams.get('viewMode'))
+      : searchParams.get('viewMode');
+    if (modeParam === 'grid' || modeParam === 'viewer' || modeParam === 'compare') targetMode = modeParam;
+    setSelectedImageIndexState(targetIdx);
+    setViewModeState(targetMode);
+  }
 
   useEffect(() => {
     updateUrlParams({
@@ -326,16 +373,17 @@ export function usePhotoPlanDrawerState({
     const img = selectedImageIndex !== null ? activeCategory?.images[selectedImageIndex] : null;
     if (!img) return;
 
-    if (img.documentGuid) {
+    const guid = img.documentGuid || (img.src || img.downloadUrl || '').match(/\/documents\/([^/]+)/)?.[1];
+    if (guid) {
       void downloadDocumentClient(
-        img.documentGuid,
+        decodeURIComponent(guid),
         `${img.title.replace(/\s+/g, '_')}.png`
       );
       return;
     }
 
     const downloadHref = img.downloadUrl || img.src;
-    if (downloadHref) {
+    if (downloadHref && !downloadHref.includes('/api/documents/')) {
       Object.assign(document.createElement('a'), {
         href: downloadHref, download: `${img.title.replace(/\s+/g, '_')}.png`
       }).click();

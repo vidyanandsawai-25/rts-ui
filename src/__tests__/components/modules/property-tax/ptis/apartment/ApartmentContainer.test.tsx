@@ -5,6 +5,7 @@ import { PtisRedesignCopy } from '@/types/property-tax/apartment';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
 }));
 
 vi.mock('next/navigation', () => ({

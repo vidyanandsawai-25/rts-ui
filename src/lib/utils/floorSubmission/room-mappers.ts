@@ -43,38 +43,43 @@ export const mapOffsetToApi = (offset: OffsetData, roomSubmissionId: number = 0)
   let base2Mtr = 0;
   let heightMtr = 0;
 
-  switch (shape) {
-    case SHAPE_TYPES.RECTANGLE:
+  const normalizedShape = String(shape || '').toLowerCase().trim();
+
+  switch (normalizedShape) {
+    case 'rectangle':
+    case 'rectangular':
       lengthMtr = toApiNumber([offset.length, params.length], 0);
       widthMtr = toApiNumber([offset.width, params.width], 0);
       base1Mtr = lengthMtr;
       base2Mtr = widthMtr;
       break;
-    case SHAPE_TYPES.SQUARE:
-      const s = toApiNumber([offset.side, params.side, offset.length, params.length], 0);
+    case 'square':
+      const s = toApiNumber([offset.side, params.side, offset.length, params.length, params.base1, offset.base1], 0);
       lengthMtr = s;
       widthMtr = s;
       base1Mtr = s;
       break;
-    case SHAPE_TYPES.TRAPEZOID:
+    case 'trapezoid':
       lengthMtr = 1;
       widthMtr = areaSqMtr;
       base1Mtr = toApiNumber([offset.base1, params.base1], 0);
       base2Mtr = toApiNumber([offset.base2, params.base2], 0);
       heightMtr = toApiNumber([offset.height, params.height], 0);
       break;
-    case SHAPE_TYPES.TRIANGLE:
+    case 'triangle':
       lengthMtr = 1;
       widthMtr = areaSqMtr;
-      base1Mtr = toApiNumber([offset.base, params.base], 0);
+      base1Mtr = toApiNumber([offset.base, params.base, params.base1], 0);
       heightMtr = toApiNumber([offset.height, params.height], 0);
       break;
-    case SHAPE_TYPES.CIRCLE:
-    case SHAPE_TYPES.SEMI_CIRCLE:
-    case SHAPE_TYPES.QUARTER_CIRCLE:
+    case 'circle':
+    case 'semi circle':
+    case 'semicircle':
+    case 'quarter circle':
+    case 'quartercircle':
       lengthMtr = 1;
       widthMtr = areaSqMtr;
-      base1Mtr = toApiNumber([offset.radius, params.radius], 0);
+      base1Mtr = toApiNumber([offset.radius, params.radius, params.base1], 0);
       break;
     default:
       lengthMtr = toApiNumber([offset.length, params.length], 0);
@@ -117,38 +122,43 @@ export const mapRoomDataToApi = (room: RoomData, propertyId: number = 0, propert
   let base2Mtr = 0;
   let heightMtr = 0;
 
-  switch (shape) {
-    case SHAPE_TYPES.RECTANGLE:
+  const normalizedShape = String(shape || '').toLowerCase().trim();
+
+  switch (normalizedShape) {
+    case 'rectangle':
+    case 'rectangular':
       lengthMtr = toApiNumber([params.length, room.length], 0);
       widthMtr = toApiNumber([params.width, room.width], 0);
       base1Mtr = lengthMtr;
       base2Mtr = widthMtr;
       break;
-    case SHAPE_TYPES.SQUARE:
-      const s = toApiNumber([params.side, room.side, room.length], 0);
+    case 'square':
+      const s = toApiNumber([params.side, (room as Record<string, unknown>).side, params.length, room.length, params.base1, room.base1Mtr], 0);
       lengthMtr = s;
       widthMtr = s;
       base1Mtr = s;
       break;
-    case SHAPE_TYPES.TRAPEZOID:
+    case 'trapezoid':
       lengthMtr = 1;
       widthMtr = areaSqMtr;
       base1Mtr = toApiNumber([params.base1, room.base1], 0);
       base2Mtr = toApiNumber([params.base2, room.base2], 0);
       heightMtr = toApiNumber([params.height, room.height], 0);
       break;
-    case SHAPE_TYPES.TRIANGLE:
+    case 'triangle':
       lengthMtr = 1;
       widthMtr = areaSqMtr;
-      base1Mtr = toApiNumber([params.base, room.base], 0);
+      base1Mtr = toApiNumber([params.base, room.base, params.base1], 0);
       heightMtr = toApiNumber([params.height, room.height], 0);
       break;
-    case SHAPE_TYPES.CIRCLE:
-    case SHAPE_TYPES.SEMI_CIRCLE:
-    case SHAPE_TYPES.QUARTER_CIRCLE:
+    case 'circle':
+    case 'semi circle':
+    case 'semicircle':
+    case 'quarter circle':
+    case 'quartercircle':
       lengthMtr = 1;
       widthMtr = areaSqMtr;
-      base1Mtr = toApiNumber([params.radius, room.radius], 0);
+      base1Mtr = toApiNumber([params.radius, room.radius, params.base1], 0);
       break;
     default:
       lengthMtr = toApiNumber([params.length, room.length], 0);

@@ -32,8 +32,8 @@ export function filterOpenPlotCategories(
       String(rawActive) === 'true' ||
       rawActive === undefined;
 
-    // Filter by TypeOfUseCategoryId = 3 or 4
-    const isCategoryMatch = categoryId === 3 || categoryId === 4;
+    // Filter strictly by TypeOfUseCategoryId = 4
+    const isCategoryMatch = categoryId === 4;
 
     return isCategoryMatch && isActive;
   });

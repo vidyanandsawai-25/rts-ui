@@ -3,6 +3,13 @@
 import { useApartmentFilters } from './useApartmentFilters';
 import { useApartmentData } from './useApartmentData';
 import { useApartmentActions } from './useApartmentActions';
+import {
+  nextApartmentSort,
+  sortFromQuery,
+  toSortQuery,
+  type ApartmentSortPanel,
+  type ApartmentSortState,
+} from '@/lib/utils/apartment-sort';
 
 export function useApartment(
   initialPropertyId: number | null = null,
@@ -29,6 +36,18 @@ export function useApartment(
     setFilters(updatedFilters);
     data.fetchWingWiseData(updatedFilters);
   };
+
+  // One sort for the three tables, made by the API over all the units: a click asks again from page 1.
+  const sort = sortFromQuery(filters.sortBy, filters.sortOrder);
+
+  const applySort = (next: ApartmentSortState | null) => {
+    const updatedFilters = { ...filters, ...toSortQuery(next), pageNumber: 1 };
+    setFilters(updatedFilters);
+    data.fetchWingWiseData(updatedFilters);
+  };
+
+  const handleSort = (panel: ApartmentSortPanel, column: string) => applySort(nextApartmentSort(sort, panel, column));
+  const clearSort = () => applySort(null);
 
   return {
     previousUnits: data.previousUnits,
@@ -58,6 +77,9 @@ export function useApartment(
     fetchWingWiseData: data.fetchWingWiseData,
     handlePageChange,
     handlePageSizeChange,
+    sort,
+    handleSort,
+    clearSort,
     loadMoreUnits: data.loadMoreUnits,
   };
 }

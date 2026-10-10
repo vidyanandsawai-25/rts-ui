@@ -17,6 +17,7 @@ const MediaPanelContext = createContext<MediaPanelContextType | undefined>(undef
 interface MediaPanelProviderProps {
   children: React.ReactNode;
   initialVisible?: boolean;
+  syncWithCookie?: boolean;
 }
 
 /**
@@ -26,9 +27,10 @@ interface MediaPanelProviderProps {
 export function MediaPanelProvider({
   children,
   initialVisible = false,
+  syncWithCookie = true,
 }: MediaPanelProviderProps): React.ReactElement {
   const [isPanelVisible, setIsPanelVisibleState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
+    if (syncWithCookie && typeof window !== 'undefined') {
       const cookieVal = getMediaPanelVisibleFromCookie();
       if (typeof cookieVal === 'boolean') return cookieVal;
     }
@@ -38,10 +40,12 @@ export function MediaPanelProvider({
   const setIsPanelVisible = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
     setIsPanelVisibleState((prev) => {
       const next = typeof value === 'function' ? value(prev) : value;
-      setMediaPanelVisibleInCookie(next);
+      if (syncWithCookie) {
+        setMediaPanelVisibleInCookie(next);
+      }
       return next;
     });
-  }, []);
+  }, [syncWithCookie]);
 
   const togglePanel = useCallback(() => {
     setIsPanelVisible((prev) => !prev);

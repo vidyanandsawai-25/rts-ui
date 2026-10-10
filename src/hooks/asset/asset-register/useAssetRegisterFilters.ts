@@ -31,7 +31,7 @@ export function useAssetRegisterFilters({
   const [searchField, setSearchField] = useState<AssetRegisterSearchField>(
     normalizeSearchField(searchFieldProp)
   );
-  const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  const [showFiltersPanel, setShowFiltersPanel] = useState(true);
 
   const debouncedMainSearch = useDebounce(searchValue, 500);
   const debouncedAssetNoSearch = useDebounce(assetNoSearch, 500);
@@ -99,6 +99,14 @@ export function useAssetRegisterFilters({
     updateQueries({ DepartmentId: newDept === 'all' ? null : newDept, page: '1' });
   };
 
+  const handleOwnershipTypeChange = (newOwnership: string) => {
+    updateQueries({ ownershipType: newOwnership === 'all' ? null : newOwnership, page: '1' });
+  };
+
+  const handleEncroachmentStatusChange = (newStatus: string) => {
+    updateQueries({ encroachmentStatus: newStatus === 'all' ? null : newStatus, page: '1' });
+  };
+
   const handleAssetCategoryChange = (newCategory: string) => {
     const segments = pathname.split('/').filter(Boolean);
     const locale = segments[0] || 'en';
@@ -119,12 +127,19 @@ export function useAssetRegisterFilters({
   };
 
   const handleFiltersPanelToggle = () => {
-    const nextShow = !showFiltersPanel;
-    setShowFiltersPanel(nextShow);
-    if (!nextShow) {
-      setAssetNoSearch('');
-      updateQueries({ ZoneId: null, WardId: null, AssetNo: null, page: '1' });
-    }
+    setShowFiltersPanel((prev) => !prev);
+  };
+
+  const handleResetFilters = () => {
+    const segments = pathname.split('/').filter(Boolean);
+    const registerIndex = segments.indexOf('asset-register');
+    const registerPath = registerIndex >= 0
+      ? `/${segments.slice(0, registerIndex + 1).join('/')}`
+      : pathname;
+    setSearchValue('');
+    setAssetNoSearch('');
+    setSearchField('all');
+    router.push(registerPath, { scroll: false });
   };
 
   return {
@@ -139,7 +154,10 @@ export function useAssetRegisterFilters({
     handleZoneChange,
     handleWardChange,
     handleOwningDepartmentChange,
+    handleOwnershipTypeChange,
+    handleEncroachmentStatusChange,
     handleAssetCategoryChange,
     handleFiltersPanelToggle,
+    handleResetFilters,
   };
 }

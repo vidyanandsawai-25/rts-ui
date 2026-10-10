@@ -1,47 +1,46 @@
 'use client';
 
 import React from 'react';
-import { Tooltip } from '@/components/common/Tooltip';
-import { cn } from '@/lib/utils/cn';
 import { PtisTaxMode } from '@/types/property-tax/apartment';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
+import { PtisTableHeader, type PtisColumnDef } from './PtisTableHeader';
+import { useTranslations } from 'next-intl';
 
-interface ColumnDef {
-  key: string;
-  label: string;
-  title: string;
-  className: string;
-}
 
-const NEW_SURVEY_COLUMNS: ColumnDef[] = [
-  { key: 'action', label: '#', title: 'Serial Number & Row Actions', className: 'px-1 py-1 text-center w-16 min-w-[64px] sticky left-0 bg-blue-100/90 text-blue-950 z-30 border-r border-blue-200 shadow-2xs' },
-  { key: 'prop', label: 'PROP / FLAT NO', title: 'Property Number / Flat or Shop Number', className: 'px-3 py-2 text-left min-w-[110px]' },
-  { key: 'wgFl', label: 'WING / FLOOR', title: 'Wing Name and Floor Number', className: 'px-3 py-2 text-left min-w-[120px]' },
-  { key: 'type', label: 'TYPE', title: 'Apartment Type / Property Category', className: 'px-3 py-2 text-left min-w-[80px]' },
-  { key: 'cty', label: 'CONST TYPE', title: 'Construction Type', className: 'px-3 py-2 text-left min-w-[120px]' },
-  { key: 'ayr', label: 'ASMT YEAR', title: 'Assessment Year', className: 'px-3 py-2 text-center min-w-[85px]' },
-  { key: 'cyr', label: 'CONST YEAR', title: 'Construction Year', className: 'px-3 py-2 text-center min-w-[85px]' },
-  { key: 'use', label: 'USE', title: 'Type of Use / Sub-type of Use', className: 'px-3 py-2 text-left min-w-[80px]' },
-  { key: 'cpt', label: 'CARPET (FT/M)', title: 'Carpet Area in Square Feet / Square Meters', className: 'px-3 py-2 text-right min-w-[140px]' },
-  { key: 'bua', label: 'BUA (FT/M)', title: 'Built-up Area in Square Feet / Square Meters', className: 'px-3 py-2 text-right min-w-[140px]' },
-  { key: 'ocNo', label: 'OC NO', title: 'Occupancy Certificate Number / CSN', className: 'px-3 py-2 text-left min-w-[90px]' },
-  { key: 'ocDate', label: 'OC DATE', title: 'Occupancy Certificate Date', className: 'px-3 py-2 text-center min-w-[95px]' },
-  { key: 'renter', label: 'RENTER', title: 'Renter / Tenant Name', className: 'px-3 py-2 text-left min-w-[110px]' },
-  { key: 'rent', label: 'RENT (M/Y)', title: 'Rent (Monthly / Yearly)', className: 'px-3 py-2 text-right min-w-[110px]' },
-  { key: 'appliedOn', label: 'APPLIED ON', title: 'Rate Applied On (Carpet / Built-up Area)', className: 'px-3 py-2 text-left min-w-[90px]' },
-  { key: 'rate', label: 'RATE (M/Y)', title: 'Rate per Unit Area (Monthly / Yearly)', className: 'px-3 py-2 text-right min-w-[100px]' },
-  { key: 'yrv', label: 'YRV', title: 'Yearly Rental Value', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'depr', label: 'DEPR', title: 'Depreciation Amount and Percentage', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'alv', label: 'ALV', title: 'Annual Letting Value', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'mr', label: 'M & R', title: 'Maintenance & Repair Allowance', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'rv', label: 'RV', title: 'Rateable Value', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'cv', label: 'CV', title: 'Capital Value', className: 'px-3 py-2 text-right min-w-[95px]' },
-  { key: 'tax', label: 'TAX', title: 'Total Property Tax Amount', className: 'px-3 py-2 text-right min-w-[105px]' },
-  { key: 'img', label: 'IMG', title: 'Property Photos', className: 'px-2 py-2 text-center min-w-[50px]' },
-  { key: 'plan', label: 'PLAN', title: 'Floor Plan / Sanction Plan Document', className: 'px-2 py-2 text-center min-w-[50px]' },
-  { key: 'rules', label: 'RULES', title: 'Applied Assessment Rules & Discounts', className: 'px-2 py-2 text-center min-w-[55px]' },
+const NEW_SURVEY_COLUMNS: PtisColumnDef[] = [
+  { key: 'action', labelKey: 'srNo', titleKey: 'srNoTitle', defaultLabel: '#', defaultTitle: 'Serial Number / Row Index', className: 'px-1 py-1 text-center w-12 sticky left-0 bg-blue-100/90 text-blue-950 z-30 border-r border-blue-200 shadow-2xs' },
+  { key: 'prop', labelKey: 'propNo', titleKey: 'propNoTitle', defaultLabel: 'PROP NO', defaultTitle: 'Wing / Partition Number', className: 'px-2.5 py-2 text-left w-28 min-w-[100px] max-w-[125px]' },
+  { key: 'flat', labelKey: 'flatNo', titleKey: 'flatNoTitle', defaultLabel: 'FLAT NO', defaultTitle: 'Flat / Shop Number', className: 'px-3 py-2 text-left min-w-[85px]' },
+  { key: 'wgFl', labelKey: 'wingFloor', titleKey: 'wingFloorTitle', defaultLabel: 'FLOOR', defaultTitle: 'Floor Code (G, 1, 2 ...)', className: 'px-3 py-2 text-left min-w-[120px]' },
+  { key: 'type', labelKey: 'type', titleKey: 'typeTitle', defaultLabel: 'TYPE', defaultTitle: 'Apartment Type / Property Category', className: 'px-3 py-2 text-left min-w-[80px]' },
+  { key: 'cty', labelKey: 'constType', titleKey: 'constTypeTitle', defaultLabel: 'CONST TYPE', defaultTitle: 'Construction Type', className: 'px-3 py-2 text-left min-w-[120px]' },
+  { key: 'ayr', labelKey: 'asmtYear', titleKey: 'asmtYearTitle', defaultLabel: 'ASMT YEAR', defaultTitle: 'Assessment Year', className: 'px-3 py-2 text-center min-w-[85px]' },
+  { key: 'cyr', labelKey: 'constYear', titleKey: 'constYearTitle', defaultLabel: 'CONST YEAR', defaultTitle: 'Construction Year', className: 'px-3 py-2 text-center min-w-[85px]' },
+  { key: 'use', labelKey: 'use', titleKey: 'useTitle', defaultLabel: 'USE', defaultTitle: 'Type of Use / Sub-type of Use', className: 'px-3 py-2 text-left min-w-[80px]' },
+  { key: 'cpt', labelKey: 'carpet', titleKey: 'carpetTitle', defaultLabel: 'CARPET (FT/M)', defaultTitle: 'Carpet Area in Square Feet / Square Meters', className: 'px-3 py-2 text-right min-w-[140px]' },
+  { key: 'bua', labelKey: 'builtup', titleKey: 'builtupTitle', defaultLabel: 'BUA (FT/M)', defaultTitle: 'Built-up Area in Square Feet / Square Meters', className: 'px-3 py-2 text-right min-w-[140px]' },
+  { key: 'ocNo', labelKey: 'ocNo', titleKey: 'ocNoTitle', defaultLabel: 'OC NO', defaultTitle: 'Occupancy Certificate Number / CSN', className: 'px-3 py-2 text-left min-w-[90px]' },
+  { key: 'ocDate', labelKey: 'ocDate', titleKey: 'ocDateTitle', defaultLabel: 'OC DATE', defaultTitle: 'Occupancy Certificate Date', className: 'px-3 py-2 text-center min-w-[95px]' },
+  { key: 'renter', labelKey: 'renter', titleKey: 'renterTitle', defaultLabel: 'RENTER', defaultTitle: 'Renter / Tenant Name', className: 'px-3 py-2 text-left min-w-[110px]' },
+  { key: 'rent', labelKey: 'rent', titleKey: 'rentTitle', defaultLabel: 'RENT (M/Y)', defaultTitle: 'Rent (Monthly / Yearly)', className: 'px-3 py-2 text-right min-w-[110px]' },
+  { key: 'alv', labelKey: 'alv', titleKey: 'alvTitle', defaultLabel: 'ALV', defaultTitle: 'Annual Letting Value', className: 'px-3 py-2 text-right min-w-[95px]' },
+  { key: 'rv', labelKey: 'rv', titleKey: 'rvTitle', defaultLabel: 'RV', defaultTitle: 'Rateable Value', className: 'px-3 py-2 text-right min-w-[95px]' },
+  { key: 'cv', labelKey: 'cv', titleKey: 'cvTitle', defaultLabel: 'CV', defaultTitle: 'Capital Value', className: 'px-3 py-2 text-right min-w-[95px]' },
+  { key: 'tax', labelKey: 'tax', titleKey: 'taxTitle', defaultLabel: 'TAX', defaultTitle: 'Total Property Tax Amount', className: 'px-3 py-2 text-right min-w-[105px]' },
+  { key: 'img', labelKey: 'img', titleKey: 'imgTitle', defaultLabel: 'IMG', defaultTitle: 'Property Photos', className: 'px-2 py-2 text-center min-w-[50px]' },
+  { key: 'plan', labelKey: 'plan', titleKey: 'planTitle', defaultLabel: 'PLAN', defaultTitle: 'Floor Plan / Sanction Plan Document', className: 'px-2 py-2 text-center min-w-[50px]' },
+  { key: 'rules', labelKey: 'rules', titleKey: 'rulesTitle', defaultLabel: 'RULES', defaultTitle: 'Applied Assessment Rules & Discounts', className: 'px-2 py-2 text-center min-w-[55px]' },
 ];
 
-export const NewSurveyTableHeader: React.FC<{ taxMode?: PtisTaxMode }> = ({ taxMode }) => {
+interface NewSurveyTableHeaderProps {
+  taxMode?: PtisTaxMode;
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
+  onClearSort?: () => void;
+}
+
+export const NewSurveyTableHeader: React.FC<NewSurveyTableHeaderProps> = ({ taxMode, sort, onSort, onClearSort }) => {
+  const t = useTranslations('ptisRedesign.columns');
   const showRv = taxMode !== 'capital';
   const showCv = taxMode !== 'rateable';
   const visibleColumns = NEW_SURVEY_COLUMNS.filter((col) => {
@@ -51,19 +50,16 @@ export const NewSurveyTableHeader: React.FC<{ taxMode?: PtisTaxMode }> = ({ taxM
   });
 
   return (
-    <thead className="sticky top-0 z-20 shadow-xs bg-blue-50/95 border-b border-blue-200">
-      <tr className="border-b border-blue-200 text-blue-950 font-bold uppercase tracking-wider text-[10px] h-10">
-        {visibleColumns.map((col) => (
-          <th
-            key={col.key}
-            className={cn('whitespace-nowrap', col.className)}
-          >
-            <Tooltip content={col.title} placement="top">
-              <span className="cursor-help inline-block">{col.label}</span>
-            </Tooltip>
-          </th>
-        ))}
-      </tr>
-    </thead>
+    <PtisTableHeader
+      panel="survey"
+      columns={visibleColumns}
+      translate={(key) => t(key)}
+      theadClassName="sticky top-0 z-20 shadow-xs bg-blue-50/95 border-b border-blue-200"
+      rowClassName="border-b border-blue-200 text-blue-950 font-bold uppercase tracking-wider text-[10px] h-10"
+      sort={sort}
+      onSort={onSort}
+      onClearSort={onClearSort}
+      resetSortLabel={t('resetSort')}
+    />
   );
 };

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { fetchPtisPageData } from '@/app/[locale]/property-tax/ptis/ptis-fetch.service';
+import { buildInitialPropertyMasterData, type PtisPageData } from './apartment-master-builder';
 import { toSafeString } from '@/lib/utils/format';
 import {
   ApartmentQCTopSectionBelowFlexItemsDto,
@@ -14,10 +15,27 @@ import {
   getWingWiseDetails,
   getApartmentTaxDetails,
 } from '@/lib/api/ptis/apartment';
-import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
 import type { PropertyMasterData, ApartmentTaxDetailsItem } from '@/types/property-tax/apartment';
 import type { PropertyWorkflowStage } from '@/types/propertyWorkflowStage.types';
-import { buildInitialPropertyMasterData, PtisPageData } from './apartment-master-builder';
+import { propertyWorkflowStageService } from '@/lib/api/ptis/propertyWorkflowStage/propertyWorkflowStage.service';
+import { extractCoordinates } from '@/lib/utils/coordinate-utils';
+import { DEFAULT_WAYBACK_RELEASES } from '@/lib/api/wayback.service';
+import {
+  getPhotosBySocietyAction,
+  getSocietyPhotoTypesWithStatusAction,
+} from '@/app/[locale]/property-tax/ptis/SocietyPhoto.action';
+import type {
+  PropertyPhotoDto,
+  PropertyPhotoTypeWithStatusDto,
+  SocietyPhotoTypeWithStatusDto,
+} from '@/types/photoplan.types';
+import { fetchApartmentQcCertificateGrid } from '@/lib/api/ptis/apartment/apartment-qc-top-section.service';
+import { getCertificateTypeMaster } from '@/lib/api/building.service';
+import { getPropertySocialDetailsByFilters } from '@/lib/api/property-social-details.service';
+import { getSocialAttributes } from '@/lib/api/social-attribute-master/social-attribute-crud.service';
+import type { PropertySocialDetailItem } from '@/types/ptis.types';
+import type { PropertySocialDetailsDto } from '@/types/property-social-details.types';
+import { normalizeToItem } from '@/lib/utils/ptis/social-details';
 
 export interface LoadedApartmentPageData {
   wardNo: string;
@@ -43,6 +61,10 @@ export interface LoadedApartmentPageData {
     | null;
   initialApartmentTaxDetails: ApartmentTaxDetailsItem | null;
   isApartmentSocietyProperty: boolean;
+  societyLatitude?: number;
+  societyLongitude?: number;
+  initialCertificateGrid?: unknown;
+  initialMasterTypes?: unknown[] | null;
 }
 
 export async function loadApartmentPageData(
@@ -76,37 +98,86 @@ export async function loadApartmentPageData(
   ] = await Promise.all([
     fetchPtisPageData(resolvedSearchParams, locale),
     propertyWorkflowStageService.getWorkflowStages(),
-    isPropIdValid ? propertyWorkflowStageService.getCurrentWorkflowDetail(propertyIdRaw) : Promise.resolve(null),
+    isPropIdValid
+      ? propertyWorkflowStageService.getCurrentWorkflowDetail(propertyIdRaw)
+      : Promise.resolve(null),
     isPropIdValid ? getApartmentQcTopSectionAction(propertyIdRaw) : Promise.resolve(null),
-    isPropIdValid ? getApartmentQCTopSectionBelowFlex(propertyIdRaw) : Promise.resolve(null),
-    wardId && propertyNo ? getWingWiseDetails(wardId, propertyNo).catch(() => null) : Promise.resolve(null),
-    wardId && propertyNo ? getApartmentTaxDetails({ wardId, propertyNo, taxType: initialTaxType }).catch(() => null) : Promise.resolve(null),
+    isPropIdValid || (wardId && propertyNo)
+      ? getApartmentQCTopSectionBelowFlex({
+          propertyId: isPropIdValid ? propertyIdRaw : undefined,
+          ward: wardId || undefined,
+          propertyNo: propertyNo || undefined,
+          partitionNo: partitionNo || undefined,
+        })
+      : Promise.resolve(null),
+    wardId && propertyNo
+      ? getWingWiseDetails(wardId, propertyNo).catch(() => null)
+      : Promise.resolve(null),
+    wardId && propertyNo
+      ? getApartmentTaxDetails({ wardId, propertyNo, taxType: initialTaxType }).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
-  const workflowStages = (workflowStagesResult?.success && workflowStagesResult.data) ? workflowStagesResult.data : [];
-  const currentWorkflowStageId = currentWorkflow?.success ? currentWorkflow.data?.workflowStageId : undefined;
+  const workflowStages =
+    workflowStagesResult?.success && workflowStagesResult.data ? workflowStagesResult.data : [];
+  const currentWorkflowStageId = currentWorkflow?.success
+    ? currentWorkflow.data?.workflowStageId
+    : undefined;
 
   const { resolvedPropertyId: pDataPropId, resolvedWardId: pDataWardId } = pageData;
   const resolvedPropertyId = isPropIdValid ? propertyIdRaw : pDataPropId;
   const finalWardId = (pDataWardId ? pDataWardId.toString() : wardId) || '';
 
-  const [lateTopSectionRes, lateBelowFlexRes, lateWingWiseRes, lateTaxDetailsRes] = await Promise.all([
-    !earlyTopSectionRes && resolvedPropertyId ? getApartmentQcTopSectionAction(resolvedPropertyId) : Promise.resolve(null),
-    !earlyBelowFlexRes && resolvedPropertyId ? getApartmentQCTopSectionBelowFlex(resolvedPropertyId) : Promise.resolve(null),
-    !earlyWingWiseRes && finalWardId && propertyNo ? getWingWiseDetails(finalWardId, propertyNo).catch(() => null) : Promise.resolve(null),
-    !earlyTaxDetailsRes && finalWardId && propertyNo ? getApartmentTaxDetails({ wardId: finalWardId, propertyNo, taxType: initialTaxType }).catch(() => null) : Promise.resolve(null),
-  ]);
+  const [lateTopSectionRes, lateBelowFlexRes, lateWingWiseRes, lateTaxDetailsRes] =
+    await Promise.all([
+      !earlyTopSectionRes && resolvedPropertyId
+        ? getApartmentQcTopSectionAction(resolvedPropertyId)
+        : Promise.resolve(null),
+      !earlyBelowFlexRes?.success && (resolvedPropertyId || (finalWardId && propertyNo))
+        ? getApartmentQCTopSectionBelowFlex({
+            propertyId: resolvedPropertyId || undefined,
+            ward: finalWardId || undefined,
+            propertyNo: propertyNo || undefined,
+            partitionNo: partitionNo || undefined,
+          })
+        : Promise.resolve(null),
+      !earlyWingWiseRes && finalWardId && propertyNo
+        ? getWingWiseDetails(finalWardId, propertyNo).catch(() => null)
+        : Promise.resolve(null),
+      !earlyTaxDetailsRes && finalWardId && propertyNo
+        ? getApartmentTaxDetails({
+            wardId: finalWardId,
+            propertyNo,
+            taxType: initialTaxType,
+          }).catch(() => null)
+        : Promise.resolve(null),
+    ]);
 
   const topSectionRes = earlyTopSectionRes || lateTopSectionRes;
-  const belowFlexRes = earlyBelowFlexRes || lateBelowFlexRes;
+  const belowFlexRes =
+    (earlyBelowFlexRes?.success ? earlyBelowFlexRes : lateBelowFlexRes) ||
+    earlyBelowFlexRes ||
+    lateBelowFlexRes;
   const wingWiseRes = earlyWingWiseRes || lateWingWiseRes;
   const taxDetailsRes = earlyTaxDetailsRes || lateTaxDetailsRes;
 
   const rawData = wingWiseRes || null;
-  const initialApartmentTaxDetails = (taxDetailsRes?.success && taxDetailsRes.items) ? taxDetailsRes.items : null;
-  const initialQcTopSectionBelowFlex = (belowFlexRes?.success && (belowFlexRes.items || belowFlexRes.data))
-    ? ((belowFlexRes.items ?? belowFlexRes.data) ?? null)
-    : null;
+
+  let finalTaxDetailsRes = taxDetailsRes;
+  if (!finalTaxDetailsRes && finalWardId && propertyNo) {
+    finalTaxDetailsRes = await getApartmentTaxDetails({
+      wardId: finalWardId,
+      propertyNo,
+      taxType: initialTaxType,
+    }).catch(() => null);
+  }
+
+  const initialApartmentTaxDetails =
+    finalTaxDetailsRes?.success && finalTaxDetailsRes.items ? finalTaxDetailsRes.items : null;
+  const initialQcTopSectionBelowFlex =
+    belowFlexRes?.success && (belowFlexRes.items || belowFlexRes.data)
+      ? (belowFlexRes.items ?? belowFlexRes.data ?? null)
+      : ((belowFlexRes?.items || belowFlexRes?.data) ?? null);
 
   const initialData: PtisInitialData = {
     propertyDetails: pageData.propertyDetailsResult?.propertyDetails || null,
@@ -123,11 +194,111 @@ export async function loadApartmentPageData(
     showOldTaxInfo: pageData.showOldTaxParam,
     showOldMapInfo: pageData.showMapDetailsParam,
     discountDetails: pageData.discountDetails,
+    socialDetails: pageData.socialDetails,
     tabHeaderInfo: pageData.tabHeaderInfo,
     mappedPropertiesData: pageData.mappedPropertiesData,
   };
 
-  const baseData = (topSectionRes?.success && topSectionRes.data) ? topSectionRes.data : undefined;
+  const searchSocietyId =
+    resolvedSearchParams?.societyDetailId ||
+    resolvedSearchParams?.societydetailid ||
+    resolvedSearchParams?.societyId ||
+    resolvedSearchParams?.societyid;
+  const currentSocietyDetailId =
+    (pageData.societyDetails as unknown as { societyDetailId?: number })?.societyDetailId ??
+    (pageData.propertyDetailsResult?.propertyDetails as unknown as { societyDetailId?: number })
+      ?.societyDetailId ??
+    rawData?.societyId ??
+    (
+      rawData?.wings?.find(
+        (w) =>
+          (w as unknown as { societyDetailId?: number })?.societyDetailId ||
+          (w as unknown as { societyId?: number })?.societyId
+      ) as unknown as { societyDetailId?: number; societyId?: number }
+    )?.societyDetailId ??
+    (
+      rawData?.wings?.find(
+        (w) =>
+          (w as unknown as { societyDetailId?: number })?.societyDetailId ||
+          (w as unknown as { societyId?: number })?.societyId
+      ) as unknown as { societyDetailId?: number; societyId?: number }
+    )?.societyId ??
+    (searchSocietyId ? Number(searchSocietyId) : undefined) ??
+    undefined;
+
+  if (currentSocietyDetailId && currentSocietyDetailId > 0) {
+    const hasSocietyInPhotos = pageData.initialPhotos?.some(
+      (p) =>
+        p.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
+        p.photoTypeName?.toLowerCase().includes('society')
+    );
+    if (!hasSocietyInPhotos) {
+      try {
+        const [socPhotosRes, socSlotsRes] = await Promise.all([
+          getPhotosBySocietyAction(currentSocietyDetailId),
+          getSocietyPhotoTypesWithStatusAction(currentSocietyDetailId),
+        ]);
+        if (socPhotosRes?.success && Array.isArray(socPhotosRes.data)) {
+          const mappedSocPhotos: PropertyPhotoDto[] = socPhotosRes.data.map((sp) => ({
+            propertyPhotoId: Number(sp.societyPhotoId || 0),
+            propertyId: resolvedPropertyId || 0,
+            photoTypeId: Number(sp.photoTypeId || 0),
+            photoTypeCode: String(sp.photoTypeCode || ''),
+            photoTypeName: String(sp.photoTypeName || ''),
+            displayOrder: Number(sp.displayOrder || 0),
+            remarks: sp.remarks ? String(sp.remarks) : undefined,
+            documentBindingId: sp.documentBindingId ? Number(sp.documentBindingId) : undefined,
+            documentGuid: sp.documentGuid ? String(sp.documentGuid) : undefined,
+            fileName: sp.fileName ? String(sp.fileName) : undefined,
+            mimeType: sp.mimeType ? String(sp.mimeType) : undefined,
+            viewUrl: sp.viewUrl ? String(sp.viewUrl) : undefined,
+            downloadUrl: sp.downloadUrl ? String(sp.downloadUrl) : undefined,
+            societyDetailId: currentSocietyDetailId,
+          }));
+          pageData.initialPhotos = [...(pageData.initialPhotos || []), ...mappedSocPhotos];
+        }
+        if (socSlotsRes?.success && Array.isArray(socSlotsRes.data)) {
+          const mappedSocSlots: PropertyPhotoTypeWithStatusDto[] = socSlotsRes.data.map(
+            (ss: SocietyPhotoTypeWithStatusDto) => ({
+              photoTypeId: Number(ss.photoTypeId),
+              photoTypeCode: String(ss.photoTypeCode || ''),
+              photoTypeName: String(ss.photoTypeName || ''),
+              displayOrder: Number(ss.displayOrder || 0),
+              hasPhoto: Boolean(ss.hasPhoto),
+              photoCount: Number(ss.photoCount || 0),
+              propertyPhotoId: Number(ss.societyPhotoId || 0),
+              remarks: ss.remarks ? String(ss.remarks) : undefined,
+              documentGuid: ss.documentGuid ? String(ss.documentGuid) : undefined,
+              fileName: ss.fileName ? String(ss.fileName) : undefined,
+              mimeType: ss.mimeType ? String(ss.mimeType) : undefined,
+              viewUrl: ss.viewUrl ? String(ss.viewUrl) : undefined,
+            })
+          );
+          const existingSlots = [...(pageData.initialPhotoSlots || [])];
+          mappedSocSlots.forEach((ss) => {
+            const existingIdx = existingSlots.findIndex(
+              (s) =>
+                (s.photoTypeCode &&
+                  ss.photoTypeCode &&
+                  s.photoTypeCode.toUpperCase() === ss.photoTypeCode.toUpperCase()) ||
+                (s.photoTypeId === ss.photoTypeId &&
+                  s.photoTypeCode?.toUpperCase().startsWith('SOCIETY_'))
+            );
+            if (existingIdx !== -1) {
+              existingSlots[existingIdx] = { ...existingSlots[existingIdx], ...ss };
+            } else {
+              existingSlots.push(ss as PropertyPhotoTypeWithStatusDto);
+            }
+          });
+          pageData.initialPhotoSlots = existingSlots;
+        }
+      } catch {
+        // Non-blocking fetch fallback
+      }
+    }
+  }
+
+  const baseData = topSectionRes?.success && topSectionRes.data ? topSectionRes.data : undefined;
   const initialPropertyMasterData = buildInitialPropertyMasterData({
     resolvedPropertyId,
     baseData,
@@ -138,16 +309,195 @@ export async function loadApartmentPageData(
     initialApartmentTaxDetails,
   });
 
-  const currentCategoryId = pageData.propertyDetailsResult?.propertyDetails?.categoryId ?? initialPropertyMasterData?.categoryId ?? undefined;
-  const currentCategoryName = pageData.tabHeaderInfo?.category ?? initialPropertyMasterData?.category ?? '';
-  const isIndividual = currentCategoryId === 2 || String(currentCategoryName).toLowerCase().includes('individual');
-  const isApartment = currentCategoryId === 1 || currentCategoryId === 0 || String(currentCategoryName).toLowerCase().includes('apartment') || (!isIndividual && (Boolean(rawData?.societyId) || Boolean(rawData?.wings && rawData.wings.length > 0) || Boolean(pageData.societyDetails?.societyDetailId)));
-  const isMainProp = isApartment && (!partitionNo || partitionNo === '0' || partitionNo.trim() === '' || partitionNo.trim() === '-');
-  const currentPropertyTypeId = (pageData.propertyDetailsResult?.propertyDetails as unknown as { propertyTypeId?: number })?.propertyTypeId ?? initialPropertyMasterData?.propertyTypeId ?? undefined;
-  const currentType = pageData.tabHeaderInfo?.type ?? (pageData.propertyDetailsResult?.propertyDetails as unknown as { type?: string })?.type ?? (initialPropertyMasterData as unknown as { type?: string })?.type ?? null;
-  const currentSocietyDetailId = (pageData.societyDetails as unknown as { societyDetailId?: number })?.societyDetailId ?? rawData?.societyId ?? undefined;
+  if (pageData.latitude === undefined || pageData.longitude === undefined) {
+    const aptCoords = extractCoordinates([
+      { latitude: pageData.latitude, longitude: pageData.longitude },
+      pageData.propertyDetailsResult?.propertyDetails as unknown as Record<string, unknown>,
+      ...(rawData?.wings || []).map((w) => w as unknown as Record<string, unknown>),
+      rawData as unknown as Record<string, unknown>,
+      initialPropertyMasterData as unknown as Record<string, unknown>,
+      pageData.societyDetails as unknown as Record<string, unknown>,
+      { latitude: pageData.societyLatitude, longitude: pageData.societyLongitude },
+    ]);
+    if (aptCoords.hasCoords) {
+      pageData.latitude = aptCoords.latitude;
+      pageData.longitude = aptCoords.longitude;
+    }
+  }
 
-  const isApartmentSocietyProperty = isMainProp || currentCategoryId === 0 || String(currentCategoryName).toLowerCase() === 'apartment society property';
+  if (!pageData.waybackReleases || pageData.waybackReleases.length === 0) {
+    pageData.waybackReleases = DEFAULT_WAYBACK_RELEASES;
+  }
+
+  const currentCategoryId =
+    pageData.propertyDetailsResult?.propertyDetails?.categoryId ??
+    initialPropertyMasterData?.categoryId ??
+    undefined;
+  const currentCategoryName =
+    pageData.tabHeaderInfo?.category ?? initialPropertyMasterData?.category ?? '';
+  const isIndividual =
+    currentCategoryId === 2 || String(currentCategoryName).toLowerCase().includes('individual');
+  const isApartment =
+    currentCategoryId === 1 ||
+    currentCategoryId === 0 ||
+    String(currentCategoryName).toLowerCase().includes('apartment') ||
+    (!isIndividual &&
+      (Boolean(rawData?.societyId) ||
+        Boolean(rawData?.wings && rawData.wings.length > 0) ||
+        Boolean(pageData.societyDetails?.societyDetailId)));
+  const isMainProp =
+    isApartment &&
+    (!partitionNo ||
+      partitionNo === '0' ||
+      partitionNo.trim() === '' ||
+      partitionNo.trim() === '-');
+  const currentPropertyTypeId =
+    (pageData.propertyDetailsResult?.propertyDetails as unknown as { propertyTypeId?: number })
+      ?.propertyTypeId ??
+    initialPropertyMasterData?.propertyTypeId ??
+    undefined;
+  const currentType =
+    pageData.tabHeaderInfo?.type ??
+    (pageData.propertyDetailsResult?.propertyDetails as unknown as { type?: string })?.type ??
+    (initialPropertyMasterData as unknown as { type?: string })?.type ??
+    null;
+
+  const isApartmentSocietyProperty =
+    isMainProp ||
+    currentCategoryId === 0 ||
+    String(currentCategoryName).toLowerCase() === 'apartment society property';
+
+  const wingDetailIds = Array.from(
+    new Set(
+      [
+        ...(rawData?.wings || []).map(
+          (w) => (w as unknown as { wingDetailId?: number })?.wingDetailId
+        ),
+        resolvedSearchParams?.wingDetailId ? Number(resolvedSearchParams.wingDetailId) : undefined,
+      ].filter((id): id is number => id != null && id > 0)
+    )
+  );
+
+  const [certGridRes, masterTypesRes, societySocialRes, wingSocialResults, socialMasterRes] =
+    await Promise.all([
+      // Fetch apartment QC certificates with proper scoping hierarchy:
+      // Note: Society-level certificates have PropertyId=NULL in DB, so passing
+      // propertyId ensures the API accurately filters and associates certificates
+      // across Society, Wing, and Unit levels.
+      currentSocietyDetailId || (finalWardId && propertyNo) || resolvedPropertyId
+        ? fetchApartmentQcCertificateGrid({
+            societyId: currentSocietyDetailId,
+            wingDetailsId: resolvedSearchParams?.wingDetailId ? Number(resolvedSearchParams.wingDetailId) : undefined,
+            ward: finalWardId || undefined,
+            propertyNo: propertyNo || undefined,
+            propertyId: resolvedPropertyId || undefined,
+          }).catch(() => null)
+        : Promise.resolve(null),
+      getCertificateTypeMaster().catch(() => null),
+      currentSocietyDetailId
+        ? getPropertySocialDetailsByFilters(
+            undefined,
+            currentSocietyDetailId,
+            undefined,
+            undefined,
+            undefined,
+            true
+          ).catch(() => null)
+        : Promise.resolve(null),
+      currentSocietyDetailId && wingDetailIds.length > 0
+        ? Promise.all(
+            wingDetailIds.map((wId) =>
+              getPropertySocialDetailsByFilters(
+                undefined,
+                currentSocietyDetailId,
+                wId,
+                undefined,
+                undefined,
+                true
+              ).catch(() => null)
+            )
+          )
+        : Promise.resolve([]),
+      getSocialAttributes().catch(() => null),
+    ]);
+
+  const combinedSocialRecords: PropertySocialDetailsDto[] = [];
+  const addedIds = new Set<number>();
+
+  const processRecords = (records: PropertySocialDetailsDto[] | null | undefined) => {
+    if (!records || !Array.isArray(records)) return;
+    for (const r of records) {
+      if (r.isActive === false) continue;
+      const idKey = r.id ? Number(r.id) : 0;
+      if (idKey > 0) {
+        if (!addedIds.has(idKey)) {
+          addedIds.add(idKey);
+          combinedSocialRecords.push(r);
+        }
+      } else {
+        combinedSocialRecords.push(r);
+      }
+    }
+  };
+
+  processRecords(societySocialRes);
+  if (Array.isArray(wingSocialResults)) {
+    wingSocialResults.forEach(processRecords);
+  }
+
+  if (combinedSocialRecords.length > 0) {
+    const masterById = new Map((socialMasterRes || []).map((m) => [m.id, m]));
+    const wingMap = new Map(
+      (rawData?.wings || []).map((w) => [w.wingDetailId, w.wingName || w.wingNo || ''])
+    );
+    const discountItems: PropertySocialDetailItem[] = [];
+    const socialItems: PropertySocialDetailItem[] = [];
+
+    for (const item of combinedSocialRecords) {
+      const master = masterById.get(item.socialAttributeId);
+      const enhancedItem = {
+        ...item,
+        wingName:
+          item.wingName || (item.wingDetailId ? wingMap.get(item.wingDetailId) : null) || null,
+      };
+      const mappedItem = normalizeToItem(enhancedItem, master, {
+        resolvedPropertyId,
+        societyDetailId: currentSocietyDetailId,
+        wingDetailId: item.wingDetailId ?? undefined,
+      });
+
+      if (master?.isDiscountApplicable === true) {
+        discountItems.push(mappedItem);
+      } else if (master?.isDiscountApplicable === false) {
+        socialItems.push(mappedItem);
+      } else {
+        discountItems.push(mappedItem);
+        socialItems.push(mappedItem);
+      }
+    }
+
+    const existingDiscount = Array.isArray(initialData.discountDetails?.items)
+      ? initialData.discountDetails.items
+      : [];
+    const mergedDiscount = [...existingDiscount];
+    for (const d of discountItems) {
+      if (!mergedDiscount.some((m) => m.id === d.id)) mergedDiscount.push(d);
+    }
+    initialData.discountDetails = { items: mergedDiscount };
+
+    const existingSocial = Array.isArray(initialData.socialDetails?.items)
+      ? initialData.socialDetails.items
+      : [];
+    const mergedSocial = [...existingSocial];
+    for (const s of socialItems) {
+      if (!mergedSocial.some((m) => m.id === s.id)) mergedSocial.push(s);
+    }
+    initialData.socialDetails = { items: mergedSocial };
+  }
+
+  const initialCertificateGrid = certGridRes?.success && certGridRes.data ? certGridRes.data : null;
+  const initialMasterTypes =
+    masterTypesRes?.success && Array.isArray(masterTypesRes.data) ? masterTypesRes.data : null;
 
   return {
     wardNo,
@@ -169,5 +519,9 @@ export async function loadApartmentPageData(
     initialQcTopSectionBelowFlex,
     initialApartmentTaxDetails,
     isApartmentSocietyProperty,
+    societyLatitude: pageData.societyLatitude,
+    societyLongitude: pageData.societyLongitude,
+    initialCertificateGrid,
+    initialMasterTypes,
   };
 }

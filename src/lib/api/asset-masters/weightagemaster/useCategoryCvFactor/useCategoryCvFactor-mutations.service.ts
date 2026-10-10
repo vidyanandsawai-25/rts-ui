@@ -34,7 +34,7 @@ export async function updateUseFactorCVMaster(
 
     const requestPayload = {
       isActive: payload.isActive,
-      updatedBy: payload.updatedBy ?? 1,
+      updatedBy: payload.updatedBy,
       typeOfUseId: payload.typeOfUseId,
       subTypeOfUseId: payload.subTypeOfUseId,
       factor: Number(payload.factor),
@@ -88,7 +88,7 @@ export async function createUseFactorCVMaster(
 
     const requestPayload = {
       isActive: payload.isActive,
-      createdBy: payload.createdBy ?? 1,
+      createdBy: payload.createdBy,
       typeOfUseId: payload.typeOfUseId,
       subTypeOfUseId: payload.subTypeOfUseId,
       factor: Number(payload.factor),

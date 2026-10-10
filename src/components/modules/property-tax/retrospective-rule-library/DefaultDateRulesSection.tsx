@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { GripVertical, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import {
   EditButton,
   DeleteButton,
@@ -21,6 +21,7 @@ import type { RetrospectiveRule } from '@/types/retrospective-rule.types';
 export interface DefaultDateRuleItem {
   id: string;
   priority: number;
+  ruleCode?: string;
   ruleName: string;
   isDefault?: boolean;
   appliesTo: string;
@@ -28,7 +29,7 @@ export interface DefaultDateRuleItem {
   boldPhrase?: string;
   defaultDateLogic: string;
   effectiveFrom: string;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Review' | 'Draft';
 }
 
 interface DefaultDateRulesSectionProps {
@@ -38,18 +39,43 @@ interface DefaultDateRulesSectionProps {
 }
 
 const mapRetrospectiveRulesToItems = (rawRules: RetrospectiveRule[]): DefaultDateRuleItem[] => {
-  return rawRules.map((r, index) => ({
-    id: r.id,
-    priority: index + 1,
-    ruleName: r.ruleTitle || `Rule #${r.id}`,
-    isDefault: index === 0,
-    appliesTo: r.evidenceCategory || '',
-    condition: r.conditionDescription || '',
-    boldPhrase: r.conditionDescription && r.conditionDescription.includes('available') ? 'available' : undefined,
-    defaultDateLogic: r.startLogicTitle || '',
-    effectiveFrom: r.startLogicBoundary || '',
-    status: r.status === 'Inactive' ? 'Inactive' : 'Active',
-  }));
+  return rawRules
+    .filter((r) => r.isActive !== false)
+    .map((r, index) => {
+    const isAuth =
+      r.authorizationStatus === 'AUTHORIZED' ||
+      r.evidenceCategory?.toLowerCase().includes('authorized');
+
+    const appliesTo =
+      r.evidenceCategory ||
+      (isAuth ? 'Authorized: OC or CC available' : 'Unauthorized: OC & CC unavailable');
+
+    const status: 'Active' | 'Inactive' | 'Review' | 'Draft' =
+      r.status === 'Inactive'
+        ? 'Inactive'
+        : r.status === 'Review'
+          ? 'Review'
+          : r.status === 'Draft'
+            ? 'Draft'
+            : 'Active';
+
+    return {
+      id: r.id,
+      priority: r.priorityNo ?? (index + 1),
+      ruleCode: r.ruleCode,
+      ruleName: r.ruleTitle || `Rule #${r.id}`,
+      isDefault: index === 0,
+      appliesTo,
+      condition: r.conditionDescription || '',
+      boldPhrase:
+        r.conditionDescription && r.conditionDescription.includes('available')
+          ? 'available'
+          : undefined,
+      defaultDateLogic: r.startLogicTitle || '',
+      effectiveFrom: r.startLogicBoundary || '',
+      status,
+    };
+  });
 };
 
 export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = ({
@@ -113,33 +139,36 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
           if (res.success) {
             setRules((prev) => prev.filter((r) => r.id !== id));
             onDeleteRule?.(id);
-          } else {
-            console.error('Failed to delete rule:', res.error);
           }
-        } catch (err) {
-          console.error('Error deleting rule:', err);
+        } catch {
+          // Handled silently
         }
       },
     });
   };
 
   const filteredRules = rules.filter((rule) => {
+    const query = searchQuery.trim().toLowerCase();
     const matchesSearch =
-      !searchQuery ||
-      rule.ruleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.condition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.defaultDateLogic.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.appliesTo.toLowerCase().includes(searchQuery.toLowerCase());
+      !query ||
+      rule.ruleName.toLowerCase().includes(query) ||
+      (rule.ruleCode && rule.ruleCode.toLowerCase().includes(query)) ||
+      rule.condition.toLowerCase().includes(query) ||
+      rule.defaultDateLogic.toLowerCase().includes(query) ||
+      rule.appliesTo.toLowerCase().includes(query);
 
     const matchesAppliesTo =
       appliesToFilter === 'all' ||
       (appliesToFilter === 'authorized' &&
-        (rule.condition.toLowerCase().includes('oc') ||
+        (rule.appliesTo.toLowerCase().includes('authorized') ||
+          rule.condition.toLowerCase().includes('oc') ||
           rule.condition.toLowerCase().includes('cc') ||
           rule.ruleName.toLowerCase().includes('oc') ||
           rule.ruleName.toLowerCase().includes('cc'))) ||
       (appliesToFilter === 'unauthorized' &&
-        (rule.condition.toLowerCase().includes('not available') ||
+        (rule.appliesTo.toLowerCase().includes('unauthorized') ||
+          rule.condition.toLowerCase().includes('not available') ||
+          rule.condition.toLowerCase().includes('unavailable') ||
           rule.condition.toLowerCase().includes('insufficient') ||
           rule.ruleName.toLowerCase().includes('manual')));
 
@@ -227,41 +256,35 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gradient-to-r from-[#E2EEFF] via-[#D6E8FF] to-[#E2EEFF] border-b border-blue-200 text-[11px] font-bold uppercase tracking-wider text-[#1E3A8A]">
-                <th className="py-3.5 px-4 border-r border-blue-200/80 w-[110px]">{t('columns.priority')}</th>
-                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[210px]">{t('columns.ruleName')}</th>
-                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[130px]">{t('columns.appliesTo')}</th>
-                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[280px]">{t('columns.condition')}</th>
-                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[240px]">{t('columns.defaultDateLogic')}</th>
+                <th className="py-3.5 px-4 border-r border-blue-200/80 w-[70px] text-center">Sr. No.</th>
+                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[260px]">{t('columns.ruleName')}</th>
+                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[160px]">{t('columns.appliesTo')}</th>
+                <th className="py-3.5 px-4 border-r border-blue-200/80 min-w-[320px]">{t('columns.condition')}</th>
                 <th className="py-3.5 px-4 text-center w-[110px]">{t('columns.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200/80 text-xs bg-white">
               {paginatedRules.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-400">
+                  <td colSpan={5} className="py-12 text-center text-gray-400">
                     {t('noRules')}
                   </td>
                 </tr>
               ) : (
-                paginatedRules.map((rule) => {
+                paginatedRules.map((rule, index) => {
                   return (
                     <tr
                       key={rule.id}
                       className="hover:bg-blue-50/20 transition-colors group"
                     >
-                      {/* Priority Column */}
-                      <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle">
-                        <div className="flex items-center gap-2">
-                          <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-grab shrink-0" />
-                          <div className="w-7 h-7 rounded-lg border border-gray-200 bg-white flex items-center justify-center font-bold text-gray-700 text-xs shadow-2xs">
-                            {rule.priority}
-                          </div>
-                        </div>
+                      {/* Sr. No. Column */}
+                      <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle text-center font-medium text-gray-600 text-xs">
+                        {(currentPage - 1) * pageSize + index + 1}
                       </td>
 
                       {/* Rule Name Column */}
                       <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle">
-                        <span className="font-bold text-gray-900 text-xs">
+                        <span className="font-semibold text-gray-900 text-xs leading-snug">
                           {rule.ruleName}
                         </span>
                       </td>
@@ -277,13 +300,6 @@ export const DefaultDateRulesSection: React.FC<DefaultDateRulesSectionProps> = (
                       <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle">
                         <span className="text-gray-600 font-normal leading-relaxed text-xs">
                           {renderConditionText(rule.condition, rule.boldPhrase)}
-                        </span>
-                      </td>
-
-                      {/* Default Date Logic Column */}
-                      <td className="py-3.5 px-4 border-r border-gray-200/70 align-middle">
-                        <span className="font-semibold text-gray-800 text-xs">
-                          {rule.defaultDateLogic}
                         </span>
                       </td>
 

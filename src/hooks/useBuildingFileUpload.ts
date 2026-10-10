@@ -26,6 +26,7 @@ export const useBuildingFileUpload = (
             ...prev,
             [certificateTypeId]: {
                 ...prev[certificateTypeId],
+                enabled: true,
                 pendingFile: file,
                 documentGuid: "pending",
                 fileName: file.name,
@@ -35,7 +36,7 @@ export const useBuildingFileUpload = (
         clearError(certificateTypeId);
     }, [buildingPermission, clearError, setBuildingPermission, t]);
 
-    const handleFileDelete = useCallback((certificateTypeId: number) => {
+    const handleFileDelete = useCallback((certificateTypeId: number, options?: { silent?: boolean }) => {
         const certificate = buildingPermission[certificateTypeId];
         if (!certificate) return;
 
@@ -51,7 +52,9 @@ export const useBuildingFileUpload = (
             }
         }));
         clearError(certificateTypeId);
-        toast.success(t("building.fileRemoved") || "File removed from form. Click Save Changes to apply.");
+        if (!options?.silent) {
+            toast.success(t("building.fileRemoved") || "File removed from form. Click Save Changes to apply.");
+        }
     }, [buildingPermission, clearError, setBuildingPermission, t]);
 
     return { handleFileUpload, handleFileDelete };

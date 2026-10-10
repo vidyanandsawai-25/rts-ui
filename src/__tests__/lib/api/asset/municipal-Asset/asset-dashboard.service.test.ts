@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getAssetsByTypeDetails } from '@/lib/api/asset/municipal-Asset/asset-dashboard.service';
+import {
+  getAssetsByTypeDetails,
+  getAssetCategoryTypeDetails,
+} from '@/lib/api/asset/municipal-Asset/asset-dashboard.service';
 import { apiClient } from '@/services/api.service';
 import { ApiError } from '@/lib/utils/api';
 
@@ -67,4 +70,43 @@ describe('asset-dashboard.service', () => {
       await expect(getAssetsByTypeDetails(10)).rejects.toThrow(ApiError);
     });
   });
+
+  describe('getAssetCategoryTypeDetails', () => {
+    it('should correctly format the URL with assetCategoryId and return data on success', async () => {
+      const mockResponse = {
+        success: true,
+        data: {
+          assetCategoryId: 1,
+          types: [
+            {
+              assetTypeId: 101,
+              assetTypeName: 'Municipal School',
+              assetCount: 15,
+              totalCapitalValue: 5000000,
+              totalLandAreaSqMeter: 2500,
+              totalInventoryQuantity: 10,
+            },
+          ],
+        },
+      };
+
+      vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+
+      const result = await getAssetCategoryTypeDetails(1);
+
+      expect(apiClient.get).toHaveBeenCalledWith('/AssetDashboard/assets-by-type/details?assetCategoryId=1', { cache: 'no-store' });
+      expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should throw ApiError when API call fails', async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({
+        success: false,
+        statusCode: 500,
+        error: 'Internal Server Error',
+      });
+
+      await expect(getAssetCategoryTypeDetails(1)).rejects.toThrow(ApiError);
+    });
+  });
 });
+

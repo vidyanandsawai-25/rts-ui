@@ -19,6 +19,7 @@ interface SocialSidebarProps {
     onSelect: (id: number) => void;
     onToggleEnabled: (id: number, checked: boolean) => void;
     validationErrors?: Record<number, string>;
+    level?: 'Apartment' | 'Wing' | 'Unit' | string | null;
     t: {
         (key: string, values?: Record<string, string | number | Date>): string;
         has?: (key: string) => boolean;
@@ -36,8 +37,21 @@ export const SocialSidebar: React.FC<SocialSidebarProps> = ({
     onToggleEnabled,
     onSelect,
     validationErrors,
+    level,
     t,
 }) => {
+    const getInheritedBadge = (attr: FlatSocialAttributeState) => {
+        if (!level || level === 'Apartment') return null;
+        if (attr.isOverridden) {
+            return (
+                <Badge variant="warning" size="sm" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] font-bold">
+                    {t("discount.overridden") || "Overridden"}
+                </Badge>
+            );
+        }
+        return null;
+    };
+
     const getStatusBadge = (attr: FlatSocialAttributeState) => {
         const isEnabled = attr.bitValue === true;
         if (!isEnabled) {
@@ -91,7 +105,7 @@ export const SocialSidebar: React.FC<SocialSidebarProps> = ({
     return (
         <div className="flex flex-col min-h-[300px] lg:h-full border-r border-blue-100 pr-2">
             {/* Search and Filters */}
-            <div className="space-y-3 mb-4">
+            <div className="space-y-2 mb-2.5">
                 <SearchInput
                     value={searchTerm}
                     onChange={onSearchChange}
@@ -118,7 +132,7 @@ export const SocialSidebar: React.FC<SocialSidebarProps> = ({
             </div>
 
             {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-blue-100">
+            <div className="flex-1 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin scrollbar-thumb-blue-100">
                 {attributes.length === 0 ? (
                     <div className="text-center py-8 text-sm font-semibold text-gray-400">
                         {t("discount.noDiscountsFound") || "No attributes found"}
@@ -151,18 +165,16 @@ export const SocialSidebar: React.FC<SocialSidebarProps> = ({
                             >
                                 {/* Active Selection Border Indicator */}
                                 {isSelected && (
-                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${
-                                        hasError ? "bg-red-600" : "bg-blue-600"
-                                    }`} />
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${hasError ? "bg-red-600" : "bg-blue-600"
+                                        }`} />
                                 )}
 
                                 <div className="flex justify-between items-start gap-2 pl-1.5">
                                     <span
-                                        className={`text-sm font-bold transition-colors line-clamp-2 flex-1 cursor-pointer select-none ${
-                                            isSelected 
-                                                ? hasError ? "text-red-900" : "text-blue-900" 
-                                                : hasError ? "text-red-800 hover:text-red-900" : "text-gray-700 group-hover:text-blue-800"
-                                        }`}
+                                        className={`text-sm font-bold transition-colors line-clamp-2 flex-1 cursor-pointer select-none ${isSelected
+                                            ? hasError ? "text-red-900" : "text-blue-900"
+                                            : hasError ? "text-red-800 hover:text-red-900" : "text-gray-700 group-hover:text-blue-800"
+                                            }`}
                                     >
                                         {displayName}
                                     </span>
@@ -175,8 +187,11 @@ export const SocialSidebar: React.FC<SocialSidebarProps> = ({
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center pl-1.5">
-                                    {getStatusBadge(attr)}
+                                <div className="flex justify-between items-center gap-1.5 pl-1.5 flex-wrap">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        {getStatusBadge(attr)}
+                                        {getInheritedBadge(attr)}
+                                    </div>
                                 </div>
                             </div>
                         );

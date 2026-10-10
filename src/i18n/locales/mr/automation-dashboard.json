@@ -27,7 +27,14 @@
     "fetchPropertyAssessmentStatus": "मालमत्ता मूल्यांकन स्थिती तपशील आणण्यात अयशस्वी.",
     "fetchZones": "झोन डेटा आणण्यात अयशस्वी.",
     "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रॅकिंग स्टेटस आणण्यात अयशस्वी.",
-    "sendToApprove": "मंजुरीसाठी पाठवण्यात अयशस्वी."
+    "sendToApprove": "मंजुरीसाठी पाठवण्यात अयशस्वी.",
+    "fetchMissingMobileNo": "गहाळ मोबाईल नंबर डेटा आणण्यात अयशस्वी.",
+    "fetchMissingPhotoPlan": "गहाळ फोटो प्लॅन डेटा आणण्यात अयशस्वी.",
+    "fetchMissingOwnerName": "गहाळ मालकाचे नाव डेटा आणण्यात अयशस्वी.",
+    "fetchMissingAddress": "गहाळ पत्ता डेटा आणण्यात अयशस्वी.",
+    "fetchMissingOccupierName": "गहाळ भोगवटादाराचे नाव डेटा आणण्यात अयशस्वी.",
+    "fetchMissingShopName": "गहाळ दुकानाचे नाव डेटा आणण्यात अयशस्वी.",
+    "fetchMissingRegisteredProperty": "गहाळ नोंदणीकृत मालमत्ता डेटा आणण्यात अयशस्वी."
   },
   "summaryCards": {
     "metrics": {
@@ -46,7 +53,7 @@
     "noData": "डेटा नाही"
   },
   "geoSequencing": {
-    "searchPlaceholder": "मालमत्ता क्रमांक, मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "total": "एकूण",
     "wardWiseSummary": "प्रभाग-निहाय सारांश",
     "wardWiseTable": "प्रभाग-निहाय तक्ता",
@@ -210,7 +217,7 @@
   },
   "internalSurvey": {
     "total": "एकूण",
-    "searchPlaceholder": "मालमत्ता क्रमांक, मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "emptyMessage": "कोणताही अंतर्गत सर्वेक्षण डेटा उपलब्ध नाही",
     "buttons": {
       "search": "शोधा",
@@ -257,7 +264,7 @@
     }
   },
   "dataEntryQualityCheck": {
-    "searchPlaceholder": "मालमत्ता क्रमांक, मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "total": "एकूण",
     "wardWiseSummary": "प्रभाग निहाय सारांश",
     "stage": "टप्पा:",
@@ -473,7 +480,7 @@
     "submittedBy": "द्वारे सादर:"
   },
   "assessment": {
-    "searchPlaceholder": "मालमत्ता क्र., मालकाचे नाव शोधा",
+    "searchPlaceholder": "प्रभाग क्र., मालमत्ता क्रमांक, मालकाचे नाव शोधा",
     "summary": "सारांश",
     "sendToApprove": "मंजुरीसाठी पाठवा",
     "tabs": {
@@ -496,6 +503,139 @@
       "retroDemand": "मागील मागणी (₹)",
       "totalDemand": "एकूण मागणी (₹)",
       "additionalRevenue": "अतिरिक्त महसूल उत्पन्न (₹)"
+    }
+  },
+  "missingPhotoPlan": {
+    "totalGapFields": "एकूण गॅप फील्ड्स",
+    "photoMissing": "फोटो गहाळ",
+    "planMissing": "प्लॅन गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "photoMissing": "फोटो गहाळ",
+      "planMissing": "प्लॅन गहाळ",
+      "totalMissing": "एकूण गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingMobileNo": {
+    "mobileNoMissing": "मोबाईल क्र. गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "mobileNoMissing": "मोबाईल क्र. गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingOwnerName": {
+    "ownerNameMissing": "मालकाचे नाव गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "ownerNameMissing": "मालकाचे नाव गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingAddress": {
+    "addressMissing": "पत्ता गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "addressMissing": "पत्ता गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingOccupierName": {
+    "occupierNameMissing": "भोगवटादाराचे नाव गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "occupierNameMissing": "भोगवटादाराचे नाव गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingShopName": {
+    "shopNameMissing": "दुकानाचे नाव गहाळ",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "shopNameMissing": "दुकानाचे नाव गहाळ",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "registeredProperty": {
+    "totalOldPropertyCount": "एकूण जुनी मालमत्ता संख्या",
+    "mergeOldPropertyCount": "मर्ज केलेली जुनी मालमत्ता संख्या",
+    "missingOldPropertyCount": "गहाळ जुनी मालमत्ता संख्या",
+    "activeZones": "सक्रिय झोन",
+    "searchZonePlaceholder": "झोनचे नाव शोधा...",
+    "exportAll": "सर्व निर्यात करा",
+    "noActiveZones": "कोणतेही सक्रिय झोन रेकॉर्ड सापडले नाहीत",
+    "columns": {
+      "municipalZone": "नगरपालिका झोन",
+      "totalOldPropertyCount": "एकूण जुनी मालमत्ता संख्या",
+      "mergeOldPropertyCount": "मर्ज केलेली जुनी मालमत्ता संख्या",
+      "missingOldPropertyCount": "गहाळ जुनी मालमत्ता संख्या",
+      "action": "कृती"
+    },
+    "actions": {
+      "downloadReport": "झोन अहवाल डाउनलोड करा",
+      "viewDetails": "तपशील पहा"
+    }
+  },
+  "missingDataAnalysis": {
+    "title": "गहाळ डेटा विश्लेषण",
+    "subtitle": "सर्व्हेयर ट्रॅकिंगसाठी रिअल-टाइम सिंक्रोनायझेशन गॅप सारांश",
+    "tabs": {
+      "photoPlan": "फोटो / प्लॅन",
+      "ownerName": "मालकाचे नाव",
+      "mobileNo": "मोबाईल क्र.",
+      "occupierName": "ताबाधारकाचे नाव",
+      "address": "पत्ता",
+      "shopName": "दुकानाचे नाव",
+      "registeredPropertyData": "नोंदणीकृत मालमत्ता डेटा"
     }
   }
 }

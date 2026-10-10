@@ -115,11 +115,13 @@ export const usePropertyForm = (props: PropertyFormViewProps) => {
 
         const originalCategoryId = propertyData?.categoryId ?? null;
         const isCategoryChanged = !!originalCategoryId && categoryId !== originalCategoryId;
+        const selectedCategoryOption = categoryOptions.find((opt) => opt.value === categoryId?.toString());
+        const isPlotCategory = selectedCategoryOption?.label?.trim().toLowerCase() === 'plot';
 
         const originalPropertyTypeId = propertyData?.propertyTypeId ?? null;
         const isPropertyDescriptionChanged = originalPropertyTypeId !== null && propertyTypeId !== null && propertyTypeId !== originalPropertyTypeId;
 
-        if (isCategoryChanged) {
+        if (isCategoryChanged && isPlotCategory) {
             confirm({
                 variant: "warning",
                 title: t('property.categoryChangeConfirmTitle'),

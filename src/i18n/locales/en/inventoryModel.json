@@ -70,6 +70,14 @@
           "invalidIdError": "Invalid record ID",
           "error": "An unexpected error occurred"
         },
+        "apiErrors": {
+          "referenceBlocked": {
+            "inventoryModel": {
+              "deleteInUse": "This Inventory Model cannot be deleted because it is in use.",
+              "deactivateInUse": "This Inventory Model cannot be deactivated because it is in use."
+            }
+          }
+        },
         "errors": {
           "fillRequired": "Please fill in all required fields.",
           "group": "Item Name is required.",
@@ -122,5 +130,40 @@
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
     "inventory-condition-master": "Inventory Condition"
+  },
+  "apiErrors": {
+    "referenceBlocked": {
+      "inventoryModel": {
+        "deleteInUse": "This Inventory Model cannot be deleted because it is in use.",
+        "deactivateInUse": "This Inventory Model cannot be deactivated because it is in use."
+      }
+    }
+  },
+  "pageTitle": "Inventory Model",
+  "pageSubtitle": "Centralized Master Data Management System",
+  "addInventoryModel": "Add New Inventory Model",
+  "filters": {
+    "title": "Filters",
+    "modelNameAll": "Model Name: All",
+    "statusAll": "Status: All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "reset": "Reset",
+    "export": "Export"
+  },
+  "columns": {
+    "name": "Name",
+    "description": "Description",
+    "status": "Status"
+  },
+  "excel": {
+    "srNo": "Sr. No.",
+    "modelCode": "Model Code",
+    "modelName": "Model Name",
+    "description": "Description",
+    "status": "Status",
+    "exportSuccess": "Inventory models exported to Excel successfully!",
+    "exportError": "Failed to export inventory models",
+    "noData": "No records available to export"
   }
 }

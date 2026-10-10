@@ -15,6 +15,7 @@ import {
   OperationPreviewResponse,
   ImportTemplateResponse,
   JobPropertyPaginatedResponse,
+  MasterDataChangeSummary,
 } from "@/types/addTaxes.types";
 import {
   isSearchPropertyItemShape,
@@ -22,8 +23,31 @@ import {
   isEligibleCountResponseShape,
   normalizeEligibleCountResponse,
 } from "./add-taxes-types-guard";
+import type { WardItem } from "@/types/wardMaster.types";
 
 const logger = createLogger("AddTaxesService");
+
+/**
+ * Fetch ALL wards (PageSize=-1) for this screen's Ward dropdown. Mirrors
+ * `getAllWardsForLinkAction` (zone-master module) but kept local to this service so the Add Taxes
+ * Route Handler doesn't need to reach into an unrelated module's Server Action file.
+ */
+export async function getAllWardsForOperations(searchTerm?: string): Promise<{ data: WardItem[]; totalCount: number }> {
+  try {
+    const params = new URLSearchParams();
+    params.set("PageSize", "-1");
+    if (searchTerm) params.set("SearchTerm", searchTerm);
+    const response = await apiClient.get<{ items?: WardItem[]; totalCount?: number }>(`/Ward?${params.toString()}`);
+    if (!response.success || !response.data) {
+      throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch wards", "Get wards failed");
+    }
+    const items = response.data.items || [];
+    return { data: items, totalCount: response.data.totalCount || items.length };
+  } catch (error) {
+    logger.error("Error fetching wards", undefined, error);
+    throw error;
+  }
+}
 
 interface SearchByCategoryItem {
   propertyId: number;
@@ -190,7 +214,8 @@ export async function searchPropertiesByCategory(
   pageSize: number = 100,
   propertyFrom?: string,
   propertyTo?: string,
-  zoneId?: string | number
+  zoneId?: string | number,
+  searchTerm?: string
 ): Promise<SearchByCategoryResponse> {
   try {
     const queryParams = new URLSearchParams();
@@ -206,6 +231,9 @@ export async function searchPropertiesByCategory(
     }
     if (propertyTo) {
       queryParams.append("PropertyTo", propertyTo);
+    }
+    if (searchTerm) {
+      queryParams.append("SearchTerm", searchTerm.trim());
     }
     queryParams.append("PageNumber", String(pageNumber));
     queryParams.append("PageSize", String(pageSize));
@@ -251,7 +279,7 @@ export async function getEligibleCount(
     }
 
     if (!response.data) {
-      return { eligible: 0, total: 0, skipped: 0 };
+      return { eligible: 0, total: 0, skipped: 0, alreadyTaxed: 0 };
     }
 
     // Validate response shape before returning
@@ -259,7 +287,7 @@ export async function getEligibleCount(
       return normalizeEligibleCountResponse(response.data as Record<string, unknown>);
     }
 
-    return { eligible: 0, total: 0, skipped: 0 };
+    return { eligible: 0, total: 0, skipped: 0, alreadyTaxed: 0 };
   } catch (error) {
     logger.error("Error getting eligible count", undefined, error);
     throw error;
@@ -506,3 +534,92 @@ export async function exportProperties(
     throw error;
   }
 }
+
+/**
+ * Get master data change summary (affected recalculation properties count).
+ * API: GET /property-tax/operations/master-data-changes/summary?financeYearId={financeYearId}
+ */
+export async function getMasterDataChangeSummary(
+  financeYearId: string | number
+): Promise<MasterDataChangeSummary> {
+  try {
+    const response = await apiClient.get<MasterDataChangeSummary>(
+      `/property-tax/operations/master-data-changes/summary?financeYearId=${encodeURIComponent(String(financeYearId))}`
+    );
+    if (!response.success) {
+      throw new ApiError(
+        response.statusCode ?? 500,
+        response.error || "Failed to fetch master data change summary",
+        "Get master data change summary failed"
+      );
+    }
+    if (!response.data) {
+      return { affectedCount: 0 };
+    }
+    return response.data;
+  } catch (error) {
+    logger.error("Error fetching master data change summary", undefined, error);
+    throw error;
+  }
+}
+
+/**
+ * Export affected master data change properties as CSV.
+ * API: GET /property-tax/operations/master-data-changes/export?financeYearId={financeYearId}
+ */
+export async function exportMasterDataChangesCsv(
+  financeYearId: string | number
+): Promise<{ base64: string; fileName: string }> {
+  try {
+    const endpoint = `/property-tax/operations/master-data-changes/export?financeYearId=${encodeURIComponent(String(financeYearId))}`;
+    logger.info("exportMasterDataChangesCsv: Requesting export", { financeYearId });
+
+    const response = await apiClient.fetch(endpoint);
+    if (!response.ok) {
+      const errText = await response.text().catch(() => response.statusText);
+      throw new ApiError(
+        response.status,
+        `Failed to export master data changes (${response.status}): ${errText || response.statusText}`,
+        "Export master data changes failed"
+      );
+    }
+
+    const contentDisposition = response.headers.get("content-disposition");
+    let fileName = `master_data_affected_properties_FY${financeYearId}.csv`;
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (match && match[1]) {
+        fileName = match[1].replace(/['"]/g, "");
+      }
+    }
+
+    const fileBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(fileBuffer).toString("base64");
+    return { base64, fileName };
+  } catch (error) {
+    logger.error("Error exporting master data changes CSV", undefined, error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch zone options mapped to {value, label} for Add Taxes operations.
+ * Service-layer helper so route.ts does not couple to localized page actions.ts.
+ */
+export async function fetchZoneOptionsService(): Promise<{ value: string; label: string }[]> {
+  try {
+    const { fetchZonesAction } = await import("@/app/[locale]/property-tax/zone-master/actions");
+    const res = await fetchZonesAction(1, -1);
+    const items = (res as { items?: { id: string | number; description?: string; zoneNo?: string }[] } | null)?.items;
+    return items
+      ? items.map((z) => ({
+          value: String(z.id),
+          label: z.description && z.zoneNo ? `${z.zoneNo} — ${z.description}` : (z.description || z.zoneNo || ""),
+        }))
+      : [];
+  } catch (error) {
+    logger.error("Error fetching zone options service", undefined, error);
+    return [];
+  }
+}
+

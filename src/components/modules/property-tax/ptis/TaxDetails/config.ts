@@ -44,7 +44,7 @@ export const TAX_LABEL_CLASSES = 'px-1.5 py-0.5 rounded-md shadow-2xs border tex
 /**
  * Header text styling for table columns
  */
-export const HEADER_TEXT_CLASSES = 'text-white text-[10.5px] font-bold tracking-tight py-2 uppercase';
+export const HEADER_TEXT_CLASSES = 'text-white text-[9.5px] font-bold tracking-tight py-1 uppercase';
 
 /**
  * Center alignment class for cells

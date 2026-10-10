@@ -21,3 +21,4 @@ export * from './MappedOldPropertiesExpandedRow';
 export * from './MappedPropertiesExpandedRow';
 export * from './MappedPropertiesSubTable';
 export * from './EmptyMappedPropertiesState';
+export * from './ApartmentDemandSubTable';

@@ -122,20 +122,29 @@ export const ConfigValueResponseSchema = z.preprocess((data: unknown) => {
 export const ModuleMasterResponseSchema = z.preprocess((data: unknown) => {
   if (!data || typeof data !== 'object') return data;
   const d = data as Record<string, unknown>;
+  const activeVal = d.isActive ?? d.IsActive ?? d.status ?? d.Status ?? true;
+  const isActive =
+    typeof activeVal === 'string' && activeVal.toLowerCase() === 'inactive'
+      ? false
+      : (activeVal === 'false' || activeVal === '0' || activeVal === 0 ? false : Boolean(activeVal));
+
+  const modId = d.moduleMasterId ?? d.ModuleMasterId ?? d.moduleId ?? d.ModuleId ?? d.id ?? d.Id;
+  const deptId = d.departmentMasterId ?? d.DepartmentMasterId ?? d.departmentId ?? d.DepartmentId ?? d.deptId ?? d.DeptId;
+
   return {
     ...d,
-    moduleId: d.moduleId ?? d.ModuleId ?? d.id ?? d.Id,
-    id: String(d.moduleId ?? d.ModuleId ?? d.id ?? d.Id),
-    departmentId: d.departmentId ?? d.DepartmentId,
-    moduleCode: d.moduleCode ?? d.ModuleCode,
-    moduleName: d.moduleName ?? d.ModuleName,
+    moduleId: modId,
+    id: String(modId ?? 0),
+    departmentId: deptId,
+    moduleCode: d.moduleCode ?? d.ModuleCode ?? d.code ?? d.Code ?? '',
+    moduleName: d.moduleName ?? d.ModuleName ?? d.moduleNane ?? d.ModuleNane ?? '',
     moduleNameLocal: d.moduleNameLocal ?? d.ModuleNameLocal ?? '',
     moduleIcon: d.moduleIcon ?? d.ModuleIcon ?? '',
     moduleLabel: d.moduleLabel ?? d.ModuleLabel ?? '',
     moduleDescription: d.moduleDescription ?? d.ModuleDescription ?? '',
     departmentName: d.departmentName ?? d.DepartmentName ?? '',
-    isActive: d.isActive ?? d.IsActive,
-    isEnabled: d.isActive ?? d.IsActive,
+    isActive,
+    isEnabled: isActive,
   }
 }, z.object({
   id: z.string(),
@@ -147,13 +156,13 @@ export const ModuleMasterResponseSchema = z.preprocess((data: unknown) => {
     const n = Number(val);
     return isNaN(n) ? 0 : n;
   }, z.number()),
-  moduleCode: z.coerce.string(),
-  moduleName: z.coerce.string(),
+  moduleCode: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
+  moduleName: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
   moduleNameLocal: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
   moduleIcon: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
   moduleLabel: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
   moduleDescription: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
   departmentName: z.preprocess((val) => (val === null || val === undefined ? '' : val), z.coerce.string()).default(''),
-  isActive: z.coerce.boolean().default(true),
-  isEnabled: z.coerce.boolean().default(true),
+  isActive: z.boolean().default(true),
+  isEnabled: z.boolean().default(true),
 }));

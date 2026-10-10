@@ -100,7 +100,7 @@ export function PhotoPlanGrid({
           <p className="text-xs text-slate-400 max-w-xs text-center mb-6">{t('media.clickToUpload', { title: categoryName }) || `Click here to upload a photo to the ${categoryName} folder.`}</p>
           <div className="flex gap-4">
             <Button onClick={onAddPhoto} variant="primary" icon={Upload}>
-              {t('media.uploadImage') || 'Upload Image'}
+              {isPhotoPlanCategory ? (t('media.uploadPlan') || 'Upload Plan') : (t('media.uploadImage') || 'Upload Image')}
             </Button>
             {isPhotoPlanCategory && onDrawPlan && (
               <Button onClick={onDrawPlan} variant="primary" className="bg-purple-600 hover:bg-purple-700 text-white border-none" icon={Plus}>
@@ -127,13 +127,12 @@ export function PhotoPlanGrid({
                   />
                   {/* Actions overlay */}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                    {!isPhotoPlanCategory && (
-                      <Button
-                        variant="secondary" size="xs" icon={Upload} className="!h-7 !w-7 !p-0 shadow bg-white hover:text-green-600"
-                        onClick={(e) => { e.stopPropagation(); onReplacePhoto(index); }}
-                        title={t('media.replaceImage') || 'Replace Image'} aria-label={t('media.replaceImage') || 'Replace Image'}
-                      />
-                    )}
+                    <Button
+                      variant="secondary" size="xs" icon={isPhotoPlanCategory ? RefreshCw : Upload} className="!h-7 !w-7 !p-0 shadow bg-white hover:text-green-600"
+                      onClick={(e) => { e.stopPropagation(); onReplacePhoto(index); }}
+                      title={isPhotoPlanCategory ? (t('media.replacePlan') || 'Replace Plan') : (t('media.replaceImage') || 'Replace Image')}
+                      aria-label={isPhotoPlanCategory ? (t('media.replacePlan') || 'Replace Plan') : (t('media.replaceImage') || 'Replace Image')}
+                    />
                     <Button
                       variant="secondary" size="xs" icon={Trash2} className="!h-7 !w-7 !p-0 shadow bg-white hover:text-red-600"
                       onClick={(e) => handleDeleteClick(e, index, img.title)}
@@ -161,12 +160,30 @@ export function PhotoPlanGrid({
             )
           ) : (
             <>
-              <Card onClick={onAddPhoto} padding="none" className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
-                <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
-                  <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
-                </div>
-                <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">{t('media.uploadImage') || 'Add Photo'}</span>
-              </Card>
+              {(!isPhotoPlanCategory || images.length < 2) && (
+                <Card
+                  onClick={onAddPhoto}
+                  padding="none"
+                  className="border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group"
+                  title={
+                    isPhotoPlanCategory
+                      ? images.length === 1
+                        ? (t('media.addNewPlanTitle') || 'Add New Plan?')
+                        : (t('media.uploadPlan') || 'Upload Plan')
+                      : (t('media.uploadImage') || 'Add Photo')}
+                >
+                  <div className="p-2.5 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-2">
+                    <Plus className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500 group-hover:text-blue-800">
+                    {isPhotoPlanCategory
+                      ? images.length === 1
+                        ? (t('media.addNewPlan') || 'Add New Plan')
+                        : (t('media.uploadPlan') || t('media.uploadImage') || 'Upload Plan')
+                      : (t('media.uploadImage') || 'Add Photo')}
+                  </span>
+                </Card>
+              )}
               {isPhotoPlanCategory && onDrawPlan && (
                 <Card onClick={onDrawPlan} padding="none" className="border border-dashed border-purple-300 rounded-lg hover:border-purple-400 bg-white hover:bg-purple-50/10 cursor-pointer transition-all duration-200 h-40 flex flex-col items-center justify-center select-none group">
                   <div className="p-2.5 bg-purple-50 rounded-full border border-purple-200 group-hover:scale-105 transition-transform duration-200 mb-2">

@@ -37,6 +37,7 @@ export function useOwningDepartmentForm({ initialData = null }: { initialData?: 
 
   const {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,
@@ -65,6 +66,7 @@ export function useOwningDepartmentForm({ initialData = null }: { initialData?: 
     open,
     isEdit,
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

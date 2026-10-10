@@ -27,6 +27,7 @@ export default function PenaltyRuleMasterForm({
     open,
     isEdit,
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClose,
@@ -79,7 +80,7 @@ export default function PenaltyRuleMasterForm({
             <StatusToggleCard
               ref={statusToggleRef}
               isActive={formData.isActive}
-              onToggle={() => setFormData((p) => ({ ...p, isActive: !p.isActive }))}
+              onToggle={handleStatusToggle}
               error={errors.isActive}
               activeLabel={t("form.status.active")}
               inactiveLabel={t("form.status.inactive")}

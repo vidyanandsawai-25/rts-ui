@@ -22,7 +22,7 @@ interface BuildingPreviewProps {
   wardId?: number;
   propertyTypeId?: number;
   categoryId?: number;
-  societyDetailId?: number;
+  wingDetailId?: number;
   // Callback on successful generation
   onGenerateSuccess?: () => void;
 }
@@ -39,7 +39,7 @@ export function BuildingPreviewModal({
   wardId,
   propertyTypeId,
   categoryId,
-  societyDetailId,
+  wingDetailId,
   onGenerateSuccess,
 }: BuildingPreviewProps) {
   const t = useTranslations("zoneMaster");
@@ -63,7 +63,7 @@ export function BuildingPreviewModal({
     wardId,
     propertyTypeId,
     categoryId,
-    societyDetailId,
+    wingDetailId,
     onGenerateSuccess,
     t: (key: string, values?: Record<string, unknown>) => t(key, values as never),
   });

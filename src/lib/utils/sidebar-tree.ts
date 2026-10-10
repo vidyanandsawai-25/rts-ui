@@ -57,6 +57,5 @@ export function buildSidebarTree(
   // 4. Sort the top-level items by displayOrder
   mixedItems.sort((a, b) => a._order - b._order);
 
-  // Remove the temporary _order property before returning
   return mixedItems.map(({ _order, ...item }) => item);
 }

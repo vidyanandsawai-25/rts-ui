@@ -7,6 +7,9 @@ import {
   fetchTypeOfUseGroupByIdAction,
   fetchAssetTypeOfUseByIdAction,
   fetchAssetSubTypeOfUseByIdAction,
+  updateTypeOfUseGroupAction,
+  createAssetTypeOfUseAction,
+  createAssetSubTypeOfUseAction,
 } from "@/app/[locale]/assets/configuration/master-data/type-of-use/action";
 
 const mockRevalidatePath = vi.fn();
@@ -90,5 +93,78 @@ describe("type-of-use actions", () => {
 
   it("rejects invalid subtype id lookups", async () => {
     await expect(fetchAssetSubTypeOfUseByIdAction(0)).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("rejects malformed foreign keys before creating a type", async () => {
+    const service = await import("@/lib/api/asset-masters/type-of-use.service");
+
+    const result = await createAssetTypeOfUseAction({
+      assetCategoryId: "12junk" as never,
+      assetTypeId: 5,
+      typeOfUseGroupId: 1,
+      typeOfUseCode: "OP",
+      description: "Open plot",
+      type: "R",
+      searchSequence: 0,
+      isActive: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(service.createAssetTypeOfUse).not.toHaveBeenCalled();
+  });
+
+  it("forces new sub-types to active regardless of client input", async () => {
+    const service = await import("@/lib/api/asset-masters/type-of-use.service");
+    vi.mocked(service.createAssetSubTypeOfUse).mockResolvedValue("created");
+
+    const result = await createAssetSubTypeOfUseAction({
+      typeOfUseId: 115,
+      description: "Sub-Type",
+      searchSequence: 0,
+      isActive: false,
+    });
+
+    expect(result.success).toBe(true);
+    expect(service.createAssetSubTypeOfUse).toHaveBeenCalledWith(expect.objectContaining({
+      typeOfUseId: 115,
+      isActive: true,
+      createdBy: 99,
+    }));
+  });
+
+  it("preserves false when updating a group", async () => {
+    const service = await import("@/lib/api/asset-masters/type-of-use.service");
+    vi.mocked(service.updateTypeOfUseGroup).mockResolvedValue("updated");
+
+    const result = await updateTypeOfUseGroupAction({
+      id: 10,
+      typeOfUseGroupCode: "RES",
+      groupName: "Residential",
+      groupIcon: "home",
+      isActive: false,
+    });
+
+    expect(result.success).toBe(true);
+    expect(service.updateTypeOfUseGroup).toHaveBeenCalledWith(expect.objectContaining({
+      id: 10,
+      isActive: false,
+      updatedBy: 99,
+    }));
+  });
+
+  it("rejects a non-boolean group status before calling the service", async () => {
+    const service = await import("@/lib/api/asset-masters/type-of-use.service");
+
+    const result = await updateTypeOfUseGroupAction({
+      id: 10,
+      typeOfUseGroupCode: "RES",
+      groupName: "Residential",
+      groupIcon: "home",
+      isActive: "false" as never,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(400);
+    expect(service.updateTypeOfUseGroup).not.toHaveBeenCalled();
   });
 });

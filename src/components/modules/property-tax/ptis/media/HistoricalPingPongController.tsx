@@ -119,6 +119,18 @@ export function HistoricalPingPongController({
           maxZoom: 21,
           attribution: '© Esri',
         });
+        // Set loading="eager" on fallback tiles to avoid LCP warnings
+        const layerWithCreateTile = layer as unknown as {
+          createTile: (coords: L.Coords, done: L.DoneCallback) => HTMLElement;
+        };
+        const originalCreateTile = layerWithCreateTile.createTile;
+        layerWithCreateTile.createTile = function (coords: L.Coords, done: L.DoneCallback) {
+          const tile = originalCreateTile.call(this, coords, done) as HTMLImageElement;
+          tile.setAttribute('fetchpriority', 'high');
+          tile.setAttribute('loading', 'eager');
+          tile.setAttribute('decoding', 'async');
+          return tile;
+        };
         cache.set(-1, layer);
       }
       if (!map.hasLayer(layer)) {

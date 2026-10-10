@@ -17,7 +17,10 @@ export function formatCellValue<T>(row: T, column: ExportColumn<T>, index: numbe
 
     // Apply custom format function if provided
     if (column.format) {
-        return column.format(rawValue, row, index);
+        const formatted = column.format(rawValue, row, index);
+        if (formatted === null || formatted === undefined) return '';
+        if (typeof formatted === 'object') return String(formatted);
+        return formatted;
     }
 
     // Handle null/undefined gracefully

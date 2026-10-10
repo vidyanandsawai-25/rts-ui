@@ -1,4 +1,7 @@
+import 'server-only';
+
 import { getAppConfig } from '@/config/app.config';
+import { apiClient } from '@/services/api.service';
 import { serverFetch } from '@/lib/utils/server-fetch';
 import { getAuthHeaders } from '@/lib/utils/server-auth-headers';
 import { buildDocumentUploadFormData } from '@/lib/utils/document-utils';
@@ -10,7 +13,6 @@ import {
   DocumentReferenceQuery 
 } from '@/types/document.types';
 import { ApiResponse } from '@/types/common.types';
-import { cookies } from 'next/headers';
 
 function getBaseUrl(): string {
   const config = getAppConfig();
@@ -33,95 +35,84 @@ export async function uploadDocument(file: File, params?: DocumentUploadParams):
     data = { message: text };
   }
   if (!response.ok) throw new Error(data.message || data.error || `Upload failed with status ${response.status}`);
-  return data.items;
+  return data.items ?? data.data ?? data;
 }
 
 export async function deleteDocument(documentGuid: string): Promise<ApiResponse<void>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'DELETE', headers, cache: 'no-store' });
-  if (!response.ok) {
-    const text = await response.text();
-    return { success: false, error: text || `Delete failed with status ${response.status}`, statusCode: response.status };
-  }
-  return { success: true };
+  return apiClient.delete<void>(`/documents/${encodeURIComponent(documentGuid)}`);
 }
 
 export async function getDocumentDetails(documentGuid: string): Promise<ApiResponse<DocumentDto>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  return { success: true, data };
+  const response = await apiClient.get<DocumentDto | { items?: DocumentDto; data?: DocumentDto }>(
+    `/documents/${encodeURIComponent(documentGuid)}`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentDto, statusCode: response.statusCode };
 }
 
 export async function getDocumentByBinding(bindingId: number): Promise<ApiResponse<DocumentDto>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/by-binding/${bindingId}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  return { success: true, data };
+  const response = await apiClient.get<DocumentDto | { items?: DocumentDto; data?: DocumentDto }>(
+    `/documents/by-binding/${bindingId}`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentDto, statusCode: response.statusCode };
 }
 
 export async function getDocumentByReference(params: DocumentReferenceQuery): Promise<ApiResponse<DocumentDto>> {
-  const baseUrl = getBaseUrl();
   const query = new URLSearchParams({
     departmentId: String(params.departmentId),
     moduleId: String(params.moduleId),
     referenceTableName: params.referenceTableName,
     referenceTableId: String(params.referenceTableId),
   }).toString();
-  const url = `${baseUrl}/documents/by-reference?${query}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  return { success: true, data };
+  const response = await apiClient.get<DocumentDto | { items?: DocumentDto; data?: DocumentDto }>(
+    `/documents/by-reference?${query}`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentDto, statusCode: response.statusCode };
 }
 
 export async function getDocumentMetadata(documentGuid: string): Promise<ApiResponse<DocumentMetadataDto>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}/metadata`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'GET', headers, cache: 'no-store' });
-  if (!response.ok) return { success: false, error: `Failed with status ${response.status}`, statusCode: response.status };
-  const data = await response.json();
-  return { success: true, data };
+  const response = await apiClient.get<DocumentMetadataDto | { items?: DocumentMetadataDto; data?: DocumentMetadataDto }>(
+    `/documents/${encodeURIComponent(documentGuid)}/metadata`,
+    { cache: 'no-store' }
+  );
+  if (!response.success) return { success: false, error: response.error, statusCode: response.statusCode };
+  const rawData = response.data;
+  const unwrapped = (rawData && typeof rawData === 'object' && ('items' in rawData || 'data' in rawData))
+    ? ((rawData as Record<string, unknown>).items ?? (rawData as Record<string, unknown>).data ?? rawData)
+    : rawData;
+  return { success: true, data: unwrapped as DocumentMetadataDto, statusCode: response.statusCode };
 }
 
 export async function updateBindingReference(bindingId: number, refTableId: number): Promise<ApiResponse<void>> {
-  const baseUrl = getBaseUrl();
-  const url = `${baseUrl}/documents/binding/${bindingId}/reference/${refTableId}`;
-  const headers = await getAuthHeaders();
-  const response = await serverFetch(url, { method: 'PUT', headers, cache: 'no-store' });
-  if (!response.ok) {
-    const text = await response.text();
-    return { success: false, error: text || `Failed with status ${response.status}`, statusCode: response.status };
-  }
-  return { success: true };
+  return apiClient.put<void>(`/documents/binding/${bindingId}/reference/${refTableId}`);
 }
 
 export async function getDocument(documentGuid: string, action: 'view' | 'download') {
   const baseUrl = getBaseUrl();
-  let cleanBase = baseUrl.replace(/\/+$/, "");
-  if (cleanBase.endsWith("/api")) {
-    cleanBase = cleanBase.substring(0, cleanBase.length - 4);
-  }
-  const finalRoot = cleanBase.endsWith("/") ? cleanBase : `${cleanBase}/`;
-  const backendUrl = `${finalRoot}api/documents/${encodeURIComponent(documentGuid)}/${action}`;
+  const headers = await getAuthHeaders();
+  const url = `${baseUrl}/documents/${encodeURIComponent(documentGuid)}/${action}`;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
-  if (!token) throw new Error("Unauthorized");
-
-  const response = await serverFetch(backendUrl, {
+  const response = await serverFetch(url, {
     method: "GET",
-    headers: { "Accept": "*/*", "Authorization": `Bearer ${token}` }
+    headers: { ...headers, "Accept": "*/*" },
+    cache: "no-store",
   });
   if (!response.ok) throw new Error(`Failed to fetch document: ${response.status}`);
   const contentType = response.headers.get("content-type") || "application/octet-stream";

@@ -47,8 +47,8 @@ export async function fetchNatureFactorCVMasterPagedServerAction(
       (pageSize > MAX_PAGE_SIZE && pageSize !== -1) ||
       pageNumber > MAX_PAGE_NUMBER
     ) {
-      const t = await getTranslations('common');
-      throw new Error(t('errors.apiValidationFailed'));
+      const t = await getTranslations('assetWeightageMaster.nature');
+      throw new Error(t('errors.invalidPaginationParameters'));
     }
 
     // Ensure selectedYearRange is not passed if empty
@@ -98,7 +98,7 @@ export async function updateNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     if (!id || id <= 0) {
-      const t = await getTranslations('natureFactorCVMaster');
+      const t = await getTranslations('assetWeightageMaster.nature');
       return {
         success: false,
         message: t('errors.invalidNatureFactorCVId'),
@@ -107,7 +107,10 @@ export async function updateNatureFactorCVMasterAction(
     }
 
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const updatePayload = {
       ...payload,
       updatedBy: userId
@@ -148,7 +151,10 @@ export async function createNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const createPayload = {
       ...payload,
       createdBy: userId
@@ -162,7 +168,7 @@ export async function createNatureFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      const t = await getTranslations('natureFactorCVMaster');
+      const t = await getTranslations('assetWeightageMaster.nature');
       return { success: false, message: cleanErrorMessage(response.error, t('errors.createFailed')), statusCode: 500 };
     }
   } catch (error: unknown) {
@@ -193,7 +199,10 @@ export async function bulkCreateNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const bulkCreatePayload = payload.map(item => ({
       ...item,
       createdBy: userId
@@ -207,7 +216,7 @@ export async function bulkCreateNatureFactorCVMasterAction(
       }
       return { success: true, data: response.data };
     } else {
-      const t = await getTranslations('natureFactorCVMaster');
+      const t = await getTranslations('assetWeightageMaster.nature');
       return { success: false, message: cleanErrorMessage(response?.error, t('errors.bulkCreateFailed')), statusCode: 500 };
     }
   } catch (error: unknown) {
@@ -238,7 +247,10 @@ export async function bulkUpdateNatureFactorCVMasterAction(
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
     const cookieStore = await cookies();
-    const userId = getUserIdFromCookies(cookieStore) || 1;
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const bulkUpdatePayload = payload.map(item => ({
       ...item,
       data: {

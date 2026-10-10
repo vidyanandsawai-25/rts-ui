@@ -7,7 +7,8 @@ export type BadgeVariant =
   | 'outline'
   | 'destructive'
   | 'success'
-  | 'warning';
+  | 'warning'
+  |  'info';
 
 export type BadgeSize = 'sm' | 'md' | 'lg';
 
@@ -29,6 +30,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   destructive: 'bg-red-100 text-red-700 border-transparent',
   success: 'bg-green-100 text-green-700 border-transparent',
   warning: 'bg-yellow-100 text-yellow-800 border-transparent',
+  info: 'bg-purple-100 text-purple-700 border-transparent',
 };
 
 const sizeStyles: Record<BadgeSize, string> = {

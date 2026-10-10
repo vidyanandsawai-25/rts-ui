@@ -7,10 +7,9 @@ import { useConfirm } from '@/components/common';
 import { EditSidebarProps } from '@/types/floor-details.types';
 import { FloorData } from '@/types/room-details.types';
 import { isPlotCategory as checkIsPlotCategory } from '@/lib/utils/ptis/category-helpers';
-import { ConstructionTypeResponse } from '@/types/floor-details.types';
-import { LookupData } from '@/types/common-details.types';
 
 import { useFloorAreaValidation, isRecordOpenPlot } from './useFloorAreaValidation';
+import { findOpenPlotFloorItem, findOpenPlotConstructionTypeItem } from '@/lib/utils/floorSubmission/floor-resolvers';
 
 // Split Hooks
 import { useFloorFormState } from './useFloorFormState';
@@ -97,8 +96,10 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
     return floors.find(
       (f: FloorData) =>
         f.isOpenPlot === true ||
-        String(f.floorId) === '77' ||
-        String(f.floor) === '77'
+        String(f.selectedFloorType).toLowerCase() === 'openplot' ||
+        String((f as any).floorCode || (f as any).code || '').toLowerCase() === 'op' ||
+        String(f.conTyp || (f as any).constructionCode || '').toLowerCase() === 'op' ||
+        String(f.floor || '').toLowerCase().includes('open plot')
     );
   }, [localFloors, props.initialFloors]);
 
@@ -188,15 +189,11 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
   // Auto-map construction type "op" (open plot) for Open Space / Open Plot
   useEffect(() => {
     if (selectedFloorType === 'OpenPlot') {
-      const openPlotCon = props.constructionTypeData?.find(
-        (c: ConstructionTypeResponse) =>
-          String(c.constructionCode || '').toLowerCase() === 'op' ||
-          String(c.description || '').toLowerCase() === 'open plot'
-      );
+      const openPlotCon = findOpenPlotConstructionTypeItem(props.constructionTypeData);
       if (openPlotCon) {
-        const conId = String(openPlotCon.constructionTypeId || openPlotCon.id || '');
+        const conId = String(openPlotCon.constructionTypeId ?? openPlotCon.id ?? '');
         const conDesc = String(openPlotCon.description || '');
-        if (editingFloorForm.constructionTypeId !== conId || editingFloorForm.conTyp !== conDesc) {
+        if (conId && (editingFloorForm.constructionTypeId !== conId || editingFloorForm.conTyp !== conDesc)) {
           setEditingFloorForm(prev => ({
             ...prev,
             constructionTypeId: conId,
@@ -206,18 +203,21 @@ export const useFloorSubmission = (props: EditSidebarProps) => {
         }
       }
 
-      // Auto-default floorId to '77' if not set
+      // Auto-default floorId dynamically where FloorCode is 'op'
       if (isAddingNewFloor && !editingFloorForm.floorId) {
-        const openPlotFloor = (props.floorData as LookupData[])?.find(
-          (f) => String(f.floorId || f.id) === '77'
-        );
-        const floorDesc = openPlotFloor ? String(openPlotFloor.description || 'Open Plot') : 'Open Plot';
-        setEditingFloorForm(prev => ({
-          ...prev,
-          floorId: '77',
-          floor: prev.floor || floorDesc,
-          floorDescription: prev.floorDescription || floorDesc,
-        }));
+        const openPlotFloor = findOpenPlotFloorItem(props.floorData);
+        if (openPlotFloor) {
+          const floorIdVal = String(openPlotFloor.floorId ?? (openPlotFloor as Record<string, unknown>).id ?? '');
+          const floorDesc = String(openPlotFloor.description || 'Open Plot');
+          if (floorIdVal) {
+            setEditingFloorForm(prev => ({
+              ...prev,
+              floorId: floorIdVal,
+              floor: prev.floor || floorDesc,
+              floorDescription: prev.floorDescription || floorDesc,
+            }));
+          }
+        }
       }
     }
   }, [selectedFloorType, isAddingNewFloor, editingFloorForm.floorId, props.constructionTypeData, props.floorData, editingFloorForm.constructionTypeId, editingFloorForm.conTyp, setEditingFloorForm]);

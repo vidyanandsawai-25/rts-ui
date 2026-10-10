@@ -445,6 +445,7 @@ export interface MappedNewPropertyItem {
   taxZoneId?: number | null;
   zoneNo?: string | null;
   propertyNo?: string | null;
+  partitionNo?: string | null;
   wardId?: number | null;
   wardNo?: string | null;
   mobileNo?: string | null;
@@ -466,6 +467,7 @@ export interface MappedNewPropertyItem {
   renterName?: string | null;
   renterNameEnglish?: string | null;
   typeOfUse?: string | null;
+  typeOfUseCode?: string | null;
   type?: string | null;
   apartmentType?: string | null;
   partType?: string | null;
@@ -474,17 +476,21 @@ export interface MappedNewPropertyItem {
   wingDetailId?: number | null;
   noOfRooms?: number | null;
   floor?: string | null;
+  floorCode?: string | null;
   subFloor?: string | null;
   subTypeOfUse?: string | null;
   constructionYear?: string | null;
   assessmentYear?: string | null;
   constructionType?: string | null;
+  constructionCode?: string | null;
   calculationValue?: number | null;
   capitalValue?: number | null;
   rateableValue?: number | null;
   newTaxTotal?: number | null;
   newTaxTotalCV?: number | null;
   newTaxTotalRV?: number | null;
+  totalTax?: number | null;
+  oldTotalTax?: number | null;
   retroTaxTotal?: number | null;
   currentDemand?: number | null;
   carpetASqMtr?: number | null;
@@ -508,6 +514,7 @@ export interface MappedNewPropertiesApiResponse {
 
 export interface MappedNewPropertiesParams {
   oldPropertyId?: number | null;
+  wingDetailsId?: number | string | null;
   pageNumber?: number | null;
   pageSize?: number | null;
   searchTerm?: string | null;
@@ -552,14 +559,18 @@ export interface MappedOldPropertyItem {
   occupierName?: string | null;
   occupierNameEnglish?: string | null;
   floor?: string | null;
+  floorCode?: string | null;
   wing?: string | null;
   noOfRooms?: number | null;
   constructionYear?: string | null;
   typeOfUse?: string | null;
+  typeOfUseCode?: string | null;
   constructionType?: string | null;
+  constructionCode?: string | null;
   rateableValue?: number | null;
   capitalValue?: number | null;
   totalTax?: number | null;
+  oldTotalTax?: number | null;
   retroTaxTotal?: number | null;
   csn?: string | null;
   constructionArea?: number | null;

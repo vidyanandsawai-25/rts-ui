@@ -67,26 +67,30 @@ describe("validateDiscountForm", () => {
         return key;
     };
 
-    const createBaseAttr = (overrides: Partial<DiscountAttributeState> = {}): DiscountAttributeState => ({
-        id: 1,
-        socialAttributeCode: "ATTR_CODE",
-        socialAttributeName: "Test Attribute",
-        dataType: "BIT",
-        unit: null,
-        displayOrder: 1,
-        isDiscountApplicable: true,
-        propertySocialDetailId: null,
-        bitValue: null,
-        intValue: null,
-        decimalValue: null,
-        textValue: null,
-        dateValue: null,
-        documentBindingId: null,
-        remark: null,
-        enabled: true,
-        isDocumentRequired: true,
-        ...overrides
-    });
+    const createBaseAttr = (overrides: Partial<DiscountAttributeState> = {}): DiscountAttributeState => {
+        const isBit = (overrides.dataType || "BIT").toUpperCase() === "BIT";
+        const enabled = overrides.enabled ?? true;
+        return {
+            id: 1,
+            socialAttributeCode: "ATTR_CODE",
+            socialAttributeName: "Test Attribute",
+            dataType: "BIT",
+            unit: null,
+            displayOrder: 1,
+            isDiscountApplicable: true,
+            propertySocialDetailId: null,
+            bitValue: isBit ? enabled : null,
+            intValue: null,
+            decimalValue: null,
+            textValue: null,
+            dateValue: null,
+            documentBindingId: null,
+            remark: null,
+            enabled: enabled,
+            isDocumentRequired: true,
+            ...overrides
+        };
+    };
 
     it("should skip validation if the attribute is disabled", () => {
         const item = createBaseAttr({ enabled: false });
@@ -270,7 +274,7 @@ describe("validateDiscountForm", () => {
         });
 
         it("should fail if value contains invalid characters", () => {
-            const item = createBaseAttr({ dataType: "VARCHAR", textValue: "invalid@char", documentGuid: "some-guid" });
+            const item = createBaseAttr({ dataType: "VARCHAR", textValue: "<invalid>", documentGuid: "some-guid" });
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(false);
             expect(result.errors[1]).toBe("Contains invalid characters.");
@@ -306,10 +310,17 @@ describe("validateDiscountForm", () => {
             expect(result.isValid).toBe(true);
         });
 
-        it("should pass if documentBindingId is present", () => {
-            const item = createBaseAttr({ documentBindingId: 123 });
+        it("should pass if documentBindingId and fileName are present", () => {
+            const item = createBaseAttr({ documentBindingId: 123, fileName: "document.pdf" });
             const result = validateDiscountForm({ 1: item }, tMock);
             expect(result.isValid).toBe(true);
+        });
+
+        it("should fail if documentBindingId is present without fileName or documentGuid", () => {
+            const item = createBaseAttr({ documentBindingId: 123, fileName: undefined, documentGuid: null });
+            const result = validateDiscountForm({ 1: item }, tMock);
+            expect(result.isValid).toBe(false);
+            expect(result.errors[1]).toBe("Document is required.");
         });
 
         it("should fail if neither documentGuid nor documentBindingId is present", () => {

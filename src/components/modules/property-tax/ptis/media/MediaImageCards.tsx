@@ -5,6 +5,7 @@ import { Download, Images } from 'lucide-react';
 import { Button, Badge } from '@/components/common';
 import { ImageWithFallback } from './ImageWithFallback';
 import { useTranslations } from 'next-intl';
+import { downloadDocumentClient } from '@/lib/utils/document-client-utils';
 
 export interface AdditionalImage {
   src: string;
@@ -24,6 +25,7 @@ export interface AdditionalImage {
   downloadUrl?: string;
   wingDetailId?: number;
   wingName?: string;
+  societyDetailId?: number;
 }
 
 interface MediaImageCardProps {
@@ -35,11 +37,12 @@ interface MediaImageCardProps {
   badgeText?: string;
   hoverBorderColor?: string;
   onClick?: () => void;
-  onMouseEnter?: () => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave?: () => void;
   children?: React.ReactNode;
   priority?: boolean;
   hasPhoto?: boolean;
+  emptyLabel?: string;
 }
 
 /**
@@ -59,6 +62,7 @@ export function MediaImageCard({
   children,
   priority,
   hasPhoto,
+  emptyLabel,
 }: MediaImageCardProps): React.ReactElement {
   return (
     <div
@@ -75,6 +79,8 @@ export function MediaImageCard({
         width={400}
         height={300}
         priority={priority}
+        hasPhoto={hasPhoto}
+        emptyLabel={emptyLabel}
       />
 
       {/* Action buttons (visible on hover) */}
@@ -88,6 +94,11 @@ export function MediaImageCard({
             aria-label="Download image"
             onClick={(e) => {
               e.stopPropagation();
+              const guid = documentGuid || (src || fullSrc || '').match(/\/documents\/([^/]+)/)?.[1];
+              if (guid) {
+                void downloadDocumentClient(decodeURIComponent(guid), `${label.replace(/\s+/g, '_')}.png`);
+                return;
+              }
               const link = document.createElement('a');
               link.href = fullSrc || src;
               link.download = `${label.replace(/\s+/g, '_')}.png`;
@@ -111,7 +122,7 @@ export function MediaImageCard({
         <Badge
           variant="default"
           size="sm"
-          className="absolute top-2 left-2 bg-blue-600 text-white font-semibold shadow-lg animate-pulse"
+          className="absolute top-2 left-2 bg-blue-600 text-white font-semibold shadow-lg animate-pulse pointer-events-none"
         >
           {badgeText}
         </Badge>
@@ -123,7 +134,24 @@ export function MediaImageCard({
 interface AdditionalImagesGridProps {
   images: AdditionalImage[];
   onImageClick?: (index: number) => void;
-  onImageHover?: (src: string, title: string) => void;
+  onImageHover?: (
+    src: string,
+    title: string,
+    src2?: string,
+    beforeLabel?: string,
+    afterLabel?: string,
+    fallbackSrc?: string,
+    fallbackSrc2?: string,
+    documentGuid?: string,
+    anchorRect?: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+      width: number;
+      height: number;
+    }
+  ) => void;
   onImageLeave?: () => void;
   onClose?: () => void;
 }
@@ -159,11 +187,32 @@ export function AdditionalImagesGrid({
             className="relative group bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 shadow-md hover:border-blue-400 transition-all cursor-pointer h-24 flex-shrink-0 animate-in fade-in slide-in-from-top-2 duration-300"
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => onImageClick?.(index)}
-            onMouseEnter={() => onImageHover?.(image.fullSrc || image.src, image.title)}
+            onMouseEnter={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              onImageHover?.(
+                image.fullSrc || image.src,
+                image.title,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                image.documentGuid,
+                {
+                  top: rect.top,
+                  bottom: rect.bottom,
+                  left: rect.left,
+                  right: rect.right,
+                  width: rect.width,
+                  height: rect.height,
+                }
+              );
+            }}
             onMouseLeave={onImageLeave}
           >
             <ImageWithFallback
               src={image.src}
+              documentGuid={image.documentGuid}
               alt={image.alt}
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
               width={200}

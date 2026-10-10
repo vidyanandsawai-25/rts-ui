@@ -11,6 +11,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryNameColumns } from "./InventoryNameColumns";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryNameAction } from "@/app/[locale]/assets/configuration/master-data/inventory-name/actions";
+import { mapInventoryNameApiError } from "@/hooks/asset-masters/inventory-name/validation";
 import type { InventoryNameProps, InventoryName } from "@/types/asset-masters/inventory-name.types";
 
 export function InventoryNameMaster({
@@ -87,7 +88,7 @@ export function InventoryNameMaster({
           const result = await deleteInventoryNameAction(String(row.id));
 
           if (!result.success) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryNameApiError(result, t, tCommon));
             return;
           }
 
@@ -98,11 +99,13 @@ export function InventoryNameMaster({
         }
       },
     });
-  }, [confirm, tCommon, router]);
+  }, [confirm, t, tCommon, router]);
 
   return (
     <div className="space-y-6">
       <MasterTable<InventoryName>
+        theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+        footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
         columns={columns as Column<InventoryName>[]}
         data={data as InventoryName[]}
         loading={isPending}

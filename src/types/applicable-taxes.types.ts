@@ -97,6 +97,22 @@ export interface TaxCalculationSummary {
   toilets: number;
 }
 
+export interface TypeOfUseTaxPercentage {
+  typeOfUseId: number;
+  description: string;
+  type: string;
+  taxPercentage: number;
+  baseType: string;
+}
+
+export interface SlabDetail {
+  minAmount: number;
+  maxAmount: number;
+  rate: number;
+  type: string;
+  baseType: string;
+}
+
 export type TaxCalculationItem = {
   taxId: number;
   taxName: string;
@@ -108,6 +124,8 @@ export type TaxCalculationItem = {
   types: string | null;
   baseTypes: string | null;
   averageTaxPercentage: number | null;
+  typeOfUseTaxPercentages?: TypeOfUseTaxPercentage[];
+  slabDetails?: SlabDetail[] | null;
   resultModes: string | null;
   resultBases: string | null;
   resultValues: string | null;
@@ -127,4 +145,3 @@ export interface TaxCalculationResponse {
   summary: TaxCalculationSummary;
   taxCalculations: TaxCalculationItem[];
 }
-

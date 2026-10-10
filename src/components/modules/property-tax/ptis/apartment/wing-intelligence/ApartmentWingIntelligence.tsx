@@ -25,15 +25,19 @@ export interface ApartmentWingIntelligenceProps {
   selectedFloor?: string | null;
   buildingPermissionData?: BuildingPermissionData | null;
   discountData?: DiscountData | null;
+  socialData?: DiscountData | null;
   taxMode?: PtisTaxMode;
   onTaxModeChange?: (mode: PtisTaxMode) => void;
   onWingSelect?: (wingMasterId: number | null, wingDetailId: number | null, societyId?: number | null, wingName?: string | null, wingNo?: string | null) => void;
   isLoading?: boolean;
+  rawGridData?: unknown;
+  masterTypes?: unknown[] | null;
 }
 
 export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps> = ({
   data, propertyId, selectedWingId, selectedWingDetailId, selectedSocietyDetailId, selectedWingName, selectedFloor,
-  buildingPermissionData, discountData, taxMode, onTaxModeChange, onWingSelect, isLoading = false,
+  buildingPermissionData, discountData, socialData, taxMode, onTaxModeChange, onWingSelect, isLoading = false,
+  rawGridData, masterTypes,
 }) => {
   const [activeSection, setActiveSection] = useState<WingIntelligenceTopNavSection | null>('wing');
   const [isExpanded, setIsExpanded] = useState(true);
@@ -43,13 +47,13 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
   const [editingWing, setEditingWing] = useState<WingData | null>(null);
   const { leftArrowRef, rightArrowRef, scrollNext, scrollPrev, checkScroll, initScrollRef } = useApartmentWingScrollControl();
   const { setWingParams } = useApartmentWingUrlParams();
-  
+
   const router = useRouter();
   const routeParams = useParams();
   const currentLocale = (routeParams?.locale as string) || defaultLocale;
-
+  
   const mappedWings: WingData[] = useMemo(() => {
-    return mapWingData(data, { wingLabel: 'Wing', blockLabel: 'Block' });
+    return mapWingData(data);
   }, [data]);
 
   const activeWing = useMemo(() => {
@@ -63,10 +67,10 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
     return null;
   }, [data, selectedWingDetailId, selectedWingId]);
 
-  const activeWingDetailId = selectedWingDetailId ?? activeWing?.wingDetailId ?? null;
-  const activeWingMasterId = selectedWingId ?? activeWing?.wingMasterId ?? null;
+  const activeWingDetailId = selectedWingDetailId !== undefined ? selectedWingDetailId : (activeWing?.wingDetailId ?? null);
+  const activeWingMasterId = selectedWingId !== undefined ? selectedWingId : (activeWing?.wingMasterId ?? null);
   const activeSocietyDetailId = selectedSocietyDetailId ?? activeWing?.societyId ?? data?.societyId ?? null;
-  const activeWingName = selectedWingName ?? activeWing?.wingName ?? activeWing?.wingNo ?? null;
+  const activeWingName = selectedWingName !== undefined ? selectedWingName : (activeWing?.wingName ?? activeWing?.wingNo ?? null);
 
   const handleCardSelect = (wing: WingData) => {
     const isCurrentlySelected = !!(
@@ -76,13 +80,13 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
 
     if (isCurrentlySelected) {
       // Toggle off: deselect the current wing
-      const socId = wing?.societyId ?? data?.societyId ?? selectedSocietyDetailId ?? null;
-      onWingSelect?.(null, null, socId, null, null);
+      onWingSelect?.(null, null, null, null, null);
       setWingParams({
         wardId: data?.wardId ? String(data.wardId) : null,
         wingId: null,
         wingDetailId: null,
-        societyId: socId ? String(socId) : null,
+        societyId: null,
+        societyDetailId: null,
         wingName: null,
       });
     } else {
@@ -97,6 +101,7 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
         wingId: wMasterId ? String(wMasterId) : null,
         wingDetailId: wDetailId ? String(wDetailId) : null,
         societyId: socId ? String(socId) : null,
+        societyDetailId: socId ? String(socId) : null,
         wingName: wName,
       });
     }
@@ -128,9 +133,10 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
   if (isLoading) {
     return <ApartmentWingSkeleton />;
   }
-
+  
+  
   return (
-    <div className="bg-white p-3 rounded-xl border border-zinc-200 shadow-xs overflow-hidden relative font-sans">
+    <div className="bg-white p-3 rounded-xl border border-zinc-200 shadow-xs relative font-sans">
       <ApartmentWingTopNav
         activeSection={activeSection}
         onToggleSection={(section) => {
@@ -184,11 +190,17 @@ export const ApartmentWingIntelligence: React.FC<ApartmentWingIntelligenceProps>
           onToggleExpand={() => setIsExpanded((prev) => !prev)}
           buildingPermissionData={buildingPermissionData}
           discountData={discountData}
+          socialData={socialData}
           propertyId={propertyId}
+          wardId={data?.wardId}
+          wardNo={data?.wardNo}
+          propertyNo={data?.propertyNo}
           wingDetailsId={activeWingDetailId}
           societyDetailId={activeSocietyDetailId}
           wingName={activeWingName}
           selectedFloor={selectedFloor}
+          rawGridData={rawGridData}
+          masterTypes={masterTypes}
         />
       )}
 

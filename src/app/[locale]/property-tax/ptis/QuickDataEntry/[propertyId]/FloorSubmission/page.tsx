@@ -5,7 +5,7 @@ import { FloorResponse, ConstructionTypeResponse, TypeOfUseApiItem, SubFloorResp
 import { FloorData, RoomTypeResponse } from '@/types/room-details.types';
 import { PropertyBasicDetailsApiItem } from '@/types/property-basic-details.types';
 import { normalizeObjectResponse, normalizeArrayResponse, normalizeWrappedResponse, } from '@/lib/utils/action-response-helpers';
-import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getOpenPlotCategoryDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, } from './actions';
+import { getFloorDataAction, getConstructionTypeDataAction, getTypeOfUseDataAction, getSubFloorDataAction, getSubTypeOfUseDataAction, getRoomTypeDataAction, getQuickDataEntryAction, getPropertyByDetailsAction, getFloorByIdAction, getFloorSubmissionsByOwnerAction, getPropertyBasicDetailsAction, } from './actions';
 import { getPropertyBasicDetails } from '@/lib/api/ptis/propertybasicdetails/property-basic-details.service';
 
 // Force dynamic rendering — this page relies on per-request search params.
@@ -78,27 +78,30 @@ export default async function FloorSubmissionPage({
     const hasPropertyKeys = !!(wardNo && propertyNo && partitionNo);
     const knownPropertyId = propertyId || propertyIdSp || undefined;
 
-    // ── Phase 1: Dynamic Data Fetching (On-Demand Pattern) ──────────────────
-    // ── Phase 1: Fetch Property Details & Basic Details to get propertyTypeId ─────
-    const [quickDataRaw, propertyRaw, propertyBasicDetailsRaw] = await Promise.all([
+    // ── Phase 1: Fetch Property Details & Basic Details to resolve propertyTypeId ─────
+    const [quickDataRaw, propertyBasicDetailsRaw] = await Promise.all([
         hasPropertyKeys ? getQuickDataEntryAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
-        hasPropertyKeys ? getPropertyByDetailsAction(wardNo, propertyNo, partitionNo) : Promise.resolve(null),
         knownPropertyId ? getPropertyBasicDetailsAction(knownPropertyId) : Promise.resolve(null),
     ]);
 
     const metadataErrors: string[] = [];
 
-    const quickData = normalizeObjectResponse(quickDataRaw, (m) => metadataErrors.push(m));
-    const propertyData = normalizeObjectResponse(propertyRaw, (m) => metadataErrors.push(m));
+    let quickData = normalizeObjectResponse(quickDataRaw, (m) => metadataErrors.push(m));
+    if (!quickData && hasPropertyKeys) {
+        try {
+            const propertyRaw = await getPropertyByDetailsAction(wardNo, propertyNo, partitionNo);
+            quickData = normalizeObjectResponse(propertyRaw, (m) => metadataErrors.push(m));
+        } catch (_e) {
+            // Ignore error to avoid blocking the page
+        }
+    }
     const propertyBasicDetails = propertyBasicDetailsRaw as PropertyBasicDetailsApiItem | null;
 
     const quickDataPropertyID = quickData ? extractPropertyId(quickData) : undefined;
-    const propertyDataPropertyID = propertyData ? extractPropertyId(propertyData) : undefined;
-
     const initialPropertyID: string | number | undefined =
-        quickDataPropertyID ?? propertyDataPropertyID ?? knownPropertyId;
+        quickDataPropertyID ?? knownPropertyId;
 
-    let initialPropertyData: Record<string, unknown> | null = quickData ?? propertyData;
+    let initialPropertyData: Record<string, unknown> | null = quickData;
 
     // If we only have propertyId and wardNo/propertyNo/partitionNo weren't provided,
     // we fetch the basic details by propertyId on-demand to resolve propertyTypeId
@@ -119,35 +122,30 @@ export default async function FloorSubmissionPage({
         propertyBasicDetails?.propertyTypeId
     ) as number | string | undefined;
 
-    // ── Phase 2: Fetch Dropdowns & Floor List on-demand ─────────────────────
+    // ── Phase 2: Fetch Dropdowns & Floor List in parallel ─────────────────────
     const shouldLoadAll = !!floorId;
     const shouldLoadSubType = shouldLoadAll || asString(sp.loadSubType) === 'true';
-    // const shouldLoadOpenPlotCategory = shouldLoadAll || asString(sp.loadOpenPlotCategory) === 'true';
     const effectiveUseIdForPrefetch = shouldLoadSubType ? typeOfUseId : undefined;
+    const targetOwnerId = initialPropertyID ?? knownPropertyId;
 
     const [
         floorDataResult,
         constructionTypeDataResult,
         useDataResult,
-        openPlotCategoryDataResult,
         subFloorDataResult,
         subTypeDataResult,
         roomTypeDataResult,
         floorDetailRaw,
         initialFloorsRaw,
-        _initialPlotAreaResult,
     ] = await Promise.all([
-        (shouldLoadAll || asString(sp.loadFloor) === 'true') ? getFloorDataAction() : Promise.resolve([]),
-        (shouldLoadAll || asString(sp.loadConstruction) === 'true') ? getConstructionTypeDataAction() : Promise.resolve([]),
+        getFloorDataAction(),
+        getConstructionTypeDataAction(),
         getTypeOfUseDataAction(resolvedPropertyTypeId),
-        // shouldLoadOpenPlotCategory ? getOpenPlotCategoryDataAction() : Promise.resolve([]),
-        getOpenPlotCategoryDataAction(),
-        (shouldLoadAll || asString(sp.loadSubFloor) === 'true') ? getSubFloorDataAction() : Promise.resolve([]),
+        getSubFloorDataAction(),
         shouldLoadSubType ? getSubTypeOfUseDataAction(effectiveUseIdForPrefetch) : Promise.resolve([]),
         getRoomTypeDataAction(),
         (floorId && floorId !== 'new') ? getFloorByIdAction(floorId) : Promise.resolve(null),
-        (knownPropertyId && !hasPropertyKeys) ? getFloorSubmissionsByOwnerAction(knownPropertyId) : Promise.resolve([]),
-        (initialPropertyID && initialPropertyID !== 'new') ? Promise.resolve(null) : Promise.resolve(null),
+        (targetOwnerId && targetOwnerId !== 'new') ? getFloorSubmissionsByOwnerAction(targetOwnerId) : Promise.resolve([]),
     ]);
 
     /** 
@@ -160,14 +158,11 @@ export default async function FloorSubmissionPage({
 
             // If error is a translation key, collect it
             if (errorKey) {
-                // Normalize key for use with client-side t() function
-                // FloorSubmission component uses t = useTranslations('quickDataEntry')
                 const normalizedKey = errorKey.startsWith('quickDataEntry.')
                     ? errorKey.replace('quickDataEntry.', '')
                     : errorKey;
                 metadataErrors.push(normalizedKey);
             } else {
-                // Use i18n key for fallback error
                 const fallbackErrorKey = 'quickDataEntry.floorSubmission.errors.fetchFailed';
                 const normalizedFallbackErrorKey = fallbackErrorKey.replace('quickDataEntry.', '');
                 metadataErrors.push(normalizedFallbackErrorKey);
@@ -179,11 +174,7 @@ export default async function FloorSubmissionPage({
 
     const floorData = checkResult<FloorResponse>(floorDataResult, 'Floor data');
     const constructionTypeData = checkResult<ConstructionTypeResponse>(constructionTypeDataResult, 'Construction types');
-    const rawUseData = checkResult<TypeOfUseApiItem>(useDataResult, 'Usage types');
-    const openPlotCategoryData = checkResult<TypeOfUseApiItem>(openPlotCategoryDataResult, 'Open Plot Categories');
-
-    // Combine standard usage types and dedicated Open Plot Categories (TypeOfUseCategoryId=3)
-    const useData = [...rawUseData, ...openPlotCategoryData];
+    const useData = checkResult<TypeOfUseApiItem>(useDataResult, 'Usage types');
     const subFloorData = checkResult<SubFloorResponse>(subFloorDataResult, 'Sub-floor data');
     let subTypeData = checkResult<SubTypeOfUseResponse>(subTypeDataResult, 'Sub-usage types');
     const roomTypeData = checkResult<RoomTypeResponse>(roomTypeDataResult, 'Room types');
@@ -298,6 +289,7 @@ export default async function FloorSubmissionPage({
                 initialFloors={initialFloors}
                 initialFloorDetails={initialFloorDetails}
                 initialPlotArea={initialPlotArea}
+                propertyTypeId={resolvedPropertyTypeId}
                 locale={locale}
                 apiErrors={metadataErrors}
             />

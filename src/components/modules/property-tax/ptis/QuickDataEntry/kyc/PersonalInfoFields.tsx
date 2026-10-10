@@ -93,10 +93,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         </Tooltip>
       </div>
 
-      {/* Property Holder Name Regional */}
+      {/* Owner Name Regional */}
       <div className="col-span-12 sm:col-span-6 md:col-span-4 space-y-1.5">
         <Label htmlFor="kyc-ownername" className="text-xs font-semibold text-gray-700">
-          {t('kyc.propertyHolderNameMarathi')}
+          {t('kyc.ownerNameRegional')}
           <span className="text-red-500 ml-0.5">*</span>
         </Label>
         <PTISTransliteratedInput
@@ -141,10 +141,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
         )}
       </div>
 
-      {/* Property Holder Name English */}
+      {/* Owner Name English */}
       <div className="col-span-12 sm:col-span-6 md:col-span-4 space-y-1.5">
         <Label htmlFor="kyc-ownername-english" className="text-xs font-semibold text-gray-700">
-          {t('kyc.propertyHolderNameEnglish')}
+          {t('kyc.ownerNameEnglish')}
           <span className="text-red-500 ml-0.5">*</span>
         </Label>
         <Input

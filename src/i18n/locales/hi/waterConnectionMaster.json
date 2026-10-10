@@ -17,7 +17,9 @@
       "tapStatus": "नल स्थिति",
       "tapType": "नल प्रकार",
       "tapSize": "नल आकार",
-      "waterRate": "जल दर"
+      "waterRate": "जल दर",
+      "connectionType": "कनेक्शन प्रकार",
+      "connectionCategory": "कनेक्शन श्रेणी"
     },
     "tapStatus": {
       "title": "नल स्थिति मास्टर",

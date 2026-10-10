@@ -46,7 +46,7 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
         if (typeof v === 'string') redirectParams.set(k, v);
       });
     }
-    redirect(`/${locale}/property-tax/ptis?${redirectParams.toString()}`);
+    redirect(`/${locale}/property-tax/ptis/individual?${redirectParams.toString()}`);
   }
 
   const { pageData, kycDetails, tabHeaderInfo } = {
@@ -66,6 +66,11 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
     )?.ownerName as string ||
     '';
 
+  const propertyDescription =
+    tabHeaderInfo?.description ||
+    ((pageData.propertyDetailsResult?.propertyDetails as unknown) as { propertyDescription?: string })?.propertyDescription ||
+    '';
+
   return (
     <PtisNavigationProvider properties={pageData.rawPropertyData}>
       <div className="flex flex-col gap-6 pb-24">
@@ -80,15 +85,20 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
           isMainProperty={data.isMainProp}
           categoryId={data.currentCategoryId}
           propertyTypeId={data.currentPropertyTypeId}
+          propertyDescription={propertyDescription}
           type={data.currentType}
           societyDetailId={data.currentSocietyDetailId}
           initialPhotoSlots={pageData.initialPhotoSlots}
           initialPhotos={pageData.initialPhotos}
           initialLatitude={pageData.latitude}
           initialLongitude={pageData.longitude}
+          societyLatitude={data.societyLatitude ?? (data.initialPropertyMasterData?.latitude ? Number(data.initialPropertyMasterData.latitude) : undefined)}
+          societyLongitude={data.societyLongitude ?? (data.initialPropertyMasterData?.longitude ? Number(data.initialPropertyMasterData.longitude) : undefined)}
           initialWaybackReleases={pageData.waybackReleases}
           initialVisible={isMediaPanelVisible}
           wings={data.rawData?.wings}
+          societyBuildingPhotoGuid={data.initialPropertyMasterData?.societyBuildingPhotoGuid}
+          societyPhotoUrl={data.initialPropertyMasterData?.imageUrl}
         >
           <ApartmentContainer
             copy={copy}
@@ -98,6 +108,8 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
             initialPropertyMasterData={data.initialPropertyMasterData}
             initialQcTopSectionBelowFlex={data.initialQcTopSectionBelowFlex}
             initialApartmentTaxDetails={data.initialApartmentTaxDetails}
+            initialCertificateGrid={data.initialCertificateGrid}
+            initialMasterTypes={data.initialMasterTypes}
           />
         </PtisLayoutWrapper>
 
@@ -118,6 +130,8 @@ export default async function ApartmentPage({ params, searchParams }: PageProps)
             />
           }
           categoryId={pageData.propertyDetailsResult?.propertyDetails?.categoryId}
+          categoryName={tabHeaderInfo?.category || 'Apartment'}
+          partitionNo={data.partitionNo}
           societyDetailId={pageData.societyDetails?.societyDetailId}
           isCombined={!!tabHeaderInfo?.isCombined}
         />

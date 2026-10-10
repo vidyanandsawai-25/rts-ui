@@ -36,8 +36,13 @@ export function FormFieldsSection({
         value={formData.description}
         onChange={onChange}
         onBlur={onBlur}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
         placeholder={t("configuration.masterData.form.placeholders.description")}
-        maxLength={500}
+        maxLength={100}
         error={showError("description") ? true : false}
         errorMessage={showError("description") ? errors.description : undefined}
         className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"

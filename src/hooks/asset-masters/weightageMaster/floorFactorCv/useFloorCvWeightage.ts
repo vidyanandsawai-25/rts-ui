@@ -33,8 +33,8 @@ export function useFloorCvWeightage({
     const searchParams = useSearchParams();
     const locale = useLocale();
     const tCommon = useTranslations("common");
-    const t = useTranslations("floorFactorMaster");
-    const tW = useTranslations("weightageMaster");
+    const t = useTranslations("assetWeightageMaster.floor");
+    const tW = useTranslations("assetWeightageMaster");
 
     const currentSelectedYear = searchParams.get("selectedYearRange") || "";
     const [selectedYear, setSelectedYear] = useState<string>(currentSelectedYear);

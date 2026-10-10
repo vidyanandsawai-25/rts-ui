@@ -143,11 +143,7 @@ export const PTISTransliteratedInput = React.forwardRef<
         }
 
         setSuggestions(results);
-        if (results.length > 0) {
-          setHighlightedIndex(0);
-        } else {
-          setHighlightedIndex(-1);
-        }
+        setHighlightedIndex(-1);
       } catch (err) {
         console.error('[Transliteration] Fetch suggestions error:', err);
       }
@@ -193,14 +189,16 @@ export const PTISTransliteratedInput = React.forwardRef<
           e.preventDefault();
           setHighlightedIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
         } else if (e.key === 'Enter') {
-          e.preventDefault();
-          const index = highlightedIndex >= 0 ? highlightedIndex : 0;
-          selectSuggestion(suggestions[index]);
+          if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+            e.preventDefault();
+            selectSuggestion(suggestions[highlightedIndex]);
+          }
         } else if (e.key === ' ') {
-          // Commit suggestions on Space bar keydown
-          e.preventDefault();
-          const index = highlightedIndex >= 0 ? highlightedIndex : 0;
-          selectSuggestion(suggestions[index]);
+          // Only commit suggestions on Space bar if user actively highlighted an item with arrow keys
+          if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+            e.preventDefault();
+            selectSuggestion(suggestions[highlightedIndex]);
+          }
         } else if (e.key === 'Escape') {
           setSuggestions([]);
           setHighlightedIndex(-1);

@@ -67,7 +67,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
 
     const pageNumber = parseInt(searchParams.get('pageNumber') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
-    
+
     const initialSearch = searchParams.get('Search') || searchParams.get('PropertyNo') || '';
     const [searchTerm, setSearchTerm] = useState(initialSearch);
 
@@ -75,7 +75,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
         setSearchTerm(val);
         const params = new URLSearchParams(searchParams.toString());
         if (val.trim()) {
-            params.set('Search', val.trim());           
+            params.set('Search', val.trim());
         } else {
             params.delete('Search');
         }
@@ -128,7 +128,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
         const params = new URLSearchParams(searchParams.toString());
         if (val && val !== 'All') params.set('propertyTypeCategoryId', val);
         else params.delete('propertyTypeCategoryId');
-        
+
         params.set('pageNumber', '1');
         router.push(`?${params.toString()}`);
     };
@@ -242,7 +242,7 @@ const PropertyMainDashboardClient = ({ serverData, wardsData, propertyType, asse
         if (stage) currentParams.set('stage', stage);
         if (source) currentParams.set('source', source);
         if (workflowStageId) currentParams.set('workflowStageId', workflowStageId.toString());
-        
+
         return (
             <div className="flex flex-col items-center justify-center gap-1.5 py-1">
                 <button

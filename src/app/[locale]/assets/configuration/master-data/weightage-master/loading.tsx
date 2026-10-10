@@ -1,5 +1,5 @@
 import { LoadingPage } from "@/components/common";
 
 export default function Loading() {
-  return <LoadingPage translationNamespace="weightageMaster.loading" />;
+  return <LoadingPage translationNamespace="assetWeightageMaster.loading" />;
 }

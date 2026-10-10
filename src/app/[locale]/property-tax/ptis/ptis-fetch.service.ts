@@ -12,8 +12,13 @@ import { getCleanErrorMessage } from '@/lib/utils/backend-error-detection';
 import { fetchPropertyDetailsConcurrently } from './ptis-fetch-concurrent';
 import { mapPtisFetchResults } from './ptis-mapping.helper';
 import { defaultPropertyDetails } from '@/lib/constants/ptis.constants';
+import { getWingWiseDetails } from '@/lib/api/ptis/apartment/apartment-wing.service';
+import { extractCoordinates } from '@/lib/utils/coordinate-utils';
+import { ptisService } from '@/lib/api/ptis/tab/ptis.service';
+import { ptisSearchService } from '@/lib/api/ptis/tab/ptis-search';
 import type { ActionResult } from '@/types/common.types';
 import type { PropertyListItem } from '@/types/ptis.types';
+import type { WingWiseWingDetails } from '@/types/property-tax/apartment';
 
 export async function fetchPtisPageData(
   searchParams: Record<string, string | string[] | undefined>,
@@ -68,6 +73,8 @@ export async function fetchPtisPageData(
   };
   let propertyListResult: ActionResult<PropertyListItem[]> | null = null;
   let detailResults: unknown[] = [];
+  let fetchedWings: WingWiseWingDetails[] = [];
+  let resolvedMainSocietyPropId: number | undefined = undefined;
 
   try {
     if (propertyIdParam && resolvedWardId) {
@@ -79,17 +86,34 @@ export async function fetchPtisPageData(
         showDetailsParam, activeTab
       );
 
-      const [propDetailsRes, propListRes, detailsRes] = await Promise.all([
+      const finalPropNo = propertyNo || searchParams?.propertyNo?.toString() || '';
+      const wingWisePromise = resolvedWardId && finalPropNo
+        ? getWingWiseDetails(resolvedWardId, finalPropNo).catch(() => null)
+        : Promise.resolve(null);
+
+      const [propDetailsRes, propListRes, detailsRes, wingWiseRes] = await Promise.all([
         getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam),
         resolvedWardId
           ? getPropertyListByWardAction(resolvedWardId, 50)
           : Promise.resolve({ success: true, data: [] }),
-        detailsPromise
+        detailsPromise,
+        wingWisePromise,
       ]);
 
       propertyDetailsResult = propDetailsRes;
       propertyListResult = propListRes;
       detailResults = detailsRes;
+      fetchedWings = wingWiseRes?.wings || [];
+      if (wingWiseRes?.propertyId) {
+        resolvedMainSocietyPropId = wingWiseRes.propertyId;
+      }
+
+      if (fetchedWings.length === 0 && resolvedWardId && propDetailsRes.propertyDetails?.propertyNo) {
+        const fallbackWingsRes = await getWingWiseDetails(resolvedWardId, propDetailsRes.propertyDetails.propertyNo).catch(() => null);
+        if (fallbackWingsRes?.wings) {
+          fetchedWings = fallbackWingsRes.wings;
+        }
+      }
     } else {
       // SCENARIO 2: One or both are missing. Resolve sequentially.
       const propDetailsRes = await getInitialData(wardNo, propertyNo, partitionNo, resolvedWardId, propertyIdParam);
@@ -100,6 +124,7 @@ export async function fetchPtisPageData(
       }
 
       resolvedPropertyId = propertyIdParam ?? propertyDetailsResult.propertyId;
+      const finalPropNo = propertyNo || propertyDetailsResult.propertyDetails?.propertyNo || searchParams?.propertyNo?.toString() || '';
 
       const propListPromise = resolvedWardId
         ? getPropertyListByWardAction(resolvedWardId, 50)
@@ -114,16 +139,87 @@ export async function fetchPtisPageData(
           )
         : Promise.resolve(null);
 
-      const [propListRes, detailsRes] = await Promise.all([
+      const wingWisePromise = resolvedWardId && finalPropNo
+        ? getWingWiseDetails(resolvedWardId, finalPropNo).catch(() => null)
+        : Promise.resolve(null);
+
+      const [propListRes, detailsRes, wingWiseRes] = await Promise.all([
         propListPromise,
-        detailsPromise
+        detailsPromise,
+        wingWisePromise,
       ]);
 
       propertyListResult = propListRes;
       detailResults = detailsRes ? detailsRes : [];
+      fetchedWings = wingWiseRes?.wings || [];
+      if (wingWiseRes?.propertyId) {
+        resolvedMainSocietyPropId = wingWiseRes.propertyId;
+      }
     }
   } catch (err) {
     criticalError = getCleanErrorMessage(err, 'Failed to fetch property details.');
+  }
+
+  // Resolve main society coordinates fallback if unit property does not have coordinates
+  let societyLatitude: number | undefined = undefined;
+  let societyLongitude: number | undefined = undefined;
+
+  const unitCoords = extractCoordinates([
+    propertyDetailsResult.propertyDetails as unknown as Record<string, unknown>,
+  ]);
+
+  const targetPropNo = propertyNo || propertyDetailsResult.propertyDetails?.propertyNo || searchParams?.propertyNo?.toString() || '';
+
+  if (!unitCoords.hasCoords && targetPropNo) {
+    let mainSocietyPropertyId = resolvedMainSocietyPropId && resolvedMainSocietyPropId !== propertyDetailsResult.propertyId
+      ? resolvedMainSocietyPropId
+      : undefined;
+
+    if (!mainSocietyPropertyId && propertyListResult?.data) {
+      const mainPropInList = propertyListResult.data.find(
+        (p) =>
+          p.propertyNo === targetPropNo &&
+          (!p.partitionNo || p.partitionNo === '0' || p.partitionNo.trim() === '' || p.partitionNo.trim() === '-')
+      );
+      if (mainPropInList?.propertyId && mainPropInList.propertyId !== propertyDetailsResult.propertyId) {
+        mainSocietyPropertyId = mainPropInList.propertyId;
+      }
+    }
+
+    if (!mainSocietyPropertyId && (resolvedWardId || wardNo)) {
+      try {
+        const searchRes = await ptisSearchService.searchProperties({
+          wardId: resolvedWardId,
+          wardNo: !resolvedWardId ? wardNo : undefined,
+          propertyNo: targetPropNo,
+          partitionNo: '0',
+        });
+        if (searchRes.success && searchRes.data && searchRes.data.length > 0) {
+          const match = searchRes.data.find((p) => p.propertyNo === targetPropNo) || searchRes.data[0];
+          const pid = Number(match.id || match.propertyId);
+          if (pid && pid > 0 && pid !== propertyDetailsResult.propertyId) {
+            mainSocietyPropertyId = pid;
+          }
+        }
+      } catch {
+        // Non-blocking search fallback
+      }
+    }
+
+    if (mainSocietyPropertyId && mainSocietyPropertyId > 0) {
+      try {
+        const mainBasicRes = await ptisService.getPropertyBasicDetails(mainSocietyPropertyId);
+        if (mainBasicRes.success && mainBasicRes.data) {
+          const mainCoords = extractCoordinates([mainBasicRes.data as unknown as Record<string, unknown>]);
+          if (mainCoords.hasCoords) {
+            societyLatitude = mainCoords.latitude;
+            societyLongitude = mainCoords.longitude;
+          }
+        }
+      } catch {
+        // Non-blocking basic details fetch fallback
+      }
+    }
   }
 
   // 2. Delegate mapping and redirect checks to the mapping helper
@@ -144,5 +240,8 @@ export async function fetchPtisPageData(
     locale,
     propertyIdParam,
     wardOptions,
+    wings: fetchedWings,
+    societyLatitude,
+    societyLongitude,
   });
 }

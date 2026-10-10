@@ -14,7 +14,7 @@ interface AddWingFormProps {
   errors: PartitionFormErrors;
   setErrors: React.Dispatch<React.SetStateAction<PartitionFormErrors>>;
   addingWing: boolean;
-  editingSocietyDetailId: number | null;
+  editingWingDetailId: number | null;
   onCancel: () => void;
   t: (key: string, values?: Record<string, string | number | Date>) => string;
   tCommon: (key: string) => string;
@@ -27,7 +27,7 @@ export function AddWingForm({
   errors,
   setErrors,
   addingWing,
-  editingSocietyDetailId,
+  editingWingDetailId,
   onCancel,
   t,
   tCommon,
@@ -38,7 +38,7 @@ export function AddWingForm({
     <div className="p-3 border border-green-200 rounded-lg bg-green-50/50 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
       <div className="flex items-center justify-between mb-1">
         <h4 className="text-[10px] font-bold text-green-700 uppercase tracking-wider">
-          {editingSocietyDetailId ? t("partitionForm.wing.editWing", { wing: wingAlias }) : t("partitionForm.wing.addWing", { wing: wingAlias })}
+          {editingWingDetailId ? t("partitionForm.wing.editWing", { wing: wingAlias }) : t("partitionForm.wing.addWing", { wing: wingAlias })}
         </h4>
         <CancelButton
           size="xs"

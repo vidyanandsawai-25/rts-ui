@@ -46,7 +46,8 @@
       "descriptionMaxLength": "विवरण {count} वर्णों से अधिक नहीं हो सकता",
       "mandatoryNotice": "<b>*</b> चिन्हित क्षेत्र अनिवार्य हैं",
       "fixErrors": "कृपया फॉर्म में त्रुटियों को सुधारें",
-      "invalidFormat": "अमान्य प्रारूप"
+      "invalidFormat": "अमान्य प्रारूप",
+      "departmentNameDuplicate": "स्वामित्व विभाग का नाम पहले से मौजूद है"
     },
     "messages": {
       "createSuccess": "स्वामित्व विभाग सफलतापूर्वक बनाया गया",
@@ -55,6 +56,22 @@
       "error": "स्वामित्व विभाग को सहेजने में विफल",
       "deleteConfirm": "क्या आप वाकई इस स्वामित्व विभाग को हटाना चाहते हैं?",
       "duplicate": "यह रिकॉर्ड पहले से मौजूद है"
+    }
+  },
+  "apiErrors": {
+    "OwningDepartment_Duplicate": "स्वामित्व विभाग का नाम पहले से मौजूद है",
+    "duplicateRecord": "यह रिकॉर्ड पहले से मौजूद है",
+    "referenceBlocked": {
+      "owningDepartment": {
+        "deleteInUse": "यह स्वामित्व विभाग उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह स्वामित्व विभाग उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।",
+        "deleteHasMasters": "इस स्वामित्व विभाग में {masters} हैं, इसलिए इसे हटाया नहीं जा सकता। कृपया पहले इस स्वामित्व विभाग के सभी {masters} हटाएं।",
+        "deactivateHasMasters": "इस स्वामित्व विभाग में {masters} हैं, इसलिए इसे निष्क्रिय नहीं किया जा सकता। कृपया पहले इस स्वामित्व विभाग के सभी {masters} हटाएं।"
+      }
+    },
+    "referenceMasters": {
+      "designations": "पदनाम",
+      "and": "और"
     }
   },
   "error": {

@@ -3,13 +3,7 @@
 import React from 'react';
 import { Building, Building2, School, Hospital, Briefcase, Trees, Trophy, Droplets, Route, Landmark, Map, BookOpen, Truck, Construction } from 'lucide-react';
 import { MultiSelectWithIcons, IconOption } from '@/components/common';
-
-interface AssetTypeFilterProps {
-  assetTypeId: string;
-  assetTypeOptions: Array<{ label: string, value: string }>;
-  handleAssetTypeChange: (selected: string[]) => void;
-  placeholder?: string;
-}
+import type { AssetTypeFilterProps } from '@/types/asset/asset-register/municipal-asset-register.types';
 
 function getAssetTypeIcon(label: string) {
   const lower = label.toLowerCase();
@@ -77,7 +71,7 @@ export function AssetTypeFilter({
   }, [assetTypeOptions]);
 
   return (
-    <div className="w-full sm:w-[190px] relative asset-type-filter-wrapper">
+    <div className="relative w-full asset-type-filter-wrapper">
       {/* Scoped style: hides icon badge inside the button trigger only (not in dropdown list) */}
       <style>{`
         .asset-type-filter-wrapper button .asset-type-option-icon {
@@ -108,7 +102,7 @@ export function AssetTypeFilter({
         value={assetTypeId === 'all' || !assetTypeId ? [] : assetTypeId.split(',')}
         onChange={handleAssetTypeChange}
         placeholder={placeholder || 'All Asset Types'}
-        className="w-full [&>div]:!rounded-xl [&>div]:!border-slate-200 [&>div]:!min-w-[275px] [&_button]:!pl-9 [&_[role=option]>span:last-child]:flex-1"
+        className="w-full [&>div]:!min-w-0 [&>div]:!rounded-xl [&>div]:!border-slate-200 [&_button]:!pl-9 [&_[role=option]>span:last-child]:flex-1"
       />
     </div>
   );

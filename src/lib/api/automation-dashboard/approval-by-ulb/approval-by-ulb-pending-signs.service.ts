@@ -22,7 +22,7 @@ export async function getPendingSigns(
     if (filterLogic !== undefined) params.append("FilterLogic", filterLogic.toString());
 
     const response = await apiClient.get<PendingSignResponse>(
-        `/PropertySignature/GetPendingSigns?${params.toString()}`,
+        `/AutomationDashboard/PropertySignature/get-pending-signs?${params.toString()}`,
         { cache: "no-store" }
     );
     const t = await getTranslations("automationDashboard");
@@ -33,7 +33,7 @@ export async function getPendingSigns(
 
 export async function updatePropertySign(payload: UpdatePropertySignPayload): Promise<boolean> {
     const response = await apiClient.put<PendingSignResponse>(
-        `/PropertySignature/UpdatePropertySign`,
+        `/AutomationDashboard/PropertySignature/update-property-sign`,
         payload
     );
     const t = await getTranslations("automationDashboard");

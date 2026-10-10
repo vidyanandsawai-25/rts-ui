@@ -127,8 +127,8 @@ export function PhotoPlanDrawerBody({
   }, []);
 
   return (
-    <div className="relative flex flex-col xl:flex-row h-[calc(100vh-56px)] bg-slate-50 overflow-hidden photo-plan-drawer-content w-full">
-      {isUploading && (
+    <div className="relative flex flex-col xl:flex-row h-full max-h-full flex-1 min-h-0 bg-slate-50 overflow-hidden photo-plan-drawer-content w-full">
+      {isUploading && viewMode !== 'viewer' && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-50 flex items-center justify-center animate-in fade-in duration-200">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
         </div>
@@ -141,7 +141,7 @@ export function PhotoPlanDrawerBody({
         title={t('media.additionalImages') || 'Categories'}
       />
 
-      <div className="flex-1 flex flex-col bg-slate-50 relative group/viewer overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col bg-slate-50 relative group/viewer overflow-hidden">
         {activeCategory?.photoTypeCode === 'CHANGE_DETECTION' && viewMode === 'compare' ? (
           <ChangeDetectionCompare
             activeCategory={activeCategory}
@@ -161,8 +161,8 @@ export function PhotoPlanDrawerBody({
             partitionNo={partitionNo}
           />
         ) : isSplit ? (
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
-            <div className="h-[85%] border-b border-slate-200 flex flex-col bg-slate-50 relative group/viewer overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col bg-slate-50 relative group/viewer overflow-hidden">
               <PhotoPlanViewer
                 categoryName={activeCategory?.photoTypeName || ''}
                 images={activeCategory?.images || []}
@@ -177,7 +177,7 @@ export function PhotoPlanDrawerBody({
                 onDrawPlan={onDrawPlan} isPhotoPlanCategory={isPhotoPlanCategory}
               />
             </div>
-            <div className="h-[15%] flex flex-col overflow-hidden bg-slate-50">
+            <div className="h-22 sm:h-24 shrink-0 flex flex-col overflow-hidden bg-slate-50">
               <PhotoPlanGrid
                 key={activeCategory?.photoTypeCode || activeCategory?.photoTypeName || 'carousel'}
                 categoryName={activeCategory?.photoTypeName || ''}

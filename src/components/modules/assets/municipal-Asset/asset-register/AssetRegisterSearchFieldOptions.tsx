@@ -9,7 +9,7 @@ export function getSearchFieldOptions(t: Translator) {
       label: (
         <span className="flex items-center gap-1.5 font-medium">
           <Filter className="w-3.5 h-3.5 text-slate-500" />
-          <span>{t('AllFields') || 'All Fields'}</span>
+          <span>{t('AllFields')}</span>
         </span>
       ) as unknown as string,
     },
@@ -18,7 +18,7 @@ export function getSearchFieldOptions(t: Translator) {
       label: (
         <span className="flex items-center gap-1.5 font-medium">
           <Building2 className="w-3.5 h-3.5 text-slate-500" />
-          <span>{t('AssetId') || 'Asset ID'}</span>
+          <span>{t('AssetId')}</span>
         </span>
       ) as unknown as string,
     },
@@ -27,7 +27,7 @@ export function getSearchFieldOptions(t: Translator) {
       label: (
         <span className="flex items-center gap-1.5 font-medium">
           <Building className="w-3.5 h-3.5 text-slate-500" />
-          <span>{t('AssetName') || 'Asset Name'}</span>
+          <span>{t('AssetName')}</span>
         </span>
       ) as unknown as string,
     },
@@ -36,7 +36,7 @@ export function getSearchFieldOptions(t: Translator) {
       label: (
         <span className="flex items-center gap-1.5 font-medium">
           <MapPin className="w-3.5 h-3.5 text-slate-500" />
-          <span>{t('Address') || 'Address'}</span>
+          <span>{t('Address')}</span>
         </span>
       ) as unknown as string,
     },

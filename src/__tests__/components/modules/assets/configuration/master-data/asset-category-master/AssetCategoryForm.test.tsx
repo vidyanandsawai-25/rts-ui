@@ -55,6 +55,12 @@ vi.mock("@/components/modules/assets/configuration/master-data/asset-category-ma
         value={formData.name}
         onChange={onChange}
       />
+      <input
+        data-testid="valuationType-input"
+        name="valuationType"
+        value={formData.valuationType}
+        onChange={onChange}
+      />
     </div>
   ),
 }));
@@ -143,6 +149,7 @@ describe("AssetCategoryForm", () => {
       // Fill required fields
       fireEvent.change(screen.getByTestId("code-input"), { target: { name: "code", value: "VALIDCODE" } });
       fireEvent.change(screen.getByTestId("name-input"), { target: { name: "name", value: "Valid Name" } });
+      fireEvent.change(screen.getByTestId("valuationType-input"), { target: { name: "valuationType", value: "FIXED_ASSET" } });
 
       const form = screen.getByTestId("drawer-content").querySelector("form");
       fireEvent.submit(form!);

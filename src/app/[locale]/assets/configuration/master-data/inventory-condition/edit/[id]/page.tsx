@@ -1,7 +1,11 @@
 import React from "react";
-import { InventoryConditionForm } from "@/components/modules/assets/configuration/master-data/inventory-condition-master";
-import { getInventoryConditionCategoriesAction, getInventoryConditionByIdAction, getAssetCategoriesForConditionAction } from "../../actions";
 import { notFound } from "next/navigation";
+import { InventoryConditionForm } from "@/components/modules/assets/configuration/master-data/inventory-condition-master";
+import {
+  getInventoryConditionCategoriesAction,
+  getInventoryConditionByIdAction,
+  getAssetCategoriesForConditionAction,
+} from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,5 +26,12 @@ export default async function EditPage({ params }: EditPageProps): Promise<React
     notFound();
   }
 
-  return <InventoryConditionForm id={Number(id)} initialData={conditionData as unknown as import("@/types/asset-masters/inventory-condition.types").InventoryConditionFormModel} inventoryCategories={inventoryCategories} assetCategories={assetCategories} />;
+  return (
+    <InventoryConditionForm
+      id={Number(id)}
+      initialData={conditionData}
+      inventoryCategories={inventoryCategories}
+      assetCategories={assetCategories}
+    />
+  );
 }

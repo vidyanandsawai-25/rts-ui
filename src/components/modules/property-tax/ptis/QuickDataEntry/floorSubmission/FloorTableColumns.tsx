@@ -84,11 +84,11 @@ export const useFloorTableColumns = ({
         render: (value: unknown) => {
           const isYes = value === 'Yes' || value === true || value === 'true';
           const isNo = value === 'No' || value === false || value === 'false';
-          const titleText = isYes ? t('floor.yes') : isNo ? t('floor.no') : String(value ?? '-');
+          const titleText = isYes ? (t('floor.yes') || 'Yes') : isNo ? (t('floor.no') || 'No') : String(value ?? '-');
           return (
-            <div className="flex items-center justify-center" title={titleText}>
-              {isYes && <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shrink-0 inline-block shadow-sm" />}
-              {isNo && <span className="h-3.5 w-3.5 rounded-full bg-rose-500 shrink-0 inline-block shadow-sm" />}
+            <div className="flex items-center justify-center font-bold text-[11px]" title={titleText}>
+              {isYes && <span className="text-emerald-600 font-bold">{t('floor.yes') || 'Yes'}</span>}
+              {isNo && <span className="text-rose-600 font-bold">{t('floor.no') || 'No'}</span>}
               {!isYes && !isNo && <span className="text-slate-400 font-bold">-</span>}
             </div>
           );

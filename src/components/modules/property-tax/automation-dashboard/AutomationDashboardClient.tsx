@@ -33,6 +33,7 @@ const getStageConfig = (stageName: string) => {
         case 'HearingAndAppeal': return { icon: Scale, value: 'hearing-appeals' };
         case 'BillDistribution': return { icon: FileText, value: 'bills-distribution' };
         case 'BillGeneration': return { icon: FileText, value: 'bill-generation' };
+        case 'MissingDataAnalysis': return { icon: FileSearch, value: 'missing-data-analysis' };
         default: return {
             icon: LayoutIcon,
             value: stageName.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
@@ -55,7 +56,8 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
         pathname.includes('/send-to-approve') ||
         pathname.includes('/pending-structures-ward-wise') ||
         pathname.includes('/building-wise-property') ||
-        pathname.includes('/approval-by-ulb/ulb-pending-signs');
+        pathname.includes('/approval-by-ulb/ulb-pending-signs') ||
+        pathname.includes('/missing-data-analysis');
 
     const rawTabs = useMemo(() => {
         return (workflowCardsData || []).map(card => {
@@ -99,7 +101,7 @@ export function ClientWrapper({ children, workflowCardsData, serverData }: Props
                             const isActive = activeTab === tab.value;
                             const Icon = tab.icon;
                             const colors = getTabColors(tab.value);
-                            const isClickable = index < 5;
+                            const isClickable = index < 5 || tab.value === 'missing-data-analysis';
 
                             const innerContent = (
                                 <div

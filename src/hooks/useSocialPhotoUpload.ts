@@ -25,12 +25,40 @@ export const useSocialPhotoUpload = (
         setFormState(prev => {
             const nextData = { ...prev.data };
             if (nextData[socialAttributeId]) {
+                const currentItem = nextData[socialAttributeId];
+                const isOverridden = currentItem.isInherited ? true : currentItem.isOverridden;
                 nextData[socialAttributeId] = {
-                    ...nextData[socialAttributeId],
+                    ...currentItem,
                     pendingFile: file,
+                    fileName: file.name,
                     documentGuid: "pending",
+                    photoGuid: "pending",
                     documentUrl: undefined,
+                    isOverridden,
                 };
+
+                const findAndEnableRoot = (item: FlatSocialAttributeState) => {
+                    if (item.parentAttributeId && nextData[item.parentAttributeId]) {
+                        const parent = nextData[item.parentAttributeId]!;
+                        if (parent.bitValue !== true) {
+                            nextData[parent.socialAttributeId] = {
+                                ...parent,
+                                bitValue: true,
+                                isOverridden: parent.isInherited ? true : parent.isOverridden
+                            };
+                        }
+                        findAndEnableRoot(parent);
+                    } else if (!item.parentAttributeId && (item.dataType || '').toUpperCase() === 'BIT') {
+                        if (item.bitValue !== true) {
+                            nextData[item.socialAttributeId] = {
+                                ...item,
+                                bitValue: true,
+                                isOverridden: item.isInherited ? true : item.isOverridden
+                            };
+                        }
+                    }
+                };
+                findAndEnableRoot(nextData[socialAttributeId]);
             }
             const nextErrors = { ...prev.errors };
             delete nextErrors[socialAttributeId];
@@ -41,6 +69,7 @@ export const useSocialPhotoUpload = (
     const handlePhotoDelete = useCallback((socialAttributeId: number) => {
         const item = socialData[socialAttributeId];
         if (!item) return;
+        if (item.isInherited && !item.isOverridden) return;
 
         setFormState(prev => {
             const nextData = { ...prev.data };

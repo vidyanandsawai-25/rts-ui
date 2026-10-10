@@ -27,7 +27,14 @@
     "fetchPropertyAssessmentStatus": "संपत्ति मूल्यांकन स्थिति विवरण प्राप्त करने में विफल।",
     "fetchZones": "जोन डेटा प्राप्त करने में विफल।",
     "fetchPropertyTrackingStatus": "प्रॉपर्टी ट्रैकिंग स्टेटस प्राप्त करने में विफल।",
-    "sendToApprove": "स्वीकृति के लिए भेजने में विफल।"
+    "sendToApprove": "स्वीकृति के लिए भेजने में विफल।",
+    "fetchMissingMobileNo": "अनुपलब्ध मोबाइल नंबर डेटा लाने में विफल।",
+    "fetchMissingPhotoPlan": "अनुपलब्ध फोटो प्लान डेटा लाने में विफल।",
+    "fetchMissingOwnerName": "अनुपलब्ध मालिक का नाम डेटा लाने में विफल।",
+    "fetchMissingAddress": "अनुपलब्ध पता डेटा लाने में विफल।",
+    "fetchMissingOccupierName": "अनुपलब्ध कब्जाभोगी का नाम डेटा लाने में विफल।",
+    "fetchMissingShopName": "अनुपलब्ध दुकान का नाम डेटा लाने में विफल।",
+    "fetchMissingRegisteredProperty": "अनुपलब्ध पंजीकृत संपत्ति डेटा लाने में विफल।"
   },
   "summaryCards": {
     "metrics": {
@@ -46,7 +53,7 @@
     "noData": "कोई डेटा नहीं"
   },
   "geoSequencing": {
-    "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "total": "कुल",
     "wardWiseSummary": "वार्ड-वार सारांश",
     "wardWiseTable": "वार्ड-वार तालिका",
@@ -210,7 +217,7 @@
   },
   "internalSurvey": {
     "total": "कुल",
-    "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "emptyMessage": "कोई आंतरिक सर्वेक्षण डेटा उपलब्ध नहीं है",
     "buttons": {
       "search": "खोजें",
@@ -257,7 +264,7 @@
     }
   },
   "dataEntryQualityCheck": {
-    "searchPlaceholder": "संपत्ति संख्या, नोटिस संख्या, स्वामी का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "total": "कुल",
     "wardWiseSummary": "वार्ड-वार सारांश",
     "stage": "चरण:",
@@ -375,7 +382,7 @@
     "submittedBy": "द्वारा प्रस्तुत:"
   },
   "assessment": {
-    "searchPlaceholder": "प्रॉपर्टी नंबर, नोटिस नंबर, मालिक का नाम खोजें",
+    "searchPlaceholder": "वार्ड सं., संपत्ति संख्या, स्वामी का नाम खोजें",
     "summary": "सारांश",
     "sendToApprove": "मंजूरी के लिए भेजें",
     "tabs": {
@@ -496,6 +503,139 @@
     "confirmApproveMessage": "क्या आप निश्चित रूप से इस संपत्ति को स्वीकृत करना चाहते हैं?",
     "actions": {
       "approve": "अनुमोदित करें"
+    }
+  },
+  "missingPhotoPlan": {
+    "totalGapFields": "कुल गैप फ़ील्ड्स",
+    "photoMissing": "फोटो अनुपलब्ध",
+    "planMissing": "प्लान अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "photoMissing": "फोटो अनुपलब्ध",
+      "planMissing": "प्लान अनुपलब्ध",
+      "totalMissing": "कुल अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingMobileNo": {
+    "mobileNoMissing": "मोबाइल नंबर अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "mobileNoMissing": "मोबाइल नंबर अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingOwnerName": {
+    "ownerNameMissing": "मालिक का नाम अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "ownerNameMissing": "मालिक का नाम अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingAddress": {
+    "addressMissing": "पता अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "addressMissing": "पता अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingOccupierName": {
+    "occupierNameMissing": "कब्जेदार का नाम अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "occupierNameMissing": "कब्जेदार का नाम अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingShopName": {
+    "shopNameMissing": "दुकान का नाम अनुपलब्ध",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "shopNameMissing": "दुकान का नाम अनुपलब्ध",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "registeredProperty": {
+    "totalOldPropertyCount": "कुल पुरानी संपत्ति संख्या",
+    "mergeOldPropertyCount": "मर्ज की गई पुरानी संपत्ति संख्या",
+    "missingOldPropertyCount": "अनुपलब्ध पुरानी संपत्ति संख्या",
+    "activeZones": "सक्रिय ज़ोन",
+    "searchZonePlaceholder": "ज़ोन का नाम खोजें...",
+    "exportAll": "सभी निर्यात करें",
+    "noActiveZones": "कोई सक्रिय ज़ोन रिकॉर्ड नहीं मिला",
+    "columns": {
+      "municipalZone": "नगर पालिका ज़ोन",
+      "totalOldPropertyCount": "कुल पुरानी संपत्ति संख्या",
+      "mergeOldPropertyCount": "मर्ज की गई पुरानी संपत्ति संख्या",
+      "missingOldPropertyCount": "अनुपलब्ध पुरानी संपत्ति संख्या",
+      "action": "कार्रवाई"
+    },
+    "actions": {
+      "downloadReport": "ज़ोन रिपोर्ट डाउनलोड करें",
+      "viewDetails": "विवरण देखें"
+    }
+  },
+  "missingDataAnalysis": {
+    "title": "अनुपलब्ध डेटा विश्लेषण",
+    "subtitle": "सर्वेक्षक ट्रैकिंग के लिए वास्तविक समय सिंक्रनाइज़ेशन गैप सारांश",
+    "tabs": {
+      "photoPlan": "फोटो / प्लान",
+      "ownerName": "मालिक का नाम",
+      "mobileNo": "मोबाइल नंबर",
+      "occupierName": "कब्जेदार का नाम",
+      "address": "पता",
+      "shopName": "दुकान का नाम",
+      "registeredPropertyData": "पंजीकृत संपत्ति डेटा"
     }
   }
 }

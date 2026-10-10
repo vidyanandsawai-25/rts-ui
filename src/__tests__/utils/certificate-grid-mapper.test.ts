@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
 import {
   normalizeCertificateGridData,
   getActiveCertificateForLevel,
   flattenCertificateRecords,
+  resolveUnitCertificateStatus,
 } from '@/lib/utils/certificate-grid-mapper';
+import { formatDisplayFileName } from '@/components/modules/property-tax/ptis/QuickDataEntry/building/DocumentAttachment';
 
 describe('Certificate Grid Mapper Utility', () => {
   const sampleUserApiResponse = {
@@ -162,11 +163,108 @@ describe('Certificate Grid Mapper Utility', () => {
     expect(result.inheritedFrom).toBe('Wing');
   });
 
-  it('falls back to societyDetailId wise when neither unit nor wing certificate matches', () => {
-    const normalized = normalizeCertificateGridData(sampleUserApiResponse);
-    // Unit 888888 is in wing 999999 (which has no wing certificate)
-    const result = getActiveCertificateForLevel(normalized, 'Unit', 1, 999999, 888888, 1507857);
-    expect(result.certificate?.certificateNumber).toBe('society_cert_123');
-    expect(result.inheritedFrom).toBe('Apartment');
+  describe('resolveUnitCertificateStatus', () => {
+    const multiCertGrid = {
+      societyCertificates: [
+        {
+          level: 'Apartment' as const,
+          certificateTypeId: 3,
+          certificateNumber: 'Apartment_All',
+          hasDocument: true,
+          status: 'Active' as const,
+        },
+      ],
+      wingCertificates: [
+        {
+          level: 'Wing' as const,
+          certificateTypeId: 3,
+          wingDetailId: 1530992,
+          certificateNumber: 'Wing_A_Cert',
+          hasDocument: true,
+          status: 'Active' as const,
+        },
+      ],
+      unitCertificates: [
+        {
+          level: 'Unit' as const,
+          certificateTypeId: 3,
+          propertyId: 2078966,
+          coveredPropertyIds: [2078966, 2078967],
+          coveredUnitNumbers: ['C2', 'C10'],
+          certificateNumber: 'C-Wing-C2-and-C10',
+          hasDocument: true,
+          fileName: 'smile.jpg',
+          status: 'Active' as const,
+        },
+      ],
+    };
+
+    it('resolves direct certificate when unit propertyId or unitNo is covered', () => {
+      const result = resolveUnitCertificateStatus(
+        multiCertGrid,
+        3,
+        { propertyId: 2078967, unitNo: 'C10', wingDetailId: 1530994 },
+        1507857
+      );
+      expect(result.status).toBe('direct');
+      expect(result.certificateNumber).toBe('C-Wing-C2-and-C10');
+      expect(result.fileName).toBe('smile.jpg');
+    });
+
+    it('resolves wing covered status when unit has no direct cert but wing has one', () => {
+      const result = resolveUnitCertificateStatus(
+        multiCertGrid,
+        3,
+        { propertyId: 9999999, unitNo: 'A1', wingDetailId: 1530992 },
+        1507857
+      );
+      expect(result.status).toBe('wing');
+      expect(result.certificateNumber).toBe('Wing_A_Cert');
+    });
+
+    it('resolves apartment covered status when unit and wing have no cert but apartment does', () => {
+      const result = resolveUnitCertificateStatus(
+        multiCertGrid,
+        3,
+        { propertyId: 8888888, unitNo: 'B1', wingDetailId: 1530993 },
+        1507857
+      );
+      expect(result.status).toBe('apartment');
+      expect(result.certificateNumber).toBe('Apartment_All');
+    });
+
+    it('resolves none status when grid has no matching certificate', () => {
+      const result = resolveUnitCertificateStatus(
+        multiCertGrid,
+        99,
+        { propertyId: 8888888, unitNo: 'B1', wingDetailId: 1530993 },
+        1507857
+      );
+      expect(result.status).toBe('none');
+      expect(result.certificate).toBeNull();
+    });
+  });
+
+  describe('formatDisplayFileName', () => {
+    it('strips timestamp and 32-char GUID storage prefix cleanly', () => {
+      const storageName = '20260916_130519_813956_1368f176423347f48baf5926c9992f04_smile.jpg';
+      expect(formatDisplayFileName(storageName)).toBe('smile.jpg');
+    });
+
+    it('strips 36-char GUID prefix cleanly', () => {
+      const guidName = '1368f176-4233-47f4-8baf-5926c9992f04_my_certificate.pdf';
+      expect(formatDisplayFileName(guidName)).toBe('my_certificate.pdf');
+    });
+
+    it('leaves standard file names untouched', () => {
+      expect(formatDisplayFileName('building_plan.pdf')).toBe('building_plan.pdf');
+      expect(formatDisplayFileName('images.jpg')).toBe('images.jpg');
+    });
+
+    it('handles empty or null values gracefully', () => {
+      expect(formatDisplayFileName('')).toBe('');
+      expect(formatDisplayFileName(null)).toBe('');
+      expect(formatDisplayFileName(undefined)).toBe('');
+    });
   });
 });

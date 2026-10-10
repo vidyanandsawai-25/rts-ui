@@ -38,7 +38,7 @@ export function clearClientAuthCookies(): void {
   }
 }
 
-/** Removes legacy auth data from localStorage and client cookies (browser only). */
+/** Removes legacy auth data from localStorage and tab sessionStorage (browser only). */
 export function clearLegacyAuthClientStorage(): void {
   if (typeof window === 'undefined') return;
   try {
@@ -46,9 +46,14 @@ export function clearLegacyAuthClientStorage(): void {
       window.localStorage.removeItem(key);
     }
     window.sessionStorage.removeItem('is_tab_active_session');
-    clearClientAuthCookies();
   } catch {
     // Private mode / blocked storage
   }
+}
+
+/** Removes all auth data including localStorage, sessionStorage, and client cookies. */
+export function clearAllAuthClientStorage(): void {
+  clearLegacyAuthClientStorage();
+  clearClientAuthCookies();
 }
 

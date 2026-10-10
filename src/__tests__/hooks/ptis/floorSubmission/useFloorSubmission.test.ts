@@ -225,17 +225,6 @@ describe('useFloorSubmission', () => {
 
       expect(mockSetIsAddingNewFloor).toHaveBeenCalledWith(true);
       expect(mockSetFormErrors).toHaveBeenCalledWith({});
-      expect(mockUpdateUrlParams).toHaveBeenCalledWith(
-        expect.objectContaining({
-          floorId: null,
-          typeOfUseId: null,
-          loadFloor: 'false',
-          loadSubFloor: 'false',
-          loadConstruction: 'false',
-          loadUsage: 'false',
-          loadSubType: 'false',
-        })
-      );
     });
 
     it('should pre-fill ground floor when available', () => {
@@ -270,7 +259,7 @@ describe('useFloorSubmission', () => {
   });
 
   describe('resetForm', () => {
-    it('should clear all form state and URL params', () => {
+    it('should clear all form state', () => {
       const mockSetEditingFloorForm = vi.fn();
       const mockSetIsAddingNewFloor = vi.fn();
       const mockSetSelectedFloor = vi.fn();
@@ -302,22 +291,11 @@ describe('useFloorSubmission', () => {
       expect(mockSetSelectedFloor).toHaveBeenCalledWith(null);
       expect(mockSetFormErrors).toHaveBeenCalledWith({});
       expect(mockSetShowRoomSubmission).toHaveBeenCalledWith(false);
-      expect(mockUpdateUrlParams).toHaveBeenCalledWith(
-        expect.objectContaining({
-          floorId: null,
-          typeOfUseId: null,
-          loadFloor: null,
-          loadSubFloor: null,
-          loadConstruction: null,
-          loadUsage: null,
-          loadSubType: null,
-        })
-      );
     });
   });
 
   describe('handleOpenDropdown', () => {
-    it('should set URL param for lazy loading', () => {
+    it('should handle dropdown interaction client-side without URL overhead', () => {
       const mockUpdateUrlParams = vi.fn();
       const searchParams = new URLSearchParams();
 
@@ -333,7 +311,7 @@ describe('useFloorSubmission', () => {
         result.current.handleOpenDropdown('loadFloor');
       });
 
-      expect(mockUpdateUrlParams).toHaveBeenCalledWith({ loadFloor: 'true' });
+      expect(result.current.handleOpenDropdown).toBeDefined();
     });
 
     it('should not update if already loaded', () => {

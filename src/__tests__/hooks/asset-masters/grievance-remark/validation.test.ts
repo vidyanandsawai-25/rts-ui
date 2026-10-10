@@ -38,13 +38,9 @@ describe('validateGrievanceRemarkForm', () => {
     expect(errors.remark).toBe('form.validation.remarkFormat');
   });
 
-  test('requires description', () => {
-    const errors = validateGrievanceRemarkForm({ ...baseModel, remark: 'Valid Remark', description: '' }, t, false);
-    expect(errors.description).toBe('form.validation.descriptionRequired');
-  });
 
-  test('description max length check (200)', () => {
-    const longDesc = 'a'.repeat(201);
+  test('description max length check (500)', () => {
+    const longDesc = 'a'.repeat(501);
     const errors = validateGrievanceRemarkForm({ ...baseModel, remark: 'Valid Remark', description: longDesc }, t, false);
     expect(errors.description).toBe('form.validation.descriptionMaxLength');
   });

@@ -30,9 +30,11 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
       id: undefined,
       code: "",
       name: "",
+      typeNameLocal: "",
       group: "",
       allowUnitRegistration: false,
       allowRoomRegistration: false,
+      isSubUnit: false,
       description: "",
       isActive: true,
     }
@@ -62,6 +64,10 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === "isSubUnit" && e.target instanceof HTMLInputElement && e.target.type === "checkbox") {
+      setFormData((p) => ({ ...p, isSubUnit: (e.target as HTMLInputElement).checked }));
+      return;
+    }
     const sanitized = sanitizeFieldValue(name, value);
 
     setFormData((p) => ({ ...p, [name]: sanitized }));
@@ -142,6 +148,11 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
 
   const handleToggleStatus = useCallback((checked?: boolean) => {
     setFormData((p) => ({ ...p, isActive: checked !== undefined ? checked : !p.isActive }));
+    setErrors((p) => ({ ...p, isActive: "" }));
+  }, []);
+
+  const handleToggleSubUnit = useCallback((checked: boolean) => {
+    setFormData((p) => ({ ...p, isSubUnit: checked }));
   }, []);
 
   return {
@@ -156,6 +167,7 @@ export function useAssetTypeForm({ initialData, groups }: UseAssetTypeFormProps)
     handleRadioChange,
     handleBlur,
     handleToggleStatus,
+    handleToggleSubUnit,
     handleSubmit,
     isSubmitting,
     t,

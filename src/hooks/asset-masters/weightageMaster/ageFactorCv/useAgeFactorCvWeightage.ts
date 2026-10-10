@@ -42,8 +42,8 @@ export const useAgeFactorCvWeightage = ({
     const { data, pageSize } = paginationData;
     const { constructionTypeOptions, initialAgeRangeOptions } = options;
 
-    const t = useTranslations('ageFactorMaster');
-    const tW = useTranslations('weightageMaster');
+    const t = useTranslations('assetWeightageMaster.age');
+    const tW = useTranslations('assetWeightageMaster');
     const tCommon = useTranslations('common');
 
     const [isAddYearRangeModalOpen, setIsAddYearRangeModalOpen] = useState(false);

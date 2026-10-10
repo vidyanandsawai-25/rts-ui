@@ -40,6 +40,7 @@ export function usePenaltyRuleForm({ initialData }: UsePenaltyRuleFormProps) {
 
   const {
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,
@@ -68,6 +69,7 @@ export function usePenaltyRuleForm({ initialData }: UsePenaltyRuleFormProps) {
     open,
     isEdit,
     handleChange,
+    handleStatusToggle,
     handleBlur,
     handleSubmit,
     handleClear,

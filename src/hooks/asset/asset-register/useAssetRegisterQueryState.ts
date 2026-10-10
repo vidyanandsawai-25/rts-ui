@@ -13,7 +13,6 @@ type UseAssetRegisterQueryStateParams = {
   pathname: string;
   isPanelVisible: boolean;
   onClosePanelFromQuery: () => void;
-  expandedAssets: Record<number, unknown>;
   setOpenSubunitRows: React.Dispatch<React.SetStateAction<OpenSubunitRowsState>>;
 };
 
@@ -29,11 +28,9 @@ export function useAssetRegisterQueryState({
   pathname,
   isPanelVisible,
   onClosePanelFromQuery,
-  expandedAssets,
   setOpenSubunitRows,
 }: UseAssetRegisterQueryStateParams) {
   const previousViewImageAssetIdRef = useRef<number | null>(null);
-  const previousExpandAssetIdRef = useRef<number | null>(null);
 
   const updateActionQuery = useCallback((key: string, value: string | null) => {
     const currentSearch = typeof window !== 'undefined' ? window.location.search : searchParams.toString();
@@ -63,27 +60,12 @@ export function useAssetRegisterQueryState({
 
   useEffect(() => {
     const expandedAssetId = parsePositiveInt(searchParams.get(EXPAND_ASSET_QUERY_KEY));
-    const previousExpandedAssetId = previousExpandAssetIdRef.current;
-    previousExpandAssetIdRef.current = expandedAssetId;
-
-    if (previousExpandedAssetId != null && expandedAssetId == null) {
-      // Collapse only when URL actually transitions from set -> cleared.
-      queueMicrotask(() => {
-        setOpenSubunitRows({});
-      });
-      return;
-    }
-
     if (expandedAssetId == null) {
-      return;
+      setOpenSubunitRows({});
+    } else {
+      setOpenSubunitRows({ [expandedAssetId]: true });
     }
-
-    if (expandedAssets[expandedAssetId]) {
-      queueMicrotask(() => {
-        setOpenSubunitRows((prev) => ({ ...prev, [expandedAssetId]: true }));
-      });
-    }
-  }, [searchParams, expandedAssets, setOpenSubunitRows]);
+  }, [searchParams, setOpenSubunitRows]);
 
   return {
     updateActionQuery,

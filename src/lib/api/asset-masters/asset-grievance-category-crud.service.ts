@@ -3,6 +3,7 @@ import { AssetGrievanceCategory, AssetGrievanceCategoryFormModel } from "@/types
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
 import { logger } from "@/lib/utils/logger";
+import { parseBoolean } from "@/lib/utils/type-guards";
 
 const ENDPOINT = "/asset-management/asset-grievance-category";
 
@@ -10,7 +11,7 @@ const ENDPOINT = "/asset-management/asset-grievance-category";
 export async function getAssetGrievanceCategories(): Promise<AssetGrievanceCategory[]> {
   try {
     const response = await apiClient.get<PagedResponse<AssetGrievanceCategory>>(
-      `${ENDPOINT}?IsActive=true&PageSize=-1`
+      `${ENDPOINT}?IsActive=true&MarkedForDeletion=false&PageSize=-1`
     );
     if (!response.success) {
       throw new ApiError(response.statusCode ?? 500, response.error || "Failed to fetch asset grievance categories", "Get grievance categories failed");
@@ -86,14 +87,20 @@ export async function createAssetGrievanceCategory(
   data: AssetGrievanceCategoryFormModel & { createdBy: number }
 ): Promise<string | undefined> {
   try {
-    if (!data.categoryName?.trim()) {
-      throw new ApiError(400, "Category Name is required", "Validation failed");
+    if (!data.grievanceTypeCode?.trim() || !data.grievanceTypeName?.trim() || !data.codeFormat?.trim()) {
+      throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
-      categoryName: data.categoryName.trim(),
+      grievanceTypeCode: data.grievanceTypeCode.trim(),
+      grievanceTypeName: data.grievanceTypeName.trim(),
+      grievanceTypeNameLocal: data.grievanceTypeNameLocal?.trim() || null,
       description: data.description?.trim() || null,
-      resolutionSlaDays: Number(data.resolutionSlaDays),
-      isActive: data.isActive,
+      targetTableName: data.targetTableName?.trim() || null,
+
+      slaDays: data.slaDays != null && !isNaN(Number(data.slaDays)) ? Number(data.slaDays) : null,
+      codeFormat: data.codeFormat.trim(),
+      displaySequence: Number(data.displaySequence) || 0,
+      isActive: parseBoolean(data.isActive),
       createdBy: data.createdBy,
     };
     const response = await apiClient.post<unknown>(ENDPOINT, payload);
@@ -118,15 +125,21 @@ export async function updateAssetGrievanceCategory(
   data: AssetGrievanceCategoryFormModel & { updatedBy: number }
 ): Promise<string | undefined> {
   try {
-    if (!data.id || data.id <= 0 || !data.categoryName?.trim()) {
+    if (!data.id || data.id <= 0 || !data.grievanceTypeCode?.trim() || !data.grievanceTypeName?.trim() || !data.codeFormat?.trim()) {
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
       id: data.id,
-      categoryName: data.categoryName.trim(),
+      grievanceTypeCode: data.grievanceTypeCode.trim(),
+      grievanceTypeName: data.grievanceTypeName.trim(),
+      grievanceTypeNameLocal: data.grievanceTypeNameLocal?.trim() || null,
       description: data.description?.trim() || null,
-      resolutionSlaDays: Number(data.resolutionSlaDays),
-      isActive: data.isActive,
+      targetTableName: data.targetTableName?.trim() || null,
+
+      slaDays: data.slaDays != null && !isNaN(Number(data.slaDays)) ? Number(data.slaDays) : null,
+      codeFormat: data.codeFormat.trim(),
+      displaySequence: Number(data.displaySequence) || 0,
+      isActive: parseBoolean(data.isActive),
       updatedBy: data.updatedBy,
     };
     const response = await apiClient.put<unknown>(`${ENDPOINT}/${encodeURIComponent(String(data.id))}`, payload);

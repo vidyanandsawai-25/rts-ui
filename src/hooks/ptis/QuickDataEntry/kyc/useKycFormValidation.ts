@@ -29,36 +29,44 @@ export const useKycFormValidation = (
    * Used to enable/disable save button
    */
   const hasChanges = useMemo(() => {
-    const normalizeEmail = (email: string | null | undefined) => email?.trim() || null;
+    const cleanStr = (val?: string | null): string => {
+      if (!val || val === '.' || val === '-') return '';
+      return val.trim();
+    };
+    const isAsciiText = (val?: string | null): boolean => {
+      if (!val) return false;
+      return /^[\x00-\x7F]+$/.test(val.trim());
+    };
+    const normalizeEmail = (val?: string | null): string => {
+      if (!val) return '';
+      return val.trim().toLowerCase();
+    };
 
-    const initialOwnerNameEnglish = KycDetailsData?.ownerNameEnglish && KycDetailsData.ownerNameEnglish.trim() !== ''
-      ? KycDetailsData.ownerNameEnglish
-      : (KycDetailsData?.ownerName ?? '');
+    const initialOwnerName = cleanStr(KycDetailsData?.ownerName);
+    const initialOwnerNameEnglish = cleanStr(KycDetailsData?.ownerNameEnglish) ||
+      (isAsciiText(KycDetailsData?.ownerName) ? cleanStr(KycDetailsData?.ownerName) : '');
 
-    const initialOccupierNameEnglish = KycDetailsData?.occupierNameEnglish && KycDetailsData.occupierNameEnglish.trim() !== ''
-      ? KycDetailsData.occupierNameEnglish
-      : (KycDetailsData?.occupierName ?? '');
+    const initialOccupierName = cleanStr(KycDetailsData?.occupierName);
+    const initialOccupierNameEnglish = cleanStr(KycDetailsData?.occupierNameEnglish);
 
-    const initialFlatOrShopNameEnglish = KycDetailsData?.flatOrShopNameEnglish && KycDetailsData.flatOrShopNameEnglish.trim() !== ''
-      ? KycDetailsData.flatOrShopNameEnglish
-      : (KycDetailsData?.flatOrShopName ?? '');
+    const initialFlatOrShopName = cleanStr(KycDetailsData?.flatOrShopName);
+    const initialFlatOrShopNameEnglish = cleanStr(KycDetailsData?.flatOrShopNameEnglish);
 
-    const initialAddressEnglish = KycDetailsData?.addressEnglish && KycDetailsData.addressEnglish.trim() !== ''
-      ? KycDetailsData.addressEnglish
-      : (KycDetailsData?.address ?? '');
+    const initialAddress = cleanStr(KycDetailsData?.address);
+    const initialAddressEnglish = cleanStr(KycDetailsData?.addressEnglish);
 
     return (
       (formData.ownerTypeId ?? null) !== (KycDetailsData?.ownerTypeId ?? null) ||
       (formData.ownerTitle ?? '') !== (KycDetailsData?.ownerTitle ?? '') ||
-      (formData.ownerName ?? '') !== (KycDetailsData?.ownerName ?? '') ||
-      (formData.ownerNameEnglish ?? '') !== initialOwnerNameEnglish ||
-      (formData.occupierName ?? '') !== (KycDetailsData?.occupierName ?? '') ||
-      (formData.occupierNameEnglish ?? '') !== initialOccupierNameEnglish ||
-      (formData.flatOrShopName ?? '') !== (KycDetailsData?.flatOrShopName ?? '') ||
-      (formData.flatOrShopNameEnglish ?? '') !== initialFlatOrShopNameEnglish ||
+      cleanStr(formData.ownerName) !== initialOwnerName ||
+      cleanStr(formData.ownerNameEnglish) !== initialOwnerNameEnglish ||
+      cleanStr(formData.occupierName) !== initialOccupierName ||
+      cleanStr(formData.occupierNameEnglish) !== initialOccupierNameEnglish ||
+      cleanStr(formData.flatOrShopName) !== initialFlatOrShopName ||
+      cleanStr(formData.flatOrShopNameEnglish) !== initialFlatOrShopNameEnglish ||
       normalizeEmail(formData.emailId) !== normalizeEmail(KycDetailsData?.emailId) ||
-      (formData.address ?? '') !== (KycDetailsData?.address ?? '') ||
-      (formData.addressEnglish ?? '') !== initialAddressEnglish ||
+      cleanStr(formData.address) !== initialAddress ||
+      cleanStr(formData.addressEnglish) !== initialAddressEnglish ||
       (formData.location ?? '') !== (KycDetailsData?.location ?? '') ||
       String(formData.pinCode ?? '') !== String(KycDetailsData?.pinCode ?? '') ||
       (formData.mobileCountryCode ?? '91') !== extractCountryCode(KycDetailsData?.mobileNo).countryCode ||

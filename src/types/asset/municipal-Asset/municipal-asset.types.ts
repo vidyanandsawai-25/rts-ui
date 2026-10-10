@@ -133,6 +133,22 @@ export interface AssetTypeDetailsResponse {
   items: AssetTypeAssetItemDto[];
 }
 
+export interface AssetTypeCategoryStatsDto {
+  assetTypeId: number;
+  assetTypeName: string;
+  assetCount: number;
+  totalCapitalValue: number;
+  totalLandAreaSqMeter?: number;
+  totalInventoryQuantity?: number;
+  [key: string]: unknown;
+}
+
+export interface AssetCategoryTypeStatsResponseDto {
+  assetCategoryId: number;
+  types: AssetTypeCategoryStatsDto[];
+  [key: string]: unknown;
+}
+
 // ─── Component Props ─────────────────────────────────────────────────────────
 
 export type MunicipalAssetDashboardProps = {
@@ -140,7 +156,9 @@ export type MunicipalAssetDashboardProps = {
   masterCategories?: AssetCategory[];
   masterTypes?: AssetType[];
   selectedAssetType?: AssetType | null;
+  selectedCategory?: AssetCategory | null;
   initialDrawerData?: AssetTypeDetailsResponse | null;
+  initialCategoryDrawerData?: AssetCategoryTypeStatsResponseDto | null;
   activeDrawerPage?: number;
 };
 
@@ -190,14 +208,19 @@ export interface AssetCategoryCardProps {
   onVisibleCountChange: (count: number) => void;
   onSelectCategory: () => void;
   onSelectType?: (type: AssetType) => void;
+  onSelectCategoryAssetTypes?: (category: AssetCategory) => void;
 }
 
 export interface AssetTypeDetailsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  assetType: AssetType | null;
+  assetType?: AssetType | null;
+  category?: AssetCategory | null;
+  categoryDetailsData?: AssetCategoryTypeStatsResponseDto | null;
   data?: AssetTypeDetailsResponse | null;
   loading?: boolean;
   pageNumber?: number;
+  pageSize?: number;
   onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
 }

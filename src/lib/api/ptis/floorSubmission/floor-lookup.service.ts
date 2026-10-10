@@ -14,6 +14,10 @@ import {
 import { TypeOfUseApiItem } from "@/types/property-basic-details.types";
 import { RoomTypeResponse } from "@/types/room-details.types";
 
+export function clearFloorLookupCache(): void {
+    // No-op: in-memory cache removed to ensure live API responses
+}
+
 /**
  * Fetches floor type data from API
  * @returns Promise<FloorResponse[]>
@@ -67,7 +71,10 @@ export async function getConstructionTypeOptions(): Promise<string[]> {
  */
 export async function getTypeOfUseData(propertyTypeId?: string | number): Promise<TypeOfUseApiItem[]> {
     if (propertyTypeId && propertyTypeId !== 'undefined' && propertyTypeId !== 'null' && Number(propertyTypeId) > 0) {
-        const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(`/TypeOfUseByPropertyType/${propertyTypeId}`, "Failed to fetch types of use by property type");
+        const rawItems = await fetchItems<TypeOfUseApiItem & { id?: string | number; ID?: string | number }>(
+            `/TypeOfUseByPropertyType/${propertyTypeId}`,
+            "Failed to fetch types of use by property type"
+        );
         return rawItems.map(item => ({
             ...item,
             typeOfUseId: item.typeOfUseId || Number(item.id || item.ID || 0),

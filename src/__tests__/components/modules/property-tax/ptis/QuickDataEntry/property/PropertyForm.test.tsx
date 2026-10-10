@@ -356,19 +356,19 @@ describe('PropertyFormView', () => {
     expect(categoryInput).not.toBeDisabled();
   });
 
-  it('calls deletePropertyDetailsAction when category is changed and user confirms', async () => {
+  it('calls deletePropertyDetailsAction when category is changed to Plot and user confirms', async () => {
     (deletePropertyDetailsAction as Mock).mockResolvedValue({ success: true });
     (updatePropertyBasicDetailsAction as Mock).mockResolvedValue({ success: true });
 
-    const mockCategoriesWithApartment = [
+    const mockCategoriesWithPlot = [
       ...mockPropertyCategories,
-      { id: 2, propertyCategoryName: 'Apartment', isActive: true, createdDate: '', updatedDate: null },
+      { id: 2, propertyCategoryName: 'Plot', isActive: true, createdDate: '', updatedDate: null },
     ];
 
     render(
       <PropertyFormView
         MoujaMaster={mockMoujaMaster}
-        propertyCategories={mockCategoriesWithApartment}
+        propertyCategories={mockCategoriesWithPlot}
         propertyDescriptions={mockPropertyDescriptions}
         propertyData={mockPropertyData as never}
         locale="en"
@@ -379,7 +379,7 @@ describe('PropertyFormView', () => {
     const categoryInput = screen.getByLabelText(/Category/i);
     fireEvent.focus(categoryInput);
 
-    const option = screen.getByText('Apartment');
+    const option = screen.getByText('Plot');
     fireEvent.mouseDown(option);
 
     const submitBtn = screen.getByRole('button', { name: /Update Changes/i });

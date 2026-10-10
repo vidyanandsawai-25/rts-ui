@@ -3,15 +3,28 @@ import { DocumentUploadParams } from '@/types/document.types';
 /**
  * Get the view URL for a document
  */
-export function getViewDocumentUrl(documentGuid: string) {
-    return `/api/documents/${encodeURIComponent(documentGuid)}/view`;
+export function getViewDocumentUrl(documentGuid?: string | null): string {
+    if (!documentGuid || typeof documentGuid !== 'string') return '';
+    const trimmed = documentGuid.trim();
+    return trimmed ? `/api/documents/${encodeURIComponent(trimmed)}/view` : '';
+}
+
+/**
+ * Alias for getViewDocumentUrl with null return
+ */
+export function getDocumentViewUrl(documentGuid?: string | null): string | null {
+    if (!documentGuid || typeof documentGuid !== 'string') return null;
+    const trimmed = documentGuid.trim();
+    return trimmed ? `/api/documents/${encodeURIComponent(trimmed)}/view` : null;
 }
 
 /**
  * Get the download URL for a document
  */
-export function getDownloadDocumentUrl(documentGuid: string) {
-    return `/api/documents/${encodeURIComponent(documentGuid)}/download`;
+export function getDownloadDocumentUrl(documentGuid?: string | null): string {
+    if (!documentGuid || typeof documentGuid !== 'string') return '';
+    const trimmed = documentGuid.trim();
+    return trimmed ? `/api/documents/${encodeURIComponent(trimmed)}/download` : '';
 }
 
 /**

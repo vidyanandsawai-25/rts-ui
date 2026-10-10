@@ -4,6 +4,7 @@ export interface PropertyPhotoDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   remarks?: string;
   documentBindingId?: number;
@@ -15,12 +16,15 @@ export interface PropertyPhotoDto {
   wingDetailId?: number;
   wingName?: string;
   societyDetailId?: number;
+  isVerified?: boolean;
 }
 
 export interface PropertyPhotoTypeWithStatusDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
+  description?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount?: number;
@@ -31,6 +35,17 @@ export interface PropertyPhotoTypeWithStatusDto {
   mimeType?: string;
   viewUrl?: string;
   downloadUrl?: string;
+  isActive?: boolean;
+}
+
+export interface PropertyPhotoTypeRecord {
+  id: number;
+  photoTypeCode: string;
+  photoTypeName: string;
+  description?: string;
+  displayOrder?: number;
+  photoScope?: string;
+  isActive?: boolean;
 }
 
 export interface PropertyPhotoUploadResponseDto {
@@ -75,6 +90,7 @@ export interface SocietyPhotoDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   remarks?: string;
   documentBindingId?: number;
@@ -89,6 +105,7 @@ export interface SocietyPhotoTypeWithStatusDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount?: number;
@@ -121,6 +138,7 @@ export interface SocietyPhotoTypeGroupDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount: number;
@@ -143,6 +161,7 @@ export interface WingPhotoDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   remarks?: string;
   documentBindingId?: number;
@@ -157,6 +176,7 @@ export interface WingPhotoTypeWithStatusDto {
   photoTypeId: number;
   photoTypeCode: string;
   photoTypeName: string;
+  photoScope?: string;
   displayOrder?: number;
   hasPhoto: boolean;
   photoCount?: number;

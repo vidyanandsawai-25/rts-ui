@@ -34,9 +34,9 @@ export const OffsetShapeInputs: React.FC<OffsetShapeInputsProps> = ({
         if (val === "" || /^\d*\.?\d*$/.test(val)) {
             if (val.includes(".")) {
                 const [intPart, decPart] = val.split(".");
-                return intPart.slice(0, 4) + "." + (decPart.slice(0, 2));
+                return intPart.slice(0, 6) + "." + (decPart.slice(0, 2));
             } else {
-                return val.slice(0, 4);
+                return val.slice(0, 6);
             }
         }
         return null;

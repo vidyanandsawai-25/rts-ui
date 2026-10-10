@@ -9,6 +9,7 @@ import type {
 import type { ApiResponse } from '@/types/common.types';
 import { ModuleMasterResponseSchema } from '@/lib/validations/config-master.schema';
 import { logError } from '@/lib/utils/logger';
+import { parseBoolean } from '@/lib/utils/type-guards';
 const ENDPOINTS = {
   list: '/ModuleMaster',
 };
@@ -18,21 +19,48 @@ function normalizeModuleMaster(data: unknown): ModuleMaster {
   const result = ModuleMasterResponseSchema.safeParse(data);
   if (!result.success) {
     const item = (data || {}) as Record<string, unknown>;
+    const activeVal = item.isActive ?? item.IsActive ?? item.status ?? item.Status ?? true;
+    const isActive =
+      typeof activeVal === 'string' && activeVal.toLowerCase() === 'inactive'
+        ? false
+        : parseBoolean(activeVal);
+
+    const modId = Number(
+      item.moduleMasterId ??
+        item.ModuleMasterId ??
+        item.moduleId ??
+        item.ModuleId ??
+        item.id ??
+        item.Id ??
+        0
+    );
+    const deptId = Number(
+      item.departmentMasterId ??
+        item.DepartmentMasterId ??
+        item.departmentId ??
+        item.DepartmentId ??
+        item.deptId ??
+        item.DeptId ??
+        0
+    );
+
     return {
-      moduleId: isNaN(Number(item.moduleId ?? item.ModuleId ?? item.id ?? item.Id)) 
-        ? 0 
-        : Number(item.moduleId ?? item.ModuleId ?? item.id ?? item.Id ?? 0),
-      departmentId: isNaN(Number(item.departmentId ?? item.DepartmentId)) 
-        ? 0 
-        : Number(item.departmentId ?? item.DepartmentId ?? 0),
-      moduleCode: String(item.moduleCode ?? item.ModuleCode ?? ''),
-      moduleName: String(item.moduleName ?? item.ModuleName ?? ''),
+      moduleId: isNaN(modId) ? 0 : modId,
+      departmentId: isNaN(deptId) ? 0 : deptId,
+      moduleCode: String(item.moduleCode ?? item.ModuleCode ?? item.code ?? item.Code ?? ''),
+      moduleName: String(
+        item.moduleName ??
+          item.ModuleName ??
+          item.moduleNane ??
+          item.ModuleNane ??
+          ''
+      ),
       moduleNameLocal: String(item.moduleNameLocal ?? item.ModuleNameLocal ?? ''),
       moduleIcon: String(item.moduleIcon ?? item.ModuleIcon ?? ''),
       moduleLabel: String(item.moduleLabel ?? item.ModuleLabel ?? ''),
       moduleDescription: String(item.moduleDescription ?? item.ModuleDescription ?? ''),
       departmentName: String(item.departmentName ?? item.DepartmentName ?? ''),
-      isActive: Boolean(item.isActive ?? item.IsActive ?? true),
+      isActive,
     };
   }
   return result.data as ModuleMaster;

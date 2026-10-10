@@ -33,6 +33,7 @@ export const ApartmentWingTopNav: React.FC<WingIntelligenceTopNavProps> = ({
 
   const tQDE = useTranslations('quickDataEntry');
   const tWing = useTranslations('ptisRedesign.wingIntelligence');
+  const tValuation = useTranslations('ptisRedesign.wingIntelligence.valuation');
 
   const handleValuationChange = (mode: 'rv' | 'cvm' | 'dual') => {
     setValuationView(mode);
@@ -100,7 +101,7 @@ export const ApartmentWingTopNav: React.FC<WingIntelligenceTopNavProps> = ({
           className={getButtonStyle(valuationView === 'rv')}
         >
           <FileText className={cn('w-3.5 h-3.5', valuationView === 'rv' ? 'text-[#0047cc]' : 'text-white')} />
-          <span>{tWing('valuation.rv', { defaultValue: 'Rateable Value (RV)' })}</span>
+          <span>{tValuation('rv')}</span>
         </button>
         <button
           type="button"
@@ -108,7 +109,7 @@ export const ApartmentWingTopNav: React.FC<WingIntelligenceTopNavProps> = ({
           className={getButtonStyle(valuationView === 'cvm')}
         >
           <TrendingUp className={cn('w-3.5 h-3.5', valuationView === 'cvm' ? 'text-[#0047cc]' : 'text-white')} />
-          <span>{tWing('valuation.cvm', { defaultValue: 'Capital Value Method (CVM)' })}</span>
+          <span>{tValuation('cvm')}</span>
         </button>
         <button
           type="button"
@@ -116,7 +117,7 @@ export const ApartmentWingTopNav: React.FC<WingIntelligenceTopNavProps> = ({
           className={getButtonStyle(valuationView === 'dual')}
         >
           <Layers className={cn('w-3.5 h-3.5', valuationView === 'dual' ? 'text-[#0047cc]' : 'text-white')} />
-          <span>{tWing('valuation.dual', { defaultValue: 'Dual Method View (RV + CVM)' })}</span>
+          <span>{tValuation('dual')}</span>
         </button>
       </div>
     </div>

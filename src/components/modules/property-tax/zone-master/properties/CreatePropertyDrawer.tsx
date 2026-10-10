@@ -104,6 +104,7 @@ export default function CreatePropertyDrawer({
           formData={formData}
           errors={errors}
           bulkPropertyCount={bulkPropertyCount}
+          categoryOptions={categoryOptions}
           handleFieldChange={handleFieldChange}
           handleBulkToggle={handleBulkToggle}
           t={t}

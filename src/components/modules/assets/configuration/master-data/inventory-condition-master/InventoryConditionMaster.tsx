@@ -11,7 +11,11 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryConditionColumns } from "./InventoryConditionColumns";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryConditionAction } from "@/app/[locale]/assets/configuration/master-data/inventory-condition/actions";
-import type { InventoryConditionProps, InventoryCondition } from "@/types/asset-masters/inventory-condition.types";
+import { mapInventoryConditionApiError } from "@/hooks/asset-masters/inventory-condition/validation";
+import type {
+  InventoryConditionProps,
+  InventoryCondition,
+} from "@/types/asset-masters/inventory-condition.types";
 
 export function InventoryConditionMaster({
   data,
@@ -19,8 +23,7 @@ export function InventoryConditionMaster({
   pageSize,
   totalCount,
   totalPages,
-  categories,
-}: InventoryConditionProps & { search?: string }) {
+}: InventoryConditionProps) {
   const router = useRouter();
   const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
@@ -33,8 +36,8 @@ export function InventoryConditionMaster({
 
   const searchParams = useSearchParams();
   const search = searchParams.get("search") || "";
-  const sortBy = searchParams.get("sortBy") || "conditionName";
-  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
+  const sortBy = searchParams.get("sortBy") || undefined;
+  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || undefined;
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";
@@ -46,7 +49,17 @@ export function InventoryConditionMaster({
     });
   }, [sortBy, sortOrder, searchParams, router, base]);
 
-  const columns = useMemo(() => getInventoryConditionColumns(t, tCommon, sortBy, sortOrder, handleSort, categories), [t, tCommon, sortBy, sortOrder, handleSort, categories]);
+  const columns: Column<InventoryCondition>[] = useMemo(
+    () =>
+      getInventoryConditionColumns(
+        t,
+        tCommon,
+        sortBy,
+        sortOrder,
+        handleSort
+      ),
+    [t, tCommon, sortBy, sortOrder, handleSort]
+  );
 
   const changePage = useCallback((p: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -87,7 +100,7 @@ export function InventoryConditionMaster({
           const result = await deleteInventoryConditionAction(String(row.id));
 
           if (!result.success) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryConditionApiError(result, t, tCommon));
             return;
           }
 
@@ -98,13 +111,15 @@ export function InventoryConditionMaster({
         }
       },
     });
-  }, [confirm, tCommon, router]);
+  }, [confirm, router, t, tCommon]);
 
   return (
     <div className="space-y-6">
       <MasterTable<InventoryCondition>
-        columns={columns as Column<InventoryCondition>[]}
-        data={data as InventoryCondition[]}
+        theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+        footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
+        columns={columns}
+        data={data}
         loading={isPending}
         pageNumber={pageNumber}
         pageSize={pageSize}

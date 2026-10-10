@@ -87,9 +87,9 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
   isFetchingWardOptions,
   onFetchWardList,
   propertyOptions,
-  propertyOptionValueMap,
+  propertyOptionValueMap = new Map(),
   partitionOptions,
-  partitionValueMap,
+  partitionValueMap = new Map(),
   isSearching,
   onSearch,
   upicId,
@@ -261,8 +261,19 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
       if ((!societyDetailId || !wingDetailId) && propertyId && propertiesList) {
         const found = propertiesList.find((p) => p.propertyId === Number(propertyId));
         if (found) {
-          if (!societyDetailId && found.societyDetailId) societyDetailId = found.societyDetailId;
-          if (!wingDetailId && found.wingDetailId) wingDetailId = found.wingDetailId;
+          if (!societyDetailId && (found.societyDetailId || found.societyId)) {
+            societyDetailId = found.societyDetailId || found.societyId;
+          }
+          if (!wingDetailId && (found.wingDetailId || found.wingId)) {
+            wingDetailId = found.wingDetailId || found.wingId;
+          }
+          if ((!societyDetailId || !wingDetailId) && Array.isArray((found as unknown as { wings?: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> }).wings)) {
+            const fw = (found as unknown as { wings: Array<{ societyId?: number; societyDetailId?: number; wingDetailId?: number; wingMasterId?: number }> }).wings;
+            if (fw.length > 0) {
+              if (!societyDetailId) societyDetailId = fw[0].societyId || fw[0].societyDetailId;
+              if (!wingDetailId) wingDetailId = fw[0].wingDetailId || fw[0].wingMasterId;
+            }
+          }
         }
       }
 
@@ -317,7 +328,7 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
             >
               {t('search.wardNo')}:
             </Label>
-            <div className="w-24 sm:w-28 lg:w-32 relative [&_ul]:top-full [&_ul]:!z-30">
+            <div className="w-28 sm:w-36 lg:w-40 relative [&_ul]:top-full [&_ul]:!z-30">
               <PTISSearchSelect
                 id="wardNo"
                 options={wardOptions}
@@ -392,6 +403,9 @@ export const PropertySearchBar: React.FC<PropertySearchBarProps> = ({
                 onSearchChange={onPartitionSearchChange}
               />
               <Input type="hidden" name="partitionNo" value={partitionNo ?? ''} />
+              {propertyId && <Input type="hidden" name="propertyId" value={propertyId} />}
+              {draftSocietyDetailId && <Input type="hidden" name="societyDetailId" value={String(draftSocietyDetailId)} />}
+              {draftWingDetailId && <Input type="hidden" name="wingDetailId" value={String(draftWingDetailId)} />}
             </div>
           </div>
 

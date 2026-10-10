@@ -27,7 +27,14 @@
     "fetchPropertyAssessmentStatus": "Failed to fetch property assessment status details.",
     "fetchZones": "Failed to fetch zones.",
     "fetchPropertyTrackingStatus": "Failed to fetch property tracking status.",
-    "sendToApprove": "Failed to send for approval."
+    "sendToApprove": "Failed to send for approval.",
+    "fetchMissingMobileNo": "Failed to fetch missing mobile number data.",
+    "fetchMissingPhotoPlan": "Failed to fetch missing photo plan data.",
+    "fetchMissingOwnerName": "Failed to fetch missing owner name data.",
+    "fetchMissingAddress": "Failed to fetch missing address data.",
+    "fetchMissingOccupierName": "Failed to fetch missing occupier name data.",
+    "fetchMissingShopName": "Failed to fetch missing shop name data.",
+    "fetchMissingRegisteredProperty": "Failed to fetch missing registered property data."
   },
   "summaryCards": {
     "metrics": {
@@ -46,7 +53,7 @@
     "noData": "No data"
   },
   "geoSequencing": {
-    "searchPlaceholder": "Search Property No, Owner Name",
+    "searchPlaceholder": "Search Ward No with Property No, Owner Name",
     "total": "Total",
     "wardWiseSummary": "Ward-wise Summary",
     "wardWiseTable": "WARD-WISE TABLE",
@@ -210,7 +217,7 @@
   },
   "internalSurvey": {
     "total": "Total",
-    "searchPlaceholder": "Search Property No, Owner Name",
+    "searchPlaceholder": "Search Ward No with Property No, Owner Name",
     "emptyMessage": "No internal survey data available",
     "buttons": {
       "search": "Search",
@@ -258,7 +265,7 @@
   },
   "dataEntryQualityCheck": {
     "emptyMessage": "No data entry quality check data available",
-    "searchPlaceholder": "Search Property No, Owner Name",
+    "searchPlaceholder": "Search Ward No with Property No, Owner Name",
     "total": "Total",
     "wardWiseSummary": "Ward-wise Summary",
     "stage": "Stage:",
@@ -473,7 +480,7 @@
     "submittedBy": "Submitted By:"
   },
   "assessment": {
-    "searchPlaceholder": "Search Property No, Owner Name",
+    "searchPlaceholder": "Search Ward No with Property No, Owner Name",
     "summary": "Summary",
     "sendToApprove": "Send to Approve",
     "tabs": {
@@ -496,6 +503,139 @@
       "retroDemand": "RETRO DEMAND (₹)",
       "totalDemand": "TOTAL DEMAND (₹)",
       "additionalRevenue": "ADDITIONAL REVENUE GENERATED (₹)"
+    }
+  },
+  "missingPhotoPlan": {
+    "totalGapFields": "TOTAL GAP FIELDS",
+    "photoMissing": "PHOTO MISSING",
+    "planMissing": "PLAN MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "photoMissing": "PHOTO MISSING",
+      "planMissing": "PLAN MISSING",
+      "totalMissing": "TOTAL MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingMobileNo": {
+    "mobileNoMissing": "MOBILE NO MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "mobileNoMissing": "MOBILE NO MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingOwnerName": {
+    "ownerNameMissing": "OWNER NAME MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "ownerNameMissing": "OWNER NAME MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingAddress": {
+    "addressMissing": "ADDRESS MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "addressMissing": "ADDRESS MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingOccupierName": {
+    "occupierNameMissing": "OCCUPIER NAME MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "occupierNameMissing": "OCCUPIER NAME MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingShopName": {
+    "shopNameMissing": "SHOP NAME MISSING",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "shopNameMissing": "SHOP NAME MISSING",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "registeredProperty": {
+    "totalOldPropertyCount": "TOTAL OLD PROPERTY COUNT",
+    "mergeOldPropertyCount": "MERGE OLD PROPERTY COUNT",
+    "missingOldPropertyCount": "MISSING OLD PROPERTY COUNT",
+    "activeZones": "ACTIVE ZONES",
+    "searchZonePlaceholder": "Search zone name...",
+    "exportAll": "EXPORT ALL",
+    "noActiveZones": "No active zone records found",
+    "columns": {
+      "municipalZone": "MUNICIPAL ZONE",
+      "totalOldPropertyCount": "TOTAL OLD PROPERTY COUNT",
+      "mergeOldPropertyCount": "MERGE OLD PROPERTY COUNT",
+      "missingOldPropertyCount": "MISSING OLD PROPERTY COUNT",
+      "action": "ACTION"
+    },
+    "actions": {
+      "downloadReport": "Download Zone Report",
+      "viewDetails": "View Details"
+    }
+  },
+  "missingDataAnalysis": {
+    "title": "MISSING DATA ANALYSIS",
+    "subtitle": "REAL-TIME SYNCHRONIZATION GAP SUMMARY FOR SURVEYOR TRACKING",
+    "tabs": {
+      "photoPlan": "Photo / Plan",
+      "ownerName": "Owner Name",
+      "mobileNo": "Mobile No.",
+      "occupierName": "Occupier Name",
+      "address": "Address",
+      "shopName": "Shop Name",
+      "registeredPropertyData": "Registered Property Data"
     }
   }
 }

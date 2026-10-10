@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { toast } from "sonner";
 import { OwnershipTypeForm } from "@/components/modules/assets/configuration/master-data/ownership-type-master/OwnershipTypeForm";
 import * as actions from "@/app/[locale]/assets/configuration/master-data/ownership-type/actions";
+import { validateOwnershipTypeForm } from "@/lib/validations/ownership-type-form.validation";
 
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
@@ -66,6 +67,13 @@ vi.mock("@/components/common/Drawer", () => ({
 describe("OwnershipTypeForm", () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
+  const t = (key: string) => key;
+  const validOwnershipType = {
+    ownershipTypeName: "Private Ownership",
+    description: "Private ownership",
+    isActive: true,
+  };
+
   it("submits valid form successfully", async () => {
     vi.mocked(actions.createOwnershipTypeAction).mockResolvedValue({ success: true, data: {} } as any);
     render(<OwnershipTypeForm initialData={null} />);
@@ -91,6 +99,26 @@ describe("OwnershipTypeForm", () => {
       expect(actions.createOwnershipTypeAction).not.toHaveBeenCalled();
       expect(toast.error).toHaveBeenCalledWith("errors.validationError");
     });
+  });
+
+  it("validates ownership type name constraints", () => {
+    const numericErrors = validateOwnershipTypeForm({ ...validOwnershipType, ownershipTypeName: "Private 1" }, t);
+    const specialCharErrors = validateOwnershipTypeForm({ ...validOwnershipType, ownershipTypeName: "Private-Type" }, t);
+    const maxLengthErrors = validateOwnershipTypeForm({ ...validOwnershipType, ownershipTypeName: "A".repeat(50) }, t);
+    const tooLongErrors = validateOwnershipTypeForm({ ...validOwnershipType, ownershipTypeName: "A".repeat(51) }, t);
+
+    expect(numericErrors.ownershipTypeName).toBe("configuration.masterData.form.errors.nameInvalid");
+    expect(specialCharErrors.ownershipTypeName).toBe("configuration.masterData.form.errors.nameInvalid");
+    expect(maxLengthErrors.ownershipTypeName).toBeUndefined();
+    expect(tooLongErrors.ownershipTypeName).toBe("configuration.masterData.form.errors.nameTooLong50");
+  });
+
+  it("validates description max length", () => {
+    const maxLengthErrors = validateOwnershipTypeForm({ ...validOwnershipType, description: "A".repeat(100) }, t);
+    const tooLongErrors = validateOwnershipTypeForm({ ...validOwnershipType, description: "A".repeat(101) }, t);
+
+    expect(maxLengthErrors.description).toBeUndefined();
+    expect(tooLongErrors.description).toBe("configuration.masterData.form.errors.descriptionTooLong");
   });
 
   it("auto-focuses name input in add mode and status toggle in edit mode after 150ms delay", () => {

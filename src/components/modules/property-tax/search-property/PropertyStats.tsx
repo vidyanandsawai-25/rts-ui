@@ -91,19 +91,43 @@ export function PropertyStats({
   const mainCards = currentCards?.mainCards;
   const workflowCards = currentCards?.workflowCards;
 
-  const renderCount = (num?: number) => (num || 0).toLocaleString("en-IN");
-  const renderDemand = (num?: number) => `₹${(num || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  const renderCount = (num?: number | string) => (Number(num) || 0).toLocaleString("en-IN");
+  const renderDemand = (val?: number | string | null): string => {
+    if (val === undefined || val === null || val === "") {
+      return "₹0";
+    }
+
+    const rawStr = String(val).trim();
+    const numericStr = rawStr.replace(/[₹,\s]/g, "").replace(/cr/gi, "");
+    const numericVal = parseFloat(numericStr);
+
+    if (isNaN(numericVal) || numericVal === 0) {
+      return "₹0";
+    }
+
+    if (/cr/i.test(rawStr)) {
+      return rawStr.startsWith("₹") ? rawStr : `₹${rawStr}`;
+    }
+
+    if (numericVal >= 10000000) {
+      return `₹${(numericVal / 10000000).toFixed(2)}Cr`;
+    }
+    return `₹${numericVal.toLocaleString("en-IN", { maximumFractionDigits: 2 })}Cr`;
+  };
 
   const prev = mainCards?.previouslyRegistered || { structureCount: 0, unitCount: 0, demand: 0 };
   const assessed = mainCards?.assessmentApproved?.assessed || { structureCount: 0, unitCount: 0, demand: 0 };
   const unassessed = mainCards?.assessmentApproved?.unassessed || { structureCount: 0, unitCount: 0, demand: 0 };
   const revenue = mainCards?.additionalRevenueGenerated || { structureCount: 0, unitCount: 0, demand: 0 };
 
-  const getStage = (name: string) => workflowCards?.find(w => w.stageName === name) || { structureCount: 0, unitCount: 0 };
+  const getStage = (name: string) =>
+    workflowCards?.find(
+      w => w.stageName.toLowerCase().replace(/[^a-z0-9]/g, "") === name.toLowerCase().replace(/[^a-z0-9]/g, "")
+    ) || { structureCount: 0, unitCount: 0 };
 
   const stageDefs: Array<{
     id: number;
-    stageKey: "geoSequencing" | "internalSurvey" | "dataEntry" | "assessment" | "approvalByUlb" | "noticeDistribution" | "hearingAndAppeal" | "billDistribution" | "billGeneration";
+    stageKey: "geoSequencing" | "internalSurvey" | "dataEntry" | "assessment" | "approvalByUlb" | "noticeDistribution" | "hearingAndAppeal" | "billDistribution" | "billGeneration" | "billRecovery";
     stageName: string;
     icon: LucideIcon;
     colorTheme: "indigo" | "blue" | "green" | "orange" | "red" | "purple";
@@ -116,7 +140,7 @@ export function PropertyStats({
     { id: 6, stageKey: "noticeDistribution", stageName: "NoticeDistribution", icon: BellRing, colorTheme: "orange" },
     { id: 7, stageKey: "hearingAndAppeal", stageName: "HearingAndAppeal", icon: Scale, colorTheme: "red" },
     { id: 8, stageKey: "billDistribution", stageName: "BillDistribution", icon: FileStack, colorTheme: "purple" },
-    { id: 9, stageKey: "billGeneration", stageName: "BillGeneration", icon: Receipt, colorTheme: "indigo" },
+    { id: 9, stageKey: "billRecovery", stageName: "BillRecovery", icon: Receipt, colorTheme: "indigo" },
   ];
 
   return (
@@ -276,10 +300,11 @@ export function PropertyStats({
       <div className="flex flex-nowrap overflow-x-auto gap-1.5 pb-1 hide-scrollbar">
         {stageDefs.map((def) => {
           const stage = getStage(def.stageName);
+          const title = tTypeFilter.has(def.stageKey) ? tTypeFilter(def.stageKey) : def.stageName;
           return (
             <SmallCard
               key={def.id}
-              title={tTypeFilter(def.stageKey)}
+              title={title}
               icon={def.icon}
               structure={renderCount(stage.structureCount)}
               unit={renderCount(stage.unitCount)}

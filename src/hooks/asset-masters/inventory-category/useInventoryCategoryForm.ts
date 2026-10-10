@@ -15,6 +15,7 @@ export function useInventoryCategoryForm(
       name: "",
       group: "",
       depreciationRate: "",
+      displayOrder: "",
       description: "",
       isActive: true,
     }
@@ -75,6 +76,11 @@ export function useInventoryCategoryForm(
 
   const handleToggleStatus = useCallback((checked?: boolean | unknown) => {
     setFormData((p) => ({ ...p, isActive: typeof checked === "boolean" ? checked : !p.isActive }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err.isActive;
+      return err;
+    });
   }, []);
 
   return {

@@ -28,13 +28,13 @@ describe("Grievance Category API Service", () => {
       const mockApiResponse = {
         success: true,
         data: {
-          items: [{ id: 1, categoryName: "C1", description: "D1", resolutionSlaDays: 3, isActive: true }],
+          items: [{ id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, slaDays: 3, isActive: true }],
         },
       };
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
       const result = await getAssetGrievanceCategories();
-      expect(apiClient.get).toHaveBeenCalledWith("/asset-management/asset-grievance-category?IsActive=true&PageSize=-1");
+      expect(apiClient.get).toHaveBeenCalledWith("/asset-management/asset-grievance-category?IsActive=true&MarkedForDeletion=false&PageSize=-1");
       expect(result).toEqual(mockApiResponse.data.items);
     });
   });
@@ -44,7 +44,7 @@ describe("Grievance Category API Service", () => {
       const mockApiResponse = {
         success: true,
         data: {
-          items: [{ id: 1, categoryName: "C1", description: "D1", resolutionSlaDays: 3, isActive: true }],
+          items: [{ id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, slaDays: 3, isActive: true }],
           totalCount: 1,
           pageNumber: 1,
           pageSize: 10,
@@ -55,8 +55,8 @@ describe("Grievance Category API Service", () => {
       };
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
-      const result = await getAssetGrievanceCategoryPaged(1, 10, "query", "categoryName", "asc");
-      expect(apiClient.get).toHaveBeenCalledWith("/asset-management/asset-grievance-category?PageNumber=1&PageSize=10&MarkedForDeletion=false&IsActive=&SearchTerm=query&SortBy=categoryName&SortOrder=asc");
+      const result = await getAssetGrievanceCategoryPaged(1, 10, "query", "grievanceTypeName", "asc");
+      expect(apiClient.get).toHaveBeenCalledWith("/asset-management/asset-grievance-category?PageNumber=1&PageSize=10&MarkedForDeletion=false&IsActive=&SearchTerm=query&SortBy=grievanceTypeName&SortOrder=asc");
       expect(result).toEqual(mockApiResponse.data);
     });
   });
@@ -65,7 +65,7 @@ describe("Grievance Category API Service", () => {
     it("should fetch category details successfully", async () => {
       const mockApiResponse = {
         success: true,
-        data: { id: 1, categoryName: "C1", description: "D1", resolutionSlaDays: 3, isActive: true },
+        data: { id: 1, grievanceTypeCode: "TC1", grievanceTypeName: "C1", codeFormat: "FMT1", displaySequence: 1, slaDays: 3, isActive: true },
       };
       vi.mocked(apiClient.get).mockResolvedValue(mockApiResponse);
 
@@ -76,57 +76,76 @@ describe("Grievance Category API Service", () => {
   });
 
   describe("createAssetGrievanceCategory", () => {
-    it("should create category successfully", async () => {
+    it("should create category successfully with mapped payload", async () => {
       const mockApiResponse = {
         success: true,
         data: { message: "Grievance category created successfully" },
       };
       vi.mocked(apiClient.post).mockResolvedValue(mockApiResponse);
 
-      const payload = {
-        categoryName: "Water Leakage",
+      const formModel = {
+        grievanceTypeCode: "GRV_WATER_LEAK",
+        grievanceTypeName: "Water Supply Pipeline Leakage",
+        grievanceTypeNameLocal: "पाणी पुरवठा",
         description: "Pipe issue",
-        resolutionSlaDays: 5,
+        targetTableName: "tbl_water",
+        slaDays: 3,
+        codeFormat: "WTR-{YYYY}-{SEQ}",
+        displaySequence: 1,
         isActive: true,
       };
 
-      const result = await createAssetGrievanceCategory({ ...payload, createdBy: 1 });
+      const result = await createAssetGrievanceCategory({ ...formModel, createdBy: 1042 });
       expect(apiClient.post).toHaveBeenCalledWith("/asset-management/asset-grievance-category", {
-        ...payload,
-        categoryName: "Water Leakage",
+        grievanceTypeCode: "GRV_WATER_LEAK",
+        grievanceTypeName: "Water Supply Pipeline Leakage",
+        grievanceTypeNameLocal: "पाणी पुरवठा",
         description: "Pipe issue",
-        resolutionSlaDays: 5,
+        targetTableName: "tbl_water",
+        slaDays: 3,
+        codeFormat: "WTR-{YYYY}-{SEQ}",
+        displaySequence: 1,
         isActive: true,
-        createdBy: 1,
+        createdBy: 1042,
       });
       expect(result).toBe("Grievance category created successfully");
     });
   });
 
   describe("updateAssetGrievanceCategory", () => {
-    it("should update category successfully", async () => {
+    it("should update category successfully with mapped payload", async () => {
       const mockApiResponse = {
         success: true,
         data: { message: "Grievance category updated successfully" },
       };
       vi.mocked(apiClient.put).mockResolvedValue(mockApiResponse);
 
-      const payload = {
+      const formModel = {
         id: 1,
-        categoryName: "Water Leakage",
-        description: "Pipe issue",
-        resolutionSlaDays: 5,
+        grievanceTypeCode: "GRV_ROAD_MAINT",
+        grievanceTypeName: "Road Maintenance",
+        grievanceTypeNameLocal: "रस्ता दुरुस्ती",
+        description: "Road repair details",
+        targetTableName: "tbl_road",
+        slaDays: 5,
+        codeFormat: "ROAD-{YYYY}-{SEQ}",
+        displaySequence: 2,
         isActive: true,
       };
 
-      const result = await updateAssetGrievanceCategory({ ...payload, updatedBy: 1 });
+      const result = await updateAssetGrievanceCategory({ ...formModel, updatedBy: 1042 });
       expect(apiClient.put).toHaveBeenCalledWith("/asset-management/asset-grievance-category/1", {
         id: 1,
-        categoryName: "Water Leakage",
-        description: "Pipe issue",
-        resolutionSlaDays: 5,
+        grievanceTypeCode: "GRV_ROAD_MAINT",
+        grievanceTypeName: "Road Maintenance",
+        grievanceTypeNameLocal: "रस्ता दुरुस्ती",
+        description: "Road repair details",
+        targetTableName: "tbl_road",
+        slaDays: 5,
+        codeFormat: "ROAD-{YYYY}-{SEQ}",
+        displaySequence: 2,
         isActive: true,
-        updatedBy: 1,
+        updatedBy: 1042,
       });
       expect(result).toBe("Grievance category updated successfully");
     });

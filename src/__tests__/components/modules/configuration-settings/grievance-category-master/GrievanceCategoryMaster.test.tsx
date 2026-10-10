@@ -125,51 +125,7 @@ vi.mock('@/hooks/usePermissions', () => ({
   usePermissions: () => mockPermissions,
 }));
 
-// Mock Lucide icons
-vi.mock('lucide-react', () => {
-  const MockIcon = () => null;
-  return {
-    MessageSquare: MockIcon,
-    AlertCircle: MockIcon,
-    CheckCircle: MockIcon,
-    CheckCircle2: MockIcon,
-    X: MockIcon,
-    ChevronLeft: MockIcon,
-    ChevronRight: MockIcon,
-    ChevronDown: MockIcon,
-    ChevronDownIcon: MockIcon,
-    ChevronsLeft: MockIcon,
-    ChevronsRight: MockIcon,
-    Layers: MockIcon,
-    FileText: MockIcon,
-    Users: MockIcon,
-    Building: MockIcon,
-    Calendar: MockIcon,
-    Search: MockIcon,
-    Filter: MockIcon,
-    Plus: MockIcon,
-    Edit: MockIcon,
-    Pencil: MockIcon,
-    Trash2: MockIcon,
-    MoreVertical: MockIcon,
-    Eye: MockIcon,
-    Download: MockIcon,
-    Upload: MockIcon,
-    Settings: MockIcon,
-    RefreshCw: MockIcon,
-    TrendingUp: MockIcon,
-    Users2: MockIcon,
-    Activity: MockIcon,
-    Clock: MockIcon,
-    Zap: MockIcon,
-    Home: MockIcon,
-    Database: MockIcon,
-    MapPin: MockIcon,
-    Map: MockIcon,
-    Check: MockIcon,
-    Minus: MockIcon,
-  };
-});
+
 
 // Test data
 const mockDepartments: DepartmentMaster[] = [

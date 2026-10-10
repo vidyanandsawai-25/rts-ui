@@ -49,7 +49,7 @@
       "remarkConsecutiveSpaces": "Remark cannot contain multiple consecutive spaces.",
       "mustBeActive": "New remark must be active",
       "remarkFormat": "Only letters, numbers and basic punctuation allowed (special characters only in between, single space only)",
-      "descriptionMaxLength": "Description cannot exceed 200 characters.",
+      "descriptionMaxLength": "Description cannot exceed 500 characters.",
       "descriptionRequired": "Description is required."
     }
   },

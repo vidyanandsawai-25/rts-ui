@@ -54,6 +54,23 @@ describe('ErrorPage', () => {
     expect(screen.getByText('Test error message')).toBeInTheDocument();
   });
 
+  it('renders fallback description when error message contains react.dev/errors url', () => {
+    const reactUrlError = new Error('An error occurred in the Server Component, rendered at https://react.dev/errors/441');
+    render(
+      <ErrorPage error={reactUrlError} reset={reset} translationNamespace="common.error" />
+    );
+    expect(screen.getByText('Error Description')).toBeInTheDocument();
+    expect(screen.queryByText(/react\.dev/i)).not.toBeInTheDocument();
+  });
+
+  it('renders fallback description when error message contains network or timeout failure', () => {
+    const fetchError = new Error('TypeError: fetch failed');
+    render(
+      <ErrorPage error={fetchError} reset={reset} translationNamespace="common.error" />
+    );
+    expect(screen.getByText('Error Description')).toBeInTheDocument();
+  });
+
   it('calls reset when Try Again is clicked', () => {
     render(
       <ErrorPage error={error} reset={reset} translationNamespace="common.error" />

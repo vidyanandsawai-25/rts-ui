@@ -1,6 +1,7 @@
 import React from "react";
 import { AssetGrievanceCategoryMaster } from "@/components/modules/assets/configuration/master-data/grievance-category-master/AssetGrievanceCategoryMaster";
 import { fetchAssetGrievanceCategoryPagedServerAction } from "./action";
+import { ALLOWED_SORT_COLUMNS } from "@/types/asset-masters/asset-grievance-category.types";
 
 interface PageProps {
   searchParams: Promise<{
@@ -12,7 +13,6 @@ interface PageProps {
   }>;
 }
 
-const ALLOWED_SORT_COLUMNS = ["categoryName", "resolutionSlaDays"] as const;
 const ALLOWED_SORT_ORDERS = ["asc", "desc"] as const;
 
 const MIN_PAGE = 1;

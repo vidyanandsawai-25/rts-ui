@@ -53,8 +53,11 @@ export function useApartmentPropertySearch(
     const normProp = draft.propertyNo.trim().toLowerCase();
     const normPart = normalizePartition(draft.partitionNo).toLowerCase();
     if (draft.propertyId) {
+      if (propertiesList.length === 0) return;
       const cur = propertiesList.find((p) => p.propertyId === Number(draft.propertyId));
-      if (!cur || cur.propertyNo.trim().toLowerCase() !== normProp || normalizePartition(cur.partitionNo).toLowerCase() !== normPart) setPropertyId(null);
+      if (cur && (cur.propertyNo.trim().toLowerCase() !== normProp || normalizePartition(cur.partitionNo).toLowerCase() !== normPart)) {
+        setPropertyId(null);
+      }
       return;
     }
     const exact = propertiesList.find((p) => p.propertyNo.trim().toLowerCase() === normProp && normalizePartition(p.partitionNo).toLowerCase() === normPart);
@@ -89,12 +92,18 @@ export function useApartmentPropertySearch(
 
   const { propertyOptions, propertyOptionValueMap, partitionOptions, partitionValueMap } = usePropertyOptions(draft.propertyNo, dynamicPropertyOptions, propertiesList);
 
-  const propertyId = urlState.propertyId
+  const isDraftMatchingInitial = !draft.propertyNo || draft.propertyNo === initialData?.propertyDetails?.propertyNo || draft.propertyNo === urlState.propertyNo;
+
+  const propertyId = draft.propertyId
+    ? Number(draft.propertyId)
+    : urlState.propertyId
     ? Number(urlState.propertyId)
-    : initialData?.tabHeaderInfo?.propertyId
+    : isDraftMatchingInitial && initialData?.tabHeaderInfo?.propertyId
     ? Number(initialData.tabHeaderInfo.propertyId)
-    : initialPropertyMasterData?.propertyId
+    : isDraftMatchingInitial && initialPropertyMasterData?.propertyId
     ? Number(initialPropertyMasterData.propertyId)
+    : isDraftMatchingInitial && (initialData?.propertyDetails as { propertyId?: number | string })?.propertyId
+    ? Number((initialData?.propertyDetails as { propertyId?: number | string })?.propertyId)
     : null;
 
   return {

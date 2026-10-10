@@ -1,16 +1,17 @@
-"use client";
-
-import React, { useMemo } from "react";
+import React, { useTransition, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-
-import { Button, Label, Badge, SearchInput, Select, MasterTable, Checkbox } from '@/components/common';
-import type { Column } from '@/components/common';
+import { Button, Label } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 import { ValidationErrorBanner } from "./ValidationErrorBanner";
 import { DiscountSidebar } from "./DiscountSidebar";
 import { DiscountDetailPane } from "./DiscountDetailPane";
+import { UnitSelectionPanel } from "./UnitSelectionPanel";
 import { DiscountAttributeState, DiscountState } from "@/types/discount.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
+import { Loader2 } from "lucide-react";
+import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
+import { useConfirm } from "@/components/common/ConfirmProvider";
+import { getLocalizedName } from "@/lib/utils/social-details";
 
 interface DiscountPaneProps {
     discountData: DiscountState;
@@ -31,7 +32,9 @@ interface DiscountPaneProps {
     handleFileDelete: (id: number) => void;
     handleDeleteDiscount: (id: number) => void;
     isSaving: boolean;
+    isDeleting?: boolean;
     hasChanges?: boolean;
+    isFormValid?: boolean;
     onSave?: () => void;
 
     t: {
@@ -40,10 +43,15 @@ interface DiscountPaneProps {
     };
     levelState?: ReturnType<typeof useDiscountLevelState>;
     isSociety?: boolean;
+    isWingLoading?: boolean;
+    savedPropertyDetails?: PropertySocialDetailsDto[];
+    propertyId?: string;
+    societyDetailId?: number;
 }
 
 export interface UnitRow extends Record<string, unknown> {
     propertyDetailsId: number;
+    propertyId?: number;
     unitNo: string;
     wingName: string;
     floorName: string;
@@ -69,86 +77,53 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
     handleFileDelete,
     handleDeleteDiscount,
     isSaving,
+    isDeleting = false,
     hasChanges,
+    isFormValid,
     onSave,
 
+    savedPropertyDetails = [],
     t,
     levelState,
-    isSociety = false
+    isSociety = false,
+    isWingLoading = false,
+    propertyId,
+    societyDetailId,
 }) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [isWingPending, startWingTransition] = useTransition();
+    const { confirm } = useConfirm();
+    const [deleteSelectionCount, setDeleteSelectionCount] = React.useState(0);
 
-    const updateUrl = (params: URLSearchParams) => {
+    const updateUrl = useCallback((params: URLSearchParams) => {
         const nextUrl = `${pathname}?${params.toString()}`;
-        router.push(nextUrl, { scroll: false });
-    };
+        startWingTransition(() => {
+            router.push(nextUrl, { scroll: false });
+        });
+    }, [pathname, router]);
+    const isLoadingWing = isWingLoading || isWingPending;
 
-    const unitTableColumns = useMemo<Column<UnitRow>[]>(() => {
-        if (!levelState) return [];
-        return [
-            {
-                key: 'propertyDetailsId',
-                label: (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={levelState.isAllUnitsSelected}
-                            onCheckedChange={levelState.toggleAllUnits}
-                        />
-                    </div>
-                ),
-                width: '40px',
-                align: 'center',
-                render: (_, row) => (
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={levelState.selectedUnitIds.has(row.propertyDetailsId as number)}
-                            onCheckedChange={() => levelState.toggleUnitSelection(row.propertyDetailsId as number)}
-                        />
-                    </div>
-                ),
-            },
-            {
-                key: 'unitNo',
-                label: 'UNIT',
-                render: (val) => <span className="font-bold text-blue-900">{String(val || '')}</span>,
-            },
-            {
-                key: 'wingName',
-                label: 'WING',
-                render: (val) => <span className="font-semibold text-slate-700">{String(val || '')}</span>,
-            },
-            {
-                key: 'floorName',
-                label: 'FLOOR',
-                render: (val) => <span className="text-slate-600">{String(val || '')}</span>,
-            },
-            {
-                key: 'useName',
-                label: 'USE',
-                render: (val) => (
-                    <Badge variant="secondary" size="sm" className="bg-blue-100 text-blue-800 font-semibold">
-                        {String(val || 'Residential')}
-                    </Badge>
-                ),
-            },
-        ];
-    }, [levelState]);
+    const handleEditUnit = useCallback((_row: unknown) => {
+        if (activeSelectedId !== null) {
+            setSelectedId(activeSelectedId);
+        }
+    }, [activeSelectedId, setSelectedId]);
 
-    const unitTableData = useMemo<UnitRow[]>(() => {
-        if (!levelState) return [];
-        return levelState.filteredUnits.map((u) => ({
-            propertyDetailsId: u.propertyDetailsId,
-            unitNo: u.unitNo,
-            wingName: u.wingName,
-            floorName: u.floorName,
-            useName: u.useName || 'Residential',
-        }));
-    }, [levelState]);
+    const handleUnitUrlUpdate = useCallback((params: URLSearchParams) => {
+        updateUrl(params);
+    }, [updateUrl]);
+
+    const activeAttributeDisplayName = selectedDiscount
+        ? getLocalizedName(selectedDiscount.socialAttributeCode, selectedDiscount.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2])
+        : (activeSelectedId !== null && discountData[activeSelectedId]
+            ? getLocalizedName(discountData[activeSelectedId].socialAttributeCode, discountData[activeSelectedId].socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2])
+            : undefined);
+
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-2.5 md:p-3 w-full h-full">
+        <div className="bg-white rounded-xl shadow-sm border border-blue-100 flex flex-col flex-1 min-h-0 overflow-hidden relative p-1.5 md:p-2 w-full h-full">
             {/* Validation Error Banner */}
             {incompleteDiscounts.filter(d => {
                 const item = discountData[d.id];
@@ -168,7 +143,7 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
 
             <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:overflow-hidden">
                 {/* Left Sidebar */}
-                <div className="lg:col-span-5 xl:col-span-4 h-auto lg:h-full lg:overflow-hidden">
+                <div className="lg:col-span-4 xl:col-span-3 h-auto lg:h-full lg:overflow-hidden">
                     <DiscountSidebar
                         searchTerm={searchTerm}
                         onSearchChange={setSearchTerm}
@@ -177,16 +152,48 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         discounts={filteredDiscounts}
                         selectedId={activeSelectedId}
                         onSelect={setSelectedId}
-                        onToggleEnabled={handleToggleEnabled}
+                        onToggleEnabled={(id, checked) => {
+                            const item = discountData[id];
+                            const isInheritedItem = Boolean(item?.isInherited && !item?.isOverridden);
+                            const isSaved = !isInheritedItem && ((item?.propertySocialDetailId ?? 0) > 0 || (item?.documentBindingId ?? 0) > 0);
+                            if (!checked && isSaved) {
+                                confirm({
+                                    title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
+                                    description: `${t("discount.confirmToggleOffWarning") || "You have an active discount with details:"}\n${item?.socialAttributeName || ''}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
+                                    confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
+                                    cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
+                                    variant: "delete",
+                                    onConfirm: () => {
+                                        handleDeleteDiscount(id);
+                                        setSelectedId(id);
+                                    }
+                                });
+                            } else {
+                                handleToggleEnabled(id, checked);
+                                setSelectedId(id);
+                            }
+                        }}
                         validationErrors={validationErrors}
+                        level={(levelState?.level === 'Apartment' || levelState?.level === 'Wing' || levelState?.level === 'Unit') ? levelState.level : undefined}
                         t={t}
                     />
                 </div>
 
                 {/* Right Detail Pane */}
-                <div className="lg:col-span-7 xl:col-span-8 h-auto lg:h-full lg:overflow-y-auto pr-1 flex flex-col gap-3">
-                    {isSociety && levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') && (
-                        <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
+                <div className="relative lg:col-span-8 xl:col-span-9 h-full flex flex-col gap-2 overflow-hidden">
+                    {/* Loading Overlay */}
+                    {isLoadingWing && (
+                        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 text-white rounded-lg shadow-md text-xs font-medium animate-pulse">
+                                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                                <span>{t('building.fetchingWingData') || 'Fetching wing data...'}</span>
+                            </div>
+                        </div>
+                    )}
+
+
+                    {isSociety && levelState && levelState.level === 'Wing' && (
+                        <div className="flex-shrink-0 space-y-1.5 bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                                 {t('building.selectWing') || 'SELECT WING'}
                             </Label>
@@ -207,15 +214,19 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
 
                                                     const params = new URLSearchParams(searchParams.toString());
                                                     params.set("wingDetailId", String(wing.wingDetailId));
+                                                    params.delete("unitPropertyId");
                                                     updateUrl(params);
                                                 }}
                                                 className={cn(
-                                                    'px-4 font-semibold rounded-lg transition-all cursor-pointer border',
+                                                    'px-4 font-semibold rounded-lg transition-all cursor-pointer border flex items-center gap-1.5',
                                                     isSelected
                                                         ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-xs'
                                                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                                                 )}
                                             >
+                                                {isLoadingWing && isSelected && (
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                                                )}
                                                 {wing.wingName}
                                             </Button>
                                         );
@@ -229,91 +240,21 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                         </div>
                     )}
 
-                    {isSociety && levelState && levelState.level === 'Unit' && (
-                        <div className="flex-shrink-0 space-y-2 bg-slate-50/60 p-3 rounded-xl border border-slate-200">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                                    {t('building.selectUnits') || 'SELECT UNITS'}
-                                </Label>
-                                <Badge variant="secondary" size="sm" className="bg-white text-slate-600 font-semibold border border-slate-200">
-                                    {t('building.unitsSelected', { count: levelState.selectedUnitIds.size }) || `${levelState.selectedUnitIds.size} ${levelState.selectedUnitIds.size === 1 ? 'unit' : 'units'} selected`}
-                                </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                                <div className="relative sm:col-span-1">
-                                    <SearchInput
-                                        placeholder={t('building.searchUnitPlaceholder') || 'Search unit...'}
-                                        value={levelState.unitSearchQuery}
-                                        onChange={levelState.setUnitSearchQuery}
-                                        className="w-full mb-0 text-xs"
-                                    />
-                                </div>
-                                <Select
-                                    options={levelState.wings.map((w) => ({ label: w.wingName, value: String(w.wingDetailId) }))}
-                                    value={levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : ''}
-                                    onChange={(_, val) => {
-                                        const params = new URLSearchParams(searchParams.toString());
-                                        if (val === 'all') {
-                                            levelState.setSelectedWingDetailId(null);
-                                            params.delete("wingDetailId");
-                                        } else {
-                                            const nextWingDetailId = Number(val);
-                                            levelState.setSelectedWingDetailId(nextWingDetailId);
-                                            params.set("wingDetailId", String(nextWingDetailId));
-                                        }
-                                        updateUrl(params);
-                                    }}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                                <Select
-                                    options={[
-                                        { label: t('building.allFloors') || 'All Floors', value: 'all' },
-                                        ...levelState.availableFloors.map((fl) => ({ label: fl, value: fl })),
-                                    ]}
-                                    value={levelState.floorFilter}
-                                    onChange={(_, val) => levelState.setFloorFilter(val)}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                                <Select
-                                    options={[
-                                        { label: t('building.allUses') || 'All Uses', value: 'all' },
-                                        ...levelState.availableUses.map((us) => ({ label: us, value: us })),
-                                    ]}
-                                    value={levelState.useFilter}
-                                    onChange={(_, val) => levelState.setUseFilter(val)}
-                                    selectSize="sm"
-                                    className="text-xs"
-                                />
-                            </div>
-
-                            <MasterTable<UnitRow>
-                                columns={unitTableColumns}
-                                data={unitTableData}
-                                isPagination={false}
-                                emptyText={t('building.noUnitsMatch') || 'No units match the selected filters'}
-                                maxBodyHeightClassName="max-h-48"
-                                onScroll={(e) => {
-                                    const target = e.currentTarget;
-                                    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 30) {
-                                        levelState.loadNextUnitsPage();
-                                    }
-                                }}
-                                getRowKey={(row) => row.propertyDetailsId as number}
-                                onRowClick={(row) => levelState.toggleUnitSelection(row.propertyDetailsId as number)}
-                                rowClassName={(row) =>
-                                    levelState.selectedUnitIds.has(row.propertyDetailsId as number) ? 'bg-blue-50/60' : ''
-                                }
-                            />
-                            {levelState.isLoadingMoreUnits && (
-                                <div className="py-1.5 text-center text-xs text-blue-600 font-medium flex items-center justify-center gap-2 bg-blue-50/40 rounded-lg">
-                                    <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                    <span>{t('building.loadingNextUnits') || 'Loading next 10 units...'}</span>
-                                </div>
-                            )}
-                        </div>
+                    {isSociety && levelState && levelState.level === 'Unit' && Boolean(levelState.selectedWingDetailId && Number(levelState.selectedWingDetailId) > 0) && Boolean(levelState.filteredUnits && levelState.filteredUnits.length > 0) && (
+                        <UnitSelectionPanel
+                            levelState={levelState}
+                            t={t}
+                            savedPropertyDetails={savedPropertyDetails}
+                            activeSelectedId={activeSelectedId}
+                            activeAttributeName={activeAttributeDisplayName}
+                            onEditUnit={handleEditUnit}
+                            onUrlUpdate={handleUnitUrlUpdate}
+                            showActions={true}
+                            propertyId={propertyId}
+                            societyDetailId={societyDetailId}
+                            wingDetailId={levelState.selectedWingDetailId}
+                            onDeleteSelectionChange={(selectedIds) => setDeleteSelectionCount(selectedIds.size)}
+                        />
                     )}
 
                     <DiscountDetailPane
@@ -339,10 +280,13 @@ export const DiscountPane: React.FC<DiscountPaneProps> = ({
                             }
                         }}
                         isSaving={isSaving}
+                        isDeleting={isDeleting}
                         hasChanges={hasChanges}
+                        isFormValid={isFormValid}
                         onSave={onSave}
                         validationError={activeSelectedId !== null ? validationErrors[activeSelectedId] : undefined}
                         t={t}
+                        isDeleteDisabled={levelState?.level === 'Unit' && deleteSelectionCount > 0}
                     />
                 </div>
             </div>

@@ -28,9 +28,9 @@
 export const CODE_REGEX = /^(?!^0+$)[A-Za-z0-9](?:[A-Za-z0-9_\-]*[A-Za-z0-9])?$/;
 export const CODE_SANITIZE = /[^A-Za-z0-9_\-]/g; // Remove any characters except alphanumeric, underscore, and hyphen
 
-// Asset Mouja No: Allow alphanumeric (multilingual), hyphens (-), and underscores (_)
-export const ASSET_MOUJA_NO_REGEX = /^(?!^0+$)[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}_\-]*[\p{L}\p{M}\p{N}])?$/u;
-export const ASSET_MOUJA_NO_SANITIZE = /[^\p{L}\p{M}\p{N}_\-]/gu;
+// Asset Mouja No: Allow alphanumeric (English), single hyphens (-), and underscores (_) in between
+export const ASSET_MOUJA_NO_REGEX = /^(?!^0+$)(?!.*[_-]{2,})[A-Za-z0-9](?:[A-Za-z0-9_\-]*[A-Za-z0-9])?$/;
+export const ASSET_MOUJA_NO_SANITIZE = /[^A-Za-z0-9_\-]/g;
 // Asset Sub-Zone No: Allow alphanumeric (multilingual), dot (.), hyphen (-), and slash (/)
 export const ASSET_SUBZONE_NO_REGEX = /^(?!^0+$)[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}.\-\/]*[\p{L}\p{M}\p{N}])?$/u;
 export const ASSET_SUBZONE_NO_SANITIZE = /[^\p{L}\p{M}\p{N}.\-\/]/gu;
@@ -165,4 +165,12 @@ export const isAllZeros = (value: string): boolean => {
 
 // Apartment QC Basic Information form validation 
 export const OWNERNAME_REGEX =
-  /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
+  /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
+
+/* ================= OPTIONS COMMA SEPARATED VALIDATION ================= */
+// Allows Unicode letters, marks, numbers, spaces, and optional space after commas.
+// Rejects consecutive spaces and trailing commas.
+export const OPTIONS_COMMA_SEPARATED_REGEX =
+  /^(?!.* {2})[\p{L}\p{M}\p{N}]+(?: [\p{L}\p{M}\p{N}]+)*(?:, ?[\p{L}\p{M}\p{N}]+(?: [\p{L}\p{M}\p{N}]+)*)*$/u;
+export const OPTIONS_COMMA_SEPARATED_SANITIZE =
+  /[^\p{L}\p{M}\p{N} ,]/gu;

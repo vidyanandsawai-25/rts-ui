@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
+import { parseDateString } from '@/lib/validation/building/validation-rules';
 import {
   useCertificateModalState,
 } from '@/hooks/useCertificateModalState';
@@ -49,6 +50,7 @@ export interface EditCertificateRecordModalProps {
   initialCertificateTypeId?: number;
   initialData?: CertificateData | null;
   isLoading?: boolean;
+  propertyConstructionYear?: string | number | null;
 }
 
 const BADGE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -73,6 +75,7 @@ export function EditCertificateRecordModal({
   initialCertificateTypeId = 3,
   initialData = null,
   isLoading = false,
+  propertyConstructionYear,
 }: EditCertificateRecordModalProps): React.ReactElement | null {
   const t = useTranslations('quickDataEntry');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,10 +89,6 @@ export function EditCertificateRecordModal({
     setUnitSearchQuery,
     wingFilter,
     setWingFilter,
-    floorFilter,
-    setFloorFilter,
-    useFilter,
-    setUseFilter,
     selectedUnitIds,
     selectedTypeId,
     setSelectedTypeId,
@@ -104,8 +103,6 @@ export function EditCertificateRecordModal({
     attachedFiles,
     setAttachedFiles,
     certificateTypes: activeCertificateTypes,
-    availableFloors,
-    availableUses,
     filteredUnits,
     isAllUnitsSelected,
     toggleUnitSelection,
@@ -120,8 +117,6 @@ export function EditCertificateRecordModal({
     initialData,
   });
 
-  if (!open) return null;
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -133,8 +128,69 @@ export function EditCertificateRecordModal({
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const [dateError, setDateError] = React.useState<string | null>(null);
+
+  const effectiveConstructionYear = React.useMemo<number | null>(() => {
+    if (level === 'Unit' && selectedUnitIds.size > 0) {
+      const selectedYears: number[] = [];
+      selectedUnitIds.forEach((id) => {
+        const u = units.find((unit) => unit.propertyDetailsId === id || unit.propertyId === id);
+        if (u?.constructionYear) {
+          const parsed = parseInt(String(u.constructionYear), 10);
+          if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+            selectedYears.push(parsed);
+          }
+        }
+      });
+      if (selectedYears.length > 0) {
+        return Math.max(...selectedYears);
+      }
+    }
+
+    if (level === 'Wing' && selectedWingDetailId) {
+      const wingYears: number[] = [];
+      units.forEach((u) => {
+        if (u.wingDetailId === selectedWingDetailId && u.constructionYear) {
+          const parsed = parseInt(String(u.constructionYear), 10);
+          if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+            wingYears.push(parsed);
+          }
+        }
+      });
+      if (wingYears.length > 0) {
+        return Math.min(...wingYears);
+      }
+    }
+
+    if (propertyConstructionYear) {
+      const parsed = parseInt(String(propertyConstructionYear), 10);
+      if (!isNaN(parsed) && parsed > 1800 && parsed < 2200) {
+        return parsed;
+      }
+    }
+
+    const allUnitYears = units
+      .map((u) => (u.constructionYear ? parseInt(String(u.constructionYear), 10) : null))
+      .filter((y): y is number => y !== null && !isNaN(y) && y > 1800 && y < 2200);
+
+    if (allUnitYears.length > 0) {
+      return Math.min(...allUnitYears);
+    }
+
+    return null;
+  }, [level, selectedUnitIds, units, selectedWingDetailId, propertyConstructionYear]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (certificateDate && effectiveConstructionYear) {
+      const certDate = parseDateString(certificateDate);
+      if (certDate && certDate.getFullYear() < effectiveConstructionYear) {
+        setDateError(t('validation.dateBeforeConstructionYear', { year: effectiveConstructionYear })
+          || `Date must be greater than or equal to construction year (${effectiveConstructionYear})`);
+        return;
+      }
+    }
+    setDateError(null);
     onSave({
       level,
       selectedWingDetailId,
@@ -153,6 +209,8 @@ export function EditCertificateRecordModal({
     text: 'text-blue-700',
     border: 'border-blue-200',
   };
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -232,7 +290,12 @@ export function EditCertificateRecordModal({
               {/* Unit Level Card */}
               <button
                 type="button"
-                onClick={() => setLevel('Unit')}
+                onClick={() => {
+                  setLevel('Unit');
+                  if (selectedWingDetailId && String(selectedWingDetailId) !== wingFilter) {
+                    setWingFilter(String(selectedWingDetailId));
+                  }
+                }}
                 className={`flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer font-semibold text-sm ${
                   level === 'Unit'
                     ? 'border-[#5B50E6] bg-[#5B50E6] text-white shadow-md'
@@ -244,8 +307,8 @@ export function EditCertificateRecordModal({
               </button>
             </div>
 
-            {/* SELECT WING Pills (visible for Wing & Unit levels) */}
-            {(level === 'Wing' || level === 'Unit') && (
+            {/* SELECT WING Pills (visible only for Wing level) */}
+            {level === 'Wing' && (
               <div className="space-y-2 pt-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   SELECT WING
@@ -258,7 +321,10 @@ export function EditCertificateRecordModal({
                         <button
                           key={wing.wingDetailId}
                           type="button"
-                          onClick={() => setSelectedWingDetailId(wing.wingDetailId)}
+                          onClick={() => {
+                            setSelectedWingDetailId(wing.wingDetailId);
+                            setWingFilter(String(wing.wingDetailId));
+                          }}
                           className={`px-6 py-2.5 rounded-xl border-2 font-semibold text-sm transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
                             isSelected
                               ? 'border-[#10B981] bg-white text-[#10B981] shadow-sm'
@@ -289,7 +355,7 @@ export function EditCertificateRecordModal({
                 </div>
 
                 {/* Filter Toolbar */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="relative sm:col-span-1">
                     <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
@@ -303,39 +369,18 @@ export function EditCertificateRecordModal({
 
                   <select
                     value={wingFilter}
-                    onChange={(e) => setWingFilter(e.target.value)}
+                    onChange={(e) => {
+                      setWingFilter(e.target.value);
+                      const matched = wings.find((w) => String(w.wingDetailId) === e.target.value || w.wingName === e.target.value);
+                      if (matched) {
+                        setSelectedWingDetailId(matched.wingDetailId);
+                      }
+                    }}
                     className="border border-slate-200 rounded-lg text-xs px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
-                    <option value="all">All Wings</option>
                     {wings.map((w) => (
-                      <option key={w.wingDetailId} value={w.wingName}>
+                      <option key={w.wingDetailId} value={String(w.wingDetailId)}>
                         {w.wingName}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={floorFilter}
-                    onChange={(e) => setFloorFilter(e.target.value)}
-                    className="border border-slate-200 rounded-lg text-xs px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="all">All Floors</option>
-                    {availableFloors.map((fl) => (
-                      <option key={fl} value={fl}>
-                        {fl}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={useFilter}
-                    onChange={(e) => setUseFilter(e.target.value)}
-                    className="border border-slate-200 rounded-lg text-xs px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="all">All Uses</option>
-                    {availableUses.map((use) => (
-                      <option key={use} value={use}>
-                        {use}
                       </option>
                     ))}
                   </select>
@@ -350,7 +395,7 @@ export function EditCertificateRecordModal({
                           <input
                             type="checkbox"
                             checked={isAllUnitsSelected}
-                            onChange={toggleAllUnits}
+                            onChange={() => toggleAllUnits()}
                             className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                           />
                         </th>
@@ -484,10 +529,20 @@ export function EditCertificateRecordModal({
                     <div className="relative">
                       <input
                         type="date"
+                        min={effectiveConstructionYear ? `${effectiveConstructionYear}-01-01` : undefined}
+                        max={new Date().toISOString().split('T')[0]}
                         value={certificateDate}
-                        onChange={(e) => setCertificateDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        onChange={(e) => {
+                          setCertificateDate(e.target.value);
+                          if (dateError) setDateError(null);
+                        }}
+                        className={`w-full px-3 py-2 border rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 ${
+                          dateError ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-indigo-500'
+                        }`}
                       />
+                      {dateError && (
+                        <p className="text-[11px] text-red-600 mt-1">{dateError}</p>
+                      )}
                     </div>
                   </div>
 

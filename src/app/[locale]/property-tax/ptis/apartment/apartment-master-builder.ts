@@ -5,7 +5,6 @@ import type {
   WingWiseDetailsItems,
 } from '@/types/property-tax/apartment';
 import type { fetchPtisPageData } from '@/app/[locale]/property-tax/ptis/ptis-fetch.service';
-import { getViewDocumentUrl } from '@/lib/utils/document-utils';
 
 export type PtisPageData = Awaited<ReturnType<typeof fetchPtisPageData>>;
 
@@ -19,55 +18,12 @@ export interface BuildMasterDataParams {
   initialApartmentTaxDetails?: unknown;
 }
 
-function resolveSocietyPhoto(pageData: PtisPageData): { guid?: string; url?: string } {
-  const { initialPhotos, initialPhotoSlots } = pageData;
-  const societyPhotoObj =
-    initialPhotos?.find(
-      (p: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY' ||
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY_PHOTO' ||
-        p.photoTypeCode?.toUpperCase() === 'SOCIETY_BUILDING' ||
-        p.photoTypeName?.toLowerCase().includes('society') ||
-        p.photoTypeId === 5
-    ) ||
-    initialPhotos?.find(
-      (p: { photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-        p.photoTypeCode?.toUpperCase() === 'FRONT' ||
-        p.photoTypeCode?.toUpperCase() === 'PROPERTY_PHOTO' ||
-        p.photoTypeCode?.toUpperCase() === 'BUILDING_PHOTO' ||
-        p.photoTypeName?.toLowerCase().includes('front')
-    ) ||
-    initialPhotos?.[0];
-
-  let guid = societyPhotoObj?.documentGuid ? String(societyPhotoObj.documentGuid) : undefined;
-  let url = guid ? getViewDocumentUrl(guid) : (societyPhotoObj?.viewUrl || undefined);
-
-  if (!guid && !url) {
-    const slotObj =
-      initialPhotoSlots?.find(
-        (s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) =>
-          s.hasPhoto &&
-          (s.photoTypeCode?.toUpperCase().includes('SOCIETY') ||
-            s.photoTypeName?.toLowerCase().includes('society') ||
-            s.photoTypeId === 5)
-      ) || initialPhotoSlots?.find((s: { hasPhoto?: boolean; photoTypeCode?: string; photoTypeName?: string; photoTypeId?: number; documentGuid?: string | number; viewUrl?: string }) => s.hasPhoto);
-
-    if (slotObj) {
-      if (slotObj.documentGuid) {
-        guid = String(slotObj.documentGuid);
-        url = getViewDocumentUrl(String(slotObj.documentGuid));
-      } else if (slotObj.viewUrl) {
-        url = slotObj.viewUrl;
-      }
-    }
-  }
-  return { guid, url };
-}
+import { resolveSocietyPhoto } from '@/lib/utils/ptis-photo-match.utils';
 
 export function buildInitialPropertyMasterData(
   params: BuildMasterDataParams
 ): PropertyMasterData | undefined {
-  const { resolvedPropertyId, baseData, pageData, wardNo, propertyNo, rawData } = params;
+  const { resolvedPropertyId, baseData, pageData, propertyNo, rawData } = params;
   if (!resolvedPropertyId && !baseData) return undefined;
 
   const { propertyDetailsResult, societyDetails, kycDetails, tabHeaderInfo, rawPropertyData } = pageData;
@@ -78,15 +34,39 @@ export function buildInitialPropertyMasterData(
   const rawTabHeader = tabHeaderInfo as unknown as Record<string, unknown>;
   const firstWingRaw = rawData?.wings?.[0] as unknown as Record<string, unknown> | undefined;
 
-  const { guid: photoGuid, url: photoUrl } = resolveSocietyPhoto(pageData);
+  const { guid: photoGuid, url: photoUrl } = resolveSocietyPhoto(
+    pageData.initialPhotos,
+    pageData.initialPhotoSlots
+  );
+  const hasPhotosList = Array.isArray(pageData.initialPhotos) || Array.isArray(pageData.initialPhotoSlots);
+  const effectivePhotoGuid = photoGuid || (!hasPhotosList ? baseData?.societyBuildingPhotoGuid : undefined);
+  const effectivePhotoUrl = photoUrl || (!hasPhotosList ? baseData?.imageUrl : undefined);
 
-  const effectiveWardNo = (baseData?.wardNo && baseData.wardNo !== '-') ? baseData.wardNo : (wardNo && wardNo !== '-') ? wardNo : (typeof propDetails?.wardNo === 'string' ? propDetails.wardNo : '') || (typeof tabHeaderInfo?.oldWardNo === 'string' ? tabHeaderInfo.oldWardNo : '') || '-';
+  const effectiveWardNo = (baseData?.wardNo && baseData.wardNo !== '-')
+    ? baseData.wardNo
+    : (typeof propDetails?.wardNo === 'string' && propDetails.wardNo !== '-')
+    ? propDetails.wardNo
+    : (typeof tabHeaderInfo?.oldWardNo === 'string' && tabHeaderInfo.oldWardNo !== '-')
+    ? tabHeaderInfo.oldWardNo
+    : '-';
   const effectivePropNo = (baseData?.propertyNo && baseData.propertyNo !== '-') ? baseData.propertyNo : (propertyNo && propertyNo !== '-') ? propertyNo : (typeof propDetails?.propertyNo === 'string' ? propDetails.propertyNo : '') || (typeof tabHeaderInfo?.oldPropertyNo === 'string' ? tabHeaderInfo.oldPropertyNo : '') || '-';
   const effectiveUpic = (baseData?.upic && baseData.upic !== '-') ? baseData.upic : (typeof tabHeaderInfo?.upicId === 'string' ? tabHeaderInfo.upicId : '') || (typeof propDetails?.upicId === 'string' ? propDetails.upicId : '') || (typeof rawPropertyData?.[0]?.upicId === 'string' ? rawPropertyData[0].upicId : '') || '-';
   const effectiveSocietyName = (baseData?.societyName && baseData.societyName !== '-') ? baseData.societyName : (typeof societyDetails?.buildingSocietyName === 'string' ? societyDetails.buildingSocietyName : '') || (typeof rawSoc?.societyName === 'string' ? rawSoc.societyName : '') || (typeof kycDetails?.propertyHolderName === 'string' ? kycDetails.propertyHolderName : '') || (typeof tabHeaderInfo?.ownerName === 'string' ? tabHeaderInfo.ownerName : '') || '-';
   const effectiveDivision = (baseData?.division && baseData.division !== '-') ? baseData.division : (typeof rawPropDetails?.division === 'string' && rawPropDetails.division !== '-') ? rawPropDetails.division : (typeof rawPropDetails?.divisionName === 'string' && rawPropDetails.divisionName !== '-') ? rawPropDetails.divisionName : (typeof rawTabHeader?.division === 'string' && rawTabHeader.division !== '-') ? rawTabHeader.division : '-';
   const effectiveTaxZoneAndName = (baseData?.taxZoneAndName && baseData.taxZoneAndName !== '-') ? baseData.taxZoneAndName : (rawPropDetails?.taxZone && rawPropDetails?.taxZoneName) ? `${String(rawPropDetails.taxZone)} - ${String(rawPropDetails.taxZoneName)}` : '-';
-  const effectiveSubZoneCsn = (baseData?.subZoneCsnNo && baseData.subZoneCsnNo !== '-') ? baseData.subZoneCsnNo : rawPropDetails?.csn ? `CSN - ${String(rawPropDetails.csn)}` : rawPropDetails?.subZone ? `CSN - ${String(rawPropDetails.subZone)}` : rawTabHeader?.surveyNo ? `CSN - ${String(rawTabHeader.surveyNo)}` : '-';
+  const rawSubZ = rawPropDetails?.subZoneNo || rawPropDetails?.subZone || rawTabHeader?.subZoneNo || rawTabHeader?.subZone;
+  const rawC = rawPropDetails?.csn || rawTabHeader?.csn;
+  const effectiveSubZoneCsn = (baseData?.subZoneCsnNo && baseData.subZoneCsnNo !== '-')
+    ? baseData.subZoneCsnNo
+    : (rawSubZ && rawC)
+    ? `${String(rawSubZ)} - ${String(rawC).replace(/^CSN\s*[-:]?\s*/i, '').trim()}`
+    : rawSubZ
+    ? String(rawSubZ)
+    : rawC
+    ? (String(rawC).toUpperCase().startsWith('CSN') ? String(rawC) : `CSN - ${String(rawC)}`)
+    : rawTabHeader?.surveyNo
+    ? `CSN - ${String(rawTabHeader.surveyNo)}`
+    : '-';
   const effectivePlotNo = (baseData?.plotNo && baseData.plotNo !== '-') ? baseData.plotNo : (typeof rawPropDetails?.plotNo === 'string' && rawPropDetails.plotNo !== '-') ? rawPropDetails.plotNo : (typeof rawTabHeader?.plotNo === 'string' && rawTabHeader.plotNo !== '-') ? rawTabHeader.plotNo : '-';
   const effectiveLandOwner = (baseData?.landOwnerName && baseData.landOwnerName !== '-') ? baseData.landOwnerName : (typeof rawSoc?.landOwnerName === 'string' && rawSoc.landOwnerName !== '-') ? rawSoc.landOwnerName : (typeof rawKyc?.propertyHolderNameMarathi === 'string' && rawKyc.propertyHolderNameMarathi !== '-') ? rawKyc.propertyHolderNameMarathi : baseData?.ownerName || '-';
   const effectiveBuilder = (baseData?.builderName && baseData.builderName !== '-') ? baseData.builderName : (typeof rawSoc?.builderName === 'string' && rawSoc.builderName !== '-') ? rawSoc.builderName : (typeof rawKyc?.occupierNameMarathi === 'string' && rawKyc.occupierNameMarathi !== '-') ? rawKyc.occupierNameMarathi : '-';
@@ -99,10 +79,34 @@ export function buildInitialPropertyMasterData(
     : (baseData?.secretaryMobileNo || '-');
   const effectiveSecEmail = (baseData?.secretaryEmail && baseData.secretaryEmail !== '-') ? baseData.secretaryEmail : (typeof rawSoc?.secretaryEmailId === 'string' && rawSoc.secretaryEmailId !== '-') ? rawSoc.secretaryEmailId : '-';
   const effectiveAddress = (baseData?.societyAddress && baseData.societyAddress !== '-') ? baseData.societyAddress : (baseData?.address && baseData.address !== '-') ? baseData.address : (typeof rawSoc?.societyAddress === 'string' && rawSoc.societyAddress !== '-') ? rawSoc.societyAddress : (typeof rawKyc?.address === 'string' && rawKyc.address !== '-') ? rawKyc.address : '-';
-  const effectivePlotArea = (baseData?.plotArea && baseData.plotArea !== '-') ? baseData.plotArea : (typeof rawPropDetails?.plotArea === 'string' || typeof rawPropDetails?.plotArea === 'number') ? `${String(rawPropDetails.plotArea)} sq.ft` : '-';
-  const effectiveCarpetBuiltUp = (baseData?.carpetBuiltUpArea && baseData.carpetBuiltUpArea !== '-') ? baseData.carpetBuiltUpArea : (rawPropDetails?.carpetArea && rawPropDetails?.builtUpArea) ? `${String(rawPropDetails.carpetArea)} / ${String(rawPropDetails.builtUpArea)}` : '-';
-  const effectiveTotalFloors = (baseData?.totalFloors && baseData.totalFloors !== '-') ? baseData.totalFloors : rawPropDetails?.totalFloors ? String(rawPropDetails.totalFloors) : '-';
-  const effectiveTotalProperties = (baseData?.totalPropertiesResCommAmen && baseData.totalPropertiesResCommAmen !== '-') ? baseData.totalPropertiesResCommAmen : rawPropDetails?.totalProperties ? String(rawPropDetails.totalProperties) : '-';
+  const rawPlotAreaStr = rawPropDetails?.plotArea != null ? String(rawPropDetails.plotArea).trim() : '';
+  const effectivePlotArea = (baseData?.plotArea && baseData.plotArea !== '-')
+    ? baseData.plotArea
+    : (rawPlotAreaStr !== '' && rawPlotAreaStr !== '-' && rawPlotAreaStr !== '0')
+      ? `${rawPlotAreaStr} sq.ft`
+      : '-';
+
+  const rawCarpet = rawPropDetails?.carpetArea != null ? String(rawPropDetails.carpetArea).trim() : '';
+  const rawBuiltUp = rawPropDetails?.builtUpArea != null ? String(rawPropDetails.builtUpArea).trim() : '';
+  const effectiveCarpetBuiltUp = (baseData?.carpetBuiltUpArea && baseData.carpetBuiltUpArea !== '-')
+    ? baseData.carpetBuiltUpArea
+    : (rawCarpet !== '' && rawBuiltUp !== '' && rawCarpet !== '-' && rawBuiltUp !== '-')
+      ? `${rawCarpet} / ${rawBuiltUp}`
+      : '-';
+
+  const rawFloors = rawPropDetails?.totalFloors != null ? String(rawPropDetails.totalFloors).trim() : '';
+  const effectiveTotalFloors = (baseData?.totalFloors && baseData.totalFloors !== '-')
+    ? baseData.totalFloors
+    : (rawFloors !== '' && rawFloors !== '-')
+      ? rawFloors
+      : '-';
+
+  const rawProps = rawPropDetails?.totalProperties != null ? String(rawPropDetails.totalProperties).trim() : '';
+  const effectiveTotalProperties = (baseData?.totalPropertiesResCommAmen && baseData.totalPropertiesResCommAmen !== '-')
+    ? baseData.totalPropertiesResCommAmen
+    : (rawProps !== '' && rawProps !== '-')
+      ? rawProps
+      : '-';
   const effectiveCategory = (baseData?.category && baseData.category !== '-') ? baseData.category : (typeof rawTabHeader?.category === 'string' && rawTabHeader.category !== '-') ? rawTabHeader.category : (typeof rawPropDetails?.categoryName === 'string' && rawPropDetails.categoryName !== '-') ? rawPropDetails.categoryName : 'Apartment';
   const effectiveDescRegional = (baseData?.propertyDescriptionRegional && baseData.propertyDescriptionRegional !== '-') ? baseData.propertyDescriptionRegional : (typeof rawPropDetails?.propertyDescriptionRegional === 'string' && rawPropDetails.propertyDescriptionRegional !== '-') ? rawPropDetails.propertyDescriptionRegional : 'निवासी व अनिवासी';
 
@@ -114,6 +118,7 @@ export function buildInitialPropertyMasterData(
     propertyNo: effectivePropNo,
     upic: effectiveUpic,
     societyName: effectiveSocietyName,
+    societyNameEnglish: (baseData?.societyNameEnglish && baseData.societyNameEnglish !== '-') ? baseData.societyNameEnglish : (typeof rawSoc?.societyNameEnglish === 'string' && rawSoc.societyNameEnglish !== '-') ? rawSoc.societyNameEnglish : baseData?.societyNameEnglish,
     division: effectiveDivision,
     wardNo: effectiveWardNo,
     category: effectiveCategory,
@@ -122,21 +127,33 @@ export function buildInitialPropertyMasterData(
     subZoneCsnNo: effectiveSubZoneCsn,
     plotNo: effectivePlotNo,
     landOwnerName: effectiveLandOwner,
+    landOwnerNameEnglish: (baseData?.landOwnerNameEnglish && baseData.landOwnerNameEnglish !== '-') ? baseData.landOwnerNameEnglish : (typeof rawSoc?.landOwnerNameEnglish === 'string' && rawSoc.landOwnerNameEnglish !== '-') ? rawSoc.landOwnerNameEnglish : baseData?.landOwnerNameEnglish,
     builderName: effectiveBuilder,
+    builderNameEnglish: (baseData?.builderNameEnglish && baseData.builderNameEnglish !== '-') ? baseData.builderNameEnglish : (typeof rawSoc?.builderNameEnglish === 'string' && rawSoc.builderNameEnglish !== '-') ? rawSoc.builderNameEnglish : baseData?.builderNameEnglish,
     societyEmail: effectiveSocietyEmail,
     secretaryName: effectiveSecName,
+    secretaryNameEnglish: (baseData?.secretaryNameEnglish && baseData.secretaryNameEnglish !== '-') ? baseData.secretaryNameEnglish : (typeof rawSoc?.secretaryNameEnglish === 'string' && rawSoc.secretaryNameEnglish !== '-') ? rawSoc.secretaryNameEnglish : baseData?.secretaryNameEnglish,
     secretaryMobileNo: effectiveSecMobile,
     secretaryEmail: effectiveSecEmail,
     societyAddress: effectiveAddress,
+    societyAddressEnglish: (baseData?.societyAddressEnglish && baseData.societyAddressEnglish !== '-') ? baseData.societyAddressEnglish : (typeof rawSoc?.societyAddressEnglish === 'string' && rawSoc.societyAddressEnglish !== '-') ? rawSoc.societyAddressEnglish : baseData?.societyAddressEnglish,
     address: effectiveAddress,
+    managerName: (baseData?.managerName && baseData.managerName !== '-') ? baseData.managerName : (typeof rawSoc?.managerName === 'string' && rawSoc.managerName !== '-') ? rawSoc.managerName : baseData?.managerName,
+    managerNameEnglish: (baseData?.managerNameEnglish && baseData.managerNameEnglish !== '-') ? baseData.managerNameEnglish : (typeof rawSoc?.managerNameEnglish === 'string' && rawSoc.managerNameEnglish !== '-') ? rawSoc.managerNameEnglish : baseData?.managerNameEnglish,
     plotArea: effectivePlotArea,
     carpetBuiltUpArea: effectiveCarpetBuiltUp,
-    oldCarpetBuiltUp: baseData?.oldCarpetBuiltUp || effectiveCarpetBuiltUp,
+    carpetAreaFtMtr: baseData?.carpetAreaFtMtr,
+    builtUpAreaFtMtr: baseData?.builtUpAreaFtMtr,
+    oldCarpetBuiltUp: (baseData?.oldCarpetBuiltUp && baseData.oldCarpetBuiltUp !== '-') ? baseData.oldCarpetBuiltUp : (typeof rawSoc?.oldCarpetBuiltUp === 'string' && rawSoc.oldCarpetBuiltUp !== '-') ? rawSoc.oldCarpetBuiltUp : '-',
+    oldCarpetAreaFtMtr: baseData?.oldCarpetAreaFtMtr,
+    oldBuiltUpAreaFtMtr: baseData?.oldBuiltUpAreaFtMtr,
     totalFloors: effectiveTotalFloors,
     totalPropertiesResCommAmen: effectiveTotalProperties,
-    societyBuildingPhotoGuid: baseData?.societyBuildingPhotoGuid || photoGuid,
-    imageUrl: baseData?.imageUrl || photoUrl,
+    societyBuildingPhotoGuid: effectivePhotoGuid,
+    imageUrl: effectivePhotoUrl,
     propertyDescriptionRegional: effectiveDescRegional,
+    latitude: baseData?.latitude ?? (rawSoc?.latitude as string | number | null | undefined) ?? pageData?.latitude,
+    longitude: baseData?.longitude ?? (rawSoc?.longitude as string | number | null | undefined) ?? pageData?.longitude,
     performance: perf || {
       thisAssessmentRevenue: '₹0',
       revenueGrowthPct: '',

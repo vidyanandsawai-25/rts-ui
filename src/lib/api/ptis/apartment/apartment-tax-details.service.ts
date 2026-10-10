@@ -1,6 +1,6 @@
 import 'server-only';
 import { apiClient } from '@/services/api.service';
-import { ApartmentTaxDetailsResponse } from '@/types/property-tax/apartment';
+import { ApartmentTaxDetailsResponse, ApartmentDemandDetailsResponse } from '@/types/property-tax/apartment';
 
 export interface GetApartmentTaxDetailsParams {
   wardId: number | string;
@@ -65,6 +65,140 @@ export async function getApartmentTaxDetails({
     const errorMessage =
       error instanceof Error ? error.message : 'Network error while fetching apartment tax details';
     return createErrorResponse(errorMessage, [errorMessage]);
+  }
+}
+
+/**
+ * Fetches demand details for an apartment property.
+ * Endpoint: /ApartmentQC/demanddetails?wardId={wardId}&propertyNo={propertyNo}&taxType={taxType}
+ */
+export async function getApartmentDemandDetails({
+  wardId,
+  propertyNo,
+  taxType = 'RV',
+}: GetApartmentTaxDetailsParams): Promise<ApartmentDemandDetailsResponse> {
+  try {
+    const cleanWardId = String(wardId ?? '').trim();
+    const cleanPropertyNo = String(propertyNo ?? '').trim();
+    const cleanTaxType = (taxType ?? 'RV').trim().toUpperCase() || 'RV';
+
+    if (!cleanWardId || !cleanPropertyNo) {
+      return {
+        success: false,
+        message: 'Ward ID and Property Number are required',
+        items: null,
+        totalCount: null,
+        errors: ['Missing or invalid required parameters: wardId or propertyNo'],
+        correlationId: null,
+      };
+    }
+
+    const params = new URLSearchParams({
+      wardId: cleanWardId,
+      propertyNo: cleanPropertyNo,
+      taxType: cleanTaxType,
+    });
+
+    const endpoint = `/ApartmentQC/demanddetails?${params.toString()}`;
+    const response = await apiClient.get<ApartmentDemandDetailsResponse>(endpoint, {
+      cache: 'no-store',
+    });
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    return {
+      success: false,
+      message: response.error || 'Failed to fetch apartment demand details',
+      items: null,
+      totalCount: null,
+      errors: response.error ? [response.error] : ['Unknown server error'],
+      correlationId: null,
+    };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Network error while fetching apartment demand details';
+    return {
+      success: false,
+      message: errorMessage,
+      items: null,
+      totalCount: null,
+      errors: [errorMessage],
+      correlationId: null,
+    };
+  }
+}
+
+export interface GetApartmentYearWiseDetailsParams {
+  wardId: number | string;
+  propertyNo: string;
+  taxType?: string;
+  financeYearId: number | string;
+}
+
+/**
+ * Fetches year wise details for an apartment property.
+ * Endpoint: /ApartmentQC/yearwisedetails?wardId={wardId}&propertyNo={propertyNo}&taxType={taxType}&financeYearId={financeYearId}
+ */
+export async function getApartmentYearWiseDetails({
+  wardId,
+  propertyNo,
+  taxType = 'RV',
+  financeYearId,
+}: GetApartmentYearWiseDetailsParams): Promise<ApartmentDemandDetailsResponse> {
+  try {
+    const cleanWardId = String(wardId ?? '').trim();
+    const cleanPropertyNo = String(propertyNo ?? '').trim();
+    const cleanTaxType = (taxType ?? 'RV').trim().toUpperCase() || 'RV';
+    const cleanFinanceYearId = String(financeYearId ?? '').trim();
+
+    if (!cleanWardId || !cleanPropertyNo || !cleanFinanceYearId) {
+      return {
+        success: false,
+        message: 'Ward ID, Property Number, and Finance Year ID are required',
+        items: null,
+        totalCount: null,
+        errors: ['Missing or invalid required parameters: wardId, propertyNo, or financeYearId'],
+        correlationId: null,
+      };
+    }
+
+    const params = new URLSearchParams({
+      wardId: cleanWardId,
+      propertyNo: cleanPropertyNo,
+      taxType: cleanTaxType,
+      financeYearId: cleanFinanceYearId,
+    });
+
+    const endpoint = `/ApartmentQC/yearwisedetails?${params.toString()}`;
+    const response = await apiClient.get<ApartmentDemandDetailsResponse>(endpoint, {
+      cache: 'no-store',
+    });
+
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    return {
+      success: false,
+      message: response.error || 'Failed to fetch apartment year wise details',
+      items: null,
+      totalCount: null,
+      errors: response.error ? [response.error] : ['Unknown server error'],
+      correlationId: null,
+    };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Network error while fetching apartment year wise details';
+    return {
+      success: false,
+      message: errorMessage,
+      items: null,
+      totalCount: null,
+      errors: [errorMessage],
+      correlationId: null,
+    };
   }
 }
 

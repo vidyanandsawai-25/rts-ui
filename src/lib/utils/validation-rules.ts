@@ -32,6 +32,10 @@ export const CODE_SANITIZE = /[^A-Za-z0-9_]/g; // Remove any characters except a
 export const CODE_WITH_DECIMAL_REGEX = /^(?!.*\.\.)[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/;
 export const CODE_WITH_DECIMAL_SANITIZE = /[^A-Za-z0-9._]/g;
 
+// Alphanumeric only (letters and digits, no special characters, no spaces, no underscores)
+export const ALPHANUMERIC_ONLY_REGEX = /^[A-Za-z0-9]+$/;
+export const ALPHANUMERIC_ONLY_SANITIZE = /[^A-Za-z0-9]/g;
+
 // Asset Mouja No: Allow alphanumeric (multilingual), hyphens (-), and underscores (_)
 export const ASSET_MOUJA_NO_REGEX = /^[\p{L}\p{M}\p{N}](?:[\p{L}\p{M}\p{N}_\-]*[\p{L}\p{M}\p{N}])?$/u;
 export const ASSET_MOUJA_NO_SANITIZE = /[^\p{L}\p{M}\p{N}_\-]/gu;
@@ -74,6 +78,7 @@ export const SEARCH_ALPHANUMERIC_SANITIZE = /[^A-Za-z0-9\s+\-]/g;
 // Name fields: Unicode letters and spaces only. No numbers, no special characters.
 export const NAME_ONLY_REGEX = /^[\p{L}\p{M}\s]+$/u;
 export const NAME_ONLY_SANITIZE = /[^\p{L}\p{M}\s]/gu;
+export const NAME_ONLY_STRICT_REGEX = /^(?!.*?\s{2})[\p{L}\p{M}][\p{L}\p{M}\s]*$/u;
 
 /* ================= ALPHANUMERIC WITH SPACES VALIDATION ================= */
 // Generic alphanumeric with separators: Unicode letters, marks, numbers, dots, and whitespace separators.
@@ -87,6 +92,14 @@ export const LETTERS_ONLY_REGEX = /^[\p{L}\p{M}]+$/u;
 export const LETTERS_ONLY_SANITIZE = /[^\p{L}\p{M}]/gu;
 // Check if text contains at least one letter (supports English, Marathi, Hindi, and all Unicode scripts)
 export const HAS_LETTER_REGEX = /\p{L}/u;
+
+/* ================= BILLING FREQUENCY VALIDATION ================= */
+// Billing Frequency: Allow letters, spaces, and hyphens only (supports multilingual scripts)
+export const LETTERS_SPACES_HYPHENS_REGEX = /^[\p{L}\p{M}\s\-]+$/u;
+export const LETTERS_SPACES_HYPHENS_SANITIZE = /[^\p{L}\p{M}\s\-]/gu;
+
+// Periods Per Year: Positive whole numbers only, from 1 to 12
+export const PERIODS_PER_YEAR_REGEX = /^(?:[1-9]|1[0-2])$/;
 
 /* ================= SOCIETY VALIDATION ================= */
 export const PERSON_NAME_REGEX = /^[\p{L}\p{M}\s.,'-]+$/u;
@@ -196,3 +209,25 @@ export const isAllZeros = (value: string): boolean => {
 // Apartment QC Basic Information form validation 
 export const OWNERNAME_REGEX =
    /[^\p{L}\p{M}\s.,&'`()\/:-]/gu;
+
+/* ================= TAP SIZE VALIDATION ================= */
+export const TAP_SIZE_CODE_SANITIZE = /[^A-Za-z0-9._]/g;
+export const TAP_SIZE_CODE_REGEX = /^(?!.*[._]{2})[A-Za-z0-9](?:[A-Za-z0-9._]*[A-Za-z0-9])?$/;
+
+// Restrict to digits (0-9) and forward slash (/)
+export const TAP_SIZE_SANITIZE = /[^0-9/]/g;
+// Validate fraction (e.g. 1/2) or whole number (e.g. 1), prevent just "/" or "/6"
+export const TAP_SIZE_REGEX = /^\d+(?:\/\d+)?$/;
+
+/* ================= UPLOAD COUNT VALIDATION ================= */
+// Positive integer with no leading zero (1 to 200000)
+export const UPLOAD_COUNT_REGEX = /^[1-9][0-9]*$/;
+export const UPLOAD_COUNT_SANITIZE = /[^0-9]/g;
+export const UPLOAD_COUNT_MIN = 1;
+export const UPLOAD_COUNT_MAX = 200000;
+
+export const sanitizeUploadCount = (value: string, max: number = UPLOAD_COUNT_MAX): string => {
+  const digitsOnly = value.replace(UPLOAD_COUNT_SANITIZE, '').replace(/^0+/, '');
+  const maxDigits = String(max).length;
+  return digitsOnly.slice(0, maxDigits);
+};

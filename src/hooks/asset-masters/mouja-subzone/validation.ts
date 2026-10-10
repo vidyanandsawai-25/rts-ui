@@ -7,11 +7,11 @@ import {
   ASSET_MOUJA_NO_SANITIZE,
   ASSET_SUBZONE_NO_REGEX,
   ASSET_SUBZONE_NO_SANITIZE,
-  ASSET_MASTER_NAME_REGEX,
-  ASSET_MASTER_NAME_SANITIZE
+  NAME_ONLY_REGEX,
+  NAME_ONLY_SANITIZE
 } from "@/lib/utils/asset-validation-rules";
 import { MoujaFormModel, SubZoneFormModel } from "@/types/asset-masters/mouja-subzone.types";
-import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
+import { mapSharedApiError, parseReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 20;
 export const NAME_MAX = 100;
@@ -19,7 +19,7 @@ export const NAME_MAX = 100;
 export const sanitizeMoujaFieldValue = (name: string, value: string): string => {
   let sanitizedValue = value;
   if (name === "moujaName") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -35,7 +35,7 @@ export const sanitizeMoujaFieldValue = (name: string, value: string): string => 
 export const sanitizeSubZoneFieldValue = (name: string, value: string): string => {
   let sanitizedValue = value;
   if (name === "subZoneName") {
-    sanitizedValue = value.replace(ASSET_MASTER_NAME_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -65,7 +65,7 @@ export const validateMoujaForm = (
       const str = String(val ?? "").trim();
       if (!str) return t("form.validation.moujaNameRequired");
       if (str.length > NAME_MAX) return t("form.validation.moujaNameMaxLength", { count: NAME_MAX });
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return t("form.validation.moujaNameFormat");
+      if (!NAME_ONLY_REGEX.test(str)) return t("form.validation.moujaNameFormat");
       return undefined;
     },
     isActive: commonValidations.masterActiveStatus(t, isEdit, "form.validation.mustBeActive"),
@@ -95,13 +95,33 @@ export const validateSubZoneForm = (
       const str = String(val ?? "").trim();
       if (!str) return t("form.validation.subZoneNameRequired");
       if (str.length > NAME_MAX) return t("form.validation.subZoneNameMaxLength", { count: NAME_MAX });
-      if (!ASSET_MASTER_NAME_REGEX.test(str)) return t("form.validation.subZoneNameFormat");
+      if (!NAME_ONLY_REGEX.test(str)) return t("form.validation.subZoneNameFormat");
       return undefined;
     },
     isActive: commonValidations.masterActiveStatus(t, isEdit, "form.validation.mustBeActive"),
   };
   return validateForm(data, schema);
 };
+
+// Reference check (DELETE, or PUT with isActive: false), keyed by the backend's display name and operation:
+//   "This Mouja cannot be deleted because it has Sub Zones. Please delete all Sub Zones for this Mouja first."
+//   "This Sub Zone cannot be deleted because it has CV Rates. Please delete all CV Rates for this Sub Zone first."
+const REFERENCE_BLOCKED_KEYS: Record<string, string> = {
+  "Mouja:delete": "apiErrors.moujaDeleteBlocked",
+  "Mouja:deactivate": "apiErrors.moujaDeactivateBlocked",
+  "Sub Zone:delete": "apiErrors.subZoneDeleteBlocked",
+  "Sub Zone:deactivate": "apiErrors.subZoneDeactivateBlocked",
+};
+
+function getReferenceBlockedKey(message: string | undefined): string | undefined {
+  const blocked = parseReferenceBlockedMessage(message);
+  return blocked ? REFERENCE_BLOCKED_KEYS[`${blocked.entity}:${blocked.operation}`] : undefined;
+}
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlockedMessage(message: string | undefined): boolean {
+  return parseReferenceBlockedMessage(message)?.operation === "deactivate";
+}
 
 export function getErrorMessage(
   message: string | undefined,
@@ -110,16 +130,15 @@ export function getErrorMessage(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
   fallbackEntityName: string
 ): string {
+  const referenceBlockedKey = getReferenceBlockedKey(message);
+  if (referenceBlockedKey) return t(referenceBlockedKey);
+
   return mapSharedApiError({
     message,
     statusCode,
     t,
     tCommon,
     fallbackEntityName,
-    entityMatchers: [
-      { test: /mouja/i, labelKey: "list.moujaTitle" },
-      { test: /subzone|sub zone/i, labelKey: "list.subZoneTitle" }
-    ]
   });
 }
 

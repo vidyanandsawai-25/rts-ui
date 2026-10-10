@@ -120,8 +120,10 @@ export interface PropertyMasterData {
   plotAreaFtMtr?: string;
   carpetBuiltUpArea?: string;
   carpetAreaFtMtr?: string;
-  oldCarpetBuiltUp?: string;
   builtUpAreaFtMtr?: string;
+  oldCarpetBuiltUp?: string;
+  oldCarpetAreaFtMtr?: string;
+  oldBuiltUpAreaFtMtr?: string;
   totalFloors?: string;
   totalPropertiesResCommAmen?: string;
 
@@ -133,6 +135,8 @@ export interface PropertyMasterData {
   categoryTag?: string;
   propertyDescriptionRegional?: string;
   wings?: ApartmentQcWingDto[];
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export type IndividualPropertyMasterData = PropertyMasterData;

@@ -40,6 +40,9 @@ export function getAppConfig() {
       analytics: runtimeConfig.featureAnalytics,
       debug: runtimeConfig.featureDebug,
     },
+    planApp: {
+      councilName: runtimeConfig.councilName || 'JALNA_survey',
+    },
   } as const;
 }
 

@@ -20,8 +20,8 @@ export function useNatureFactorCv({
     sortBy: initialSortBy,
     sortOrder: initialSortOrder,
 }: UseNatureFactorCvProps) {
-    const t = useTranslations("natureFactorCVMaster");
-    const tW = useTranslations("weightageMaster");
+    const t = useTranslations("assetWeightageMaster.nature");
+    const tW = useTranslations("assetWeightageMaster");
     const tCommon = useTranslations("common");
     const router = useRouter();
     const searchParams = useSearchParams();

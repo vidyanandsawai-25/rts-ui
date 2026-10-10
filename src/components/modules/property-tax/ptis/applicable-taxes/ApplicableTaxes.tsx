@@ -47,6 +47,10 @@ export const ApplicableTaxes = ({
     initialTypeOfUse,
   });
 
+  // Compute effective Total Tax amount: prioritize TaxTotal row from API calculations if present
+   const totalTaxRow = taxApplicabilityPagedResponse?.taxCalculations.find((item) => item.taxName === 'TaxTotal');
+  const computedTotalTax = totalTaxRow?.taxAmount ?? summary.totalTax ?? 0;
+
   return (
     <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden dropdown-full-text">
       {/* Non-scrollable Body */}
@@ -81,25 +85,31 @@ export const ApplicableTaxes = ({
 
         {/* Summary Cards */}
         <div className="grid grid-cols-5 gap-3">
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-blue-600/70 uppercase tracking-wider">{t('totalTax')}</span>
-            <span className="text-xl font-black text-slate-800">{t('currencySymbol')} {summary.totalTax?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-base font-black text-slate-800 leading-tight">
+              {t('currencySymbol')} {computedTotalTax.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('residentialRV')}</span>
-            <span className="text-lg font-bold text-slate-800">{t('currencySymbol')} {summary.residentialRV?.toLocaleString('en-IN')}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{t('currencySymbol')} {summary.residentialRV?.toLocaleString('en-IN')}</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('commercialRV')}</span>
-            <span className="text-lg font-bold text-slate-800">{t('currencySymbol')} {summary.commercialRV?.toLocaleString('en-IN')}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{t('currencySymbol')} {summary.commercialRV?.toLocaleString('en-IN')}</span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('area')}</span>
-            <span className="text-lg font-bold text-slate-800">{summary.area} {t('squareMeters')}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">
+              {typeof summary.area === 'number'
+                ? summary.area.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : (Number(summary.area || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))} {t('squareMeters') || 'm²'}
+            </span>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-2 px-3 shadow-xs flex flex-col justify-center gap-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('toilets')}</span>
-            <span className="text-lg font-bold text-slate-800">{summary.toilets}</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">{summary.toilets}</span>
           </div>
         </div>
 
@@ -151,7 +161,7 @@ export const ApplicableTaxes = ({
       </div>
 
       {/* Fixed Footer */}
-      <FixedFooter onConfirm={handleClose} totalAmount={summary.totalTax} />
+      <FixedFooter onConfirm={handleClose} totalAmount={computedTotalTax} />
     </div>
   );
 };

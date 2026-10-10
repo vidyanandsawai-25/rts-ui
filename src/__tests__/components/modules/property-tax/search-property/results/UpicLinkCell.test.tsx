@@ -72,4 +72,23 @@ describe("UpicLinkCell", () => {
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
     expect(screen.getByText("UPIC-101")).toBeInTheDocument();
   });
+
+  it("includes societyDetailId and wingDetailId in the link href when provided", () => {
+    render(
+      <UpicLinkCell
+        upicId="UPIC-999"
+        propertyId={500}
+        societyDetailId={12}
+        wingDetailId={34}
+        locale="en"
+        copyLabel="UPIC ID"
+      />
+    );
+
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute(
+      "href",
+      "/en/property-tax/ptis?propertyId=500&societyDetailId=12&wingDetailId=34&searchState=clear"
+    );
+  });
 });

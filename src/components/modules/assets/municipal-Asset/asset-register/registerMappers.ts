@@ -1,53 +1,9 @@
-import { AssetRegisterRow } from '@/types/asset/asset-register/municipal-asset-register.types';
+import type { AssetRegisterRow } from '@/types/asset/asset-register/municipal-asset-register.types';
 import type { AssetRegisterApiRecord } from '@/types/asset/asset-register/municipal-asset-service.types';
-import type { AssetRegisterSubUnitItem } from '@/lib/api/asset/asset-register/municipal-asset-register.server.service';
-import type { PropertyPhotoDto } from '@/types/asset/asset-register/media.types';
-import { getViewDocumentUrl } from '@/lib/utils/document-utils';
+import type { AssetRegisterSubUnitItem } from '@/lib/api/asset/asset-register/municipal-asset-register.service';
+import { formatBoolean, formatFieldValue } from './registerMappers.helpers';
 
-export function formatDate(value?: string) {
-  if (!value) return '-';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-IN');
-}
-
-export function formatMoney(value: string) {
-  if (!value || value === '-') return '-';
-  const numeric = Number(value);
-  if (Number.isNaN(numeric)) return value;
-  return numeric.toLocaleString('en-IN');
-}
-
-export function formatBoolean(value?: boolean | string | null) {
-  if (value === true || value === 'true') return 'Yes';
-  if (value === false || value === 'false') return 'No';
-  return '-';
-}
-
-export function formatFieldValue(value: unknown): string {
-  if (value == null || value === '') return '-';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  if (Array.isArray(value)) {
-    return value.length === 0 ? '-' : value.map((entry) => formatFieldValue(entry)).join(', ');
-  }
-  if (typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>);
-    if (entries.length === 0) return '-';
-    const flattened = entries
-      .map(([key, entry]) => {
-        const formatted = formatFieldValue(entry);
-        return formatted === '-' ? null : `${key}: ${formatted}`;
-      })
-      .filter((entry): entry is string => Boolean(entry));
-    return flattened.length > 0 ? flattened.join(', ') : '-';
-  }
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return '-';
-  }
-}
+export * from './registerMappers.helpers';
 
 export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName: string): AssetRegisterRow {
   const record = item;
@@ -55,6 +11,7 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
   const safeId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : null;
   const latitude = record.latitude ?? record.details?.latitude;
   const longitude = record.longitude ?? record.details?.longitude;
+
   return {
     id: safeId,
     assetId: record.assetNo || '-',
@@ -66,12 +23,12 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     categoryName: record.assetCategoryName || fallbackCategoryName || '-',
     assetTypeName: record.assetTypeName || '-',
     parentAssetName: record.parentAssetName || '-',
-    address: (record.details?.address as string) || '-',
+    address: record.address || (record.details?.address as string) || '-',
     wardName: record.wardName || '-',
     zoneName: record.zoneName || '-',
     latitude: latitude != null ? String(latitude) : '-',
     longitude: longitude != null ? String(longitude) : '-',
-    csn: (record.details?.csn as string) || '-',
+    csn: record.csn || (record.details?.csn as string) || '-',
     hasLift: formatBoolean(record.hasLift),
     purchaseDate: record.purchaseDate || '',
     marketValueDate: record.marketValueDate || '',
@@ -89,76 +46,43 @@ export function mapAssetToRow(item: AssetRegisterApiRecord, fallbackCategoryName
     purchaseValue: record.purchaseValue == null ? '-' : String(record.purchaseValue),
     marketValue: record.marketValue == null ? '-' : String(record.marketValue),
     depreciation: record.depreciation == null ? '-' : String(record.depreciation),
-    netBookValue:
-      record.currentBookValue != null
-        ? String(record.currentBookValue)
-        : record.capitalValue != null
-          ? String(record.capitalValue)
-          : record.marketValue == null
-            ? '-'
-            : String(record.marketValue),
-    builtUpAreaSqMeter: record.details?.builtUpAreaSqMeter != null ? String(record.details.builtUpAreaSqMeter) : '-',
-    carpetAreaSqMeter: record.details?.carpetAreaSqMeter != null ? String(record.details.carpetAreaSqMeter) : '-',
-    landAreaSqMeter: record.details?.landAreaSqMeter != null ? String(record.details.landAreaSqMeter) : '-',
+    netBookValue: record.currentBookValue != null
+      ? String(record.currentBookValue)
+      : record.capitalValue != null
+        ? String(record.capitalValue)
+        : record.marketValue != null
+          ? String(record.marketValue)
+          : '-',
+    builtUpAreaSqMeter: record.builtUpAreaSqMeter != null || record.details?.builtUpAreaSqMeter != null
+      ? String(record.builtUpAreaSqMeter ?? record.details?.builtUpAreaSqMeter)
+      : '-',
+    carpetAreaSqMeter: record.carpetAreaSqMeter != null || record.details?.carpetAreaSqMeter != null
+      ? String(record.carpetAreaSqMeter ?? record.details?.carpetAreaSqMeter)
+      : '-',
+    landAreaSqMeter: record.plotAreaSqMeter != null || record.landAreaSqMeter != null || record.details?.landAreaSqMeter != null
+      ? String(record.plotAreaSqMeter ?? record.landAreaSqMeter ?? record.details?.landAreaSqMeter)
+      : '-',
     createdDate: record.createdDate || record.updatedDate || '',
     assetCategoryId: record.assetCategoryId || null,
     assetTypeId: record.assetTypeId || null,
     assetDocumentId: record.assetDocumentId || null,
     totalSubUnits: record.totalSubUnits != null ? Number(record.totalSubUnits) : 0,
+    annualRevenue: record.annualRevenue == null ? '-' : String(record.annualRevenue),
+    outstandingAmount: record.outstandingAmount == null ? '-' : String(record.outstandingAmount),
+    encroachmentStatus: record.encroachmentStatus || '-',
+    photoCount: record.photoCount == null ? '0' : String(record.photoCount),
+    documentCount: record.documentCount == null ? '0' : String(record.documentCount),
+    activeLeaseCount: record.activeLeaseCount ?? 0,
+    mpmsNo: record.mpmsNo || '-',
+    constructionYear: record.constructionYear == null ? '-' : String(record.constructionYear),
+    constructionTypeName: record.constructionTypeName || '-',
+    typeOfUseName: record.typeOfUseName || '-',
+    totalFloors: record.totalFloors == null ? '-' : String(record.totalFloors),
+    hasPlanDocument: Boolean(record.hasPlanDocument),
+    hasTitleDocument: Boolean(record.hasTitleDocument),
+    hasSurveyDocument: Boolean(record.hasSurveyDocument),
+    expandControl: '',
   };
-}
-
-type GroupedAssetPhotos = {
-  photoTypes?: Array<{
-    photos?: Array<{
-      photoId?: number;
-      propertyPhotoId?: number;
-      assetId?: number;
-      propertyId?: number;
-      photoTypeId?: number;
-      photoTypeCode?: string;
-      photoTypeName?: string;
-      displayOrder?: number;
-      remarks?: string;
-      viewUrl?: string;
-      documentGuid?: string;
-    }>;
-  }>;
-};
-
-export function mapGroupedAssetPhotosToPanelPhotos(data?: GroupedAssetPhotos | null): PropertyPhotoDto[] {
-  const photoTypes = data?.photoTypes || [];
-  return photoTypes.flatMap((type) =>
-    (type.photos || []).flatMap((photo) => {
-      const propertyPhotoId = photo.photoId ?? photo.propertyPhotoId;
-      const propertyId = photo.assetId ?? photo.propertyId;
-      const photoTypeId = photo.photoTypeId;
-      const photoTypeCode = photo.photoTypeCode;
-      const photoTypeName = photo.photoTypeName;
-
-      if (
-        propertyPhotoId == null ||
-        propertyId == null ||
-        photoTypeId == null ||
-        !photoTypeCode ||
-        !photoTypeName
-      ) {
-        return [];
-      }
-
-      return [{
-        propertyPhotoId,
-        propertyId,
-        photoTypeId,
-        photoTypeCode,
-        photoTypeName,
-        displayOrder: photo.displayOrder,
-        remarks: photo.remarks,
-        viewUrl: photo.documentGuid ? getViewDocumentUrl(photo.documentGuid) : photo.viewUrl,
-        documentGuid: photo.documentGuid,
-      }];
-    })
-  );
 }
 
 export function mapExpandedSubUnitItems(
@@ -181,12 +105,12 @@ export function mapSubUnitToAssetRegisterRow(subUnit: AssetRegisterSubUnitItem, 
     departmentName: asset.departmentName,
     assetCode: subUnit.assetNo || '-',
     assetName: subUnit.assetName || '-',
-    categoryName: subUnit.names?.category || '-',
-    assetTypeName: subUnit.names?.type || '-',
+    categoryName: subUnit.assetCategoryName || asset.categoryName || '-',
+    assetTypeName: subUnit.assetTypeName || '-',
     parentAssetName: asset.assetName,
     address: asset.address,
-    wardName: subUnit.names?.ward || '-',
-    zoneName: subUnit.names?.zone || '-',
+    wardName: asset.wardName || '-',
+    zoneName: asset.zoneName || '-',
     latitude: asset.latitude,
     longitude: asset.longitude,
     csn: asset.csn,
@@ -197,13 +121,13 @@ export function mapSubUnitToAssetRegisterRow(subUnit: AssetRegisterSubUnitItem, 
     lastCVCalculationDate: subUnit.lastCVDate || '',
     currentBookValue: '-',
     depreciation: '-',
-    netBookValue: subUnit.capitalValue == null ? '-' : String(subUnit.capitalValue),
+    netBookValue: '-',
     lifeYears: subUnit.assetLife != null ? String(subUnit.assetLife) : '-',
     depreciationRate: '-',
     isRevenueGenerating: asset.isRevenueGenerating,
     operationalControl: asset.operationalControl,
     fieldValues: '-',
-    occupancyStatus: subUnit.occupancy || '-',
+    occupancyStatus: subUnit.occupancyStatus || subUnit.occupancy || subUnit.typeOfUseName || '-',
     ownershipType: asset.ownershipType,
     assetCondition: subUnit.status || '-',
     purchaseValue: '-',
@@ -217,5 +141,20 @@ export function mapSubUnitToAssetRegisterRow(subUnit: AssetRegisterSubUnitItem, 
     assetDocumentId: null,
     isSubUnit: true,
     parentId: asset.id ?? undefined,
+    annualRevenue: '-',
+    outstandingAmount: '-',
+    encroachmentStatus: '-',
+    photoCount: String(subUnit.photoCount ?? (Array.isArray(subUnit.photos) ? subUnit.photos.length : 0)),
+    documentCount: String(subUnit.documentCount ?? (Array.isArray(subUnit.documents) ? subUnit.documents.length : 0)),
+    activeLeaseCount: undefined,
+    mpmsNo: '-',
+    constructionYear: subUnit.constructionYear != null ? String(subUnit.constructionYear) : '-',
+    constructionTypeName: subUnit.constructionTypeName || '-',
+    typeOfUseName: subUnit.typeOfUseName || '-',
+    totalFloors: subUnit.floorDetails?.length ? String(subUnit.floorDetails.length) : '-',
+    hasPlanDocument: false,
+    hasTitleDocument: false,
+    hasSurveyDocument: false,
+    expandControl: '',
   };
 }

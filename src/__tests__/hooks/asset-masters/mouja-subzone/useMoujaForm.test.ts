@@ -78,4 +78,27 @@ describe("useMoujaForm", () => {
 
     expect(result.current.formData.moujaName).toBe("New Mouja Name");
   });
+
+  it("shows the deactivate reference error under the status toggle and clears it on toggle", async () => {
+    const { updateMoujaAction } = await import("@/app/[locale]/assets/configuration/master-data/mouja-subzone/action");
+    const { toast } = await import("sonner");
+    vi.mocked(updateMoujaAction).mockResolvedValue({
+      success: false,
+      statusCode: 400,
+      message: "This Mouja cannot be deactivated because it has Sub Zones. Please delete all Sub Zones for this Mouja first.",
+    });
+    const initialData = { id: 1025, moujaNo: "MJ-001", moujaName: "Akola", isActive: true } as Mouja;
+    const { result } = renderHook(() => useMoujaForm({ ...mockProps, id: 1025, initialData }));
+
+    act(() => result.current.handleToggleStatus(false));
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as never);
+    });
+
+    expect(toast.error).toHaveBeenCalledWith("apiErrors.moujaDeactivateBlocked");
+    expect(result.current.errors.isActive).toBe("apiErrors.moujaDeactivateBlocked");
+
+    act(() => result.current.handleToggleStatus(true));
+    expect(result.current.errors.isActive).toBe("");
+  });
 });

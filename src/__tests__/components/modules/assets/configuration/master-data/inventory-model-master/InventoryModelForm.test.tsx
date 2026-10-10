@@ -33,6 +33,7 @@ vi.mock("@/components/modules/assets/configuration/master-data/inventory-model-m
     <div data-testid="form-fields">
       <input data-testid="group-input" name="group" value={formData.group} onChange={onChange} />
       <input data-testid="name-input" name="name" value={formData.name} onChange={onChange} />
+      <input data-testid="display-order-input" name="displayOrder" value={formData.displayOrder ?? ""} onChange={onChange} />
     </div>
   ),
 }));
@@ -60,6 +61,7 @@ describe("InventoryModelForm", () => {
     // Inventory Model doesn't have a code field!
     fireEvent.change(screen.getByTestId("group-input"), { target: { name: "group", value: "1" } });
     fireEvent.change(screen.getByTestId("name-input"), { target: { name: "name", value: "Type Name" } });
+    fireEvent.change(screen.getByTestId("display-order-input"), { target: { name: "displayOrder", value: "1" } });
 
     fireEvent.submit(screen.getByTestId("drawer-content").querySelector("form")!);
 

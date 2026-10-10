@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, ValidationMessage, ToggleSwitch } from "@/components/common";
+import { Input, ValidationMessage, ToggleSwitch, Option } from "@/components/common";
 import { AlertCircle } from "lucide-react";
 import { CreatePropertyFormData, CreatePropertyFormErrors } from "@/types/zone-master/properties/create-property-drawer.types";
 import { useTranslations } from "next-intl";
@@ -12,6 +12,7 @@ interface BulkCreateSectionProps {
   formData: CreatePropertyFormData;
   errors: CreatePropertyFormErrors;
   bulkPropertyCount: number | null;
+  categoryOptions: Option[];
   handleFieldChange: (field: keyof CreatePropertyFormData, value: string | boolean) => void;
   handleBulkToggle: (checked: boolean) => void;
   t: ReturnType<typeof useTranslations<"zoneMaster">>;
@@ -21,6 +22,7 @@ export function BulkCreateSection({
   formData,
   errors,
   bulkPropertyCount,
+  categoryOptions,
   handleFieldChange,
   handleBulkToggle,
   t,
@@ -29,6 +31,24 @@ export function BulkCreateSection({
     "Property_No",
     useAliasLabel("Property No.", useAliasLabel("Property No", t("defaults.propertyNo")))
   );
+  const selectedCategory = categoryOptions.find(
+    (option) => option.value === formData.categoryId
+  );
+  const showSocietyName =
+    selectedCategory?.label.trim().toLowerCase() === "apartment";
+
+  const societyNameInput = showSocietyName ? (
+    <div className="col-span-2">
+      <Input
+        label={t("createProperty.societyName")}
+        value={formData.societyName}
+        onChange={(e) => handleFieldChange("societyName", e.target.value)}
+        placeholder={t("createProperty.societyNamePlaceholder")}
+        className="bg-white"
+        fullWidth
+      />
+    </div>
+  ) : null;
 
   return (
     <>
@@ -91,6 +111,7 @@ export function BulkCreateSection({
               type="error"
             />
           </div>
+          {societyNameInput}
         </div>
       )}
 
@@ -155,6 +176,7 @@ export function BulkCreateSection({
               type="error"
             />
           </div>
+          {societyNameInput}
 
           {/* Property Count Indicator */}
           {bulkPropertyCount !== null && (

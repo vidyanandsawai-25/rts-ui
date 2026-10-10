@@ -21,6 +21,8 @@ export interface RenterDetailItem {
     incrementMethod?: string;
     incrementStatus?: boolean;
     isActive?: boolean;
+    documentBindingId?: number;
+    documentGuid?: string;
     [key: string]: unknown;
 }
 
@@ -38,6 +40,8 @@ export interface RenterMastItem {
     monthCount?: number;
     isActive?: boolean;
     taxLiability?: string;
+    documentBindingId?: number;
+    documentGuid?: string;
     [key: string]: unknown;
 }
 

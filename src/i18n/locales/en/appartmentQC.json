@@ -59,6 +59,8 @@
     "kyc": "KYC"
   },
   "taxDetails": {
+    "taxDetailsTab": "Tax Details ({type})",
+    "arrearsTab": "Arrears",
     "title": "Property Tax Details Summary",
     "subtitle": "Aggregated tax details by Method",
     "propertyType": "Property Type",
@@ -66,7 +68,11 @@
     "total": "Total",
     "columnTotal": "Column Total",
     "noData": "No tax details available",
+    "loadingDetails": "Loading demand details...",
+    "noBreakdown": "No breakdown details available",
     "taxes": "Taxes",
+    "taxTypes": "Tax Types",
+    "years": "Years",
     "method": "Method",
     "generalTax": "General Tax",
     "stateEducationTax": "State Education Tax",
@@ -462,6 +468,7 @@
     "plotNo": "Plot No.:",
     "landOwnerName": "Land Owner Name:",
     "builderName": "Builder Name:",
+    "managerNameEnglish": "Manager Name:",
     "societyEmail": "Society Email:",
     "secretaryName": "Secretary Name:",
     "secretaryMobile": "Secretary Mobile:",
@@ -469,9 +476,18 @@
     "address": "Address:",
     "plotArea": "Plot Area:",
     "carpetBuiltUp": "Carpet / Built-up:",
-    "oldCarpetBuiltUp": "Old Carpet/Built-up:",
+    "oldCarpetBuiltUp": "Old Carpet / Built-up:",
     "totalFloors": "Total Floors:",
-    "totalProperties": "Total Properties:"
+    "totalProperties": "Total Properties:",
+    "resCommAmen": "(Res/Comm/Amen)",
+    "carpet": "Carpet:",
+    "builtUp": "Built-up:",
+    "oldCarpet": "Old Carpet:",
+    "oldBuiltUp": "Old Built-up:",
+    "carpetArea": "Carpet Area:",
+    "builtUpArea": "Built-up Area:",
+    "current": "Current:",
+    "old": "Old:"
   },
   "revenueCard": {
     "addRevenue": "ADD. REVENUE",
@@ -479,6 +495,7 @@
     "oldCurrentTax": "Old Current Tax"
   },
   "stats": {
+    "oldCurrentTax": "Old Current Tax",
     "currentTax": "Current Tax",
     "retroTax": "Retro Tax",
     "retroTaxTooltip": "Retro Tax (Arrears)",

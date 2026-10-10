@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getInventoryModelColumns } from "./InventoryModelColumn";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteInventoryModelAction } from "@/app/[locale]/assets/configuration/master-data/inventory-model/actions";
+import { mapInventoryModelApiError } from "@/hooks/asset-masters/inventory-model/validation";
 import type { MasterDataRecord } from "@/types/asset-masters/master-data.types";
 import type { InventoryModelMasterProps } from "@/types/asset-masters/inventory-model.types";
 
@@ -26,14 +27,15 @@ export default function InventoryModelMaster({
   const [isPending, startTransition] = useTransition();
 
   const t = useTranslations("inventoryModel.configuration.masterData.form");
+  const tRoot = useTranslations("inventoryModel");
   const tCommon = useTranslations("common");
   const locale = useLocale();
 
   const base = `/${locale}/assets/configuration/master-data/inventory-model`;
 
   const searchParams = useSearchParams();
-  const sortBy = searchParams.get("sortBy") || "modelName";
-  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
+  const sortBy = searchParams.get("sortBy") || undefined;
+  const sortOrder = (searchParams.get("sortOrder") as SortDirection) || undefined;
 
   const handleSort = useCallback((field: string) => {
     const newOrder = sortBy === field && sortOrder === "asc" ? "desc" : "asc";
@@ -89,7 +91,7 @@ export default function InventoryModelMaster({
           const result = await deleteInventoryModelAction(fd);
 
           if (!result.ok) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapInventoryModelApiError(result, tRoot, tCommon));
             return;
           }
 
@@ -100,11 +102,13 @@ export default function InventoryModelMaster({
         }
       },
     });
-  }, [confirm, locale, tCommon, router]);
+  }, [confirm, locale, tRoot, tCommon, router]);
 
   return (
     <div className="space-y-6">
       <MasterTable<MasterDataRecord>
+        theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+        footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
         columns={columns as Column<MasterDataRecord>[]}
         data={data as MasterDataRecord[]}
         loading={isPending}

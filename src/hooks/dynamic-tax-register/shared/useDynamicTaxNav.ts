@@ -86,35 +86,42 @@ export function useDynamicTaxNav(
 
   /** Promise wrapper around the callback-based `confirm` API — same idempotent-settle pattern as
    *  the mode-change confirmation in useDynamicTaxGeneral. Resolves false on any dismissal. */
-  const confirmDiscard = (): Promise<boolean> =>
-    new Promise<boolean>((resolve) => {
-      let settled = false;
-      const settle = (result: boolean) => {
-        if (settled) return;
-        settled = true;
-        resolve(result);
-      };
-      confirm({
-        variant: 'warning',
-        title: t('drawer.unsavedChanges.title'),
-        description: t('drawer.unsavedChanges.description'),
-        confirmText: t('drawer.unsavedChanges.confirm'),
-        onConfirm: () => settle(true),
-        onCancel: () => settle(false),
-      });
-    });
+  const confirmDiscard = useCallback(
+    (): Promise<boolean> =>
+      new Promise<boolean>((resolve) => {
+        let settled = false;
+        const settle = (result: boolean) => {
+          if (settled) return;
+          settled = true;
+          resolve(result);
+        };
+        confirm({
+          variant: 'warning',
+          title: t('drawer.unsavedChanges.title'),
+          description: t('drawer.unsavedChanges.description'),
+          confirmText: t('drawer.unsavedChanges.confirm'),
+          onConfirm: () => settle(true),
+          onCancel: () => settle(false),
+        });
+      }),
+    [confirm, t]
+  );
 
   /** Runs `action` immediately when nothing is unsaved; otherwise asks for confirmation first and
    *  only runs it if the admin agrees to discard. Never runs `action` on a declined confirm. */
-  const guardedNavigate = (action: () => void) => {
-    if (!dirtyCheckRef.current()) {
-      action();
-      return;
-    }
-    confirmDiscard().then((proceed) => {
-      if (proceed) action();
-    });
-  };
+  const guardedNavigate = useCallback(
+    (action: () => void) => {
+      if (!dirtyCheckRef.current()) {
+        action();
+        return;
+      }
+      confirmDiscard().then((proceed) => {
+        if (proceed) action();
+      });
+    },
+    [confirmDiscard]
+  );
+
 
   // Every drawer navigation — tab switch, Value/Master filter and page changes, Rule Name
   // changes, "Manage Rule Category" — goes through `router.push`/`router.replace` on this same
@@ -140,24 +147,29 @@ export function useDynamicTaxNav(
     return `${routeBase}/add/${id}?${next.toString()}`;
   };
 
+  const rawClose = useCallback(() => {
+    const next = new URLSearchParams();
+    REGISTER_LIST_KEYS.forEach((key) => {
+      const value = searchParams.get(key);
+      if (value) next.set(key, value);
+    });
+    const qs = next.toString();
+    startTransition(() => rawRouter.push(`${routeBase}${qs ? `?${qs}` : ''}`));
+  }, [searchParams, routeBase, rawRouter]);
+
   // Goes through the same guard as every other navigation here (backdrop click, header ✕, and
   // the footer Cancel button all call this one function) rather than rawRouter directly.
   // Preserves the register list's own filter/pagination params (search, mode, status, page,
   // pageSize) so closing the drawer doesn't dump the admin back on page 1 unfiltered after they
   // searched/filtered/paged to find this tax — mirrors ConfigOverviewDrawer's REGISTER_KEYS.
-  const handleClose = () =>
-    guardedNavigate(() => {
-      const next = new URLSearchParams();
-      REGISTER_LIST_KEYS.forEach((key) => {
-        const value = searchParams.get(key);
-        if (value) next.set(key, value);
-      });
-      const qs = next.toString();
-      startTransition(() => rawRouter.push(`${routeBase}${qs ? `?${qs}` : ''}`));
-    });
+  const handleClose = useCallback(() => {
+    guardedNavigate(rawClose);
+  }, [rawClose, guardedNavigate]);
 
   return {
     router,
+    rawRouter,
+    rawClose,
     searchParams,
     locale,
     numericId,
@@ -176,3 +188,4 @@ export function useDynamicTaxNav(
 }
 
 export type DynamicTaxNav = ReturnType<typeof useDynamicTaxNav>;
+

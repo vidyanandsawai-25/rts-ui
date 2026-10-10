@@ -55,6 +55,9 @@ export interface PropertyDetailsData {
 export interface KYCDetailsData {
   ownerType: string;
   title: string;
+  ownerName?: string;
+  ownerNameEnglish?: string;
+  ownerNameRegional?: string;
   propertyHolderName: string;
   propertyHolderNameMarathi: string;
   propertyHolderNameEnglish?: string;
@@ -96,6 +99,11 @@ export interface SocietyDetailsData {
   managerEmail: string;
   managerMobileNo: string;
   societyDetailId?: number;
+  societyId?: number | null;
+  wingDetailId?: number | null;
+  wingId?: number | null;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export interface OldDetailsData {
@@ -213,9 +221,11 @@ export interface PropertyListItem extends PropertyIdentifiable {
   category?: number;
   categoryLabel?: string;
   societyDetailId?: number | null;
+  societyId?: number | null;
   societyName?: string | null;
-  wings?: { societyDetailId?: number; wingDetailId: number; wingName: string }[] | null;
+  wings?: { societyDetailId?: number; societyId?: number; wingDetailId: number; wingId?: number; wingMasterId?: number; wingName: string }[] | null;
   wingDetailId?: number | null;
+  wingId?: number | null;
 }
 
 export interface Ward extends WardIdentifiable {
@@ -375,6 +385,8 @@ export interface SocietyDetailsApiResponse {
   managerNameEnglish?: string;
   managerEmailId?: string;
   managerMobileNo?: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 export interface OldDetailsApiResponse {
@@ -477,6 +489,7 @@ export interface PtisInitialData {
   showOldTaxInfo?: boolean;
   showOldMapInfo?: boolean;
   discountDetails?: DiscountData;
+  socialDetails?: DiscountData;
   tabHeaderInfo?: TabHeaderInfoData | null;
   mappedPropertiesData?: MappedPropertyItem[];
 }

@@ -117,3 +117,77 @@ describe('useApartment — Pure API Mode', () => {
     });
   });
 });
+
+describe('useApartment: the sort is made by the API', () => {
+  const okResponse = {
+    success: true,
+    items: {
+      items: [
+        {
+          newSurvey: { id: 1, propertyNo: '102', carpetASqFt: 624, rateableValue: 3510, newTaxTotal: 10811 },
+          oldSurvey: { id: 1, propertyNo: '102', carpetASqFt: 624, rateableValue: 3510, oldTotalTax: 10811 },
+          difference: { carpetAreaSqFeetDiff: 0, totalTaxDiff: 0 },
+        },
+      ],
+    },
+  };
+
+  const lastRequest = () => {
+    const calls = vi.mocked(aptActionModule.fetchApartmentDetailsWingWiseAction).mock.calls;
+    return calls[calls.length - 1][0];
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(aptActionModule.fetchApartmentDetailsWingWiseAction).mockResolvedValue(
+      okResponse as unknown as Awaited<ReturnType<typeof aptActionModule.fetchApartmentDetailsWingWiseAction>>,
+    );
+  });
+
+  it('a click on a header asks the API for that column, from page 1', async () => {
+    const { result } = renderHook(() => useApartment(123));
+    await waitFor(() => expect(result.current.surveyUnits.length).toBe(1));
+
+    act(() => {
+      result.current.handlePageChange(3);
+    });
+    await waitFor(() => expect(lastRequest().pageNumber).toBe(3));
+
+    act(() => {
+      result.current.handleSort('survey', 'tax');
+    });
+
+    await waitFor(() => expect(lastRequest().sortBy).toBe('survey:tax'));
+    expect(lastRequest().sortOrder).toBe('asc');
+    expect(lastRequest().pageNumber).toBe(1);
+    expect(result.current.sort).toEqual({ panel: 'survey', column: 'tax', direction: 'asc' });
+  });
+
+  it('a second click on the same column sorts descending, a third one removes the sort', async () => {
+    const { result } = renderHook(() => useApartment(123));
+    await waitFor(() => expect(result.current.surveyUnits.length).toBe(1));
+
+    act(() => result.current.handleSort('existing', 'rv'));
+    await waitFor(() => expect(lastRequest().sortOrder).toBe('asc'));
+
+    act(() => result.current.handleSort('existing', 'rv'));
+    await waitFor(() => expect(lastRequest().sortOrder).toBe('desc'));
+    expect(lastRequest().sortBy).toBe('existing:rv');
+
+    act(() => result.current.handleSort('existing', 'rv'));
+    await waitFor(() => expect(lastRequest().sortBy ?? null).toBeNull());
+    expect(result.current.sort).toBeNull();
+  });
+
+  it('clearSort goes back to the original order', async () => {
+    const { result } = renderHook(() => useApartment(123));
+    await waitFor(() => expect(result.current.surveyUnits.length).toBe(1));
+
+    act(() => result.current.handleSort('difference', 'tax'));
+    await waitFor(() => expect(lastRequest().sortBy).toBe('difference:tax'));
+
+    act(() => result.current.clearSort());
+    await waitFor(() => expect(lastRequest().sortBy ?? null).toBeNull());
+    expect(result.current.sort).toBeNull();
+  });
+});

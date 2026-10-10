@@ -6,10 +6,16 @@ import {
   DESCRIPTION_SANITIZE,
   CODE_REGEX,
   DESCRIPTION_REGEX,
+  NAME_ONLY_SANITIZE,
+  NAME_ONLY_REGEX,
   isAllZeros
 } from "@/lib/utils/asset-validation-rules";
 import { DesignationFormModel } from "@/types/asset-masters/designation.types";
-import { mapSharedApiError } from "@/lib/utils/asset-utils/shared-error-mapping";
+import {
+  mapSharedApiError,
+  parseReferenceBlockedMessage,
+  translateReferenceBlockedMessage,
+} from "@/lib/utils/asset-utils/shared-error-mapping";
 
 export const CODE_MAX = 20;
 export const NAME_MAX = 100;
@@ -22,8 +28,13 @@ export const sanitizeFieldValue = (name: string, value: string): string => {
     if (sanitizedValue.length > DESCRIPTION_MAX) {
       sanitizedValue = sanitizedValue.substring(0, DESCRIPTION_MAX);
     }
-  } else if (name === "designationName" || name === "designationLocal") {
-    sanitizedValue = value.replace(/[^\p{L}\p{M}\p{N}\s]/gu, "").trimStart().replace(/\s{2,}/g, " ");
+  } else if (name === "designationName") {
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
+    if (sanitizedValue.length > NAME_MAX) {
+      sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
+    }
+  } else if (name === "designationLocal") {
+    sanitizedValue = value.replace(NAME_ONLY_SANITIZE, "").trimStart().replace(/\s{2,}/g, " ");
     if (sanitizedValue.length > NAME_MAX) {
       sanitizedValue = sanitizedValue.substring(0, NAME_MAX);
     }
@@ -54,15 +65,16 @@ export const validateDesignationForm = (
       const str = String(val ?? '').trim();
       if (!str) return t('form.validation.designationNameRequired');
       if (str.length > NAME_MAX) return t('form.validation.designationNameMaxLength', { count: NAME_MAX });
-      if (/^0+$/.test(str)) return t('form.validation.designationNameFormat');
-      if (!/^[\p{L}\p{M}\p{N}]+(?:[\s][\p{L}\p{M}\p{N}]+)*$/u.test(str)) return t('form.validation.designationNameFormat');
+      if (isAllZeros(str)) return t('form.validation.designationNameFormat');
+      if (!NAME_ONLY_REGEX.test(str)) return t('form.validation.designationNameFormat');
       return undefined;
     },
     designationLocal: (val: unknown) => {
       const str = String(val ?? '').trim();
       if (!str) return t('form.validation.designationLocalRequired');
       if (str.length > NAME_MAX) return t('form.validation.designationLocalMaxLength', { count: NAME_MAX });
-      if (/^0+$/.test(str)) return t('form.validation.designationLocalRequired');
+      if (isAllZeros(str)) return t('form.validation.designationLocalRequired');
+      if (!NAME_ONLY_REGEX.test(str)) return t('form.validation.designationLocalFormat');
       return undefined;
     },
     designationDescription: (val: unknown) => {
@@ -90,18 +102,36 @@ export const validateDesignationForm = (
   return validateForm(data, schema);
 };
 
+// Reference check (DELETE, or PUT with isActive: false):
+//   "This Designation cannot be deleted/deactivated because it is in use."
+function translateDesignationReferenceBlocked(
+  message: string | undefined,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string | undefined {
+  return translateReferenceBlockedMessage(message, t, {
+    entities: { Designation: "apiErrors.referenceBlocked.designation" },
+  });
+}
+
+/** True when the backend refused to deactivate the record because other records still use it. */
+export function isDeactivateBlockedMessage(message: string | undefined): boolean {
+  return parseReferenceBlockedMessage(message)?.operation === "deactivate";
+}
+
 export const mapDesignationApiError = (
   result: { statusCode?: number; message?: string },
   t: (key: string, values?: Record<string, string | number | Date>) => string,
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
+  const referenceBlocked = translateDesignationReferenceBlocked(result.message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message: result.message,
     statusCode: result.statusCode,
     t,
     tCommon,
     fallbackEntityName: t("list.title"),
-    entityMatchers: [{ test: /designation/i, labelKey: "list.title" }],
     customStatusCodes: {
       409: t("apiErrors.duplicateRecord"),
       404: t("apiErrors.notFound"),
@@ -119,12 +149,14 @@ export function getErrorMessage(
   tCommon: (key: string, values?: Record<string, string | number | Date>) => string,
   fallbackEntityName: string
 ): string {
+  const referenceBlocked = translateDesignationReferenceBlocked(message, t);
+  if (referenceBlocked) return referenceBlocked;
+
   return mapSharedApiError({
     message,
     statusCode,
     t,
     tCommon,
     fallbackEntityName,
-    entityMatchers: [{ test: /designation/i, labelKey: "list.title" }]
   });
 }

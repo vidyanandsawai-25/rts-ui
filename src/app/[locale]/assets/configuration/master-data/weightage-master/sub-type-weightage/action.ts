@@ -56,7 +56,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
       pageNumber > MAX_PAGE_NUMBER
     ) {
       const { getTranslations } = await import('next-intl/server');
-      const t = await getTranslations('useCategoryFactorMaster');
+      const t = await getTranslations('assetWeightageMaster.subType');
       throw new Error(t('errors.invalidPaginationParameters'));
     }
 
@@ -84,7 +84,7 @@ export async function fetchUseFactorCVMasterPagedServerAction(
 
     if (!response.success || !response.data) {
       const { getTranslations } = await import('next-intl/server');
-      const t = await getTranslations('useCategoryFactorMaster');
+      const t = await getTranslations('assetWeightageMaster.subType');
       throw new Error(response.error || t('errors.fetchFailed'));
     }
 
@@ -204,7 +204,11 @@ export async function updateUseFactorCVMasterAction(
   payload: Omit<UseFactorCVMasterUpdate, 'updatedBy'>
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    const userId = getUserIdFromCookies(await cookies()) || 1;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const finalPayload: UseFactorCVMasterUpdate = { ...payload, updatedBy: userId };
     await updateUseFactorCVMaster(id, finalPayload);
 
@@ -230,7 +234,11 @@ export async function createUseFactorCVMasterAction(
   payload: Omit<UseFactorCVMasterCreate, 'createdBy'>
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
-    const userId = getUserIdFromCookies(await cookies()) || 1;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const finalPayload: UseFactorCVMasterCreate = { ...payload, createdBy: userId };
     const response = await createUseFactorCVMaster(finalPayload);
 
@@ -260,7 +268,11 @@ export async function bulkCreateUseFactorCVMasterAction(
   payload: Array<Omit<UseFactorCVMasterCreate, 'createdBy'>>
 ): Promise<{ success: boolean; message?: string; statusCode?: number; data?: unknown }> {
   try {
-    const userId = getUserIdFromCookies(await cookies()) || 1;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const finalPayload: BulkUseFactorCVMasterCreate = payload.map(item => ({ ...item, createdBy: userId }));
     const response = await bulkCreateUseFactorCVMaster(finalPayload);
 
@@ -290,7 +302,11 @@ export async function bulkUpdateUseFactorCVMasterAction(
   payload: Array<{ id: number; data: Omit<UseFactorCVMasterUpdate, 'updatedBy'> }>
 ): Promise<{ success: boolean; message?: string; statusCode?: number }> {
   try {
-    const userId = getUserIdFromCookies(await cookies()) || 1;
+    const cookieStore = await cookies();
+    const userId = getUserIdFromCookies(cookieStore);
+    if (!userId) {
+      return { success: false, message: "you are unauthorized", statusCode: 401 };
+    }
     const finalPayload: BulkUseFactorCVMasterUpdate = payload.map(item => ({
       id: item.id,
       data: { ...item.data, updatedBy: userId },
@@ -344,7 +360,7 @@ export async function fetchTypeOfUsePaged(
 
     if (!response.success || !response.data) {
       const { getTranslations } = await import('next-intl/server');
-      const t = await getTranslations('useCategoryFactorMaster');
+      const t = await getTranslations('assetWeightageMaster.subType');
       throw new Error(response.error || t('errors.fetchTypeOfUseFailed'));
     }
 

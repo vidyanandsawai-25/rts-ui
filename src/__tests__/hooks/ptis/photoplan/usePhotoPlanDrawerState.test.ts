@@ -13,6 +13,14 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'en',
 }));
 
+vi.mock('@/components/common', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/common')>();
+  return {
+    ...actual,
+    useConfirm: () => ({ confirm: vi.fn().mockResolvedValue(true) }),
+  };
+});
+
 describe('usePhotoPlanDrawerState', () => {
   const mockCategories = [
     {

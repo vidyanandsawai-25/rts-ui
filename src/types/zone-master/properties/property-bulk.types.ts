@@ -20,7 +20,8 @@ export interface BulkPropertyItem {
   addressEnglish: string | null;
   location: string | null;
   locationEnglish: string | null;
-  societyDetailId?: number; // Optional - only needed for apartment categories
+  societyDetailId?: number; // Deprecated FK - kept for backward compatibility, not validated server-side anymore
+  wingDetailId?: number; // FK to WingDetailsMast.Id - required for apartment categories (replaces societyDetailId)
   propertyFloorId?: number; // Floor ID from building structure (optional for amenities/partitions)
   createdBy: number;
   createdDate: string;

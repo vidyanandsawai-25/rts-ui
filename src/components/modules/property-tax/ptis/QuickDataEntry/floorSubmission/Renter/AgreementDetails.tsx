@@ -13,7 +13,12 @@ import { extractAgreementData } from '@/lib/utils/renter/renterUtils';
 import { DocumentViewerModal } from '@/components/common/DocumentViewerModal';
 import { RenterFormData } from '@/types/renter/renter.types';
 import { toast } from 'sonner';
-import { globalUploadDocumentAction, globalDeleteDocumentAction } from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
+import {
+  globalUploadDocumentAction,
+  globalDeleteDocumentAction,
+  getDocumentByBindingAction,
+  getDocumentByReferenceAction,
+} from '@/app/[locale]/property-tax/ptis/QuickDataEntry/[propertyId]/document.actions';
 import { getDocumentBlobUrl } from '@/lib/utils/document-client-utils';
 import {
   validateRenterForm,
@@ -148,13 +153,65 @@ const AgreementDetails = memo(
         setShowDocumentPreview(true);
         return;
       }
-      const guid = formData?.renterDetails?.documentGuid;
-      if (!guid) return;
+      let guid: string | undefined = formData?.renterDetails?.documentGuid || formData?.documentGuid;
+      const bindingId: number | undefined = formData?.renterDetails?.documentBindingId || formData?.documentBindingId;
+      const refId = Number(formData.id || formData.propertyDetailsId || 0);
+      if (!guid && !bindingId && (!refId || refId >= 1_000_000_000_000)) return;
+
       setIsViewing(true);
       try {
-        const { url } = await getDocumentBlobUrl(guid);
-        setPreviewUrl(url);
-        setShowDocumentPreview(true);
+        if (!guid && bindingId) {
+          const docRes = await getDocumentByBindingAction(Number(bindingId));
+          if (docRes.success && docRes.data) {
+            const docData = docRes.data as Record<string, unknown>;
+            const itemsObj = docData?.items as Record<string, unknown> | undefined;
+            const dataObj = docData?.data as Record<string, unknown> | undefined;
+            guid = (
+              docData?.documentGuid ||
+              docData?.DocumentGuid ||
+              itemsObj?.documentGuid ||
+              itemsObj?.DocumentGuid ||
+              dataObj?.documentGuid ||
+              dataObj?.DocumentGuid
+            ) as string | undefined;
+          }
+        }
+        if (!guid && refId > 0 && refId < 1_000_000_000_000) {
+          const refRes = await getDocumentByReferenceAction({
+            departmentId: 1,
+            moduleId: 1,
+            referenceTableName: 'RenterMast',
+            referenceTableId: refId,
+          });
+          if (refRes.success && refRes.data) {
+            const refData = refRes.data as Record<string, unknown>;
+            const itemsObj = refData?.items as Record<string, unknown> | undefined;
+            const dataObj = refData?.data as Record<string, unknown> | undefined;
+            guid = (
+              refData?.documentGuid ||
+              refData?.DocumentGuid ||
+              itemsObj?.documentGuid ||
+              itemsObj?.DocumentGuid ||
+              dataObj?.documentGuid ||
+              dataObj?.DocumentGuid
+            ) as string | undefined;
+          }
+        }
+        if (guid) {
+          setFormData((prev) => ({
+            ...prev,
+            documentGuid: guid,
+            renterDetails: {
+              ...prev.renterDetails,
+              documentGuid: guid,
+            },
+          }));
+          const { url } = await getDocumentBlobUrl(guid);
+          setPreviewUrl(url);
+          setShowDocumentPreview(true);
+        } else {
+          toast.error("Document not found");
+        }
       } catch (error: unknown) {
         toast.error(error instanceof Error ? error.message : "Failed to view document");
       } finally {
@@ -180,34 +237,77 @@ const AgreementDetails = memo(
     }, [previewUrl]);
 
     const handleDeleteDocument = useCallback(async () => {
-      const guid = formData?.renterDetails?.documentGuid;
-      if (!guid) {
+      let guid: string | undefined = formData?.renterDetails?.documentGuid || formData?.documentGuid;
+      const bindingId: number | undefined = formData?.renterDetails?.documentBindingId || formData?.documentBindingId;
+      const refId = Number(formData.id || formData.propertyDetailsId || 0);
+      if (!guid && !bindingId && !uploadedDocument) {
         setUploadedDocument(null);
         return;
       }
       setIsDeleting(true);
       try {
-        const res = await globalDeleteDocumentAction(guid);
-        if (res.success) {
-          setFormData((prev) => ({
-            ...prev,
-            renterDetails: {
-              ...prev.renterDetails,
-              documentBindingId: undefined,
-              documentGuid: undefined,
-            },
-          }));
-          setUploadedDocument(null);
-          toast.success('Document removed successfully.');
-        } else {
-          toast.error(res.error || 'Failed to remove document.');
+        if (!guid && bindingId) {
+          const docRes = await getDocumentByBindingAction(Number(bindingId));
+          if (docRes.success && docRes.data) {
+            const docData = docRes.data as Record<string, unknown>;
+            const itemsObj = docData?.items as Record<string, unknown> | undefined;
+            const dataObj = docData?.data as Record<string, unknown> | undefined;
+            guid = (
+              docData?.documentGuid ||
+              docData?.DocumentGuid ||
+              itemsObj?.documentGuid ||
+              itemsObj?.DocumentGuid ||
+              dataObj?.documentGuid ||
+              dataObj?.DocumentGuid
+            ) as string | undefined;
+          }
         }
+        if (!guid && refId > 0 && refId < 1_000_000_000_000) {
+          const refRes = await getDocumentByReferenceAction({
+            departmentId: 1,
+            moduleId: 1,
+            referenceTableName: 'RenterMast',
+            referenceTableId: refId,
+          });
+          if (refRes.success && refRes.data) {
+            const refData = refRes.data as Record<string, unknown>;
+            const itemsObj = refData?.items as Record<string, unknown> | undefined;
+            const dataObj = refData?.data as Record<string, unknown> | undefined;
+            guid = (
+              refData?.documentGuid ||
+              refData?.DocumentGuid ||
+              itemsObj?.documentGuid ||
+              itemsObj?.DocumentGuid ||
+              dataObj?.documentGuid ||
+              dataObj?.DocumentGuid
+            ) as string | undefined;
+          }
+        }
+        if (guid) {
+          const res = await globalDeleteDocumentAction(guid);
+          if (!res.success) {
+            toast.error(res.error || 'Failed to remove document.');
+            return;
+          }
+        }
+        setFormData((prev) => ({
+          ...prev,
+          documentBindingId: undefined,
+          documentGuid: undefined,
+          renterDetails: {
+            ...prev.renterDetails,
+            documentBindingId: undefined,
+            documentGuid: undefined,
+          },
+        }));
+        setUploadedDocument(null);
+        toast.success('Document removed successfully.');
       } catch (_e) {
         toast.error('Failed to remove document.');
       } finally {
         setIsDeleting(false);
       }
-    }, [formData?.renterDetails?.documentGuid, setFormData]);
+    }, [formData?.renterDetails?.documentGuid, formData?.documentGuid, formData?.renterDetails?.documentBindingId, formData?.documentBindingId, formData.id, formData.propertyDetailsId, uploadedDocument, setFormData]);
 
     const triggerDatePicker = (ref: React.RefObject<HTMLInputElement | null>) => {
       if (ref.current) {
@@ -324,7 +424,7 @@ const AgreementDetails = memo(
               "flex flex-col gap-1.5 shrink-0",
               uploadedDocument
                 ? "col-span-1 sm:col-span-2 lg:w-[220px]"
-                : formData?.renterDetails?.documentGuid
+                : (formData?.renterDetails?.documentGuid || formData?.renterDetails?.documentBindingId)
                 ? "col-span-1 sm:col-span-2 lg:w-[140px]"
                 : "col-span-1 sm:col-span-1 lg:w-[60px]"
             )}
@@ -375,7 +475,9 @@ const AgreementDetails = memo(
                     fileData.append('DepartmentId', '1');
                     fileData.append('ModuleId', '1');
                     fileData.append('ReferenceTableName', 'RenterMast');
-                    fileData.append('ReferenceTableId', String(formData.id || 0));
+                    const rawPropId = Number(formData.id || formData.propertyDetailsId || 0);
+                    const safeRefTableId = !isNaN(rawPropId) && rawPropId > 0 && rawPropId < 1_000_000_000_000 ? rawPropId : 0;
+                    fileData.append('ReferenceTableId', String(safeRefTableId));
                     fileData.append('ReferencePropertyName', 'Id');
                     fileData.append('BindingPurpose', 'Renter Agreement');
                     fileData.append('IsPrimaryDocument', 'true');
@@ -383,13 +485,35 @@ const AgreementDetails = memo(
                     globalUploadDocumentAction(fileData)
                       .then((res) => {
                         if (res.success && res.data) {
-                          const uploadRes = res.data as { documentBindingId?: number; documentGuid?: string };
+                          const uploadData = res.data as Record<string, unknown>;
+                          const itemsObj = uploadData?.items as Record<string, unknown> | undefined;
+                          const dataObj = uploadData?.data as Record<string, unknown> | undefined;
+                          const docBindingId =
+                            uploadData?.documentBindingId ??
+                            uploadData?.DocumentBindingId ??
+                            itemsObj?.documentBindingId ??
+                            itemsObj?.DocumentBindingId ??
+                            dataObj?.documentBindingId ??
+                            dataObj?.DocumentBindingId;
+                          const docGuid =
+                            uploadData?.documentGuid ??
+                            uploadData?.DocumentGuid ??
+                            itemsObj?.documentGuid ??
+                            itemsObj?.DocumentGuid ??
+                            dataObj?.documentGuid ??
+                            dataObj?.DocumentGuid;
+
+                          const parsedBindingId = docBindingId !== undefined && docBindingId !== null ? Number(docBindingId) : undefined;
+                          const parsedGuid = docGuid ? String(docGuid) : undefined;
+
                           setFormData((prev) => ({
                             ...prev,
+                            documentBindingId: parsedBindingId ?? prev.documentBindingId,
+                            documentGuid: parsedGuid ?? prev.documentGuid,
                             renterDetails: {
                               ...prev.renterDetails,
-                              documentBindingId: uploadRes.documentBindingId,
-                              documentGuid: uploadRes.documentGuid,
+                              documentBindingId: parsedBindingId ?? prev.renterDetails?.documentBindingId,
+                              documentGuid: parsedGuid ?? prev.renterDetails?.documentGuid,
                             },
                           }));
                           toast.success('Document uploaded successfully.');
@@ -422,7 +546,7 @@ const AgreementDetails = memo(
                   <Upload className="w-5 h-5 text-white" />
                 )}
               </Button>
-              {(uploadedDocument || formData?.renterDetails?.documentGuid) && (
+              {(uploadedDocument || formData?.renterDetails?.documentGuid || formData?.renterDetails?.documentBindingId) && (
                 <Button
                   variant="secondary"
                   disabled={isViewing}
@@ -436,7 +560,7 @@ const AgreementDetails = memo(
                   )}
                 </Button>
               )}
-              {(uploadedDocument || formData?.renterDetails?.documentGuid) && (
+              {(uploadedDocument || formData?.renterDetails?.documentGuid || formData?.renterDetails?.documentBindingId) && (
                 <Button
                   variant="secondary"
                   disabled={isDeleting}

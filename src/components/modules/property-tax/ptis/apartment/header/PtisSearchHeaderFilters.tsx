@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React from 'react';
@@ -8,6 +7,7 @@ import { ChevronDown, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { WingWiseWingDetails } from '@/types/property-tax/apartment';
 import { formatFloorLabel } from '@/lib/utils/ptis-floor.utils';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface PtisSearchHeaderFiltersProps {
   filters: SearchWingWiseFilters;
@@ -34,7 +34,9 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
   isFullscreen = false,
   onToggleFullscreen,
 }) => {
-  const floorList = availableFloors.length > 0 ? availableFloors : ['1', '2', '3', '4', '5', '6', '7'];
+  const t = useTranslations('ptisRedesign.headerFilters');
+  const locale = useLocale();
+  const floorList = availableFloors;
 
   const selectedWingIndex = React.useMemo(() => {
     if (!wings || wings.length === 0) return 0;
@@ -60,7 +62,7 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
       <div className="flex items-center gap-3.5 flex-wrap">
         {/* Select Wing */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">SELECT WING</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('selectWing') || 'SELECT WING'}</span>
           <div className="relative">
             <select
               value={selectedWingIndex}
@@ -101,7 +103,7 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
 
         {/* Select Floor */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">SELECT FLOOR</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('selectFloor') || 'SELECT FLOOR'}</span>
           <div className="relative">
             <select
               value={filters.floor ?? ''}
@@ -117,10 +119,10 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
               }}
               className="appearance-none pl-3 pr-7 py-1 rounded-full border border-slate-300 bg-white text-xs font-bold text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
-              <option value="">All Floors</option>
+              <option value="">{t('allFloors') || 'All Floors'}</option>
               {floorList.map((flr) => (
                 <option key={flr} value={flr}>
-                  {formatFloorLabel(flr)}
+                  {formatFloorLabel(flr, locale)}
                 </option>
               ))}
             </select>
@@ -140,10 +142,10 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
               ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
               : 'border-blue-600 text-blue-700 bg-white hover:bg-blue-50 active:bg-blue-100'
           )}
-          title="Restore all hidden / maximized comparison tables"
+          title={t('restoreTooltip') || 'Restore all hidden / maximized comparison tables'}
         >
           <RotateCcw className={cn('w-3.5 h-3.5', hiddenPanelsCount > 0 ? 'text-white' : 'text-blue-700')} />
-          <span>Restore All Tables {hiddenPanelsCount > 0 ? `(${hiddenPanelsCount})` : ''}</span>
+          <span>{t('restoreAllTables') || 'Restore All Tables'} {hiddenPanelsCount > 0 ? `(${hiddenPanelsCount})` : ''}</span>
         </button>
 
         {onToggleFullscreen && (
@@ -156,17 +158,17 @@ export const PtisSearchHeaderFilters: React.FC<PtisSearchHeaderFiltersProps> = (
                 ? 'border-blue-700 bg-blue-700 text-white hover:bg-blue-800 active:bg-blue-900'
                 : 'border-slate-300 text-slate-700 bg-white hover:bg-slate-100 active:bg-slate-200'
             )}
-            title={isFullscreen ? 'Collapse / Exit Full Screen (Esc)' : 'Expand All Tables to Full Screen'}
+            title={isFullscreen ? (t('collapseTooltip') || 'Collapse / Exit Full Screen (Esc)') : (t('fullScreenTooltip') || 'Expand All Tables to Full Screen')}
           >
             {isFullscreen ? (
               <>
                 <Minimize2 className="w-3.5 h-3.5 text-white" />
-                <span>Collapse</span>
+                <span>{t('collapse') || 'Collapse'}</span>
               </>
             ) : (
               <>
                 <Maximize2 className="w-3.5 h-3.5 text-slate-600" />
-                <span>Full Screen</span>
+                <span>{t('fullScreen') || 'Full Screen'}</span>
               </>
             )}
           </button>

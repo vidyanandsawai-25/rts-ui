@@ -24,7 +24,10 @@ interface BottomActionBarProps {
   rightContent?: React.ReactNode;
   properties?: PropertyListItem[];
   categoryId?: number;
+  categoryName?: string;
+  partitionNo?: string;
   societyDetailId?: number;
+  wingDetailId?: number;
   isCombined?: boolean;
   workflowStages?: PropertyWorkflowStage[];
   currentWorkflowStageId?: number;
@@ -43,7 +46,10 @@ export function BottomActionBar({
   rightContent,
   properties = [],
   categoryId,
+  categoryName,
+  partitionNo,
   societyDetailId,
+  wingDetailId,
   isCombined = false,
   workflowStages = [],
   currentWorkflowStageId,
@@ -57,10 +63,44 @@ export function BottomActionBar({
   const { handleActionClick, isPending: isActionPending, clickedCommand } = useFooterActionHandler(
     onAction,
     categoryId,
-    societyDetailId
+    societyDetailId,
+    categoryName,
+    wingDetailId
   );
 
-  const groupedActions = useFooterActions(actions, actionOverrides);
+  // Apply show/hide logic for "Apply Taxes" button:
+  // If Partition No. is available AND Category = Apartment, show "Apply Taxes".
+  // If Partition No. is not available AND Category = Apartment, do not show "Apply Taxes".
+  const isApartment =
+    categoryId === 1 ||
+    categoryId === 0 ||
+    String(categoryName || '').toLowerCase().includes('apartment');
+
+  const resolvedPartition = partitionNo ?? searchParams.get('partitionNo') ?? '';
+  const hasPartitionNo = Boolean(
+    resolvedPartition &&
+    resolvedPartition !== '0' &&
+    resolvedPartition.trim() !== '' &&
+    resolvedPartition.trim() !== '-'
+  );
+
+  const effectiveOverrides: FooterActionOverrides = {
+    ...actionOverrides,
+    ...(isApartment
+      ? {
+          PTIS_APPLY: {
+            ...actionOverrides?.PTIS_APPLY,
+            canView: hasPartitionNo,
+          },
+          PTIS_APPLICABLE_TAXES_INFO: {
+            ...actionOverrides?.PTIS_APPLICABLE_TAXES_INFO,
+            canView: hasPartitionNo,
+          },
+        }
+      : {}),
+  };
+
+  const groupedActions = useFooterActions(actions, effectiveOverrides);
 
   // Check if properties array is present
   const hasProperties = properties.length > 0;

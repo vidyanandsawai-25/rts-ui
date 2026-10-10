@@ -54,6 +54,30 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
             );
         }
 
+        if (cert.customStatusBadge) {
+            const { label, variant } = cert.customStatusBadge;
+            const badgeClass =
+                variant === 'success'
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : variant === 'purple'
+                    ? "bg-purple-50 text-purple-700 border-purple-200"
+                    : variant === 'info'
+                    ? "bg-sky-50 text-sky-700 border-sky-200"
+                    : variant === 'warning'
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-slate-50 text-slate-600 border-slate-200 font-medium";
+
+            return (
+                <Badge
+                    variant={variant === 'purple' ? 'info' : variant}
+                    size="sm"
+                    className={badgeClass}
+                >
+                    {label}
+                </Badge>
+            );
+        }
+
         const hasNumber = cert.number && cert.number.trim() !== "";
         const hasDate = cert.date && cert.date.trim() !== "";
         const hasDoc = !!cert.documentGuid;
@@ -71,14 +95,27 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
             );
         }
 
+        const hasAnyData = !!(hasNumber || hasDate || hasDoc || cert.pendingFile);
+        if (hasAnyData) {
+            return (
+                <Badge
+                    variant="warning"
+                    size="sm"
+                    icon={AlertCircle}
+                    className="bg-amber-50 text-amber-700 border-amber-200"
+                >
+                    {t("building.statusIncomplete") || "Incomplete"}
+                </Badge>
+            );
+        }
+
         return (
             <Badge
-                variant="warning"
+                variant="secondary"
                 size="sm"
-                icon={AlertCircle}
-                className="bg-amber-50 text-amber-700 border-amber-200"
+                className="bg-blue-50 text-blue-700 border-blue-200 font-medium"
             >
-                {t("building.statusIncomplete")}
+                {t("building.statusNotConfigured") || "Not Configured"}
             </Badge>
         );
     };
@@ -162,7 +199,10 @@ export const BuildingSidebar: React.FC<BuildingSidebarProps> = ({
                                     <div onClick={(e) => e.stopPropagation()} className="cursor-pointer">
                                         <ToggleSwitch
                                             checked={cert.enabled}
-                                            onChange={(checked) => onToggleEnabled(cert.certificateTypeId, checked)}
+                                            onChange={(checked) => {
+                                                onSelect(cert.certificateTypeId);
+                                                onToggleEnabled(cert.certificateTypeId, checked);
+                                            }}
                                             showPopup={false}
                                         />
                                     </div>

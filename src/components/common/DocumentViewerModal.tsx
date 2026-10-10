@@ -16,6 +16,7 @@ export interface DocumentViewerModalProps {
   propertyNo?: string;
   partitionNo?: string;
   loadPreviewAsBlob?: boolean;
+  contentType?: string;
 }
 
 /**
@@ -33,6 +34,7 @@ export function DocumentViewerModal({
   propertyNo,
   partitionNo,
   loadPreviewAsBlob = false,
+  contentType,
 }: DocumentViewerModalProps) {
   const t = useTranslations("quickDataEntry");
   const searchParams = useSearchParams();
@@ -59,11 +61,14 @@ export function DocumentViewerModal({
   const getInitialGuess = useCallback(() => {
     if (!sourceUrl) return null;
     const lowerUrl = sourceUrl.toLowerCase();
+    if (contentType) {
+      const lowerCt = contentType.toLowerCase();
+      if (lowerCt.includes("pdf")) return "pdf";
+      if (lowerCt.startsWith("image/")) return "image";
+    }
+    if (!fileUrl) return null;
     const lowerName = fileName.toLowerCase();
     
-    if (lowerUrl.includes(".pdf") || lowerUrl.startsWith("data:application/pdf") || lowerName.endsWith(".pdf")) {
-      return "pdf";
-    }
     if (
       lowerUrl.startsWith("data:image/") ||
       lowerName.endsWith(".png") ||
@@ -75,8 +80,13 @@ export function DocumentViewerModal({
     ) {
       return "image";
     }
+
+    if (lowerUrl.includes(".pdf") || lowerUrl.startsWith("data:application/pdf") || lowerName.endsWith(".pdf")) {
+      return "pdf";
+    }
+
     return null;
-  }, [sourceUrl, fileName]);
+  }, [sourceUrl, fileUrl, fileName, contentType]);
 
   const initialGuess = getInitialGuess();
   const isLoadingPreview = loadPreviewAsBlob && !previewUrl && !previewError;
@@ -126,11 +136,30 @@ export function DocumentViewerModal({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDetectedType(null);
     if (!sourceUrl) return;
+    if (!fileUrl) return;
+
+    if (contentType) {
+      const lowerCt = contentType.toLowerCase();
+      if (lowerCt.includes("pdf")) {
+        setDetectedType("pdf");
+        return;
+      }
+      if (lowerCt.startsWith("image/")) {
+        setDetectedType("image");
+        return;
+      }
+    }
     
     const initial = getInitialGuess();
     if (initial) {
       setDetectedType(initial);
-      return;
+      // Skip async inspection if non-blob URL has explicit PDF or image extension, or is data: URI
+      if (
+        fileUrl.startsWith("data:") ||
+        (!fileUrl.startsWith("blob:") && (fileUrl.toLowerCase().includes(".pdf") || fileUrl.toLowerCase().match(/\.(png|jpe?g|gif|webp|svg)/i)))
+      ) {
+        return;
+      }
     }
     
     let active = true;
@@ -149,7 +178,7 @@ export function DocumentViewerModal({
             if (active) setDetectedType("image");
             return;
           }
-          if (active) setDetectedType("unsupported");
+          if (active && !initial) setDetectedType("unsupported");
           return;
         }
         
@@ -169,16 +198,16 @@ export function DocumentViewerModal({
             ) {
               setDetectedType("image");
             } else {
-              setDetectedType("unsupported");
+              setDetectedType(initial || "unsupported");
             }
           } else {
-            setDetectedType("unsupported");
+            setDetectedType(initial || "unsupported");
           }
         };
         reader.readAsArrayBuffer(blob.slice(0, 4));
       } catch (_err) {
         if (active) {
-          setDetectedType("unsupported");
+          setDetectedType(initial || "unsupported");
         }
       }
     };
@@ -187,7 +216,7 @@ export function DocumentViewerModal({
     return () => {
       active = false;
     };
-  }, [sourceUrl, fileName, getInitialGuess]);
+  }, [sourceUrl, fileUrl, fileName, contentType, getInitialGuess]);
 
   useEffect(() => {
     if (!isOpen) return;

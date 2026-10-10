@@ -147,7 +147,9 @@ export function useLockUnlockColumns({
                   content={hiddenNames.join(", ")}
                 >
                   <span className="text-blue-600 font-semibold cursor-pointer hover:underline inline-block">
-                    +{hiddenNames.length} more...
+                    +
+                    {hiddenNames.length}
+                    {' more...'}
                   </span>
                 </Tooltip>
               </>

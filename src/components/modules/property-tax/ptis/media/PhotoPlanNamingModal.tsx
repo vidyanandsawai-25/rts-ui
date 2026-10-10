@@ -18,6 +18,7 @@ const _FALLBACKS: Record<string, string> = {
   'media.invalidImage': 'Please upload a valid image file',
   'media.nameTooLong': 'Slot name must not exceed 250 characters',
   'media.invalidNameFormat': 'Slot name contains invalid characters',
+  'media.nameRequired': 'Photo plan name is required',
 };
 
 interface PhotoPlanNamingModalProps {
@@ -182,8 +183,25 @@ export function PhotoPlanNamingModal({
   const isFileInvalid = isFileRequiredMissing || !!fileValidationErrKey || isImageCorrupted;
   const isSaveDisabled = isLoading || isValidatingImage || !name.trim() || !displayOrder.trim() || (!isEdit && !photoTypeId) || isFileInvalid || Object.keys(errors).length > 0;
   const selectedPhotoTypeName = availableTypes.find((t) => String(t.value) === String(photoTypeId))?.label || defaultName || t('media.slot') || 'Photo Slot';
-  const titleStr = isEdit ? t('media.editPhotoDetails') || 'Edit Photo Details' : isReplacement ? t('media.replaceImageTitle') || 'Replace Image Details' : t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`;
-  const subtitleStr = isEdit ? t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.' : undefined;
+  const isPlanSlot = Boolean(
+    _photoTypeCode?.toUpperCase().includes('PLAN') ||
+    selectedPhotoTypeName?.toLowerCase().includes('plan') ||
+    defaultName?.toLowerCase().includes('plan')
+  );
+  const titleStr = isEdit
+    ? (t('media.editPhotoDetails') || 'Edit Photo Details')
+    : isReplacement
+      ? isPlanSlot
+        ? (t('media.replacePlan') || 'Replace Plan')
+        : (t('media.replaceImageTitle') || 'Replace Image')
+      : isPlanSlot
+        ? (t('media.uploadPlan') || 'Upload Plan')
+        : (t('media.addPhotoFor', { name: selectedPhotoTypeName }) || `Add Photo for ${selectedPhotoTypeName}`);
+  const subtitleStr = isEdit
+    ? (t('media.editPhotoSubtitle') || 'Update the display name, display order and remarks.')
+    : isReplacement && isPlanSlot
+      ? (t('media.replacePlanDescription') || 'Uploading a new plan image will replace the existing property plan.')
+      : undefined;
 
   const handleEditorSave = async (file: File) => (setSelectedFile(file), true);
   const handleEditorClose = () => { if (editImageSrc) URL.revokeObjectURL(editImageSrc); setEditImageSrc(null); };
@@ -196,7 +214,15 @@ export function PhotoPlanNamingModal({
         footer={
           <div className="flex gap-2 justify-end w-full">
             <Button variant="secondary" onClick={onClose} type="button" disabled={isLoading} className="cursor-pointer hover:!bg-slate-100 hover:!text-slate-900 transition-all hover:scale-105 active:scale-95 duration-200">{t('actions.cancel') || 'Cancel'}</Button>
-            <Button variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled} className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? t('media.saving') || 'Saving...' : t('actions.save') || 'Save'}</Button>
+            <Button variant="primary" onClick={handleSubmit} type="button" disabled={isSaveDisabled} className="!bg-blue-600 hover:!bg-blue-700 !text-white font-medium px-4 py-2 rounded-lg cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading
+                ? (t('media.saving') || 'Saving...')
+                : isReplacement
+                  ? isPlanSlot
+                    ? (t('media.replacePlanConfirm') || 'Replace Plan')
+                    : (t('media.replaceImage') || 'Replace Image')
+                  : (t('actions.save') || 'Save')}
+            </Button>
           </div>
         }
       >
@@ -229,8 +255,8 @@ export function PhotoPlanNamingModal({
           />
           <input type="hidden" value={displayOrder} />
           <Input
-            label={t.has('media.remarks') ? t('media.remarks') : 'Remarks'}
-            placeholder={t.has('media.remarksPlaceholder') ? t('media.remarksPlaceholder') : 'Enter any remarks...'}
+            label={t('media.remarks') || 'Remarks'}
+            placeholder={t('media.remarksPlaceholder') || 'Enter any remarks...'}
             value={remarks} onChange={(e) => setRemarks(e.target.value)} disabled={isLoading} fullWidth
           />
           {!isEdit && (
@@ -271,8 +297,8 @@ export function PhotoPlanNamingModal({
                           <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
                           <span className="text-xs font-semibold text-slate-800">
                             {uploadProgress < 75
-                              ? (t.has('media.uploadingAndSaving') ? t('media.uploadingAndSaving') : 'Uploading image...')
-                              : (t.has('media.saving') ? t('media.saving') : 'Saving photo record...')}
+                              ? (t('media.uploadingAndSaving') || 'Uploading image...')
+                              : (t('media.saving') || 'Saving photo record...')}
                           </span>
                         </div>
                         <span className="text-xs font-bold text-blue-600">
@@ -301,12 +327,12 @@ export function PhotoPlanNamingModal({
                       </div>
                       <p className="text-xs font-semibold text-slate-700">
                         <span className="text-blue-600 hover:underline">
-                          {t.has('media.chooseFile') ? t('media.chooseFile') : 'Choose a file'}
+                          {t('media.chooseFile') || 'Choose a file'}
                         </span>{' '}
-                        {t.has('media.orDragDrop') ? t('media.orDragDrop') : 'or drag & drop it here'}
+                        {t('media.orDragDrop') || 'or drag & drop it here'}
                       </p>
                       <p className="text-[11px] text-slate-400 mt-1">
-                        {t.has('media.allowedFormatsSubtitle') ? t('media.allowedFormatsSubtitle') : 'Supports JPEG, JPG, PNG (Max 5MB)'}
+                        {t('media.allowedFormatsSubtitle') || 'Supports JPEG, JPG, PNG (Max 5MB)'}
                       </p>
                     </div>
                   ) : (
@@ -356,7 +382,8 @@ export function PhotoPlanNamingModal({
                             if (fileInputRef.current) fileInputRef.current.value = '';
                           }}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                          title="Remove file"
+                          title={t('media.removeFile') || 'Remove file'}
+                          aria-label={t('media.removeFile') || 'Remove file'}
                         >
                           <X className="w-4 h-4" />
                         </button>

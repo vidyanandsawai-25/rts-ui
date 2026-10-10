@@ -28,6 +28,26 @@ interface DocumentAttachmentProps {
     allowedFormats?: string;
 }
 
+/**
+ * Clean storage timestamp and GUID prefix (e.g. 20260916_130519_813956_1368f176423347f48baf5926c9992f04_smile.jpg)
+ * into human-readable original file name (smile.jpg).
+ */
+export function formatDisplayFileName(name?: string | null): string {
+    if (!name) return "";
+    const trimmed = name.trim();
+    // Pattern: YYYYMMDD_HHmmss_microseconds_32hexguid_originalFileName.ext
+    const storageMatch = trimmed.match(/^\d{8}_\d{6}_\d+_[a-fA-F0-9]{32}_(.+)$/);
+    if (storageMatch && storageMatch[1]) {
+        return storageMatch[1];
+    }
+    // Pattern: 36-char GUID prefix: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx_originalFileName.ext
+    const guidMatch = trimmed.match(/^[a-fA-F0-9-]{36}_(.+)$/);
+    if (guidMatch && guidMatch[1]) {
+        return guidMatch[1];
+    }
+    return trimmed;
+}
+
 export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     documentGuid, fileName, hasDocumentBinding, isUploading, isDeleting, isDisabled,
     isDocumentInvalid, documentError, onFileUpload, onFileDelete, t, label, pendingFile, allowedFormats
@@ -38,6 +58,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
     const [viewerData, setViewerData] = React.useState<{ isOpen: boolean; url: string; name: string } | null>(null);
 
     const isAnyActionRunning = !!isUploading || isViewing || isDownloading || !!isDeleting;
+    const displayFileName = formatDisplayFileName(fileName) || (pendingFile?.name ? formatDisplayFileName(pendingFile.name) : (t("building.documentAttached") || "Document Attached"));
 
     React.useEffect(() => {
         return () => { if (viewerData?.url?.startsWith("blob:")) URL.revokeObjectURL(viewerData.url); };
@@ -45,7 +66,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
 
     const handleViewDocument = async () => {
         if (pendingFile) {
-            setViewerData({ isOpen: true, url: URL.createObjectURL(pendingFile), name: fileName || "document" });
+            setViewerData({ isOpen: true, url: URL.createObjectURL(pendingFile), name: displayFileName });
             return;
         }
         if (!documentGuid) {
@@ -55,7 +76,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
         setIsViewing(true);
         try {
             const { url } = await getDocumentBlobUrl(documentGuid, locale);
-            setViewerData({ isOpen: true, url, name: fileName || "document" });
+            setViewerData({ isOpen: true, url, name: displayFileName });
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Failed to view document");
         } finally {
@@ -72,7 +93,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
         if (!documentGuid) return;
         setIsDownloading(true);
         try {
-            await downloadDocumentClient(documentGuid, fileName, locale);
+            await downloadDocumentClient(documentGuid, displayFileName, locale);
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Failed to download document");
         } finally {
@@ -97,7 +118,7 @@ export const DocumentAttachment: React.FC<DocumentAttachmentProps> = ({
                     <FileText size={24} />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-blue-950 truncate mb-1">{fileName || t("building.documentAttached") || "Document Attached"}</p>
+                    <p className="text-sm font-bold text-blue-950 truncate mb-1" title={displayFileName}>{displayFileName}</p>
                     <div className="flex items-center gap-1.5">
                         <Badge
                             variant={isPending ? "warning" : "success"} size="sm" icon={ShieldCheck}

@@ -250,6 +250,7 @@
         "active": "Active"
       },
       "form": {
+        "title": "Asset Category",
         "addTitle": "Add New {name}",
         "editTitle": "Edit {name}",
         "createSubtitle": "Create a new record",
@@ -257,11 +258,18 @@
         "labels": {
           "code": "Code",
           "name": "Name",
+          "typeNameLocal": "Local Name",
           "category": "Asset Category",
+          "categoryName": "Category Name",
           "description": "Description",
           "status": "Status",
+          "activeStatus": "Active Status",
           "active": "Active",
           "inactive": "Inactive",
+          "activeDescription": "Asset Category is currently Active",
+          "inactiveDescription": "Asset Category is currently Inactive",
+          "assetTypeActiveDescription": "Asset Type is currently Active",
+          "assetTypeInactiveDescription": "Asset Type is currently Inactive",
           "deactivate": "Delete",
           "confirmDeactivateTitle": "Confirm Deletion",
           "confirmDeactivateDesc": "Are you sure you want to delete this record?",
@@ -276,11 +284,16 @@
           "photoTypeName": "Photo Type Name",
           "registrationType": "Registration Type",
           "unitRegistration": "Unit Registration",
-          "roomRegistration": "Room Registration"
+          "roomRegistration": "Room Registration",
+          "isSubUnit": "Is Sub Unit",
+          "isSubUnitDescription": "Mark if this asset type is for sub-units",
+          "yes": "Yes",
+          "no": "No"
         },
         "placeholders": {
           "code": "Enter code",
           "name": "Enter name",
+          "typeNameLocal": "Enter local name",
           "category": "Select category",
           "description": "Enter description",
           "valuationType": "e.g. BUILDING, LAND, etc.",
@@ -307,7 +320,12 @@
           "fixErrors": "Please fix all validation errors before submitting",
           "duplicateRecord": "This record already exists",
           "duplicateError": "A duplicate record was found",
-          "registrationTypeRequired": "Registration Type is required"
+          "registrationTypeRequired": "Registration Type is required",
+          "typeNameLocalInvalid": "Invalid local name",
+          "typeNameLocalFormat": "Invalid format for local name",
+          "codeDuplicate": "This code already exists",
+          "nameDuplicate": "This name already exists",
+          "codeAndNameDuplicate": "This code and name already exist"
         },
         "messages": {
           "createSuccess": "Record created successfully",
@@ -333,6 +351,7 @@
           "descriptionTooLong": "Description must not exceed 500 characters",
           "descInvalidChars": "Invalid characters in description (Only alphanumeric, spaces, underscore and hyphen allowed)",
           "valuationTypeInvalidChars": "Invalid characters in valuation type (Only alphanumeric, spaces, underscore and hyphen allowed)",
+          "valuationTypeRequired": "Valuation Type is required",
           "codeFormat": "Invalid characters in code (Only alphanumeric, underscore and hyphen allowed)",
           "duplicateCode": "This code already exists",
           "noSpecialCharacters": "Invalid characters in input",
@@ -348,16 +367,34 @@
           "gracePeriodDaysRequired": "Grace period days is required",
           "gracePeriodDaysRange": "Grace period days must be greater than or equal to 0",
           "notFound": "Record not found."
+        },
+        "apiErrors": {
+          "referenceBlocked": {
+            "assetCategory": {
+              "deleteInUse": "This Asset Category cannot be deleted because it is in use.",
+              "deactivateInUse": "This Asset Category cannot be deactivated because it is in use.",
+              "deleteHasMasters": "This Asset Category cannot be deleted because it has {masters}. Please delete all {masters} for this Asset Category first.",
+              "deactivateHasMasters": "This Asset Category cannot be deactivated because it has {masters}. Please delete all {masters} for this Asset Category first."
+            },
+            "assetType": {
+              "deleteInUse": "This Asset Type cannot be deleted because it is in use.",
+              "deactivateInUse": "This Asset Type cannot be deactivated because it is in use.",
+              "deleteHasMasters": "This Asset Type cannot be deleted because it has {masters}. Please delete all {masters} for this Asset Type first.",
+              "deactivateHasMasters": "This Asset Type cannot be deactivated because it has {masters}. Please delete all {masters} for this Asset Type first."
+            }
+          },
+          "referenceMasters": {
+            "and": "and",
+            "assetTypes": "Asset Types",
+            "assetDocumentDefinitions": "Asset Document Definitions",
+            "assetFieldDefinitions": "Asset Field Definitions",
+            "typeOfUses": "Type Of Uses",
+            "assetPhotoTypes": "Asset Photo Types",
+            "assetRoomTypes": "Asset Room Types",
+            "inventoryCategories": "Inventory Categories",
+            "assetConditions": "Asset Conditions"
+          }
         }
-      },
-      "messages": {
-        "saveSuccess": "Record saved successfully",
-        "saveFailed": "Failed to save record",
-        "deleteSuccess": "Record deleted successfully",
-        "deleteFailed": "Failed to delete record",
-        "unexpectedError": "An unexpected error occurred",
-        "cannotDeleteCategoryReferenced": "Cannot delete this Asset Category because it is referenced in Asset Type.",
-        "cannotDeleteTypeReferenced": "Cannot delete this Asset Type because it is referenced in another record."
       },
       "error": {
         "title": "Data Loading Failed",
@@ -386,7 +423,7 @@
     "ownership-type-master": "Ownership Type",
     "owning-department-master": "Owning Department",
     "inventory-name-master": "Inventory Item Name",
-    "inventory-condition-master": "Inventory Condition",
+    "inventory-condition-master": "Asset Condition Master",
     "gst-master": "GST Master",
     "penalty-rule-master": "Penalty Rule Master",
     "room-type-master": "Room Type Master",

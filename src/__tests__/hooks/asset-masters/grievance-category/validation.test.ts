@@ -11,71 +11,86 @@ const t = (key: string, values?: Record<string, string | number | Date>) => {
 
 describe('validateGrievanceCategoryForm', () => {
   const baseModel: AssetGrievanceCategoryFormModel = {
-    categoryName: '',
-    description: '',
-    resolutionSlaDays: NaN,
-    isActive: false,
+    grievanceTypeCode: 'GRV_WATER_LEAK',
+    grievanceTypeName: 'Water Leakage',
+    grievanceTypeNameLocal: 'पाणी पुरवठा गळती',
+    codeFormat: 'WTR-{YYYY}-{SEQ}',
+    displaySequence: 1,
+    targetTableName: 'tbl_water',
+    slaDays: 3,
+    description: 'Water distribution problem',
+    isActive: true,
   };
 
-  test('requires categoryName', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel }, t, false);
-    expect(errors.categoryName).toBe('form.errors.nameReq');
+  test('requires grievanceTypeCode', () => {
+    const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeCode: '' }, t, false);
+    expect(errors.grievanceTypeCode).toBe('form.errors.typeCodeReq');
   });
 
-  test('categoryName min length check', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'ab' }, t, false);
-    expect(errors.categoryName).toBe('form.errors.nameMinLength');
+  test('grievanceTypeCode max length check (20)', () => {
+    const longCode = 'a'.repeat(21);
+    const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeCode: longCode }, t, false);
+    expect(errors.grievanceTypeCode).toBe('form.errors.typeCodeMaxLength');
   });
 
-  test('categoryName max length check (100)', () => {
+  test('grievanceTypeCode regex validation', () => {
+    const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeCode: 'INVALID CODE!' }, t, false);
+    expect(errors.grievanceTypeCode).toBe('form.errors.typeCodeInvalidFormat');
+  });
+
+  test('requires grievanceTypeName', () => {
+    const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeName: '' }, t, false);
+    expect(errors.grievanceTypeName).toBe('form.errors.typeNameReq');
+  });
+
+  test('grievanceTypeName max length check (100)', () => {
     const longName = 'a'.repeat(101);
-    const errors = validateGrievanceCategoryForm({ ...baseModel, categoryName: longName }, t, false);
-    expect(errors.categoryName).toBe('form.errors.nameMaxLength');
+    const errors = validateGrievanceCategoryForm({ ...baseModel, grievanceTypeName: longName }, t, false);
+    expect(errors.grievanceTypeName).toBe('form.errors.typeNameMaxLength');
   });
 
-  test('categoryName all zeros or invalid characters', () => {
-    const errorsAllZeros = validateGrievanceCategoryForm({ ...baseModel, categoryName: '0000' }, t, false);
-    expect(errorsAllZeros.categoryName).toBe('form.errors.invalidFormat_{"default":"Only alphanumeric characters and spaces are allowed"}');
 
-    const errorsInvalidChar = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Cat@123' }, t, false);
-    expect(errorsInvalidChar.categoryName).toBe('form.errors.invalidFormat_{"default":"Only alphanumeric characters and spaces are allowed"}');
+  test('requires codeFormat', () => {
+    const errors = validateGrievanceCategoryForm({ ...baseModel, codeFormat: '' }, t, false);
+    expect(errors.codeFormat).toBe('form.errors.codeFormatReq');
   });
 
-  test('description min length check', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name', description: 'ab' }, t, false);
-    expect(errors.description).toBe('form.errors.descMinLength');
+  test('requires targetTableName', () => {
+    const errors = validateGrievanceCategoryForm({ ...baseModel, targetTableName: '' }, t, false);
+    expect(errors.targetTableName).toBe('form.errors.targetTableNameReq');
   });
 
-  test('description max length check (500)', () => {
-    const longDesc = 'a'.repeat(501);
-    const errors = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name', description: longDesc }, t, false);
-    expect(errors.description).toBe('form.errors.descMaxLength');
+  test('requires slaDays', () => {
+    const errorsEmpty = validateGrievanceCategoryForm({ ...baseModel, slaDays: null }, t, false);
+    expect(errorsEmpty.slaDays).toBe('form.errors.slaReq');
   });
 
-  test('resolutionSlaDays validation', () => {
-    const errorsEmpty = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name' }, t, false);
-    expect(errorsEmpty.resolutionSlaDays).toBe('form.errors.slaReq');
+  test('slaDays validation', () => {
+    const errorsNegative = validateGrievanceCategoryForm({ ...baseModel, slaDays: -5 }, t, false);
+    expect(errorsNegative.slaDays).toBe('form.errors.slaMustBeNonNegative');
 
-    const errorsZero = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name', resolutionSlaDays: 0 }, t, false);
-    expect(errorsZero.resolutionSlaDays).toBe('form.errors.slaPositiveInteger');
-
-    const errorsNegative = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name', resolutionSlaDays: -5 }, t, false);
-    expect(errorsNegative.resolutionSlaDays).toBe('form.errors.slaPositiveInteger');
-
-    const errorsMax = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name', resolutionSlaDays: 366 }, t, false);
-    expect(errorsMax.resolutionSlaDays).toBe('form.errors.slaMaxDays');
+    const errorsMax = validateGrievanceCategoryForm({ ...baseModel, slaDays: 4000 }, t, false);
+    expect(errorsMax.slaDays).toBe('form.errors.slaMaxDays');
   });
+
+
+
 
   test('isActive required on create', () => {
-    const errors = validateGrievanceCategoryForm({ ...baseModel, categoryName: 'Valid Name', resolutionSlaDays: 10, isActive: false }, t, false);
-    expect(errors.isActive).toBe('form.errors.mustBeActive_{"default":"Must be active"}');
+    const errors = validateGrievanceCategoryForm({ ...baseModel, isActive: false }, t, false);
+    expect(errors.isActive).toBe('form.errors.mustBeActive');
   });
 
   test('no errors on valid model (create & edit)', () => {
-    const validModel = {
-      categoryName: 'Valid Category',
-      description: 'Valid Description text',
-      resolutionSlaDays: 10,
+    const validModel: AssetGrievanceCategoryFormModel = {
+      grievanceTypeCode: 'GRV_WATER_LEAK',
+      grievanceTypeName: 'Water Leakage',
+      grievanceTypeNameLocal: 'पाणी पुरवठा गळती',
+      codeFormat: 'WTR-{YYYY}-{SEQ}',
+      displaySequence: 1,
+      targetTableName: 'tbl_water',
+      slaDays: 3,
+      description: 'Water distribution problem',
       isActive: true,
     };
     const errorsCreate = validateGrievanceCategoryForm(validModel, t, false);

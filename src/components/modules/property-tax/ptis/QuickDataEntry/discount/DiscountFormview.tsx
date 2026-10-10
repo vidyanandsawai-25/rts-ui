@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useTransition, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Tabs, Button } from "@/components/common";
 import { useTranslations } from "next-intl";
@@ -14,10 +14,10 @@ import { PropertyDiscountInfoResponseDto } from "@/types/discount.types";
 import { PropertySocialInfoResponseDto } from "@/types/property-social-details.types";
 import { getFilteredDiscounts } from "@/lib/utils/discount-helpers";
 import { useConfirm } from "@/components/common/ConfirmProvider";
-import { getLocalizedName } from "@/lib/utils/social-details";
 import { SocialAttribute } from "@/types/social-attribute.types";
 import { useDiscountLevelState } from "@/hooks/useDiscountLevelState";
 import { UnitSelectionItem, WingOption } from "@/types/building-permission.types";
+import { PropertySocialDetailsDto } from "@/types/property-social-details.types";
 interface DiscountFormProps {
     initialDiscountData: PropertyDiscountInfoResponseDto | null;
     initialSocialData: PropertySocialInfoResponseDto | null;
@@ -27,6 +27,9 @@ interface DiscountFormProps {
     socialMasterAttributes?: SocialAttribute[];
     wings?: WingOption[];
     units?: UnitSelectionItem[];
+    savedPropertyDetails?: PropertySocialDetailsDto[];
+    societyDetailId?: number;
+    wingDetailId?: number;
 }
 
 const DiscountFormview: React.FC<DiscountFormProps> = ({
@@ -34,16 +37,20 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     initialSocialData,
     propertyId,
     isSociety = false,
+    societyDetailId: propSocietyDetailId,
+    wingDetailId: propWingDetailId,
     discountMasterAttributes = [],
     socialMasterAttributes = [],
     wings = [],
     units = [],
+    savedPropertyDetails = [],
 }) => {
     const t = useTranslations('quickDataEntry');
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { confirm } = useConfirm();
+    const [isPendingTransition, startTransition] = useTransition();
 
     const activeTab = searchParams.get("view") || "discount";
 
@@ -69,41 +76,96 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                     }
                     const params = new URLSearchParams(searchParams.toString());
                     params.set("view", String(value));
-                    router.push(`${pathname}?${params.toString()}`);
+                    startTransition(() => {
+                        router.push(`${pathname}?${params.toString()}`);
+                    });
                 }
             });
         } else {
             const params = new URLSearchParams(searchParams.toString());
             params.set("view", String(value));
-            router.push(`${pathname}?${params.toString()}`);
+            startTransition(() => {
+                router.push(`${pathname}?${params.toString()}`);
+            });
         }
     }, [searchParams, router, pathname, activeTab, confirm, t]);
     const isWingWise = searchParams.get('isWingWise') === 'true';
     const levelParam = searchParams.get('level') as "Apartment" | "Wing" | "Unit" | null;
-    const societyDetailId = searchParams.get('societyDetailId');
-    const wingDetailId = searchParams.get('wingDetailId');
-    const initialWingDetailId = wingDetailId ? Number(wingDetailId) : null;
+    const societyDetailId = searchParams.get('societyDetailId') || searchParams.get('societyId');
+    const wingDetailId = searchParams.get('wingDetailId') || searchParams.get('wingId');
+    const initialWingDetailId = wingDetailId ? Number(wingDetailId) : (propWingDetailId ?? (wings && wings.length > 0 ? wings[0].wingDetailId : null));
+    const unitPropertyIdParam = searchParams.get('unitPropertyId');
+    const initialUnitPropertyId = unitPropertyIdParam ? Number(unitPropertyIdParam) : null;
+
+    const effectiveSocietyDetailId = (propSocietyDetailId && Number(propSocietyDetailId) > 0 ? Number(propSocietyDetailId) : null) ?? (societyDetailId && Number(societyDetailId) > 0 ? Number(societyDetailId) : null);
+    const hasSocietyDetailId = Boolean(effectiveSocietyDetailId && effectiveSocietyDetailId > 0);
+
+    const hasWingsAvailable = Array.isArray(wings) && wings.length > 0;
+    const effectiveWingDetailId = (propWingDetailId && Number(propWingDetailId) > 0 ? Number(propWingDetailId) : null) ?? (initialWingDetailId && initialWingDetailId > 0 ? initialWingDetailId : null);
+    const hasWingDetailId = Boolean(hasWingsAvailable && effectiveWingDetailId && effectiveWingDetailId > 0);
+
+    const showApartmentTab = hasSocietyDetailId && !isWingWise;
+    const showWingTab = hasWingDetailId;
+    const showLevelSelector = isSociety && Boolean(showApartmentTab || showWingTab);
+
+    const rawInitialLevel = levelParam || (isWingWise ? 'Wing' : 'Apartment');
+    const effectiveInitialLevel: "Apartment" | "Wing" | "Unit" =
+        rawInitialLevel === 'Apartment' && !showApartmentTab
+            ? (showWingTab ? 'Wing' : 'Unit')
+            : rawInitialLevel === 'Wing' && !showWingTab
+            ? 'Unit'
+            : rawInitialLevel;
 
     const levelState = useDiscountLevelState({
         propertyId,
-        initialLevel: levelParam || (isWingWise ? 'Wing' : 'Apartment'),
+        initialLevel: effectiveInitialLevel,
         initialWingDetailId,
-        isSociety, 
+        initialUnitPropertyId,
+        isSociety,
         wings,
-        units
+        units,
+        savedPropertyDetails
     });
 
     const handleLevelChange = useCallback((level: "Apartment" | "Wing" | "Unit") => {
         levelState.setLevel(level);
         const params = new URLSearchParams(searchParams.toString());
         params.set("level", level);
-        router.push(`${pathname}?${params.toString()}`);
+        if (level !== 'Unit') {
+            params.delete("unitPropertyId");
+        }
+        startTransition(() => {
+            router.push(`${pathname}?${params.toString()}`);
+        });
     }, [levelState, searchParams, router, pathname]);
+
+    const currentLevel = levelState?.level;
+    useEffect(() => {
+        if (!currentLevel) return;
+        if (currentLevel === 'Apartment' && !showApartmentTab) {
+            handleLevelChange(showWingTab ? 'Wing' : 'Unit');
+        } else if (currentLevel === 'Wing' && !showWingTab) {
+            handleLevelChange('Unit');
+        }
+    }, [currentLevel, showApartmentTab, showWingTab, handleLevelChange]);
+
+    const editingUnitId = useMemo(() => {
+        if (!levelState || levelState.level !== 'Unit') return null;
+        if (levelState.selectedUnitIds.size === 1) {
+            return Array.from(levelState.selectedUnitIds)[0];
+        }
+        if (initialUnitPropertyId && initialUnitPropertyId > 0) {
+            return initialUnitPropertyId;
+        }
+        return null;
+    }, [levelState, initialUnitPropertyId]);
 
     const {
         discountData,
         isSaving,
+        isDeleting,
         hasChanges,
+        isFormValid,
         validationErrors,
         incompleteDiscounts,
         handleToggleEnabled,
@@ -111,19 +173,29 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
         handleFileUpload,
         handleFileDelete,
         handleDeleteDiscount,
-        handleSave,
-        revertDiscount
+        handleSave
     } = useDiscountForm(initialDiscountData, propertyId, discountMasterAttributes, {
-        level: levelState?.level,
-        societyDetailId,
-        wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit') 
-            ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId) 
+        level: (levelState?.level === 'Apartment' || levelState?.level === 'Wing' || levelState?.level === 'Unit') ? levelState.level : undefined,
+        societyDetailId: societyDetailId || (propSocietyDetailId ? String(propSocietyDetailId) : null),
+        wingDetailId: levelState && (levelState.level === 'Wing' || levelState.level === 'Unit')
+            ? (levelState.selectedWingDetailId ? String(levelState.selectedWingDetailId) : wingDetailId)
             : wingDetailId,
         propertyIds: levelState ? Array.from(levelState.selectedUnitIds).join(",") : undefined,
-        isSociety: isSociety
+        isSociety: isSociety,
+        selectedUnitCount: levelState ? levelState.selectedUnitIds.size : undefined,
+        totalUnitCount: levelState ? levelState.filteredUnits.length : undefined,
+        savedPropertyDetails,
+        editingUnitId,
     });
 
-    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [selectedId, setSelectedId] = useState<number | null>(() => {
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramId = urlParams.get("socialAttributeId");
+            if (paramId && !isNaN(Number(paramId))) return Number(paramId);
+        }
+        return searchParams.get("socialAttributeId") ? Number(searchParams.get("socialAttributeId")) : null;
+    });
     const [searchTerm, setSearchTerm] = useState("");
     const [showActiveFirst, setShowActiveFirst] = useState(false);
 
@@ -139,41 +211,23 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
     }, [discountData, selectedId, initialDiscountData?.discountAttributes, discountMasterAttributes]);
 
     const handleSelectDiscount = useCallback((id: number) => {
-        if (activeSelectedId !== null && activeSelectedId !== id) {
-            revertDiscount(activeSelectedId);
-        }
         setSelectedId(id);
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("socialAttributeId", id.toString());
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [activeSelectedId, revertDiscount, searchParams, pathname, router]);
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            params.set("socialAttributeId", id.toString());
+            window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+        }
+    }, [pathname]);
 
     const handleToggleEnabledWrapped = useCallback((id: number, checked: boolean) => {
-        const item = discountData[id];
-        const initialItem = initialDiscountData?.discountAttributes?.find(x => x.id === id);
-        const existsAndActiveInDb = initialItem && typeof initialItem.propertySocialDetailId === "number" && initialItem.propertySocialDetailId > 0 && initialItem.bitValue === true;
-
-        if (!checked && existsAndActiveInDb) {
-            const displayName = getLocalizedName(item.socialAttributeCode, item.socialAttributeName, t as unknown as Parameters<typeof getLocalizedName>[2]);
-            confirm({
-                title: t("discount.confirmDeleteDiscountTitle") || "Delete Discount & Data",
-                description: `${t("discount.confirmToggleOffWarning") || "You have active details:"}\n${displayName}\n\n${t("discount.confirmDeleteDiscountDesc") || "Are you sure you want to delete this discount and all its associated data?"}`,
-                confirmText: t("discount.confirmDeleteDiscountOk") || "Yes, Delete",
-                cancelText: t("discount.confirmDeleteDiscountCancel") || "No, Cancel",
-                variant: "delete",
-                onConfirm: async () => {
-                    await handleDeleteDiscount(id);
-                    handleSelectDiscount(id);
-                },
-                onCancel: () => {
-                    // Leaves toggle state active/unchanged
-                }
-            });
-        } else {
-            handleToggleEnabled(id, checked);
-            handleSelectDiscount(id);
+        handleToggleEnabled(id, checked);
+        setSelectedId(id);
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            params.set("socialAttributeId", id.toString());
+            window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
         }
-    }, [handleToggleEnabled, discountData, handleDeleteDiscount, confirm, t, initialDiscountData?.discountAttributes, handleSelectDiscount]);
+    }, [handleToggleEnabled, pathname]);
 
     const filteredDiscounts = useMemo(() => {
         return getFilteredDiscounts(discountData, searchTerm, showActiveFirst, t);
@@ -231,8 +285,8 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
 
     return (
         <>
-            <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="sm" className="w-full p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+            <Tabs value={activeTab} onChange={handleTabChange} variant="pills" size="sm" className="w-full p-2 sm:p-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 sm:mb-2.5 gap-2">
                     <Tabs.TabList className="bg-slate-100 p-1.5 rounded-xl min-w-[300px] w-full sm:w-auto border border-slate-200">
                         <Tabs.Tab value="discount" className="w-1/2 justify-center py-2 text-xs font-bold cursor-pointer">
                             {t("discount.title")}
@@ -242,38 +296,40 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         </Tabs.Tab>
                     </Tabs.TabList>
 
-                    {isSociety && levelState && (
+                    {showLevelSelector && (
                         <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                            {searchParams.get('isWingWise') !== 'true' && (
+                            {showApartmentTab && (
                                 <Button
-                                size="xs"
-                                variant={levelState.level === 'Apartment' ? 'primary' : 'ghost'}
-                                icon={Building2}
-                                onClick={() => handleLevelChange('Apartment')}
-                                className={cn(
-                                    'font-bold cursor-pointer rounded-lg transition-all',
-                                    levelState.level === 'Apartment'
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-                                )}
-                            >
-                                {t('building.apartmentLevel') || 'Apartment Level'}
-                            </Button>
+                                    size="xs"
+                                    variant={levelState.level === 'Apartment' ? 'primary' : 'ghost'}
+                                    icon={Building2}
+                                    onClick={() => handleLevelChange('Apartment')}
+                                    className={cn(
+                                        'font-bold cursor-pointer rounded-lg transition-all',
+                                        levelState.level === 'Apartment'
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                    )}
+                                >
+                                    {t('building.apartmentLevel') || 'Apartment Level'}
+                                </Button>
                             )}
-                            <Button
-                                size="xs"
-                                variant={levelState.level === 'Wing' ? 'primary' : 'ghost'}
-                                icon={Home}
-                                onClick={() => handleLevelChange('Wing')}
-                                className={cn(
-                                    'font-bold cursor-pointer rounded-lg transition-all',
-                                    levelState.level === 'Wing'
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
-                                )}
-                            >
-                                {t('building.wingLevel') || 'Wing Level'}
-                            </Button>
+                            {showWingTab && (
+                                <Button
+                                    size="xs"
+                                    variant={levelState.level === 'Wing' ? 'primary' : 'ghost'}
+                                    icon={Home}
+                                    onClick={() => handleLevelChange('Wing')}
+                                    className={cn(
+                                        'font-bold cursor-pointer rounded-lg transition-all',
+                                        levelState.level === 'Wing'
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-slate-600 hover:text-blue-900 hover:bg-slate-200/50'
+                                    )}
+                                >
+                                    {t('building.wingLevel') || 'Wing Level'}
+                                </Button>
+                            )}
                             <Button
                                 size="xs"
                                 variant={levelState.level === 'Unit' ? 'primary' : 'ghost'}
@@ -293,7 +349,7 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                 </div>
 
                 {/* Discount Information Tab */}
-                <Tabs.TabPanel value="discount" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
+                <Tabs.TabPanel value="discount" className="h-[calc(100vh-175px)] flex flex-col mt-0 overflow-hidden">
                     <DiscountPane
                         discountData={discountData}
                         incompleteDiscounts={incompleteDiscounts}
@@ -313,22 +369,31 @@ const DiscountFormview: React.FC<DiscountFormProps> = ({
                         handleFileDelete={handleFileDelete}
                         handleDeleteDiscount={handleDeleteDiscount}
                         isSaving={isSaving}
+                        isDeleting={isDeleting}
                         hasChanges={hasChanges}
+                        isFormValid={isFormValid}
                         onSave={handleSaveClick}
                         t={t}
                         levelState={levelState}
                         isSociety={isSociety}
+                        isWingLoading={isPendingTransition}
+                        savedPropertyDetails={savedPropertyDetails}
+                        propertyId={propertyId}
+                        societyDetailId={propSocietyDetailId || (societyDetailId ? Number(societyDetailId) : undefined)}
                     />
                 </Tabs.TabPanel>
 
                 {/* Social Information Tab */}
-                <Tabs.TabPanel value="social" className="h-[calc(100vh-275px)] min-h-[500px] flex flex-col mt-0">
+                <Tabs.TabPanel value="social" className="h-[calc(100vh-175px)] flex flex-col mt-0 overflow-hidden">
                     <SocialDetailsForm
                         initialSocialData={initialSocialData}
                         propertyId={propertyId}
                         levelState={levelState}
                         isSociety={isSociety}
+                        societyDetailId={propSocietyDetailId}
                         socialMasterAttributes={socialMasterAttributes}
+                        isWingLoading={isPendingTransition}
+                        savedPropertyDetails={savedPropertyDetails}
                     />
                 </Tabs.TabPanel>
             </Tabs>

@@ -46,7 +46,8 @@
       "descriptionMaxLength": "Description cannot exceed {count} characters",
       "mandatoryNotice": "Fields marked with <b>*</b> are mandatory",
       "fixErrors": "Please fix the errors in the form",
-      "invalidFormat": "Invalid format"
+      "invalidFormat": "Invalid format",
+      "departmentNameDuplicate": "Owning department name already exists"
     },
     "messages": {
       "createSuccess": "Owning department created successfully",
@@ -55,6 +56,22 @@
       "error": "Failed to save owning department",
       "deleteConfirm": "Are you sure you want to delete this owning department?",
       "duplicate": "This record already exists"
+    }
+  },
+  "apiErrors": {
+    "OwningDepartment_Duplicate": "Owning department name already exists",
+    "duplicateRecord": "This owning department name already exists",
+    "referenceBlocked": {
+      "owningDepartment": {
+        "deleteInUse": "This Owning Department cannot be deleted because it is in use.",
+        "deactivateInUse": "This Owning Department cannot be deactivated because it is in use.",
+        "deleteHasMasters": "This Owning Department cannot be deleted because it has {masters}. Please delete all {masters} for this Owning Department first.",
+        "deactivateHasMasters": "This Owning Department cannot be deactivated because it has {masters}. Please delete all {masters} for this Owning Department first."
+      }
+    },
+    "referenceMasters": {
+      "designations": "Designations",
+      "and": "and"
     }
   },
   "error": {

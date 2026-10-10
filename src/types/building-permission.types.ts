@@ -15,6 +15,11 @@ export type CertificateData = {
     certificateTypeCode?: string;
     displayOrder?: number;
     pendingFile?: File;
+    customStatusBadge?: {
+        label: string;
+        variant: 'success' | 'info' | 'warning' | 'secondary' | 'purple';
+    };
+    sourceLevel?: 'Direct' | 'Apartment' | 'Wing' | 'Property' | 'Floor' | 'Partial' | 'None';
 };
 
 export type BuildingPermissionState = Record<number, CertificateData>;
@@ -51,7 +56,7 @@ export interface BuildingPermissionApiResponse {
     items: BuildingPermissionItems;
 }
 
-export type ApplicationLevel = 'Apartment' | 'Wing' | 'Unit';
+export type ApplicationLevel = 'Apartment' | 'Wing' | 'Unit' | 'Entire Property' | 'Floor';
 export type CertificateStatus = 'Active' | 'Pending' | 'Expired';
 
 export interface WingOption {
@@ -72,6 +77,7 @@ export interface UnitSelectionItem {
     useId?: number;
     useName: string;
     isSelected: boolean;
+    constructionYear?: string | number;
 }
 
 export interface CertificateTypeMasterOption {
@@ -156,6 +162,12 @@ export interface SaveCertificateRequestDto {
     isPrimaryDocument?: boolean;
     status?: CertificateStatus;
     remarks?: string | null;
+    documentGuid?: string | null;
+    existingDocumentGuid?: string | null;
+    propertyCertificateId?: number | null;
+    isFileModified?: boolean;
+    hasExistingDocument?: boolean;
+    fileName?: string | null;
 }
 
 export interface SaveCertificateResponseDto {
@@ -219,10 +231,17 @@ export interface PropertyCertificateBulkSaveResponseDto {
 
 export interface BuildingFormProps {
     initialBuildingPermission: PropertyCertificateWithStatusDto[] | null;
+    initialFloorBuildingPermission?: PropertyCertificateWithStatusDto[] | null;
     initialFloorCertificates?: FloorCertificatesResponseDto | null;
+    initialActiveScope?: 'Property' | 'Floor';
+    initialActiveFloorId?: number | null;
+    initialSelectedTypeId?: number | null;
     propertyId: string;
+    categoryId?: number | null;
+    categoryName?: string;
     isSociety?: boolean;
     societyDetailId?: number | null;
+    wingDetailId?: number | null;
     floorData?: FloorResponse[];
     constructionTypeData?: ConstructionTypeResponse[];
     useData?: TypeOfUseApiItem[];
@@ -233,4 +252,30 @@ export interface BuildingFormProps {
     initialUnits?: UnitSelectionItem[];
     initialCertificateTypes?: CertificateTypeMasterOption[];
     initialCertificateGrid?: unknown;
+    propertyConstructionYear?: string | number | null;
 }
+
+export interface CreateCertificateRecordResponseDto {
+    effectiveScope: string;
+    propertyCertificateIds: number[];
+    unitCount: number;
+    taxRecalculationTriggered: boolean;
+}
+
+export interface DeleteCertificateRecordRequestDto {
+    level: number; // 0 = Apartment, 1 = Wing, 2 = Unit
+    societyDetailId: number;
+    wingDetailId?: number | null;
+    unitPropertyIds?: number[];
+    certificateTypeId: number;
+    documentGuid?: string | null;
+}
+
+export interface DeleteCertificateRecordResponseDto {
+    effectiveScope: string;
+    deletedPropertyCertificateIds: number[];
+    deletedCount: number;
+    taxRecalculationTriggered: boolean;
+    recalculationSummary?: unknown;
+}
+

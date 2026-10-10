@@ -9,6 +9,7 @@ import type { GstMasterProps, GstMaster } from "@/types/asset-masters/gst-master
 import { getGstMasterColumns } from "@/components/modules/assets/configuration/master-data/gst-master/GstMasterColumns";
 import { deleteGstMasterAction } from "@/app/[locale]/assets/configuration/master-data/gst-master/action";
 import { useGstMasterSearch } from "@/hooks/asset-masters/gst-master/useGstMasterSearch";
+import { getGstMasterErrorMessage } from "@/hooks/asset-masters/gst-master/error-mapping";
 
 export function useGstMasterList({
   pageNumber,
@@ -140,7 +141,8 @@ export function useGstMasterList({
             toast.success(t("form.messages.deleteSuccess"));
             startTransition(() => router.refresh());
           } else {
-            toast.error(res?.message || tCommon("errors.deleteError"));
+            const errorMsg = getGstMasterErrorMessage(res?.message, res?.statusCode, t, tCommon);
+            toast.error(errorMsg || tCommon("errors.deleteError"));
           }
         },
       });

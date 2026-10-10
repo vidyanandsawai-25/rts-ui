@@ -31,11 +31,11 @@
     "fields": {
       "code": {
         "label": "जुर्माना कोड",
-        "placeholder": "जैसे. LATERENT_FLAT"
+        "placeholder": "उदा. LATERENT_FLAT"
       },
       "description": {
         "label": "जुर्माना नाम",
-        "placeholder": "जैसे. Late Rent Flat Fee"
+        "placeholder": "उदा. विलंब किराया फ्लैट शुल्क"
       },
       "calculationType": {
         "label": "गणना प्रकार",
@@ -52,7 +52,7 @@
       },
       "gracePeriod": {
         "label": "अनुग्रह अवधि के दिन",
-        "placeholder": "जैसे. ५"
+        "placeholder": "उदा. 5"
       }
     },
     "status": {
@@ -78,7 +78,9 @@
       "gracePeriodLimitInvalid": "अनुग्रह अवधि के दिन 100 से अधिक नहीं हो सकते",
       "fixErrors": "कृपया सत्यापन त्रुटियों को ठीक करें",
       "mandatoryNotice": "<b>*</b> चिह्नित फ़ील्ड अनिवार्य हैं",
-      "invalidFormat": "अमान्य प्रारूप"
+      "invalidFormat": "अमान्य प्रारूप",
+      "penaltyCodeDuplicate": "जुर्माना कोड पहले से मौजूद है",
+      "penaltyNameDuplicate": "जुर्माना नाम पहले से मौजूद है"
     },
     "messages": {
       "createSuccess": "जुर्माना नियम सफलतापूर्वक बनाया गया",
@@ -86,6 +88,18 @@
       "deleteSuccess": "जुर्माना नियम सफलतापूर्वक हटा दिया गया",
       "error": "जुर्माना नियम सहेजने में असमर्थ",
       "duplicate": "यह रिकॉर्ड पहले से मौजूद है"
+    }
+  },
+  "apiErrors": {
+    "Penaltyrule_Code_Duplicate": "जुर्माना नियम कोड पहले से मौजूद है",
+    "Penaltyrule_Name_Duplicate": "जुर्माना नियम का नाम पहले से मौजूद है",
+    "Penaltyrule_Both_Duplicate": "जुर्माना नियम कोड और नाम पहले से मौजूद हैं",
+    "duplicateRecord": "यह रिकॉर्ड पहले से मौजूद है",
+    "referenceBlocked": {
+      "penaltyRule": {
+        "deleteInUse": "यह जुर्माना नियम उपयोग में है, इसलिए इसे हटाया नहीं जा सकता।",
+        "deactivateInUse": "यह जुर्माना नियम उपयोग में है, इसलिए इसे निष्क्रिय नहीं किया जा सकता।"
+      }
     }
   },
   "deleteConfirm": "क्या आप वाकई इस जुर्माना नियम रिकॉर्ड को हटाना चाहते हैं?",

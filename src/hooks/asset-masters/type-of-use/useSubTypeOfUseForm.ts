@@ -11,7 +11,7 @@ import {
 import { AssetSubTypeOfUseFormModel, AssetSubTypeOfUse } from "@/types/asset-masters/type-of-use.types";
 
 import { validateSubTypeOfUseForm, sanitizeSubTypeOfUseFieldValue } from "./validation";
-import { getErrorMessage } from "./error-mapping";
+import { getErrorMessage, isDeactivateBlockedMessage } from "./error-mapping";
 
 
 interface UseSubTypeOfUseFormProps {
@@ -38,14 +38,17 @@ export function useSubTypeOfUseForm({
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
 
-  const urlTypeOfUseId = parseInt(sp.get("selectedTypeOfUseId") ?? "0", 10) || 0;
+  const urlTypeOfUseId = (() => {
+    const value = sp.get("selectedTypeOfUseId");
+    return value && /^\d+$/.test(value) ? Number(value) : 0;
+  })();
 
   const [formData, setFormData] = useState<AssetSubTypeOfUseFormModel>({
     id: id ?? initialData?.id,
     isActive: initialData?.isActive ?? true,
     typeOfUseId: initialData?.typeOfUseId ?? urlTypeOfUseId,
     description: initialData?.description ?? "",
-    searchSequence: initialData?.searchSequence ?? 1,
+    searchSequence: initialData?.searchSequence ?? "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof AssetSubTypeOfUseFormModel, string>>>({});
@@ -64,48 +67,32 @@ export function useSubTypeOfUseForm({
     [submittedOnce, touched, errors]
   );
 
+  const parseSubTypeVal = useCallback((name: string, value: string): string | number => {
+    if (name === "typeOfUseId") return Number(value) || 0;
+    if (name === "searchSequence") {
+      const sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
+      if (sanitized === "") return "";
+      const numVal = Number(sanitized);
+      return numVal > 999 ? 999 : numVal;
+    }
+    return sanitizeSubTypeOfUseFieldValue(name, value);
+  }, []);
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
-    let val: string | number = value;
-
-    if (name === "typeOfUseId") {
-      val = Number(value) || 0;
-    } else if (name === "searchSequence") {
-      const sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
-      if (sanitized === "") {
-        val = "";
-      } else {
-        const numVal = Number(sanitized);
-        val = numVal > 999 ? 999 : numVal;
-      }
-    } else {
-      val = sanitizeSubTypeOfUseFieldValue(name, value);
-    }
+    const val = parseSubTypeVal(name, value);
 
     setFormData((p) => ({
       ...p,
       [name]: val,
     }));
-  }, []);
+  }, [parseSubTypeVal]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     setTouched((p) => ({ ...p, [name]: true }));
 
-    let sanitizedValue: string | number = value;
-    if (name === "typeOfUseId") {
-      sanitizedValue = Number(value) || 0;
-    } else if (name === "searchSequence") {
-      const sanitized = value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
-      if (sanitized === "") {
-        sanitizedValue = "";
-      } else {
-        const numVal = Number(sanitized);
-        sanitizedValue = numVal > 999 ? 999 : numVal;
-      }
-    } else {
-      sanitizedValue = sanitizeSubTypeOfUseFieldValue(name, value);
-    }
+    const sanitizedValue = parseSubTypeVal(name, value);
 
     const updatedFormData = {
       ...formData,
@@ -124,20 +111,15 @@ export function useSubTypeOfUseForm({
       }
       return newErrors;
     });
-  }, [formData, validate]);
+  }, [formData, parseSubTypeVal, validate]);
 
-  const mapApiError = useCallback((result: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
-    if (result.errors) {
-      for (const val of Object.values(result.errors)) {
+  const mapApiError = useCallback((result: { statusCode?: number; message?: string; validationErrors?: Record<string, string | string[]> }) => {
+    if (result.validationErrors) {
+      for (const raw of Object.values(result.validationErrors)) {
+        const val = Array.isArray(raw) ? raw[0] : raw;
         if (val) {
           const cleanVal = val.replace(/\.$/, "");
-          const translationKey = `apiErrors.${cleanVal}` as never;
-          try {
-            const translated = t(translationKey);
-            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
-              return translated;
-            }
-          } catch {}
+          return getErrorMessage(cleanVal, result.statusCode, t, tCommon, t("subtype.title"));
         }
       }
     }
@@ -178,14 +160,37 @@ export function useSubTypeOfUseForm({
         : await createAssetSubTypeOfUseAction(formData);
 
       if (!result.success) {
-        toast.error(mapApiError(result));
+        const apiErrorText = [
+          result.message ?? "",
+          ...Object.values(result.validationErrors ?? {}).map((value) =>
+            Array.isArray(value) ? value.join(" ") : String(value)
+          ),
+        ].join(" ");
+
+        let handled = false;
+        if (/AssetSubTypeOfUse_Description_Duplicate/i.test(apiErrorText) || (/name|description/i.test(apiErrorText) && /already exist/i.test(apiErrorText)) || /same details already exists/i.test(apiErrorText)) {
+          setErrors((p) => ({ ...p, description: t("apiErrors.AssetSubTypeOfUse_Description_Duplicate", { default: "Sub-Type Name already exists" }) }));
+          setTouched((p) => ({ ...p, description: true }));
+          handled = true;
+        }
+
+        if (handled) {
+          toast.error(t("apiErrors.AssetSubTypeOfUse_Description_Duplicate", { default: "Sub-Type Name already exists" }));
+          return;
+        }
+
+        const errorMessage = mapApiError(result);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("messages.subTypeUpdated", { default: "Sub-Type updated successfully" })
-        : t("messages.subTypeCreated", { default: "Sub-Type created successfully" })
-      ));
+        : t("messages.subTypeCreated", { default: "Sub-Type created successfully" });
+      toast.success(successMessage || result.message);
       onSuccess();
       closeAndRoute();
     } finally {
@@ -196,6 +201,7 @@ export function useSubTypeOfUseForm({
   const handleToggleStatus = useCallback((checked: boolean): void => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {

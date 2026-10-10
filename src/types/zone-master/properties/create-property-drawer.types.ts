@@ -27,6 +27,7 @@ export interface CreatePropertyFormData {
   taxZoneId: string;
   propertyNo: string;
   ownerName: string;
+  societyName: string;
   isBulkCreate: boolean;
   fromPropertyNo: string;
   toPropertyNo: string;

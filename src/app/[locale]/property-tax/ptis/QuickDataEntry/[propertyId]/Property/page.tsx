@@ -1,5 +1,5 @@
-import { ApiError } from '@/lib/utils/api';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import {
     PropertyBasicDetailsApiItem,
@@ -12,6 +12,8 @@ import {
 import PropertyFormView from '@/components/modules/property-tax/ptis/QuickDataEntry/property/PropertyForm';
 import { getMoujaMasterAction, getPropertyBasicDetailsAction, getPropertyCategoriesAction, getPropertyTypesAction, getTaxZonesAction } from './action';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
     params: Promise<{
         propertyId: string;
@@ -20,15 +22,23 @@ interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function PropertyFormPage({ params }: PageProps): Promise<React.JSX.Element> {
+export default async function PropertyFormPage({ params, searchParams }: PageProps): Promise<React.JSX.Element> {
     const { locale, propertyId } = await params;
     setRequestLocale(locale);
 
     const pid = Number(propertyId);
 
-    if (isNaN(pid)) {
-        throw new Error("Invalid Property Id");
+    if (isNaN(pid) || pid <= 0) {
+        notFound();
     }
+
+    const resolvedSearchParams = await searchParams;
+    const wardNo = typeof resolvedSearchParams?.wardNo === 'string' ? resolvedSearchParams.wardNo : '';
+    const wardId = Number(resolvedSearchParams?.wardId) || 0;
+    const propertyNo = typeof resolvedSearchParams?.propertyNo === 'string' ? resolvedSearchParams.propertyNo : '';
+    const partitionNo = typeof resolvedSearchParams?.partitionNo === 'string' ? resolvedSearchParams.partitionNo : '';
+    const fromTab = typeof resolvedSearchParams?.from === 'string' ? resolvedSearchParams.from : '';
+    const returnTab = typeof resolvedSearchParams?.returnTab === 'string' ? resolvedSearchParams.returnTab : '';
 
     let MoujaMasterList: MoujaItem[] = [];
     let propertyDescriptionList: PropertyTypeApiItem[] = [];
@@ -44,69 +54,156 @@ export default async function PropertyFormPage({ params }: PageProps): Promise<R
             propertyBasicDetailsRes,
             taxZonesRes
         ] = await Promise.all([
-            getMoujaMasterAction(1, -1),
-            getPropertyTypesAction(1, -1),
-            getPropertyCategoriesAction(1, -1),
-            getPropertyBasicDetailsAction(pid),
-            getTaxZonesAction(1, -1)
+            getMoujaMasterAction(1, -1).catch(() => ({ success: true, data: [] as MoujaItem[] })),
+            getPropertyTypesAction(1, -1).catch(() => ({ success: true, data: [] as PropertyTypeApiItem[] })),
+            getPropertyCategoriesAction(1, -1).catch(() => ({ success: true, data: [] as PropertyCategoryApiItem[] })),
+            getPropertyBasicDetailsAction(pid).catch(() => ({ success: false, data: null })),
+            getTaxZonesAction(1, -1).catch(() => ({ success: true, data: [] as TaxZoneItem[] }))
         ]);
 
-        if (moujaMasterRes.success && moujaMasterRes.data) {
+        if (moujaMasterRes?.success && Array.isArray(moujaMasterRes.data)) {
             MoujaMasterList = moujaMasterRes.data;
-        } else if (!moujaMasterRes.success) {
-            throw new Error(moujaMasterRes.error || "Failed to fetch Mouja Master");
         }
 
-        if (propertyTypesRes.success && propertyTypesRes.data) {
+        if (propertyTypesRes?.success && Array.isArray(propertyTypesRes.data)) {
             propertyDescriptionList = propertyTypesRes.data;
-        } else if (!propertyTypesRes.success) {
-            throw new Error(propertyTypesRes.error || "Failed to fetch Property Descriptions");
         }
 
-        if (propertyCategoriesRes.success && propertyCategoriesRes.data) {
+        if (propertyCategoriesRes?.success && Array.isArray(propertyCategoriesRes.data)) {
             propertyCategoryList = propertyCategoriesRes.data;
-        } else if (!propertyCategoriesRes.success) {
-            throw new Error(propertyCategoriesRes.error || "Failed to fetch Property Categories");
         }
 
-        if (propertyBasicDetailsRes.success && propertyBasicDetailsRes.data) {
+        if (propertyBasicDetailsRes?.success && propertyBasicDetailsRes.data) {
             propertyBasicDetails = propertyBasicDetailsRes.data;
-        } else if (!propertyBasicDetailsRes.success) {
-            throw new Error(propertyBasicDetailsRes.error || "Failed to fetch Property Basic Details");
         }
 
-        if (taxZonesRes.success && taxZonesRes.data) {
+        if (taxZonesRes?.success && Array.isArray(taxZonesRes.data)) {
             taxZonesList = taxZonesRes.data;
         }
-    } catch (error: unknown) {
-        const t = await getTranslations({ locale, namespace: 'quickDataEntry' });
-        if (error instanceof ApiError) {
-            if (error.statusCode === 401) {
-                throw new Error(t('property.errors.unauthorized'));
-            } else if (error.statusCode === 403) {
-                throw new Error(t('property.errors.forbidden'));
-            } else if (error.statusCode === 404) {
-                throw new Error(t('property.errors.notFound'));
-            } else if (error.statusCode >= 500) {
-                throw new Error(t('property.errors.serverError'));
-            } else {
-                throw new Error(error.contextMessage || t('property.errors.defaultApiError', { message: error.message }));
-            }
-        }
-
-        const msg = error instanceof Error ? error.message.toLowerCase() : "";
-        if (msg.includes('fetch failed') || msg.includes('failed to fetch') || msg.includes('network error') || msg.includes('econnrefused')) {
-            throw new Error(t('property.errors.failedToConnect.description'));
-        }
-
-        throw error;
+    } catch {
+        // Non-blocking fallback
     }
 
+    // Fallback if propertyBasicDetails is still null
     if (!propertyBasicDetails) {
-        const t = await getTranslations("quickDataEntry");
-        throw new Error(t('property.errors.fetchPropertyBasicDetails'));
+        try {
+            const { fetchIndividualQcTopSection } = await import('@/lib/api/ptis/individual');
+            const individualRes = await fetchIndividualQcTopSection(pid);
+            if (individualRes.success && individualRes.data) {
+                const item = individualRes.data;
+                const carpetSqFt = item.carpetAreasqFt != null ? Number(item.carpetAreasqFt) : (item.carpetAreaFt != null ? Number(item.carpetAreaFt) : 0);
+                const carpetSqMtr = item.carpetAreasqMtr != null ? Number(item.carpetAreasqMtr) : (item.carpetAreaMtr != null ? Number(item.carpetAreaMtr) : 0);
+                const builtUpSqFt = item.builtUpAreasqFt != null ? Number(item.builtUpAreasqFt) : (item.builtUpAreaFt != null ? Number(item.builtUpAreaFt) : 0);
+                const builtUpSqMtr = item.builtUpAreasqMtr != null ? Number(item.builtUpAreasqMtr) : (item.builtUpAreaMtr != null ? Number(item.builtUpAreaMtr) : 0);
+                const plotFt = item.plotAreaFt != null ? Number(item.plotAreaFt) : null;
+                const plotMtr = item.plotAreaMtr != null ? Number(item.plotAreaMtr) : null;
+
+                propertyBasicDetails = {
+                    propertyId: Number(item.propertyId) || pid,
+                    wardId: Number((item as unknown as { wardId?: number }).wardId) || wardId,
+                    wardNo: String((item as unknown as { wardNo?: string }).wardNo || wardNo),
+                    zoneId: Number((item as unknown as { zoneId?: number }).zoneId) || 0,
+                    division: String(item.division || ''),
+                    propertyNo: String(item.propertyNo || propertyNo),
+                    partitionNo: String((item as unknown as { partitionNo?: string }).partitionNo || partitionNo),
+                    flatOrShopNo: String(item.flatOrShopNo || ''),
+                    plotNo: String(item.plotNo || ''),
+                    surveyNo: String(item.surveyNo || ''),
+                    taxZoneId: Number((item as unknown as { taxZoneId?: number }).taxZoneId) || 0,
+                    taxZoneNo: String(item.taxZoneNo || item.taxZone || ''),
+                    categoryId: Number((item as unknown as { categoryId?: number }).categoryId) || (fromTab === 'individual' || returnTab === 'individual' ? 2 : 1),
+                    categoryName: String(item.categoryName || item.category || item.propertyCategory || ((fromTab === 'individual' || returnTab === 'individual') ? 'Individual' : 'Apartment')),
+                    propertyTypeId: Number((item as unknown as { propertyTypeId?: number }).propertyTypeId) || 0,
+                    propertyDescription: String(item.propertyDescription || ''),
+                    upicId: item.upicId ? String(item.upicId) : null,
+                    subZoneNo: String(item.subZoneNo || item.subZone || ''),
+                    moujaId: (item as unknown as { moujaId?: number }).moujaId != null ? Number((item as unknown as { moujaId?: number }).moujaId) : null,
+                    moujaName: item.moujaName ? String(item.moujaName) : null,
+                    wingNo: (item as unknown as { wingNo?: string }).wingNo ? String((item as unknown as { wingNo?: string }).wingNo) : null,
+                    noOfResidentialToilets: null,
+                    noOfCommercialToilets: null,
+                    totalCarpetAreaSqMeter: isNaN(carpetSqMtr) ? 0 : carpetSqMtr,
+                    totalBuiltupAreaSqMeter: isNaN(builtUpSqMtr) ? 0 : builtUpSqMtr,
+                    totalCarpetAreaSqFeet: isNaN(carpetSqFt) ? 0 : carpetSqFt,
+                    totalBuiltupAreaSqFeet: isNaN(builtUpSqFt) ? 0 : builtUpSqFt,
+                    plotArea: (plotFt != null && !isNaN(plotFt)) ? plotFt : (plotMtr != null && !isNaN(plotMtr) ? plotMtr : null),
+                    plotAreaSqFeet: (plotFt != null && !isNaN(plotFt)) ? plotFt : null,
+                    plotAreaSqMeter: (plotMtr != null && !isNaN(plotMtr)) ? plotMtr : null,
+                    plotAreaFtLength: 0,
+                    plotAreaFtWidth: 0,
+                    plotAreaMtrLength: 0,
+                    plotAreaMtrWidth: 0,
+                    wingId: null,
+                    wingName: null,
+                    rateSectionDescription: item.rateSectionName ? String(item.rateSectionName) : null,
+                    oldCarpetAreaSqFeet: item.oldCarpetAreaSqFeet != null ? Number(item.oldCarpetAreaSqFeet) : null,
+                    oldCarpetAreaSqMeter: item.oldCarpetAreaSqMeter != null ? Number(item.oldCarpetAreaSqMeter) : null,
+                    oldBuiltupAreaSqFeet: item.oldBuiltupAreaSqFeet != null ? Number(item.oldBuiltupAreaSqFeet) : null,
+                    oldBuiltupAreaSqMeter: item.oldBuiltupAreaSqMeter != null ? Number(item.oldBuiltupAreaSqMeter) : null,
+                };
+            }
+        } catch {
+            // ignore
+        }
     }
-    
+
+    const isIndiv = fromTab === 'individual' || returnTab === 'individual';
+    const matchedCategory = propertyCategoryList.find((c) =>
+        isIndiv
+            ? c.propertyCategoryName?.toLowerCase().includes('individual')
+            : c.propertyCategoryName?.toLowerCase().includes('apartment')
+    ) ?? propertyCategoryList[0];
+
+    const fallbackCategoryId = matchedCategory?.id ?? 0;
+    const fallbackCategoryName = matchedCategory?.propertyCategoryName ?? (isIndiv ? 'Individual' : 'Apartment');
+
+    // Last resort fallback from search parameters if propertyId is valid
+    if (!propertyBasicDetails && pid > 0) {
+        propertyBasicDetails = {
+            propertyId: pid,
+            wardId: wardId,
+            wardNo: wardNo,
+            zoneId: 0,
+            division: '',
+            propertyNo: propertyNo,
+            partitionNo: partitionNo,
+            flatOrShopNo: '',
+            plotNo: '',
+            surveyNo: '',
+            taxZoneId: 0,
+            taxZoneNo: '',
+            categoryId: fallbackCategoryId,
+            categoryName: fallbackCategoryName,
+            propertyTypeId: 0,
+            propertyDescription: '',
+            upicId: null,
+            subZoneNo: '',
+            moujaId: null,
+            moujaName: null,
+            wingNo: null,
+            noOfResidentialToilets: null,
+            noOfCommercialToilets: null,
+            totalCarpetAreaSqMeter: 0,
+            totalBuiltupAreaSqMeter: 0,
+            totalCarpetAreaSqFeet: 0,
+            totalBuiltupAreaSqFeet: 0,
+            plotArea: null,
+            plotAreaSqFeet: null,
+            plotAreaSqMeter: null,
+            plotAreaFtLength: 0,
+            plotAreaFtWidth: 0,
+            plotAreaMtrLength: 0,
+            plotAreaMtrWidth: 0,
+            wingId: null,
+            wingName: null,
+            rateSectionDescription: null,
+            oldCarpetAreaSqFeet: null,
+            oldCarpetAreaSqMeter: null,
+            oldBuiltupAreaSqFeet: null,
+            oldBuiltupAreaSqMeter: null,
+        };
+    }
+
     return (
         <PropertyFormView
             MoujaMaster={MoujaMasterList}

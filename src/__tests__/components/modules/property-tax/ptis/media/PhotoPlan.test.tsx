@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, act, renderHook } from '@testing-library/react';
-import type { PropertyPhotoTypeWithStatusDto } from '@/types/photoplan.types';
+import type { PropertyPhotoTypeWithStatusDto, PropertyPhotoDto } from '@/types/photoplan.types';
 
 // Mocks for next/navigation
 const mockPush = vi.fn();
@@ -160,14 +160,12 @@ import type { PhotoCategory } from '@/components/modules/property-tax/ptis/media
 import { ImageWithFallback } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 import { MainImageViewer } from '@/components/modules/property-tax/ptis/media/MainImageViewer';
 
-import { propertyMediaCache } from '@/hooks/ptis/photoplan/usePropertyPhotosQuery';
 import { documentCache } from '@/components/modules/property-tax/ptis/media/ImageWithFallback';
 
 describe('PhotoPlan Section - Complete Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParamsGet.mockReturnValue(null);
-    propertyMediaCache.clear();
     documentCache.clear();
     if (typeof window !== 'undefined') {
       try {
@@ -316,6 +314,34 @@ describe('PhotoPlan Section - Complete Tests', () => {
       expect(innerUnitCategories.some(c => c.photoTypeCode === 'PROPERTY_SIDE')).toBe(true);
       expect(innerUnitCategories.some(c => c.photoTypeCode === 'PROPERTY_PLAN')).toBe(true);
       expect(innerUnitCategories.some(c => c.photoTypeCode === 'WING_BUILDING')).toBe(true);
+    });
+
+    it('isolates wing photos by selectedWingDetailId when multiple wings exist', () => {
+      const slots: PropertyPhotoTypeWithStatusDto[] = [
+        { photoTypeId: 8, photoTypeCode: 'WING_BUILDING_PHOTO', photoTypeName: 'Wing Building Photo', displayOrder: 1, hasPhoto: true, photoCount: 1 },
+      ];
+
+      const uploadedPhotos: PropertyPhotoDto[] = [
+        { propertyId: 1, propertyPhotoId: 8169, photoTypeId: 8, photoTypeCode: 'WING_BUILDING_PHOTO', photoTypeName: 'Wing Building Photo', wingDetailId: 1530421, wingName: 'A', displayOrder: 1, viewUrl: '/img-a.jpg' },
+        { propertyId: 1, propertyPhotoId: 8170, photoTypeId: 8, photoTypeCode: 'WING_BUILDING_PHOTO', photoTypeName: 'Wing Building Photo', wingDetailId: 1530422, wingName: 'B', displayOrder: 1, viewUrl: '/img-b.jpg' },
+        { propertyId: 1, propertyPhotoId: 8171, photoTypeId: 8, photoTypeCode: 'WING_BUILDING_PHOTO', photoTypeName: 'Wing Building Photo', wingDetailId: 1530423, wingName: 'C', displayOrder: 1, viewUrl: '/img-c.jpg' },
+      ];
+
+      // Select Wing A (1530421)
+      const categoriesWingA = mapSlotsToCategories(slots, uploadedPhotos, undefined, undefined, 'A', 1530421);
+      const wingCatA = categoriesWingA.find(c => c.photoTypeId === 8);
+      expect(wingCatA).toBeDefined();
+      expect(wingCatA?.images.length).toBe(1);
+      expect(wingCatA?.images[0]?.propertyPhotoId).toBe(8169);
+      expect(wingCatA?.images[0]?.wingDetailId).toBe(1530421);
+
+      // Select Wing B (1530422)
+      const categoriesWingB = mapSlotsToCategories(slots, uploadedPhotos, undefined, undefined, 'B', 1530422);
+      const wingCatB = categoriesWingB.find(c => c.photoTypeId === 8);
+      expect(wingCatB).toBeDefined();
+      expect(wingCatB?.images.length).toBe(1);
+      expect(wingCatB?.images[0]?.propertyPhotoId).toBe(8170);
+      expect(wingCatB?.images[0]?.wingDetailId).toBe(1530422);
     });
 
     it('maps grouped response to categories correctly', () => {
@@ -650,10 +676,13 @@ describe('PhotoPlan Section - Complete Tests', () => {
       // Rerender with mock selections to trigger viewer mode
       mockSearchParamsGet.mockReturnValue('photo-plan');
       // Trigger grid click to selection
-      const imgCard = screen.getAllByRole('img', { name: 'Front View' })[1];
-      await act(async () => {
-        fireEvent.click(imgCard!);
-      });
+      const frontImages = screen.getAllByRole('img', { name: 'Front View' });
+      const imgCard = frontImages[frontImages.length - 1] || frontImages[0];
+      if (imgCard) {
+        await act(async () => {
+          fireEvent.click(imgCard);
+        });
+      }
 
       // Toggle drawer closed
       await act(async () => {
@@ -802,7 +831,7 @@ describe('PhotoPlan Section - Complete Tests', () => {
       expect(onSubmit).not.toHaveBeenCalled();
 
       // Clear the corrupted file and verify the error changes/clears
-      const removeBtn = screen.getByTitle('Remove file');
+      const removeBtn = screen.getByTitle(/remove/i);
       fireEvent.click(removeBtn);
 
       // In non-edit mode, it should clear the invalid image error and show the file required error instead
@@ -812,4 +841,123 @@ describe('PhotoPlan Section - Complete Tests', () => {
       createObjectUrlSpy.mockRestore();
     });
   });
+
+  describe('mapSlotsToCategories - Amenity Property', () => {
+    it('returns Photo Plan, Amenity Photo, Society slots, and Change Detection for amenity property', () => {
+      const slots: PropertyPhotoTypeWithStatusDto[] = [
+        { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', photoTypeName: 'Property Front Photo', hasPhoto: false },
+        { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', photoTypeName: 'Property Side Photo', hasPhoto: false },
+        { photoTypeId: 3, photoTypeCode: 'SOCIETY_PLACE', photoTypeName: 'Society Place Photo', hasPhoto: false },
+        { photoTypeId: 4, photoTypeCode: 'WING_BUILDING', photoTypeName: 'Wing Building Photo', hasPhoto: false },
+        { photoTypeId: 14, photoTypeCode: 'AMENITY_PHOTO', photoTypeName: 'Amenity Photo', hasPhoto: false },
+        { photoTypeId: 13, photoTypeCode: 'PHOTO_PLAN', photoTypeName: 'Photo Plan', hasPhoto: false },
+      ];
+
+      const uploadedPhotos: PropertyPhotoDto[] = [
+        {
+          propertyPhotoId: 101,
+          propertyId: 99,
+          photoTypeId: 14,
+          photoTypeCode: 'AMENITY_PHOTO',
+          photoTypeName: 'Amenity Photo',
+          viewUrl: 'http://test.com/amenity.jpg',
+        },
+        {
+          propertyPhotoId: 102,
+          propertyId: 99,
+          photoTypeId: 4,
+          photoTypeCode: 'WING_BUILDING',
+          photoTypeName: 'Wing Building Photo',
+          wingDetailId: 5,
+          viewUrl: 'http://test.com/wing.jpg',
+        },
+      ];
+
+      // isAmenity triggered by categoryId: 140
+      const cats = mapSlotsToCategories(
+        slots,
+        uploadedPhotos,
+        new Set(),
+        mockT,
+        undefined,
+        null,
+        false,
+        140, // categoryId = 140
+        140  // propertyTypeId = 140
+      );
+
+      const codes = cats.map(c => c.photoTypeCode);
+      expect(codes).toContain('PHOTO_PLAN');
+      expect(codes).toContain('AMENITY_PHOTO');
+      expect(codes).toContain('CHANGE_DETECTION');
+      expect(codes).toContain('SOCIETY_PLACE');
+
+      // Property and wing scopes should NOT be present
+      expect(codes).not.toContain('PROPERTY_FRONT');
+      expect(codes).not.toContain('PROPERTY_SIDE');
+      expect(codes).not.toContain('WING_BUILDING');
+
+      // Check that amenity photo category has only the amenity photo and not wing photo
+      const amenityCat = cats.find(c => c.photoTypeCode === 'AMENITY_PHOTO');
+      expect(amenityCat).toBeDefined();
+      expect(amenityCat?.images).toHaveLength(1);
+      expect(amenityCat?.images[0].src).toBe('http://test.com/amenity.jpg');
+    });
+  });
+
+  describe('mapSlotsToCategories - Individual Property', () => {
+    it('only returns Property-scope, Photo Plan, and Change Detection slots for individual property, excluding Society and Wing slots', () => {
+      const slots: PropertyPhotoTypeWithStatusDto[] = [
+        { photoTypeId: 1, photoTypeCode: 'PROPERTY_FRONT', photoTypeName: 'Property Front Photo', hasPhoto: false },
+        { photoTypeId: 2, photoTypeCode: 'PROPERTY_SIDE', photoTypeName: 'Property Side Photo', hasPhoto: false },
+        { photoTypeId: 3, photoTypeCode: 'SOCIETY_PLACE', photoTypeName: 'Society Place Photo', hasPhoto: false },
+        { photoTypeId: 4, photoTypeCode: 'WING_BUILDING', photoTypeName: 'Wing Building Photo', hasPhoto: false },
+        { photoTypeId: 14, photoTypeCode: 'AMENITY_PHOTO', photoTypeName: 'Amenity Photo', hasPhoto: false },
+        { photoTypeId: 13, photoTypeCode: 'PHOTO_PLAN', photoTypeName: 'Photo Plan', hasPhoto: false },
+      ];
+
+      const uploadedPhotos: PropertyPhotoDto[] = [
+        {
+          propertyPhotoId: 201,
+          propertyId: 85,
+          photoTypeId: 1,
+          photoTypeCode: 'PROPERTY_FRONT',
+          photoTypeName: 'Property Front Photo',
+          viewUrl: 'http://test.com/front.jpg',
+        },
+      ];
+
+      // isIndividual triggered by categoryId: 2
+      const cats = mapSlotsToCategories(
+        slots,
+        uploadedPhotos,
+        new Set(),
+        mockT,
+        undefined,
+        null,
+        false,
+        2, // categoryId = 2 (Individual)
+        12 // propertyTypeId = 12
+      );
+
+      const codes = cats.map(c => c.photoTypeCode);
+      expect(codes).toContain('PROPERTY_FRONT');
+      expect(codes).toContain('PROPERTY_SIDE');
+      expect(codes).toContain('PHOTO_PLAN');
+      expect(codes).toContain('CHANGE_DETECTION');
+
+      // None of the Society, Wing, or Amenity slots should be present
+      expect(codes).not.toContain('SOCIETY_PLACE');
+      expect(codes).not.toContain('WING_BUILDING');
+      expect(codes).not.toContain('AMENITY_PHOTO');
+
+      // Check that property front category contains the uploaded photo
+      const frontCat = cats.find(c => c.photoTypeCode === 'PROPERTY_FRONT');
+      expect(frontCat).toBeDefined();
+      expect(frontCat?.images).toHaveLength(1);
+      expect(frontCat?.images[0].src).toBe('http://test.com/front.jpg');
+    });
+  });
 });
+
+

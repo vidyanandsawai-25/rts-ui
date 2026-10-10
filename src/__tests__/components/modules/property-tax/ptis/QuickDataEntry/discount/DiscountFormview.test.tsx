@@ -148,7 +148,7 @@ const mockInitialData: PropertyDiscountInfoResponseDto = {
       isDiscountApplicable: true,
       propertySocialDetailId: null,
       bitValue: false,
-      isActive: false,
+      isActive: true,
       documentGuid: "guid-water", // Setting documentGuid so that validation passes when enabled
       documentBindingId: 101
     }

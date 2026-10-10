@@ -29,6 +29,7 @@ export function Drawer({
   onClose,
   title,
   headerActions,
+  className,
   width = "md",
   children,
   footer,
@@ -231,7 +232,7 @@ export function Drawer({
   return (
     <>
       <div
-        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-black/50 "
         style={zIndex ? { zIndex: zIndex - 10 } : undefined}
         onClick={onClose}
         role="button"
@@ -256,6 +257,7 @@ export function Drawer({
           shadow-2xl
           flex flex-col
           focus:outline-none
+          transition-[width] duration-300 ease-in-out overflow-hidden
           animate-in slide-in-from-right duration-300
           ${responsiveValidationClasses}
           ${className || ""}
@@ -306,7 +308,7 @@ export function Drawer({
         )}
 
         {/* ================= BODY ================= */}
-        <div className={`flex-1 ${bodyClassName || "overflow-y-auto"}`}>
+        <div className={`flex-1 ${bodyClassName || "overflow-y-auto overflow-x-hidden"}`}>
           <div className="min-h-full">
             {children}
           </div>

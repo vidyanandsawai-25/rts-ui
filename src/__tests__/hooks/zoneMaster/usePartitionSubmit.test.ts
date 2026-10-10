@@ -9,6 +9,8 @@ import { ZonePropertyItem } from "@/types/zone-master/properties/zoneProperty.ty
 import { WingItem } from "@/types/zone-master/properties/wing.types";
 import { Floor } from "@/types/floor.types";
 import { SocietyWingDetailItem } from "@/types/zone-master/properties/society-wing-details.types";
+import { WingDetailsMastItem } from "@/types/zone-master/properties/wingDetailsMast.types";
+import { SocietyDetailItem } from "@/types/zone-master/properties/societyDetails.types";
 
 // Mock dependencies
 vi.mock("next-intl", () => ({
@@ -141,6 +143,37 @@ describe("usePartitionSubmit", () => {
     },
   ];
 
+  const mockWingDetailsMast: WingDetailsMastItem[] = [
+    {
+      id: 501,
+      isActive: true,
+      createdBy: 1,
+      createdDate: "2024-01-01",
+      updatedBy: null,
+      updatedDate: null,
+      societyDetailsMastId: 101,
+      wingMasterId: 1,
+      wingName: "Wing A",
+      secretaryName: null,
+      managerName: null,
+      secretaryNameEnglish: null,
+      managerNameEnglish: null,
+      managerMobileNo: null,
+      managerMobileNoRemarkId: null,
+      secretaryMobileNo: null,
+      secretaryMobileNoRemarkId: null,
+      secretaryEmailId: null,
+      managerEmailId: null,
+      markedForDeletion: false,
+      markedForDeletionDate: null,
+      societyWingDetails: null,
+    },
+  ];
+
+  const mockSocietyDetails: SocietyDetailItem[] = [];
+  const mockSetWingDetailsMast = vi.fn();
+  const mockSetSocietyDetails = vi.fn();
+
   const wingForm: PartitionFormState = {
     mainPropertyId: 1,
     partitionNo: "0",
@@ -202,6 +235,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -240,6 +278,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -300,6 +343,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -341,6 +389,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -373,6 +426,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -404,6 +462,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,
@@ -442,6 +505,11 @@ describe("usePartitionSubmit", () => {
         selectedProperty: mockProperty,
         wings: mockWings,
         wingDetails: mockWingDetails,
+        wingDetailsMast: mockWingDetailsMast,
+        setWingDetailsMast: mockSetWingDetailsMast,
+        societyDetails: mockSocietyDetails,
+        setSocietyDetails: mockSetSocietyDetails,
+        selectedPropertyId: 1,
         floors: mockFloors,
         validate: mockValidate,
         setLoading: mockSetLoading,

@@ -14,6 +14,7 @@ export function useInventoryNameForm(
       subTypeCode: "",
       subTypeName: "",
       description: "",
+      displayOrder: "",
       isActive: true,
     }
   );
@@ -67,6 +68,11 @@ export function useInventoryNameForm(
 
   const handleToggleStatus = useCallback((checked?: boolean | unknown) => {
     setFormData((p) => ({ ...p, isActive: typeof checked === "boolean" ? checked : !p.isActive }));
+    setErrors((p) => {
+      const err = { ...p };
+      delete err.isActive;
+      return err;
+    });
   }, []);
 
   return {

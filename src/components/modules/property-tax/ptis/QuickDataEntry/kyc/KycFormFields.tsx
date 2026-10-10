@@ -43,7 +43,7 @@ export const KycFormFields: React.FC<KycFormFieldsProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Row 1: Personal Info - Owner Type, Title, Property Holder Name */}
+      {/* Row 1: Personal Info - Owner Type, Title, Owner Name */}
       <div className="grid grid-cols-12 gap-x-4 gap-y-3">
         <PersonalInfoFields
           t={t}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, Trash2, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Upload, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useConfirm, Button } from '@/components/common';
 import { useTranslations } from 'next-intl';
 import { ImageWithFallback } from './ImageWithFallback';
@@ -111,6 +111,7 @@ export function PhotoPlanCarousel({
               <div className="flex-1 bg-slate-100 overflow-hidden relative">
                 <ImageWithFallback
                   src={img.src}
+                  documentGuid={img.documentGuid}
                   alt={img.title}
                   className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                   width={100}
@@ -118,20 +119,18 @@ export function PhotoPlanCarousel({
                   sizes="120px"
                 />
                 <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                  {!isPhotoPlanCategory && (
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onReplacePhoto(actualIndex);
-                      }}
-                      className="!p-1 hover:!bg-slate-50 rounded shadow !border-slate-200 !text-slate-600 hover:!text-green-600 cursor-pointer transition-colors !h-5 !w-5"
-                      title={t('media.replaceImage') || 'Replace Image'}
-                    >
-                      <Upload className="w-2.5 h-2.5" />
-                    </Button>
-                  )}
+                  <Button
+                    size="xs"
+                    variant="secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReplacePhoto(actualIndex);
+                    }}
+                    className="!p-1 hover:!bg-slate-50 rounded shadow !border-slate-200 !text-slate-600 hover:!text-green-600 cursor-pointer transition-colors !h-5 !w-5"
+                    title={isPhotoPlanCategory ? (t('media.replacePlan') || 'Replace Plan') : (t('media.replaceImage') || 'Replace Image')}
+                  >
+                    {isPhotoPlanCategory ? <RefreshCw className="w-2.5 h-2.5" /> : <Upload className="w-2.5 h-2.5" />}
+                  </Button>
                   <Button
                     size="xs"
                     variant="secondary"
@@ -159,17 +158,30 @@ export function PhotoPlanCarousel({
           );
         })}
 
-        <div
-          onClick={onAddPhoto}
-          className="w-[110px] sm:w-[130px] h-full border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center select-none group shrink-0"
-        >
-          <div className="p-1 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-1">
-            <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500" />
+        {(!isPhotoPlanCategory || images.length < 2) && (
+          <div
+            onClick={onAddPhoto}
+            className="w-[110px] sm:w-[130px] h-full border border-dashed border-slate-300 rounded-lg hover:border-blue-400 bg-white hover:bg-blue-50/10 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center select-none group shrink-0"
+            title={
+              isPhotoPlanCategory
+                ? images.length === 1
+                  ? (t('media.addNewPlanTitle') || 'Add New Plan?')
+                  : (t('media.uploadPlan') || 'Upload Plan')
+                : (t('media.uploadImage') || 'Upload Image')
+            }
+          >
+            <div className="p-1 bg-slate-50 rounded-full border border-slate-200 group-hover:scale-105 transition-transform duration-200 mb-1">
+              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500" />
+            </div>
+            <span className="text-[9px] font-semibold text-slate-500 group-hover:text-blue-800">
+              {isPhotoPlanCategory
+                ? images.length === 1
+                  ? (t('media.addNewPlan') || 'Add New Plan')
+                  : (t('media.uploadPlan') || t('media.uploadImage') || 'Upload Plan')
+                : (t('media.uploadImage') || 'Upload Image')}
+            </span>
           </div>
-          <span className="text-[9px] font-semibold text-slate-500 group-hover:text-blue-800">
-            {t('media.uploadImage') || 'Add Photo'}
-          </span>
-        </div>
+        )}
 
         {isPhotoPlanCategory && onDrawPlan && (
           <div

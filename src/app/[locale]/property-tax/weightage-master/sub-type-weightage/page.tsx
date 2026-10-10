@@ -69,12 +69,42 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
     });
    
     const typeOfUseDropdown = await fetchTypeOfUsePaged({ pageNumber: 1, pageSize: -1, filterLogic: 1 });
-    const typeOfUseOptions = typeOfUseDropdown.items
-        .filter((type) => type.isActive)
-        .map((type) => ({
-            label: `${type.typeOfUseCode} - ${type.description}`,
-            value: String(type.id),
-        }));
+    const allActiveTypes = (typeOfUseDropdown.items || []).filter((type) => type.isActive);
+    const typeOfUseOptions = allActiveTypes.map((type) => ({
+        label: `${type.typeOfUseCode} - ${type.description}`,
+        value: String(type.id),
+    }));
+
+    let finalLeftItems = (typeOfUseTableData?.items || []).filter((item) => item.isActive);
+    let finalLeftPageNumber = typeOfUseTableData?.pageNumber || leftPageNumber || 1;
+    let finalLeftPageSize = typeOfUseTableData?.pageSize || leftPageSize || 10;
+    let finalLeftTotalCount = typeOfUseTableData?.totalCount || 0;
+    let finalLeftTotalPages = typeOfUseTableData?.totalPages || 1;
+
+    if (typeOfUseId) {
+        const selectedItem = allActiveTypes.find((item) => item.id === typeOfUseId);
+        if (selectedItem) {
+            const remainingItems = allActiveTypes.filter((item) => item.id !== typeOfUseId);
+            
+            if (leftSortBy) {
+                remainingItems.sort((a, b) => {
+                    const key = leftSortBy === "TypeOfUseCode" ? "typeOfUseCode" : "description";
+                    const valA = String(a[key as keyof typeof a] ?? "");
+                    const valB = String(b[key as keyof typeof b] ?? "");
+                    const comp = valA.localeCompare(valB);
+                    return leftSortOrder === "desc" ? -comp : comp;
+                });
+            }
+
+            const reordered = [selectedItem, ...remainingItems];
+            finalLeftTotalCount = reordered.length;
+            finalLeftTotalPages = Math.ceil(finalLeftTotalCount / leftPageSize) || 1;
+            const startIndex = (leftPageNumber - 1) * leftPageSize;
+            finalLeftItems = reordered.slice(startIndex, startIndex + leftPageSize);
+            finalLeftPageNumber = leftPageNumber;
+            finalLeftPageSize = leftPageSize;
+        }
+    }
 
     return (
         <div className="pt-6">
@@ -85,11 +115,11 @@ export default async function Page({ searchParams }: UseCategoryCvPageProps): Pr
                 totalCount={tableResult?.totalCount || 0}
                 totalPages={tableResult?.totalPages || 1}
                 
-                typeOfUseTableData={(typeOfUseTableData?.items || []).filter((item) => item.isActive)}
-                typeOfUsePageNumber={typeOfUseTableData?.pageNumber || 1}
-                typeOfUsePageSize={typeOfUseTableData?.pageSize || 10}
-                typeOfUseTotalCount={typeOfUseTableData?.totalCount || 0}
-                typeOfUseTotalPages={typeOfUseTableData?.totalPages || 1}
+                typeOfUseTableData={finalLeftItems}
+                typeOfUsePageNumber={finalLeftPageNumber}
+                typeOfUsePageSize={finalLeftPageSize}
+                typeOfUseTotalCount={finalLeftTotalCount}
+                typeOfUseTotalPages={finalLeftTotalPages}
                 
                 assessmentYearOptions={assessmentYearOptions}
                 typeOfUseOptions={typeOfUseOptions}

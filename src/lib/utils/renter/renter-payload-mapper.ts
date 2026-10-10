@@ -15,6 +15,8 @@ export interface RenterPayloadFields {
   agreementToDate?: string;
   agreementDate?: string;
   nonCalculateRentMonthly: number;
+  documentBindingId?: number;
+  documentGuid?: string;
 }
 
 /**
@@ -22,6 +24,24 @@ export interface RenterPayloadFields {
  */
 export function mapRenterPayloadFields(formData: FloorData): RenterPayloadFields {
   const isRenter = formData.renter === 'Yes' || formData.renter === true;
+  const docBindingId =
+    formData.documentBindingId !== undefined && formData.documentBindingId !== null
+      ? Number(formData.documentBindingId)
+      : (formData.renterMast && formData.renterMast[0]?.documentBindingId !== undefined && formData.renterMast[0]?.documentBindingId !== null
+        ? Number(formData.renterMast[0].documentBindingId)
+        : undefined);
+  const docGuid =
+    formData.documentGuid ||
+    (formData.renterMast && formData.renterMast[0]?.documentGuid ? String(formData.renterMast[0].documentGuid) : undefined);
+
+  const mappedRenterMast: RenterMastItem[] =
+    formData.renter === 'Yes' && Array.isArray(formData.renterMast)
+      ? formData.renterMast.map((m) => ({
+          ...m,
+          ...(docBindingId !== undefined ? { documentBindingId: docBindingId } : {}),
+          ...(docGuid !== undefined ? { documentGuid: docGuid } : {}),
+        }))
+      : [];
 
   return {
     renterYesNo: isRenter,
@@ -30,14 +50,8 @@ export function mapRenterPayloadFields(formData: FloorData): RenterPayloadFields
       formData.renter === 'Yes' && Array.isArray(formData.renterDetails)
         ? formData.renterDetails
         : [],
-    renterMast:
-      formData.renter === 'Yes' && Array.isArray(formData.renterMast)
-        ? formData.renterMast
-        : [],
-    renters:
-      formData.renter === 'Yes' && Array.isArray(formData.renterMast)
-        ? formData.renterMast
-        : [],
+    renterMast: mappedRenterMast,
+    renters: mappedRenterMast,
     renterName: isRenter ? String(formData.renterName || '') : '',
     renterNameEnglish: isRenter
       ? String(formData.renterNameEnglish || formData.renterName || '')
@@ -63,5 +77,7 @@ export function mapRenterPayloadFields(formData: FloorData): RenterPayloadFields
     nonCalculateRentMonthly: isRenter
       ? Number(formData.nonCalculateRentMonthly || 0)
       : 0,
+    documentBindingId: isRenter ? docBindingId : undefined,
+    documentGuid: isRenter ? docGuid : undefined,
   };
 }

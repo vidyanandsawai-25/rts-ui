@@ -2,7 +2,7 @@
   "configuration": {
     "header": {
       "title": "Configuration Master",
-      "subtitle": "Centralized Master Data Management System",
+      "subtitle": "Asset and Inventory Condition Management",
       "totalMasters": "Total Masters"
     },
     "tabs": {
@@ -33,6 +33,7 @@
           "name": "Name",
           "conditionType": "Condition Category",
           "category": "Category",
+          "categoryName": "Category Name",
           "description": "Description",
           "conditionFactor": "Condition Factor",
           "displayOrder": "Display Order",
@@ -53,6 +54,9 @@
           "update": "Update",
           "cancel": "Cancel"
         },
+        "validation": {
+          "duplicateRecord": "This record already exists. Please check and try again."
+        },
         "errors": {
           "fillRequired": "Please fill in all required fields.",
           "conditionTypeRequired": "Condition Category is required.",
@@ -66,6 +70,7 @@
           "conditionFactorInvalid": "Condition factor must be a valid number.",
           "conditionFactorRange": "Condition factor must be between 0 and 1.",
           "displayOrderRequired": "Display order is required.",
+          "displayOrderInvalid": "Display order must be an integer greater than or equal to 1.",
           "apiActionsNotConfigured": "API actions are not configured.",
           "saveFailed": "Failed to save record",
           "deleteFailed": "Failed to delete record",
@@ -108,6 +113,58 @@
     "inventory-category-master": "Inventory Category",
     "inventory-model-master": "Inventory Model",
     "inventory-name-master": "Inventory Item Name",
-    "inventory-condition-master": "Inventory Condition"
+    "inventory-condition-master": "Asset Condition Master"
+  },
+  "apiErrors": {
+    "referenceBlocked": {
+      "condition": {
+        "deleteInUse": "This Condition cannot be deleted because it is in use.",
+        "deactivateInUse": "This Condition cannot be deactivated because it is in use."
+      }
+    }
+  },
+  "list": {
+    "title": "Inventory Condition",
+    "subtitle": "CardinalMind Master Data Management System",
+    "buttons": {
+      "add": "Add New Inventory Condition",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filters": {
+      "show": "Show",
+      "search": "Search inventory condition...",
+      "label": "Filters",
+      "conditionCategoryAll": "Condition Category: All",
+      "categoryAll": "Category: All",
+      "statusAll": "Status: All",
+      "reset": "Reset",
+      "export": "Export",
+      "asset": "Asset",
+      "inventory": "Inventory"
+    },
+    "table": {
+      "conditionCategory": "Condition Category",
+      "name": "Name",
+      "description": "Description",
+      "conditionFactor": "Condition Factor",
+      "category": "Category",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "stats": {
+    "totalConditions": "Total Conditions",
+    "totalConditionsSub": "All configured conditions",
+    "activeConditions": "Active Conditions",
+    "activeConditionsSub": "Currently active",
+    "avgConditionFactor": "Avg. Condition Factor",
+    "avgConditionFactorSub": "Across all conditions",
+    "categories": "Categories",
+    "categoriesSub": "Condition categories"
   }
 }

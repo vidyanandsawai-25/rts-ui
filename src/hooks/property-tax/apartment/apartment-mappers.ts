@@ -21,50 +21,99 @@ export function extractArrayFromPayload(obj: unknown): unknown[] {
   return [];
 }
 
-export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: string): AssessmentUnit {
-  if (!detail || !detail.id) {
+export function mapSurveyDetailToUnit(
+  detail: SurveyDetailDto,
+  fallbackId: string,
+  variant?: 'survey' | 'existing'
+): AssessmentUnit {
+  const rawAny = (detail || {}) as Record<string, unknown>;
+  const hasData =
+    Boolean(detail) &&
+    (Boolean(detail.id && detail.id > 0) ||
+      Boolean(detail.propertyNo) ||
+      Boolean(detail.oldPropertyNo) ||
+      Boolean(detail.rateableValue != null) ||
+      Boolean(detail.totalTax != null) ||
+      Boolean(detail.oldTotalTax != null) ||
+      Boolean(detail.newTaxTotal != null) ||
+      Boolean(detail.carpetASqFt != null) ||
+      Boolean(detail.carpetASqMtr != null) ||
+      Boolean(detail.builtupASqFt != null) ||
+      Boolean(detail.builtupASqMtr != null) ||
+      Boolean(detail.constructionArea != null) ||
+      Boolean(detail.csn) ||
+      Boolean(rawAny.rateableValue != null) ||
+      Boolean(rawAny.totalTax != null) ||
+      Boolean(rawAny.oldTotalTax != null));
+
+  if (!hasData) {
     return {
       id: fallbackId, prop: '-', wgFl: '-', type: '-', cty: '-', ayr: '-', cyr: '-', use: '-',
       cpt: 0, cptDisplay: '-', bua: 0, buaDisplay: '-', ocNo: '-', occdt: '-', rntr: '-',
       rentDisplay: '-', appliedOn: '-', rateDisplay: '-', rate: 0, yrv: '-', depr: '-',
-      alv: '-', mr: '-', rv: 0, rvDisplay: '-', tax: 0, taxDisplay: detail?.newTaxTotal != null ? `₹${detail.newTaxTotal.toLocaleString()}` : '-',
+      alv: '-', mr: '-', rv: 0, rvDisplay: '-', tax: 0, taxDisplay: '-',
       cv: 0, rttx: 0, pen: 0, rawSurvey: detail,
     };
   }
 
-  const rawAny = detail as Record<string, unknown>;
-  const propNo = (detail.propertyNo || detail.oldPropertyNo || '').trim();
-  const flatNo = (detail.flatOrShopNo || '').trim();
-  let prop = '-';
-  if (propNo && flatNo) prop = `${propNo} / ${flatNo}`;
-  else if (propNo) prop = propNo;
-  else if (flatNo) prop = flatNo;
+  const propNo = (
+    detail.propertyNo ||
+    detail.oldPropertyNo ||
+    (rawAny.propertyNo as string | undefined) ||
+    (rawAny.propNo as string | undefined) ||
+    (rawAny.oldPropertyNo as string | undefined) ||
+    ''
+  ).toString().trim();
+  const rawPartition = (
+    detail.partitionNo ??
+    detail.oldPartitionNo ??
+    (rawAny.partitionNo as string | number | undefined) ??
+    (rawAny.oldPartitionNo as string | number | undefined) ??
+    (rawAny.partition as string | number | undefined) ??
+    (rawAny.partNo as string | number | undefined) ??
+    (rawAny.partitionNumber as string | number | undefined) ??
+    ''
+  ).toString().trim();
+  const partitionNo = rawPartition !== '' && rawPartition !== '-' ? rawPartition : '';
+  const flatNo = (
+    detail.flatOrShopNo ??
+    detail.flatOrShopNoEnglish ??
+    detail.flatOrShopName ??
+    detail.flatOrShopNameEnglish ??
+    (rawAny.flatNo as string | number | undefined) ??
+    (rawAny.shopNo as string | number | undefined) ??
+    (rawAny.flatOrShopNo as string | number | undefined) ??
+    (rawAny.flatOrShopName as string | number | undefined) ??
+    ''
+  ).toString().trim();
 
-  const wing = (detail.wing || '').trim();
+  const parts: string[] = [];
+  if (propNo) parts.push(propNo);
+  if (partitionNo && partitionNo !== propNo) parts.push(partitionNo);
+  if (flatNo && flatNo !== '-' && flatNo !== partitionNo && flatNo !== propNo) parts.push(flatNo);
+  const propFull = parts.length > 0 ? parts.join(' - ') : '-';
+  // The survey table shows the partition (the wing, or the partition of a unit) as PROP NO and the flat in its own column: the main
+  // property number is the same on every unit. The old assessment keeps its own old property number.
+  const prop = variant !== 'existing' ? (partitionNo || propNo || '-') : propFull;
+
   const floorStr = (detail.floor || '').trim();
-  let wgFl = '-';
-  if (wing && floorStr) wgFl = `${wing} / ${floorStr}`;
-  else if (wing) wgFl = wing;
-  else if (floorStr) wgFl = floorStr;
+  // The table column shows only the short floor code (G, 1, 2 ...), no wing; the full description stays in `flr` for filters.
+  const wgFl = (detail.floorCode || '').trim() || floorStr || '-';
 
   const aptType = (detail.apartmentType || '').trim();
   const propTypeName = (detail.propertyTypeName || '').trim();
   const fallbackType = (detail.type || detail.partType || '').trim();
-  let type = '-';
-  if (aptType && propTypeName && aptType.toLowerCase() !== propTypeName.toLowerCase()) {
-    type = `${aptType} / ${propTypeName}`;
-  } else if (aptType) {
-    type = aptType;
-  } else if (propTypeName) {
-    type = propTypeName;
-  } else if (fallbackType) {
-    type = fallbackType;
-  }
+  // Product decision: the TYPE column is PropertyMast.Type, the apartment / society type that plans are drawn and shown by.
+  // The property type name (and its code) is only context for the tooltip.
+  // An old survey row has no PropertyMast.Type: its old property type name is shown instead.
+  const type = aptType || (detail.oldPropertyTypeName || '').trim() || '-';
+  const typeFull = [aptType, propTypeName || (detail.oldPropertyTypeName || '').trim() || fallbackType].filter((v, i, a) => v && a.indexOf(v) === i).join(' / ') || type;
 
-  const cty = (detail.constructionType || detail.oldConstructionType || '').trim() || '-';
-  const ayr = (detail.assessmentYear || detail.oldAssessmentYear || '').trim() || '-';
-  const cyr = (detail.constructionYear || detail.oldConstructionYear || '').trim() || '-';
-  const use = (detail.typeOfUse || detail.subTypeOfUse || detail.oldUseType || '').trim() || '-';
+  const cty = (detail.constructionCode || detail.constructionType || detail.oldConstructionType || '').trim() || '-';
+  // The API can send a year as a number; a year is shown as text either way.
+  const ayr = String(detail.assessmentYear || detail.oldAssessmentYear || '').trim() || '-';
+  const cyr = String(detail.constructionYear || detail.oldConstructionYear || '').trim() || '-';
+  const use = (detail.typeOfUseCode || detail.typeOfUse || detail.subTypeOfUse || detail.oldUseType || '').trim() || '-';
 
   const cptFt = detail.carpetASqFt ?? (detail.constructionArea ?? detail.oldConstructionArea ?? null);
   const cptMtr = detail.carpetASqMtr ?? null;
@@ -112,16 +161,40 @@ export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: strin
   if (deprVal != null && deprPer != null) depr = `${deprVal.toLocaleString()} (${deprPer}%)`;
   else if (deprVal != null) depr = deprVal.toLocaleString();
 
-  const alvVal = detail.annualRentalValue ?? (rawAny.alv as number | undefined) ?? null;
+  const alvVal =
+    detail.alv ??
+    detail.annualRentalValue ??
+    (rawAny.alv as number | undefined) ??
+    (rawAny.annualRentalValue as number | undefined) ??
+    null;
   const alv = alvVal != null ? alvVal.toLocaleString() : '-';
   const mrVal = detail.maintenance ?? null;
   const mr = mrVal != null ? mrVal.toLocaleString() : '-';
 
-  const rawRv = detail.rateableValue ?? detail.oldRV ?? null;
+  const rawRv =
+    detail.rateableValue ??
+    detail.oldRV ??
+    (rawAny.rateableValue as number | undefined) ??
+    (rawAny.oldRV as number | undefined) ??
+    null;
   const rv = rawRv ?? 0;
   const rvDisplay = rawRv != null ? rawRv.toLocaleString() : '-';
 
-  const rawTax = detail.totalTax ?? detail.newTaxTotal ?? detail.newTaxTotalRV ?? detail.oldTotalTax ?? null;
+  const rawTax =
+    variant === 'existing'
+      ? (detail.totalTax ??
+          detail.oldTotalTax ??
+          (rawAny.totalTax as number | undefined) ??
+          (rawAny.oldTotalTax as number | undefined) ??
+          detail.newTaxTotal ??
+          null)
+      : (detail.newTaxTotal ??
+          detail.newTaxTotalRV ??
+          detail.totalTax ??
+          (rawAny.newTaxTotal as number | undefined) ??
+          (rawAny.totalTax as number | undefined) ??
+          detail.oldTotalTax ??
+          null);
   const tax = rawTax ?? 0;
   const taxDisplay = rawTax != null ? `₹${rawTax.toLocaleString()}` : '-';
 
@@ -140,10 +213,12 @@ export function mapSurveyDetailToUnit(detail: SurveyDetailDto, fallbackId: strin
     null;
 
   return {
-    id: fallbackId, prop, propertyNo: propNo || undefined, oldPropertyNo: detail.oldPropertyNo || undefined, flatNo: flatNo || undefined,
+    id: fallbackId, prop, propFull, propertyNo: propNo || undefined, oldPropertyNo: detail.oldPropertyNo || undefined,
+    partitionNo: partitionNo || undefined,
+    flatNo: flatNo || undefined,
     propertyId: resolvedPropertyId ?? undefined,
     oldPropertyId: resolvedOldPropertyId ?? undefined,
-    wgFl, type, cty, ayr, cyr, use, cpt, cptMtr, cptDisplay,
+    wgFl, type, typeFull, cty, ayr, cyr, use, cpt, cptMtr, cptDisplay,
     bua, buaMtr, buaDisplay, ocNo, occdt, rntr, rentDisplay, rent, appliedOn,
     rateDisplay, rate, yrv, depr, alv, mr, rv, rvDisplay, tax, taxDisplay, cv, cvDisplay, rttx, pen: 0,
     owner: detail.ownerName || detail.ownerNameEnglish || '-',
@@ -195,8 +270,8 @@ export function parseApartmentItemNodes(itemList: unknown[], defaultPropertyId?:
     }
     seenIds.add(id);
 
-    const sUnit = mapSurveyDetailToUnit(newSurveyObj, id);
-    const pUnit = mapSurveyDetailToUnit(oldSurveyObj, id);
+    const sUnit = mapSurveyDetailToUnit(newSurveyObj, id, 'survey');
+    const pUnit = mapSurveyDetailToUnit(oldSurveyObj, id, 'existing');
 
     const rawOldAny = (oldSurveyObj || {}) as Record<string, unknown>;
     const rawNewAny = (newSurveyObj || {}) as Record<string, unknown>;

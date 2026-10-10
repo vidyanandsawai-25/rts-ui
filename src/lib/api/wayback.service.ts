@@ -23,6 +23,19 @@ export const WAYBACK_STATIC_TILE_URL = (
 ): string =>
   `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${releaseId}/${z}/${y}/${x}`;
 
+export const DEFAULT_WAYBACK_RELEASES: WaybackRelease[] = [
+  { releaseId: 28163, date: '2015-12-16', year: 2015 },
+  { releaseId: 25521, date: '2017-11-16', year: 2017 },
+  { releaseId: 4756, date: '2019-12-12', year: 2019 },
+  { releaseId: 29260, date: '2020-12-16', year: 2020 },
+  { releaseId: 26120, date: '2021-12-21', year: 2021 },
+  { releaseId: 45134, date: '2022-12-14', year: 2022 },
+  { releaseId: 56102, date: '2023-12-07', year: 2023 },
+  { releaseId: 16453, date: '2024-12-12', year: 2024 },
+  { releaseId: 13192, date: '2025-12-18', year: 2025 },
+  { releaseId: 32246, date: '2026-06-30', year: 2026 },
+];
+
 const TARGET_YEARS = [2015, 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 
 export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
@@ -37,42 +50,41 @@ export async function fetchWaybackReleases(): Promise<WaybackRelease[]> {
     }
 
     const byYear: Record<number, WaybackRelease> = {};
-    items.forEach((i: IWaybackItem) => {
-      const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
-      const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
-      const year = parseInt(dateStr.slice(0, 4), 10);
-      if (isNaN(year) || !TARGET_YEARS.includes(year)) return;
+    if (Array.isArray(items)) {
+      items.forEach((i: IWaybackItem) => {
+        const match = /(\d{4}-\d{2}-\d{2})/.exec(i.itemTitle ?? '');
+        const dateStr = match ? match[1] : new Date(i.releaseDatetime).toISOString().split('T')[0];
+        const year = parseInt(dateStr.slice(0, 4), 10);
+        if (isNaN(year) || !TARGET_YEARS.includes(year)) return;
 
-      if (!byYear[year] || dateStr > byYear[year].date) {
-        byYear[year] = {
-          releaseId: i.releaseNum,
-          date: dateStr,
-          year,
-        };
-      }
-    });
+        if (!byYear[year] || dateStr > byYear[year].date) {
+          byYear[year] = {
+            releaseId: i.releaseNum,
+            date: dateStr,
+            year,
+          };
+        }
+      });
 
-    const result = Object.values(byYear).sort((a, b) => a.year - b.year);
-    if (result.length > 0) return result;
+      const result = Object.values(byYear).sort((a, b) => a.year - b.year);
+      if (result.length > 0) return result;
+    }
   } catch {
-    // Fallback below
+    // Fallback to guaranteed working defaults below
   }
 
-  return [
-    { releaseId: 28163, date: '2015-12-16', year: 2015 },
-    { releaseId: 25521, date: '2017-11-16', year: 2017 },
-    { releaseId: 4756, date: '2019-12-12', year: 2019 },
-    { releaseId: 29260, date: '2020-12-16', year: 2020 },
-    { releaseId: 26120, date: '2021-12-21', year: 2021 },
-    { releaseId: 45134, date: '2022-12-14', year: 2022 },
-    { releaseId: 56102, date: '2023-12-07', year: 2023 },
-    { releaseId: 16453, date: '2024-12-12', year: 2024 },
-    { releaseId: 13192, date: '2025-12-18', year: 2025 },
-    { releaseId: 32246, date: '2026-06-30', year: 2026 },
-  ];
+  return DEFAULT_WAYBACK_RELEASES;
 }
 
+export function getOldestWaybackRelease(releases?: WaybackRelease[]): WaybackRelease {
+  if (releases && releases.length > 0) return releases[0];
+  return DEFAULT_WAYBACK_RELEASES[0];
+}
 
+export function getLatestWaybackRelease(releases?: WaybackRelease[]): WaybackRelease {
+  if (releases && releases.length > 0) return releases[releases.length - 1];
+  return DEFAULT_WAYBACK_RELEASES[DEFAULT_WAYBACK_RELEASES.length - 1];
+}
 
 // Prefetch @esri/wayback-core during idle time so the module is cached
 // before the user opens Change Detection, eliminating dynamic import latency.

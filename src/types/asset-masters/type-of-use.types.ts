@@ -4,8 +4,19 @@ export interface TypeOfUseGroupFormModel {
   groupName: string;
   groupIcon: string;
   isActive: boolean;
-  createdBy?: number;
-  updatedBy?: number;
+}
+
+export interface CreateTypeOfUseGroupPayload {
+  typeOfUseGroupCode: string;
+  groupName: string;
+  groupIcon: string;
+  isActive: boolean;
+  createdBy: number;
+}
+
+export interface UpdateTypeOfUseGroupPayload extends Omit<CreateTypeOfUseGroupPayload, "createdBy"> {
+  id: number;
+  updatedBy: number;
 }
 
 export interface TypeOfUseGroup {
@@ -33,8 +44,23 @@ export interface AssetTypeOfUseFormModel {
   description: string;
   type: string; // R, C, I, N
   searchSequence: number | "";
-  createdBy?: number;
-  updatedBy?: number;
+}
+
+export interface CreateAssetTypeOfUsePayload {
+  assetCategoryId: number;
+  assetTypeId: number;
+  typeOfUseGroupId: number;
+  typeOfUseCode: string;
+  description: string;
+  type: string;
+  searchSequence: number | "";
+  isActive: boolean;
+  createdBy: number;
+}
+
+export interface UpdateAssetTypeOfUsePayload extends Omit<CreateAssetTypeOfUsePayload, "createdBy"> {
+  id: number;
+  updatedBy: number;
 }
 
 export interface AssetTypeOfUse {
@@ -45,9 +71,9 @@ export interface AssetTypeOfUse {
   assetTypeId: number;
   typeOfUseGroupId: number;
   typeOfUseCode: string;
-  description: string;
+  description: string | null;
   type: string;
-  searchSequence: number | "";
+  searchSequence: number | null;
   createdDate?: string;
   updatedDate?: string | null;
   // Join properties returned by API
@@ -66,8 +92,19 @@ export interface AssetSubTypeOfUseFormModel {
   typeOfUseId: number;
   description: string; // Sub-Type Name
   searchSequence: number | "";
-  createdBy?: number;
-  updatedBy?: number;
+}
+
+export interface CreateAssetSubTypeOfUsePayload {
+  typeOfUseId: number;
+  description: string;
+  searchSequence: number | "";
+  isActive: boolean;
+  createdBy: number;
+}
+
+export interface UpdateAssetSubTypeOfUsePayload extends Omit<CreateAssetSubTypeOfUsePayload, "createdBy"> {
+  id: number;
+  updatedBy: number;
 }
 
 export interface AssetSubTypeOfUse {
@@ -75,8 +112,8 @@ export interface AssetSubTypeOfUse {
   id: number;
   isActive: boolean;
   typeOfUseId: number;
-  description: string;
-  searchSequence: number | "";
+  description: string | null;
+  searchSequence: number | null;
   createdDate?: string;
   updatedDate?: string | null;
   // Join properties returned by API

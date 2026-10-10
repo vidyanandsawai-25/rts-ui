@@ -26,11 +26,17 @@ export async function saveInventoryModelAction(id: string, formData: FormData) {
     }
     const inventoryItemNameId = rawGroupId;
 
+    const rawDisplayOrder = formData.get("displayOrder");
+    const displayOrder = Number(rawDisplayOrder);
+    if (!Number.isInteger(displayOrder) || displayOrder <= 0 || displayOrder > 99999) {
+      return { ok: false, error: "Invalid display order", field: "displayOrder" };
+    }
+
     const record = {
       modelName: formData.get("name") as string,
       inventoryItemNameId,
       description: formData.get("description") as string,
-      displayOrder: 1,
+      displayOrder,
       isActive: formData.get("isActive") === "true",
     };
 
@@ -88,6 +94,7 @@ export async function getInventoryModelByIdAction(id: string | number) {
       name: rawRecord.modelName || "",
       group: String(rawRecord.inventoryItemNameId || ""),
       description: rawRecord.description || "",
+      displayOrder: rawRecord.displayOrder ?? 1,
       isActive: rawRecord.isActive ?? true,
     };
   } catch (error) {

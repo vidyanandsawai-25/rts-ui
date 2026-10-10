@@ -8,7 +8,7 @@ import { createTypeOfUseGroupAction, updateTypeOfUseGroupAction } from "@/app/[l
 import { TypeOfUseGroupFormModel, TypeOfUseGroup } from "@/types/asset-masters/type-of-use.types";
 
 import { validateGroupForm, sanitizeGroupFieldValue } from "./validation";
-import { getErrorMessage } from "./error-mapping";
+import { getErrorMessage, isDeactivateBlockedMessage } from "./error-mapping";
 
 
 interface UseGroupFormProps {
@@ -97,18 +97,13 @@ export function useGroupForm({
     });
   }, [formData, validate]);
 
-  const mapApiError = useCallback((result: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
-    if (result.errors) {
-      for (const val of Object.values(result.errors)) {
+  const mapApiError = useCallback((result: { statusCode?: number; message?: string; validationErrors?: Record<string, string | string[]> }) => {
+    if (result.validationErrors) {
+      for (const raw of Object.values(result.validationErrors)) {
+        const val = Array.isArray(raw) ? raw[0] : raw;
         if (val) {
           const cleanVal = val.replace(/\.$/, "");
-          const translationKey = `apiErrors.${cleanVal}` as never;
-          try {
-            const translated = t(translationKey);
-            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
-              return translated;
-            }
-          } catch {}
+          return getErrorMessage(cleanVal, result.statusCode, t, tCommon, t("group.title"));
         }
       }
     }
@@ -149,14 +144,39 @@ export function useGroupForm({
         : await createTypeOfUseGroupAction(formData);
 
       if (!result.success) {
-        toast.error(mapApiError(result));
+        const apiErrorText = [
+          result.message ?? "",
+          ...Object.values(result.validationErrors ?? {}).map((value) =>
+            Array.isArray(value) ? value.join(" ") : String(value)
+          ),
+        ].join(" ");
+
+        let handled = false;
+        if (/AssetTypeOfUseGroup_GroupCode_Duplicate/i.test(apiErrorText) || (/code/i.test(apiErrorText) && /already exist/i.test(apiErrorText))) {
+          setErrors((p) => ({ ...p, typeOfUseGroupCode: t("apiErrors.AssetTypeOfUseGroup_GroupCode_Duplicate", { default: "Group Code already exists" }) }));
+          setTouched((p) => ({ ...p, typeOfUseGroupCode: true }));
+          handled = true;
+        }
+        if (/AssetTypeOfUseGroup_GroupName_Duplicate/i.test(apiErrorText) || (/name/i.test(apiErrorText) && /already exist/i.test(apiErrorText))) {
+          setErrors((p) => ({ ...p, groupName: t("apiErrors.AssetTypeOfUseGroup_GroupName_Duplicate", { default: "Group Name already exists" }) }));
+          setTouched((p) => ({ ...p, groupName: true }));
+          handled = true;
+        }
+
+        if (handled) return;
+
+        const errorMessage = mapApiError(result);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("messages.groupUpdated", { default: "Group updated successfully" })
-        : t("messages.groupCreated", { default: "Group created successfully" })
-      ));
+        : t("messages.groupCreated", { default: "Group created successfully" });
+      toast.success(successMessage || result.message);
       onSuccess();
       closeAndRoute();
     } finally {
@@ -167,6 +187,7 @@ export function useGroupForm({
   const handleToggleStatus = useCallback((checked: boolean): void => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {

@@ -10,7 +10,7 @@ import {
 } from "@/app/[locale]/assets/configuration/master-data/type-of-use/action";
 import { AssetTypeOfUseFormModel, AssetTypeOfUse } from "@/types/asset-masters/type-of-use.types";
 import { validateTypeOfUseForm, sanitizeTypeOfUseFieldValue } from "./validation";
-import { getErrorMessage } from "./error-mapping";
+import { getErrorMessage, isDeactivateBlockedMessage } from "./error-mapping";
 
 
 interface UseTypeOfUseFormProps {
@@ -40,8 +40,10 @@ export function useTypeOfUseForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
-  const urlGroupId = parseInt(sp.get("selectedGroupId") ?? "0", 10) || 0;
-  const urlCategoryId = parseInt(sp.get("assetCategoryId") ?? "0", 10) || 0;
+  const parseQueryId = (value: string | null): number =>
+    value && /^\d+$/.test(value) ? Number(value) : 0;
+  const urlGroupId = parseQueryId(sp.get("selectedGroupId"));
+  const urlCategoryId = parseQueryId(sp.get("assetCategoryId"));
 
   const [formData, setFormData] = useState<AssetTypeOfUseFormModel>({
     id: id ?? initialData?.id,
@@ -52,11 +54,10 @@ export function useTypeOfUseForm({
     typeOfUseCode: initialData?.typeOfUseCode ?? "",
     description: initialData?.description ?? "",
     type: initialData?.type ?? "",
-    searchSequence: initialData?.searchSequence ?? 1,
+    searchSequence: initialData?.searchSequence ?? "",
   });
 
   const types = initialTypes;
-  const isLoadingTypes = false;
   const [errors, setErrors] = useState<Partial<Record<keyof AssetTypeOfUseFormModel, string>>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -90,8 +91,13 @@ export function useTypeOfUseForm({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     const val = parseVal(name, value);
+    if (name === "assetCategoryId") {
+      const categoryId = Number(val);
+      setFormData((p) => ({ ...p, assetCategoryId: categoryId, assetTypeId: 0 }));
+      onCategoryChange?.(categoryId);
+      return;
+    }
     setFormData((p) => ({ ...p, [name]: val }));
-    if (name === "assetCategoryId") onCategoryChange?.(Number(val));
   }, [onCategoryChange]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>): void => {
@@ -110,18 +116,13 @@ export function useTypeOfUseForm({
     });
   }, [formData, validate]);
 
-  const mapApiError = useCallback((result: { statusCode?: number; message?: string; errors?: Record<string, string> | null }) => {
-    if (result.errors) {
-      for (const val of Object.values(result.errors)) {
+  const mapApiError = useCallback((result: { statusCode?: number; message?: string; validationErrors?: Record<string, string | string[]> }) => {
+    if (result.validationErrors) {
+      for (const raw of Object.values(result.validationErrors)) {
+        const val = Array.isArray(raw) ? raw[0] : raw;
         if (val) {
           const cleanVal = val.replace(/\.$/, "");
-          const translationKey = `apiErrors.${cleanVal}` as never;
-          try {
-            const translated = t(translationKey);
-            if (translated && translated !== translationKey && !translated.includes(translationKey)) {
-              return translated;
-            }
-          } catch {}
+          return getErrorMessage(cleanVal, result.statusCode, t, tCommon, t("type.title"));
         }
       }
     }
@@ -168,14 +169,42 @@ export function useTypeOfUseForm({
         : await createAssetTypeOfUseAction(formData);
 
       if (!result.success) {
-        toast.error(mapApiError(result));
+        const apiErrorText = [
+          result.message ?? "",
+          ...Object.values(result.validationErrors ?? {}).map((value) =>
+            Array.isArray(value) ? value.join(" ") : String(value)
+          ),
+        ].join(" ");
+
+        let handled = false;
+        const isAmbiguousDuplicate = result.statusCode === 409 && /same details already exists/i.test(apiErrorText);
+
+        if (/AssetTypeOfUse_TypeOfUseCode_Duplicate/i.test(apiErrorText) || (/code/i.test(apiErrorText) && /already exist/i.test(apiErrorText)) || isAmbiguousDuplicate) {
+          setErrors((previous) => ({ ...previous, typeOfUseCode: t("apiErrors.AssetTypeOfUse_TypeOfUseCode_Duplicate", { default: "Type of Use Code already exists" }) }));
+          setTouched((previous) => ({ ...previous, typeOfUseCode: true }));
+          handled = true;
+        }
+        
+        if (/AssetTypeOfUse_Description_Duplicate/i.test(apiErrorText) || (/name|description/i.test(apiErrorText) && /already exist/i.test(apiErrorText)) || isAmbiguousDuplicate) {
+          setErrors((previous) => ({ ...previous, description: t("apiErrors.AssetTypeOfUse_Description_Duplicate", { default: "Type of Use Name already exists" }) }));
+          setTouched((previous) => ({ ...previous, description: true }));
+          handled = true;
+        }
+
+        if (handled) return;
+
+        const errorMessage = mapApiError(result);
+        if (isDeactivateBlockedMessage(result.message)) {
+          setErrors((p) => ({ ...p, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
 
-      toast.success(result.message || (isEdit
+      const successMessage = isEdit
         ? t("messages.typeUpdated", { default: "Type updated successfully" })
-        : t("messages.typeCreated", { default: "Type created successfully" })
-      ));
+        : t("messages.typeCreated", { default: "Type created successfully" });
+      toast.success(successMessage || result.message);
       onSuccess();
       closeAndRoute(formData.typeOfUseGroupId);
     } finally {
@@ -186,6 +215,7 @@ export function useTypeOfUseForm({
   const handleToggleStatus = useCallback((checked: boolean): void => {
     setIsActive(checked);
     setFormData((p) => ({ ...p, isActive: checked }));
+    setErrors((p) => ({ ...p, isActive: "" }));
   }, []);
 
   return {
@@ -196,7 +226,6 @@ export function useTypeOfUseForm({
     types,
     open,
     setOpen,
-    isLoadingTypes,
     handleChange,
     handleBlur,
     handleSubmit,

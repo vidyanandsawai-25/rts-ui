@@ -32,12 +32,21 @@ export function buildSidebarTreeFromUserScreens(
           nameHi: groupName, // No local name for group, fallback
           iconName: screen.screenIcon || 'LayoutGrid',
           href: '#',
+          departmentId: screen.departmentId,
+          moduleId: screen.moduleId,
+          departmentName: screen.departmentName,
+          moduleName: screen.moduleName,
           subItems: [],
         });
       }
       groupsMap.get(groupName)!.subItems!.push({
         name: screen.screenName,
         href: screen.routePath || '#',
+        departmentId: screen.departmentId,
+        moduleId: screen.moduleId,
+        departmentName: screen.departmentName,
+        moduleName: screen.moduleName,
+        screenCode: screen.screenCode,
       });
     } else {
       standalone.push({
@@ -45,6 +54,11 @@ export function buildSidebarTreeFromUserScreens(
         nameHi: screen.screenNameLocal || screen.screenName,
         iconName: screen.screenIcon || 'LayoutGrid',
         href: screen.routePath || '#',
+        departmentId: screen.departmentId,
+        moduleId: screen.moduleId,
+        departmentName: screen.departmentName,
+        moduleName: screen.moduleName,
+        screenCode: screen.screenCode,
         subItems: [],
       });
     }

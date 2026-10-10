@@ -1,14 +1,33 @@
 import { apiClient } from "@/services/api.service";
 import {
   TypeOfUseGroup,
-  TypeOfUseGroupFormModel,
+  CreateTypeOfUseGroupPayload,
+  UpdateTypeOfUseGroupPayload,
   AssetTypeOfUse,
-  AssetTypeOfUseFormModel,
+  CreateAssetTypeOfUsePayload,
+  UpdateAssetTypeOfUsePayload,
   AssetSubTypeOfUse,
-  AssetSubTypeOfUseFormModel,
+  CreateAssetSubTypeOfUsePayload,
+  UpdateAssetSubTypeOfUsePayload,
 } from "@/types/asset-masters/type-of-use.types";
 import { PagedResponse } from "@/types/common.types";
 import { ApiError } from "@/lib/utils/api";
+
+type MutationResponseData = { success?: boolean; message?: string; error?: string };
+
+function normalizeSearchSequence<T extends { searchSequence: number | "" }>(data: T) {
+  return {
+    ...data,
+    searchSequence: data.searchSequence === "" ? undefined : data.searchSequence,
+  };
+}
+
+function requirePagedItems<T>(data: PagedResponse<T> | undefined, resourceName: string): T[] {
+  if (!data || !Array.isArray(data.items)) {
+    throw new ApiError(500, `No valid ${resourceName} data received from server`, "Invalid response format");
+  }
+  return data.items;
+}
 import { logger } from "@/lib/utils/logger";
 import { validateAndPrepareSearchTerm, getDeleteErrorStatusCode } from "@/lib/api/typeofuse-validation";
 
@@ -47,6 +66,7 @@ export async function getTypeOfUseGroupsPaged(
     if (!response.data) {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
+    requirePagedItems(response.data, "paged Type of Use Groups");
 
     return response.data;
   } catch (error) {
@@ -77,7 +97,7 @@ export async function getTypeOfUseGroupsAllActive(): Promise<TypeOfUseGroup[]> {
       throw new ApiError(500, "No data received from server", "Invalid response format");
     }
 
-    return response.data.items ?? [];
+    return requirePagedItems(response.data, "active Type of Use Groups");
   } catch (error) {
     logger.error("Error fetching active Type of Use Groups", { error: error as Error });
     throw error;
@@ -106,24 +126,28 @@ export async function getTypeOfUseGroupById(groupId: number): Promise<TypeOfUseG
   }
 }
 
-export async function createTypeOfUseGroup(data: TypeOfUseGroupFormModel): Promise<string | undefined> {
+export async function createTypeOfUseGroup(data: CreateTypeOfUseGroupPayload): Promise<string | undefined> {
   try {
-    if (!data.typeOfUseGroupCode?.trim() || !data.groupName?.trim()) {
+    const code = data.typeOfUseGroupCode?.trim();
+    const name = data.groupName?.trim();
+    const icon = data.groupIcon?.trim();
+
+    if (!code || !name || !icon) {
       throw new ApiError(400, "Required fields are missing", "Validation failed");
     }
     const payload = {
-      typeOfUseGroupCode: data.typeOfUseGroupCode.trim(),
-      groupName: data.groupName.trim(),
-      groupIcon: data.groupIcon?.trim() || "home",
+      typeOfUseGroupCode: code,
+      groupName: name,
+      groupIcon: icon,
       isActive: data.isActive,
-      createdBy: data.createdBy ?? null,
+      createdBy: data.createdBy,
     };
-    const response = await apiClient.post<{ message?: string }>("/asset-management/type-of-use-group", payload);
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    const response = await apiClient.post<MutationResponseData>("/asset-management/type-of-use-group", payload);
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Create Type of Use Group failed",
         "Create Group failed"
       );
@@ -135,28 +159,31 @@ export async function createTypeOfUseGroup(data: TypeOfUseGroupFormModel): Promi
   }
 }
 
-export async function updateTypeOfUseGroup(data: TypeOfUseGroupFormModel): Promise<string | undefined> {
+export async function updateTypeOfUseGroup(data: UpdateTypeOfUseGroupPayload): Promise<string | undefined> {
   try {
-    if (!data.id || data.id <= 0 || !data.typeOfUseGroupCode?.trim() || !data.groupName?.trim()) {
-      throw new ApiError(400, "Required fields are missing", "Validation failed");
+    const code = data.typeOfUseGroupCode?.trim();
+    const name = data.groupName?.trim();
+    const icon = data.groupIcon?.trim();
+
+    if (!data.id || data.id <= 0 || !code || !name || !icon) {
+      throw new ApiError(400, "Valid Group ID and required fields are missing", "Validation failed");
     }
     const payload = {
-      id: data.id,
-      typeOfUseGroupCode: data.typeOfUseGroupCode.trim(),
-      groupName: data.groupName.trim(),
-      groupIcon: data.groupIcon?.trim() || "home",
+      typeOfUseGroupCode: code,
+      groupName: name,
+      groupIcon: icon,
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? null,
+      updatedBy: data.updatedBy,
     };
-    const response = await apiClient.put<{ message?: string }>(
+    const response = await apiClient.put<MutationResponseData>(
       `/asset-management/type-of-use-group/${encodeURIComponent(String(data.id))}`,
       payload
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Update Type of Use Group failed",
         "Update Group failed"
       );
@@ -214,7 +241,7 @@ export async function getAssetTypeOfUses(
         "Get Types failed"
       );
     }
-    return response.data?.items ?? [];
+    return requirePagedItems(response.data, "Asset Type of Uses");
   } catch (error) {
     logger.error("Error fetching Asset Type of Uses", { error: error as Error });
     throw error;
@@ -240,14 +267,17 @@ export async function getAssetTypeOfUseById(id: number): Promise<AssetTypeOfUse 
   }
 }
 
-export async function createAssetTypeOfUse(data: AssetTypeOfUseFormModel): Promise<string | undefined> {
+export async function createAssetTypeOfUse(data: CreateAssetTypeOfUsePayload): Promise<string | undefined> {
   try {
-    const response = await apiClient.post<{ message?: string }>("/asset-management/asset-type-of-use", data);
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    const response = await apiClient.post<MutationResponseData>(
+      "/asset-management/asset-type-of-use",
+      normalizeSearchSequence(data)
+    );
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Create Asset Type of Use failed",
         "Create Type failed"
       );
@@ -259,20 +289,30 @@ export async function createAssetTypeOfUse(data: AssetTypeOfUseFormModel): Promi
   }
 }
 
-export async function updateAssetTypeOfUse(data: AssetTypeOfUseFormModel): Promise<string | undefined> {
+export async function updateAssetTypeOfUse(data: UpdateAssetTypeOfUsePayload): Promise<string | undefined> {
   try {
     if (typeof data.id !== "number" || data.id <= 0 || !Number.isFinite(data.id)) {
       throw new ApiError(400, "Valid Type of Use ID is required", "Validation failed");
     }
-    const response = await apiClient.put<{ message?: string }>(
+    const response = await apiClient.put<MutationResponseData>(
       `/asset-management/asset-type-of-use/${encodeURIComponent(String(data.id))}`,
-      data
+      normalizeSearchSequence({
+        assetCategoryId: data.assetCategoryId,
+        assetTypeId: data.assetTypeId,
+        typeOfUseGroupId: data.typeOfUseGroupId,
+        typeOfUseCode: data.typeOfUseCode,
+        description: data.description,
+        type: data.type,
+        searchSequence: data.searchSequence,
+        isActive: data.isActive,
+        updatedBy: data.updatedBy,
+      })
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Update Asset Type of Use failed",
         "Update Type failed"
       );
@@ -287,17 +327,16 @@ export async function updateAssetTypeOfUse(data: AssetTypeOfUseFormModel): Promi
 export async function deleteAssetTypeOfUse(id: number): Promise<void> {
   try {
     if (typeof id !== "number" || id <= 0 || !Number.isFinite(id)) {
-      throw new ApiError(400, "Valid ID is required", "Invalid ID");
+      throw new ApiError(400, "Valid Type ID is required", "Invalid ID");
     }
-    const response = await apiClient.delete<void>(
+    const response = await apiClient.delete<{ message?: string }>(
       `/asset-management/asset-type-of-use/${encodeURIComponent(String(id))}`
     );
     if (!response.success) {
-      const errorMsg = response.error || "";
-      const statusCode = response.statusCode ?? getDeleteErrorStatusCode(errorMsg);
+      const statusCode = getDeleteErrorStatusCode(response.error ?? "");
       throw new ApiError(
-        statusCode,
-        errorMsg || "Failed to delete Asset Type of Use",
+        response.statusCode ?? statusCode,
+        response.error || "Failed to delete Asset Type of Use",
         `Delete Type ${id} failed`
       );
     }
@@ -334,7 +373,7 @@ export async function getAssetSubTypeOfUses(
         "Get Sub-Types failed"
       );
     }
-    return response.data?.items ?? [];
+    return requirePagedItems(response.data, "Asset Sub-Type of Uses");
   } catch (error) {
     logger.error("Error fetching Asset Sub-Type of Uses", { error: error as Error });
     throw error;
@@ -360,14 +399,17 @@ export async function getAssetSubTypeOfUseById(id: number): Promise<AssetSubType
   }
 }
 
-export async function createAssetSubTypeOfUse(data: AssetSubTypeOfUseFormModel): Promise<string | undefined> {
+export async function createAssetSubTypeOfUse(data: CreateAssetSubTypeOfUsePayload): Promise<string | undefined> {
   try {
-    const response = await apiClient.post<{ message?: string }>("/asset-management/asset-sub-type-of-use", data);
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    const response = await apiClient.post<MutationResponseData>(
+      "/asset-management/asset-sub-type-of-use",
+      normalizeSearchSequence(data)
+    );
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Create Asset Sub-Type of Use failed",
         "Create Sub-Type failed"
       );
@@ -379,20 +421,26 @@ export async function createAssetSubTypeOfUse(data: AssetSubTypeOfUseFormModel):
   }
 }
 
-export async function updateAssetSubTypeOfUse(data: AssetSubTypeOfUseFormModel): Promise<string | undefined> {
+export async function updateAssetSubTypeOfUse(data: UpdateAssetSubTypeOfUsePayload): Promise<string | undefined> {
   try {
     if (typeof data.id !== "number" || data.id <= 0 || !Number.isFinite(data.id)) {
       throw new ApiError(400, "Valid Sub-Type of Use ID is required", "Validation failed");
     }
-    const response = await apiClient.put<{ message?: string }>(
+    const response = await apiClient.put<MutationResponseData>(
       `/asset-management/asset-sub-type-of-use/${encodeURIComponent(String(data.id))}`,
-      data
+      normalizeSearchSequence({
+        typeOfUseId: data.typeOfUseId,
+        description: data.description,
+        searchSequence: data.searchSequence,
+        isActive: data.isActive,
+        updatedBy: data.updatedBy,
+      })
     );
-    if (!response.success) {
-      const errorMsg = response.error || "";
+    if (!response.success || response.data?.success === false) {
+      const errorMsg = response.error || response.data?.message || response.data?.error || "";
       const isDuplicate = errorMsg.toLowerCase().includes("already exists") || errorMsg.toLowerCase().includes("duplicate");
       throw new ApiError(
-        response.statusCode ?? (isDuplicate ? 409 : 500),
+        response.data?.success === false ? (isDuplicate ? 409 : 500) : (response.statusCode ?? (isDuplicate ? 409 : 500)),
         errorMsg || "Update Asset Sub-Type of Use failed",
         "Update Sub-Type failed"
       );
@@ -407,17 +455,16 @@ export async function updateAssetSubTypeOfUse(data: AssetSubTypeOfUseFormModel):
 export async function deleteAssetSubTypeOfUse(id: number): Promise<void> {
   try {
     if (typeof id !== "number" || id <= 0 || !Number.isFinite(id)) {
-      throw new ApiError(400, "Valid ID is required", "Invalid ID");
+      throw new ApiError(400, "Valid Sub-Type ID is required", "Invalid ID");
     }
-    const response = await apiClient.delete<void>(
+    const response = await apiClient.delete<{ message?: string }>(
       `/asset-management/asset-sub-type-of-use/${encodeURIComponent(String(id))}`
     );
     if (!response.success) {
-      const errorMsg = response.error || "";
-      const statusCode = response.statusCode ?? getDeleteErrorStatusCode(errorMsg);
+      const statusCode = getDeleteErrorStatusCode(response.error ?? "");
       throw new ApiError(
-        statusCode,
-        errorMsg || "Failed to delete Asset Sub-Type of Use",
+        response.statusCode ?? statusCode,
+        response.error || "Failed to delete Asset Sub-Type of Use",
         `Delete Sub-Type ${id} failed`
       );
     }
@@ -426,6 +473,10 @@ export async function deleteAssetSubTypeOfUse(id: number): Promise<void> {
     throw error;
   }
 }
+
+// ==========================================
+// COMMON DROPDOWN SERVICES
+// ==========================================
 
 export async function getAssetTypeOfUsesAllActive(): Promise<AssetTypeOfUse[]> {
   try {
@@ -445,7 +496,11 @@ export async function getAssetTypeOfUsesAllActive(): Promise<AssetTypeOfUse[]> {
         "Get active types failed"
       );
     }
-    return response.data?.items ?? [];
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+
+    return requirePagedItems(response.data, "active Asset Type of Uses");
   } catch (error) {
     logger.error("Error fetching active Asset Type of Uses", { error: error as Error });
     throw error;
@@ -487,7 +542,11 @@ export async function getAssetTypeOfUsesPaged(
         "Get paged types failed"
       );
     }
-    return response.data ?? { items: [], pageNumber, pageSize, totalCount: 0, totalPages: 0, hasPrevious: false, hasNext: false };
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    requirePagedItems(response.data, "paged Asset Type of Uses");
+    return response.data;
   } catch (error) {
     logger.error("Error fetching paged Asset Type of Uses", { error: error as Error });
     throw error;
@@ -527,7 +586,11 @@ export async function getAssetSubTypeOfUsesPaged(
         "Get paged sub-types failed"
       );
     }
-    return response.data ?? { items: [], pageNumber, pageSize, totalCount: 0, totalPages: 0, hasPrevious: false, hasNext: false };
+    if (!response.data) {
+      throw new ApiError(500, "No data received from server", "Invalid response format");
+    }
+    requirePagedItems(response.data, "paged Asset Sub-Type of Uses");
+    return response.data;
   } catch (error) {
     logger.error("Error fetching paged Asset Sub-Type of Uses", { error: error as Error });
     throw error;

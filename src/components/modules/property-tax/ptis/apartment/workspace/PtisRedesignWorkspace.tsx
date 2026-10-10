@@ -9,6 +9,7 @@ import { PtisPanelHeader } from './PtisPanelHeader';
 import { NewSurveyTable } from '../tables/NewSurveyTable';
 import { DifferenceEngineTable } from '../tables/DifferenceEngineTable';
 import { ExistingAssessmentTable } from '../tables/ExistingAssessmentTable';
+import type { ApartmentSortPanel, ApartmentSortState } from '@/lib/utils/apartment-sort';
 
 export interface PtisRedesignWorkspaceProps {
   copy: PtisRedesignCopy;
@@ -39,6 +40,10 @@ export interface PtisRedesignWorkspaceProps {
   hiddenPanelsCount?: number;
   isLoading?: boolean;
   isLoadingMore?: boolean;
+  /** The sort the API applied to the rows (the rows arrive in that order). */
+  sort?: ApartmentSortState | null;
+  onSort?: (panel: ApartmentSortPanel, column: string) => void;
+  onClearSort?: () => void;
 }
 
 export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
@@ -47,11 +52,12 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
   onHoverUnit, onToggleExpandRow, onEditUnit, onViewDocument, onViewRules, onToggleHidePanel,
   onToggleExpandPanel, surveyScrollRef, differenceScrollRef, existingScrollRef,
   onSyncScroll, taxMode, isFullscreen = false, onToggleFullscreen, onRestoreAll,
-  hiddenPanelsCount = 0, isLoading = false, isLoadingMore = false,
+  hiddenPanelsCount = 0, isLoading = false, isLoadingMore = false, sort = null, onSort, onClearSort,
 }) => {
   const isSurveyHidden = hiddenPanels.includes('survey');
   const isDifferenceHidden = hiddenPanels.includes('difference');
   const isExistingHidden = hiddenPanels.includes('existing');
+
 
   return (
     <div
@@ -105,12 +111,15 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
       <div
         className={cn(
           'bg-white rounded-xl shadow-xs border border-zinc-200 overflow-hidden flex gap-0 divide-x divide-zinc-200 items-stretch',
-          isFullscreen ? 'flex-1 min-h-0' : 'h-[470px]'
+          isFullscreen ? 'flex-1 min-h-0' : 'h-auto max-h-[calc(100vh-200px)]'
         )}
       >
         {!isSurveyHidden && (expandedPanel === null || expandedPanel === 'survey') && (
           <div
-            className="flex-1 overflow-hidden flex flex-col h-full transition-all duration-200 min-w-0"
+            className={cn(
+              'flex-1 overflow-hidden flex flex-col min-w-0 transition-all duration-200',
+              isFullscreen ? 'h-full' : ''
+            )}
             style={{ flexBasis: expandedPanel === 'survey' ? '100%' : `${panelWidthPercent}%` }}
           >
             <PtisPanelHeader
@@ -121,13 +130,15 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
               onToggleExpand={() => onToggleExpandPanel('survey')}
               isExpanded={expandedPanel === 'survey'}
             />
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className={cn('overflow-hidden flex flex-col flex-1 min-h-0', isFullscreen ? 'h-full' : '')}>
               <NewSurveyTable
+                sort={sort} onSort={onSort} onClearSort={onClearSort}
                 units={surveyUnits} hoveredUnitId={hoveredUnitId} expandedUnitIds={expandedUnitIds}
                 onHoverUnit={onHoverUnit} onToggleExpandRow={onToggleExpandRow} onEditUnit={onEditUnit}
                 onViewDocument={onViewDocument} onViewRules={onViewRules}
                 scrollRef={surveyScrollRef} onScroll={() => onSyncScroll(surveyScrollRef)} taxMode={taxMode}
                 isLoading={isLoading}
+                isFullscreen={isFullscreen}
               />
             </div>
           </div>
@@ -135,7 +146,10 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
 
         {!isDifferenceHidden && (expandedPanel === null || expandedPanel === 'difference') && (
           <div
-            className="flex-1 overflow-hidden flex flex-col h-full transition-all duration-200 min-w-0"
+            className={cn(
+              'flex-1 overflow-hidden flex flex-col min-w-0 transition-all duration-200',
+              isFullscreen ? 'h-full' : ''
+            )}
             style={{ flexBasis: expandedPanel === 'difference' ? '100%' : `${panelWidthPercent}%` }}
           >
             <PtisPanelHeader
@@ -146,12 +160,14 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
               onToggleExpand={() => onToggleExpandPanel('difference')}
               isExpanded={expandedPanel === 'difference'}
             />
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className={cn('overflow-hidden flex flex-col flex-1 min-h-0', isFullscreen ? 'h-full' : '')}>
               <DifferenceEngineTable
+                sort={sort} onSort={onSort}
                 differences={differences} totalDeltas={totalDeltas} hoveredUnitId={hoveredUnitId}
                 expandedUnitIds={expandedUnitIds} onHoverUnit={onHoverUnit} onToggleExpandRow={onToggleExpandRow}
                 scrollRef={differenceScrollRef} onScroll={() => onSyncScroll(differenceScrollRef)}
                 taxMode={taxMode} isLoading={isLoading}
+                isFullscreen={isFullscreen}
               />
             </div>
           </div>
@@ -159,7 +175,10 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
 
         {!isExistingHidden && (expandedPanel === null || expandedPanel === 'existing') && (
           <div
-            className="flex-1 overflow-hidden flex flex-col h-full transition-all duration-200 min-w-0"
+            className={cn(
+              'flex-1 overflow-hidden flex flex-col min-w-0 transition-all duration-200',
+              isFullscreen ? 'h-full' : ''
+            )}
             style={{ flexBasis: expandedPanel === 'existing' ? '100%' : `${panelWidthPercent}%` }}
           >
             <PtisPanelHeader
@@ -170,12 +189,14 @@ export const PtisRedesignWorkspace: React.FC<PtisRedesignWorkspaceProps> = ({
               onToggleExpand={() => onToggleExpandPanel('existing')}
               isExpanded={expandedPanel === 'existing'}
             />
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className={cn('overflow-hidden flex flex-col flex-1 min-h-0', isFullscreen ? 'h-full' : '')}>
               <ExistingAssessmentTable
+                sort={sort} onSort={onSort} onClearSort={onClearSort}
                 units={previousUnits} hoveredUnitId={hoveredUnitId} expandedUnitIds={expandedUnitIds}
                 onHoverUnit={onHoverUnit} onToggleExpandRow={onToggleExpandRow} onViewDocument={onViewDocument}
                 onViewRules={onViewRules} scrollRef={existingScrollRef} onScroll={() => onSyncScroll(existingScrollRef)}
                 taxMode={taxMode} isLoading={isLoading}
+                isFullscreen={isFullscreen}
               />
             </div>
           </div>

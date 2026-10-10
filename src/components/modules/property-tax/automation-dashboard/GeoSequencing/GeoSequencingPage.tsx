@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { AutomationTable } from '@/components/common/AutomationTable';
 import { SearchInput } from '@/components/common/SearchInput';
 import { SearchButton } from '@/components/common';
-import { ExportDropdown } from './ExportDropdown';
+import { ExportDropdown } from '../CommonFilterDashbaord/ExportDropdown';
 import { GeoSequencingItems } from '@/types/automation-dashboard/geo-sequencing/geo-sequencing.type';
 import {
     GeoSequencingData,

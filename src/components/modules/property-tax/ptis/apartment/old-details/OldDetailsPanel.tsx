@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -7,6 +6,7 @@ import { MappedPropertySocietyWiseItem } from '@/types/property-mapping/property
 import { getMappedPropertiesSocietyWiseAction } from '@/lib/api/property-mapping/property-mapping-society-wise.service';
 import { OldDetailsTable } from './OldDetailsTable';
 import { matchesFloor } from '@/lib/utils/ptis-floor.utils';
+import { useTranslations } from 'next-intl';
 
 export interface OldDetailsPanelProps {
   wingDetailsId?: number | null;
@@ -25,6 +25,7 @@ export const OldDetailsPanel: React.FC<OldDetailsPanelProps> = ({
   selectedFloor,
   onClose,
 }) => {
+  const t = useTranslations('ptisRedesign.oldDetails');
   const [items, setItems] = useState<MappedPropertySocietyWiseItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -148,12 +149,12 @@ export const OldDetailsPanel: React.FC<OldDetailsPanelProps> = ({
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-blue-800" />
           <div>
-            <h3 className="text-xs font-bold tracking-tight">Mapped Properties (Society / Wing Wise)</h3>
+            <h3 className="text-xs font-bold tracking-tight">{t('title') || 'Mapped Properties (Society / Wing Wise)'}</h3>
             <p className="text-[10px] text-blue-800/80">
-              {wingName ? `Wing: ${wingName}` : 'All Wings (Entire Society)'}
-              {selectedFloor ? ` • Floor: ${selectedFloor}` : ''}
-              {wingDetailsId ? ` • Wing Details ID: ${wingDetailsId}` : ''}
-              {totalCount > 0 ? ` • ${filteredItems.length} of ${totalCount} Record${totalCount > 1 ? 's' : ''}` : ''}
+              {wingName ? `${t('wing') || 'Wing'}: ${wingName}` : (t('allWings') || 'All Wings (Entire Society)')}
+              {selectedFloor ? ` • ${t('floor') || 'Floor'}: ${selectedFloor}` : ''}
+              {wingDetailsId ? ` • ${t('wingDetailsId') || 'Wing Details ID'}: ${wingDetailsId}` : ''}
+              {totalCount > 0 ? ` • ${t('records', { count: filteredItems.length, total: totalCount }) || `${filteredItems.length} of ${totalCount} Records`}` : ''}
             </p>
           </div>
         </div>
@@ -163,7 +164,7 @@ export const OldDetailsPanel: React.FC<OldDetailsPanelProps> = ({
             onClick={onClose}
             className="p-1 rounded-md hover:bg-blue-200 text-blue-900 transition-colors cursor-pointer"
             aria-label="Close"
-            title="Close Old Details Table"
+            title={t('closeTitle') || 'Close Old Details Table'}
           >
             <X className="w-4 h-4" />
           </button>

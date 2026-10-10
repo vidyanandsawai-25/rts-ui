@@ -10,7 +10,7 @@ export function InventoryConditionMasterLayoutContent({
 }: {
   children: React.ReactNode;
 }) {
-  const t = useTranslations("asset.configuration.header");
+  const t = useTranslations("inventoryCondition.configuration.header");
   const tMaster = useTranslations("asset.masterNames");
   const { hasError } = useInventoryConditionMasterError();
 

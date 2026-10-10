@@ -91,10 +91,24 @@ export function normalizeEligibleCountResponse(data: Record<string, unknown>): E
   const eligible = Number(readField(data, "eligible", "Eligible") ?? 0);
   const total = Number(readField(data, "total", "Total") ?? 0);
   const skipped = Number(readField(data, "skipped", "Skipped") ?? 0);
+  const alreadyTaxed = Number(readField(data, "alreadyTaxed", "AlreadyTaxed") ?? 0);
+  const rawSkipReasons = readField(data, "skipReasons", "SkipReasons");
+  const skipReasons = Array.isArray(rawSkipReasons)
+    ? rawSkipReasons
+        .map((r) => {
+          const obj = r as Record<string, unknown>;
+          const code = readField(obj, "code", "Code");
+          const count = Number(readField(obj, "count", "Count") ?? 0);
+          return typeof code === "string" && Number.isFinite(count) ? { code, count } : null;
+        })
+        .filter((r): r is { code: string; count: number } => r !== null)
+    : undefined;
 
   return {
     eligible: Number.isFinite(eligible) ? eligible : 0,
     total: Number.isFinite(total) ? total : 0,
     skipped: Number.isFinite(skipped) ? skipped : 0,
+    alreadyTaxed: Number.isFinite(alreadyTaxed) ? alreadyTaxed : 0,
+    skipReasons,
   };
 }

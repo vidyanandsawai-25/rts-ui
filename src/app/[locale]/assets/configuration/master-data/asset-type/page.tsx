@@ -17,7 +17,7 @@ interface PageProps {
   searchParams: Promise<RawSearchParams>;
 }
 
-const ALLOWED_SORT_COLUMNS = ["typeCode", "typeName", "description", "isActive"] as const;
+const ALLOWED_SORT_COLUMNS = ["typeCode", "typeName", "typeNameLocal", "description", "isActive"] as const;
 
 export default async function Page({ params, searchParams }: PageProps): Promise<React.ReactElement> {
   const { locale } = await params;
@@ -38,7 +38,7 @@ export default async function Page({ params, searchParams }: PageProps): Promise
     pageNumber,
     pageSize,
     searchTerm || "",
-    sortBy || "typeName",
+    sortBy || "",
     sortOrder || "asc"
   );
 

@@ -99,6 +99,7 @@
   "apiErrors": {
     "duplicateRecord": "कृपया फोटो प्रकार कोड तपासा - डुप्लिकेट रेकॉर्डला परवानगी नाही.",
     "AssetPhotoType_PhotoTypeCode_Duplicate": "मालमत्ता फोटो प्रकार कोड आधीपासूनच अस्तित्वात आहे",
+    "AssetPhotoType_PhotoTypeName_Duplicate": "मालमत्ता फोटो प्रकाराचे नाव आधीपासूनच अस्तित्वात आहे",
     "AssetPhotoType_AssetCategoryId_Invalid": "अवैध मालमत्ता वर्ग निवडला आहे",
     "AssetPhotoType_AssetTypeId_Invalid": "अवैध मालमत्ता प्रकार निवडला आहे",
     "A record with the same details already exists": "समान तपशीलांचे रेकॉर्ड आधीपासूनच अस्तित्वात आहे.",
@@ -107,7 +108,12 @@
     "notFound": "मालमत्ता फोटो प्रकार आढळला नाही.",
     "inUse": "हा मालमत्ता फोटो प्रकार निष्क्रिय/डिलीट करता येत नाही कारण तो इतर मालमत्ता रेकॉर्डमध्ये वापरला गेला आहे.",
     "operationFailed": "ऑपरेशन यशस्वी झाले नाही. कृपया नंतर पुन्हा प्रयत्न करा.",
-    "referencedIn": "{tables} तक्त्यात वापरलेले असल्याने हा {entity} निष्क्रिय किंवा डिलीट करता येत नाही."
+    "referenceBlocked": {
+      "assetPhotoType": {
+        "deleteInUse": "हा मालमत्ता फोटो प्रकार डिलीट करता येत नाही कारण तो वापरात आहे.",
+        "deactivateInUse": "हा मालमत्ता फोटो प्रकार निष्क्रिय करता येत नाही कारण तो वापरात आहे."
+      }
+    }
   },
   "success": {
     "created": "नवीन मालमत्ता फोटो प्रकार यशस्वीरित्या तयार केला: {code}",

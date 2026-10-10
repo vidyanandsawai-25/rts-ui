@@ -35,7 +35,7 @@ const MASCOT_MAP: Record<MascotMood, string> = {
  */
 export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
   className = 'w-14 h-14',
-  size = 56,
+  size,
   mood = 'neutral',
 }) => {
   const imageSrc = MASCOT_MAP[mood] || MASCOT_MAP.neutral;
@@ -43,7 +43,7 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
   return (
     <motion.div
       className={`relative shrink-0 flex items-center justify-center cursor-pointer select-none ${className}`}
-      style={{ width: size, height: size }}
+      style={size ? { width: size, height: size } : undefined}
       animate={
         mood === 'sad'
           ? {

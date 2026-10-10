@@ -3,11 +3,14 @@
 import {
   fetchApartmentQcTopSection,
   patchApartmentQcTopSection,
+  fetchApartmentQcCertificateGrid,
   type ApartmentQcTopSectionDto,
   type UpdateApartmentQcTopSectionPayload,
+  type FetchApartmentQcCertificateGridParams,
 } from './apartment-qc-top-section.service';
 import { mapApartmentQcTopSectionToPropertyMasterData } from './apartment-qc-top-section.mapper';
 import { getPropertySocietyDetails } from '@/lib/api/property-society.service';
+import { getCertificateTypeMaster } from '@/lib/api/building.service';
 import type { PropertyMasterData } from '@/types/property-tax/apartment';
 import { syncSocietyAndKycDetails } from './apartment-qc-top-section.sync';
 
@@ -34,7 +37,7 @@ export async function getApartmentQcTopSectionAction(
   ]);
 
   if (topRes.success && topRes.data) {
-    const mapped = mapApartmentQcTopSectionToPropertyMasterData(topRes.data);
+    const mapped = mapApartmentQcTopSectionToPropertyMasterData(topRes.data, socDetails);
     return {
       success: true,
       data: {
@@ -46,34 +49,11 @@ export async function getApartmentQcTopSectionAction(
   }
 
   if (socDetails) {
+    const mapped = mapApartmentQcTopSectionToPropertyMasterData(null, socDetails);
     return {
       success: true,
       data: {
-        propertyNo: '-',
-        upic: '-',
-        societyName: socDetails.societyName || '-',
-        ownerName: socDetails.landOwnerName || '-',
-        status: 'ACTIVE PROPERTY',
-        category: 'Apartment',
-        propertyDescriptionRegional: '-',
-        division: '-',
-        taxZone: '-',
-        taxZoneAndName: '-',
-        subZoneCsnNo: '-',
-        plotNo: '-',
-        address: socDetails.societyAddress || '-',
-        societyAddress: socDetails.societyAddress || '-',
-        plotArea: '-',
-        carpetBuiltUpArea: '-',
-        oldCarpetBuiltUp: '-',
-        totalFloors: '-',
-        totalPropertiesResCommAmen: '-',
-        secretaryName: socDetails.secretaryName || '-',
-        secretaryMobileNo: socDetails.secretaryMobileNo || '-',
-        secretaryEmail: socDetails.secretaryEmailId || '-',
-        builderName: socDetails.builderName || '-',
-        landOwnerName: socDetails.landOwnerName || '-',
-        societyEmail: socDetails.societyEmailId || '-',
+        ...mapped,
         propertyId: numPropId,
       },
     };
@@ -101,11 +81,40 @@ export async function updateApartmentQcTopSectionAction(
   }
 
   const numPropId = Number(propertyId);
-  const patchRes = await patchApartmentQcTopSection(propertyId, payload);
+  const [patchRes, syncResult] = await Promise.all([
+    patchApartmentQcTopSection(propertyId, payload),
+    numPropId > 0 ? syncSocietyAndKycDetails(numPropId, payload) : Promise.resolve({ success: true }),
+  ]);
 
-  if (!isNaN(numPropId) && numPropId > 0 && patchRes.success) {
-    await syncSocietyAndKycDetails(numPropId, payload);
+  if (patchRes.success) {
+    return patchRes;
+  }
+
+  if (syncResult && typeof syncResult === 'object' && 'success' in syncResult && syncResult.success) {
+    return {
+      success: true,
+      message: 'Society details updated successfully.',
+    };
   }
 
   return patchRes;
+}
+
+export async function getApartmentQcCertificateGridAction(
+  params: FetchApartmentQcCertificateGridParams | number | string
+): Promise<{ success: boolean; data?: unknown; error?: string }> {
+  return await fetchApartmentQcCertificateGrid(params);
+}
+
+export async function getPropertyCertificateTypeMasterAction(): Promise<{
+  success: boolean;
+  data?: unknown[];
+  error?: string;
+}> {
+  const res = await getCertificateTypeMaster();
+  return {
+    success: res.success,
+    data: res.data,
+    error: res.message || res.error,
+  };
 }

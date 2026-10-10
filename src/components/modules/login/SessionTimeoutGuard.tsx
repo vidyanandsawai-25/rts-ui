@@ -257,20 +257,12 @@ export function SessionTimeoutGuard() {
           sessionStorage.setItem('is_tab_active_session', 'true');
         } catch {}
       } else if (!isTabSessionActive) {
-        const expiresUnix = knownExpiryUnixRef.current ?? getSessionExpiresAtUnixFromCookie();
-        if (expiresUnix !== null && isSessionExpiredAtUnix(expiresUnix)) {
-          redirectingRef.current = true;
-          clearLegacyAuthClientStorage();
-          try {
-            sessionStorage.removeItem('is_tab_active_session');
-          } catch {}
-          window.location.replace(`/${locale}/login?error=${SESSION_EXPIRED_LOGIN_ERROR}&requireVerification=1`);
-          return;
-        }
-
+        redirectingRef.current = true;
         try {
-          sessionStorage.setItem('is_tab_active_session', 'true');
+          sessionStorage.removeItem('is_tab_active_session');
         } catch {}
+        window.location.replace(`/${locale}/login`);
+        return;
       }
     };
 

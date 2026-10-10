@@ -1,4 +1,4 @@
-import { validateDesignationForm } from '@/hooks/asset-masters/designation/validation';
+import { validateDesignationForm, sanitizeFieldValue } from '@/hooks/asset-masters/designation/validation';
 import { DesignationFormModel } from '@/types/asset-masters/designation.types';
 import { describe, test, expect } from 'vitest';
 
@@ -113,5 +113,30 @@ describe('validateDesignationForm', () => {
 
     const errorsEdit = validateDesignationForm({ ...validModel, isActive: false }, t, true);
     expect(errorsEdit).toEqual({});
+  });
+
+  test('designationName and designationLocal accept Unicode letters and spaces', () => {
+    const validModel: DesignationFormModel = {
+      ...baseModel,
+      designationCode: 'CODE1',
+      designationName: 'Manager',
+      designationLocal: 'व्यवस्थापक',
+      owningDepartmentId: 1,
+      isActive: true,
+    };
+    const errors = validateDesignationForm(validModel, t, false);
+    expect(errors.designationName).toBeUndefined();
+    expect(errors.designationLocal).toBeUndefined();
+  });
+});
+
+describe('sanitizeFieldValue for Designation', () => {
+  test('sanitizes designationName using NAME_ONLY (removing numbers & special chars)', () => {
+    expect(sanitizeFieldValue('designationName', 'Manager123!')).toBe('Manager');
+    expect(sanitizeFieldValue('designationName', 'Senior   Engineer')).toBe('Senior Engineer');
+  });
+
+  test('sanitizes designationLocal using NAME_ONLY (removing numbers & special chars)', () => {
+    expect(sanitizeFieldValue('designationLocal', 'व्यवस्थापक 123!')).toBe('व्यवस्थापक ');
   });
 });

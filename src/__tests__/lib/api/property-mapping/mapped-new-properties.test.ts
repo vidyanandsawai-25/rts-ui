@@ -57,6 +57,24 @@ describe('property-mapping.service - getMappedNewProperties & getMappedOldProper
       expect(result?.items[0].flatOrShopNo).toBe('1');
     });
 
+    it('should include WingDetailsId query parameter when wingDetailsId is passed', async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({
+        success: true,
+        data: { items: [], totalCount: 0, pageNumber: 1, pageSize: 25, totalPages: 0, hasPrevious: false, hasNext: false },
+      });
+
+      await getMappedNewProperties({
+        oldPropertyId: 2565750,
+        wingDetailsId: 4321,
+        pageSize: 25,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        '/PropertyMapMaster/mapped-new-properties?OldPropertyId=2565750&WingDetailsId=4321&PageSize=25',
+        { cache: 'no-store' }
+      );
+    });
+
     it('should gracefully handle API failure without throwing', async () => {
       vi.mocked(apiClient.get).mockRejectedValue(new Error('Network error'));
 

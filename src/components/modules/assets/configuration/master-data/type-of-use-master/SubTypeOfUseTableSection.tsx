@@ -2,6 +2,7 @@
 
 import { Layers3 } from "lucide-react";
 import { SearchInput } from "@/components/common";
+import { useTranslations } from "next-intl";
 import { MasterTable } from "@/components/common/MasterTable";
 import { EditButton, DeleteButton, AddButton } from "@/components/common/ActionButtons";
 import type { Column } from "@/components/common/MasterTable";
@@ -55,6 +56,7 @@ export function SubTypeOfUseTableSection({
   loading = false,
   selectedType,
 }: SubTypeOfUseTableSectionProps) {
+  const t = useTranslations("assetTypeOfUse");
   return (
     <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white shadow-sm lg:h-[600px] flex flex-col">
       {/* Header */}
@@ -87,6 +89,7 @@ export function SubTypeOfUseTableSection({
             size="md"
             label={addSubtypeLabel}
             onClick={onAddSubtype}
+            className="!bg-[#0f3d8a] hover:!bg-[#0b2f6b] !text-white"
           />
         </div>
       </div>
@@ -94,6 +97,8 @@ export function SubTypeOfUseTableSection({
       {/* Table */}
       <div className="p-4 flex-1 overflow-y-auto">
         <MasterTable<AssetSubTypeOfUse>
+          theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+          footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
           columns={columns}
           data={subtypes}
           loading={loading}
@@ -113,6 +118,7 @@ export function SubTypeOfUseTableSection({
           )}
           actionLabel={actionsLabel}
           paginationConfig={{ enabled: true, showPageSizeSelector: true }}
+          emptyText={t("noDataFound")}
           getRowKey={(row) => String(row.id)}
         />
       </div>

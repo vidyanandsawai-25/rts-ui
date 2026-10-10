@@ -8,6 +8,7 @@ import { RoomTypeShapeFields } from './components/RoomInputBox/RoomTypeShapeFiel
 import { DimensionAreaFields } from './components/RoomInputBox/DimensionAreaFields';
 import { OffsetOuterFields } from './components/RoomInputBox/OffsetOuterFields';
 import { TotalActionFields } from './components/RoomInputBox/TotalActionFields';
+import { isRecordOpenPlot } from '@/hooks/ptis/floorSubmission/useFloorAreaValidation';
 
 export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObject<Record<string, HTMLElement | null>>; isUtilityCategory?: boolean }> = ({
   formData,
@@ -61,16 +62,7 @@ export const InputBox: React.FC<InputBoxProps & { focusRefs: React.MutableRefObj
     formData.outer
   ), [calculateTotal, calculatedArea, formData.roomCount, currentRoomOffsets, formData.outer]);
 
-  const isOpenSpace =
-    floorData?.selectedFloorType === 'OpenPlot' ||
-    floorData?.isOpenPlot === true ||
-    String(floorData?.floorId) === '77' ||
-    String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
-    String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
-    String(floorData?.floor || '').toLowerCase().includes('open plot') ||
-    String(floorData?.floorDescription || '').toLowerCase().includes('open plot') ||
-    String(floorData?.floor || '').toLowerCase().includes('open space') ||
-    String(floorData?.floorDescription || '').toLowerCase().includes('open space');
+  const isOpenSpace = isRecordOpenPlot(floorData);
 
   return (
     <div className="relative z-30 mb-2 overflow-visible rounded-lg border border-gray-300 shadow-lg animate-fade-slide-up">

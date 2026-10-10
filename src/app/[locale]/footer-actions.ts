@@ -27,10 +27,12 @@ export interface FooterActionPayload {
   capitalExpand?: string | string[];
   dualExpand?: string | string[];
   categoryId?: number;
+  categoryName?: string;
   societyDetailId?: number;
   societyId?: string;
   wingDetailId?: string;
   wingId?: string;
+  wingName?: string;
   isRedesign?: boolean;
 }
 
@@ -59,9 +61,11 @@ const ptisEditRedirectSchema = z.object({
   societyId: z.string().optional(),
   wingDetailId: z.string().optional(),
   wingId: z.string().optional(),
+  wingName: z.string().optional(),
   rateableExpand: z.union([z.string(), z.array(z.string())]).optional(),
   capitalExpand: z.union([z.string(), z.array(z.string())]).optional(),
   dualExpand: z.union([z.string(), z.array(z.string())]).optional(),
+  categoryId: z.coerce.number().optional(),
   isApartment: z.boolean().optional(),
 });
 
@@ -136,9 +140,11 @@ export async function handleFooterAction(
           societyId,
           wingDetailId,
           wingId,
+          wingName,
           rateableExpand,
           capitalExpand,
           dualExpand,
+          categoryId,
           isApartment,
         } = validationResult.data;
 
@@ -151,13 +157,24 @@ export async function handleFooterAction(
         if (appartmentTab) params.set('appartmentTab', appartmentTab);
         if (subTab) params.set('subTab', subTab);
         if (showDetails) params.set('showDetails', showDetails);
-        const activeSocId = societyDetailId || societyId;
-        if (activeSocId) {
-          params.set('societyDetailId', String(activeSocId));
-          params.set('societyId', String(activeSocId));
+
+        const isIndividualProp = categoryId === 2 || (categoryId !== undefined && categoryId !== 1);
+        const isApartmentProp = !isIndividualProp && (isApartment || categoryId === 1);
+
+        if (isApartmentProp) {
+          params.set('parentPropertyId', String(propertyId));
+          const activeSocId = societyDetailId || societyId;
+          if (activeSocId) {
+            params.set('societyDetailId', String(activeSocId));
+            params.set('societyId', String(activeSocId));
+          }
+          const activeWingId = wingDetailId || wingId;
+          if (activeWingId) {
+            params.set('wingDetailId', String(activeWingId));
+            params.set('wingId', String(activeWingId));
+          }
+          if (wingName) params.set('wingName', String(wingName));
         }
-        if (wingDetailId) params.set('wingDetailId', String(wingDetailId));
-        if (wingId) params.set('wingId', String(wingId));
 
         const handleExpand = (key: string, val: string | string[] | undefined) => {
           if (val) {
@@ -173,13 +190,17 @@ export async function handleFooterAction(
         handleExpand('dualExpand', dualExpand);
 
         const activeTabKey = tab || (isApartment ? 'buildingpermission' : 'propertydetails');
-        const resolvedTabKey = (isApartment && (activeTabKey === 'propertydetails' || activeTabKey === 'kycdetails' || activeTabKey === 'societydetails' || activeTabKey === 'wingdetails'))
-          ? 'buildingpermission'
-          : ((activeTabKey === 'societydetails' || activeTabKey === 'wingdetails') ? 'propertydetails' : activeTabKey);
+        let resolvedTabKey = (activeTabKey === 'societydetails' || activeTabKey === 'wingdetails')
+          ? 'propertydetails'
+          : activeTabKey;
+        if (isApartment && (resolvedTabKey === 'propertydetails' || resolvedTabKey === 'wingintelligence')) {
+          resolvedTabKey = 'buildingpermission';
+        }
         const config = MAIN_TO_QDE_MAP[resolvedTabKey] || (isApartment ? MAIN_TO_QDE_MAP.buildingpermission : MAIN_TO_QDE_MAP.propertydetails);
 
         params.set('propertyId', String(propertyId));
         params.set('returnTab', isApartment ? 'apartment' : config.mainTabId);
+        params.set('from', isApartment ? 'apartment' : 'ptis');
         params.set('hideWing', 'true');
         params.set('hideSociety', 'true');
         params.set('fromFooterEdit', 'true');
@@ -200,6 +221,7 @@ export async function handleFooterAction(
         if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
         if (payload.categoryId) params.set('categoryId', String(payload.categoryId));
         if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
+        if (payload.wingDetailId) params.set('wingDetailId', String(payload.wingDetailId));
 
         const queryString = params.toString();
         const suffix = queryString ? `?${queryString}` : '';
@@ -215,6 +237,8 @@ export async function handleFooterAction(
         if (payload.wardNo) params.set('wardNo', payload.wardNo);
         if (payload.propertyNo) params.set('propertyNo', payload.propertyNo);
         if (payload.partitionNo) params.set('partitionNo', payload.partitionNo);
+        if (payload.societyDetailId) params.set('societyDetailId', String(payload.societyDetailId));
+        if (payload.wingDetailId) params.set('wingDetailId', String(payload.wingDetailId));
         params.set('from', 'ptis');
 
         const queryString = params.toString();
@@ -244,6 +268,21 @@ export async function handleFooterAction(
         if (!payload.propertyId) {
           return { success: false, error: 'error.propertyIdMissing' };
         }
+        const isApartmentCategory =
+          payload.categoryId === 1 ||
+          payload.categoryId === 0 ||
+          String(payload.categoryName || '').toLowerCase().includes('apartment');
+        const hasPartitionNo = Boolean(
+          payload.partitionNo &&
+          payload.partitionNo !== '0' &&
+          payload.partitionNo.trim() !== '' &&
+          payload.partitionNo.trim() !== '-'
+        );
+
+        if (isApartmentCategory && !hasPartitionNo) {
+          return { success: false, error: '' };
+        }
+
         const payloadLocale = payload.locale || 'en';
         const params = new URLSearchParams();
         params.set('propertyId', payload.propertyId);

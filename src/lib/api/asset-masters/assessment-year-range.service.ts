@@ -273,7 +273,7 @@ export async function createAssessmentYearRange(
       fromYear,
       toYear,
       isActive: data.isActive,
-      createdBy: 1, // TODO: Get from auth context
+      createdBy: data.createdBy,
     };
 
     const response = await apiClient.post<unknown>(`/${config.endpoint}`, payload);
@@ -317,7 +317,7 @@ export async function updateAssessmentYearRange(
       fromYear,
       toYear,
       isActive: data.isActive,
-      updatedBy: data.updatedBy ?? 1, // TODO: Get from auth context
+      updatedBy: data.updatedBy,
     };
 
     const response = await apiClient.put<unknown>(

@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
+import { parseReferenceBlockedMessage } from "@/lib/utils/asset-utils/shared-error-mapping";
 import {
   createAssetPhotoAction,
   updateAssetPhotoAction,
@@ -130,10 +131,40 @@ export function useAssetPhotoForm({
     try {
       const res = isEdit ? await updateAssetPhotoAction(formData) : await createAssetPhotoAction(formData);
       if (!res.success) {
-        toast.error(mapAssetPhotoApiError(res, t, tCommon));
+        if (res.validationErrors && Object.keys(res.validationErrors).length > 0) {
+          const fieldErrors: Partial<Record<keyof AssetPhotoTypeFormModel, string>> = {};
+          for (const [key, val] of Object.entries(res.validationErrors)) {
+            const rawError = Array.isArray(val) ? val[0] : val;
+            const camelKey = key.charAt(0).toLowerCase() + key.slice(1);
+            
+            // i18n mapping for duplicate check (handles Code only, Name only, and Both)
+            let finalError = rawError;
+            if (rawError.toLowerCase().includes("already exists") || rawError.toLowerCase().includes("duplicate")) {
+              if (camelKey === "photoTypeCode") {
+                finalError = t("apiErrors.AssetPhotoType_PhotoTypeCode_Duplicate") || rawError;
+              } else if (camelKey === "photoTypeName") {
+                finalError = t("apiErrors.AssetPhotoType_PhotoTypeName_Duplicate") || rawError;
+              } else {
+                finalError = t("apiErrors.duplicateRecord") || rawError;
+              }
+            }
+            
+            fieldErrors[camelKey as keyof AssetPhotoTypeFormModel] = finalError;
+          }
+          setErrors(prev => ({ ...prev, ...fieldErrors }));
+          // Show the first field error in the toast so the user sees a message instead of just red fields
+          toast.error(Object.values(fieldErrors)[0] ?? mapAssetPhotoApiError(res, t, tCommon));
+          return;
+        }
+        const errorMessage = mapAssetPhotoApiError(res, t, tCommon);
+        if (parseReferenceBlockedMessage(res.message)?.operation === "deactivate") {
+          setErrors(prev => ({ ...prev, isActive: errorMessage }));
+        }
+        toast.error(errorMessage);
         return;
       }
-      toast.success(res.message || t(isEdit ? "success.updated" : "success.created", { code: formData.photoTypeCode }));
+      const successMessage = t(isEdit ? "success.updated" : "success.created", { code: formData.photoTypeCode });
+      toast.success(successMessage || res.message);
       onSuccess();
       closeAndRoute();
     } finally {
@@ -144,6 +175,7 @@ export function useAssetPhotoForm({
   const handleToggleStatus = useCallback((checked: boolean) => {
     setIsActive(checked);
     setFormData(p => ({ ...p, isActive: checked }));
+    setErrors(p => ({ ...p, isActive: "" }));
   }, []);
 
   const handleToggleRequired = useCallback((checked: boolean) => setFormData(p => ({ ...p, isRequired: checked })), []);

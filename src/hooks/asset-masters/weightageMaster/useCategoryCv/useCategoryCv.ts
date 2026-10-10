@@ -36,8 +36,8 @@ export function useCategoryCv({
     leftSortBy: initialLeftSortBy,
     leftSortOrder: initialLeftSortOrder,
 }: UseCategoryCvProps) {
-    const t = useTranslations("useCategoryFactorMaster");
-    const tW = useTranslations("weightageMaster");
+    const t = useTranslations("assetWeightageMaster.subType");
+    const tW = useTranslations("assetWeightageMaster");
     const tCommon = useTranslations("common");
     const router = useRouter();
     const searchParams = useSearchParams();

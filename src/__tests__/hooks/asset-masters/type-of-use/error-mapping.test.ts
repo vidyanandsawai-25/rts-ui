@@ -1,55 +1,52 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getErrorMessage } from "@/hooks/asset-masters/type-of-use/error-mapping";
+import { describe, expect, it } from "vitest";
+import { createTranslator } from "next-intl";
+import { getErrorMessage, isDeactivateBlockedMessage } from "@/hooks/asset-masters/type-of-use/error-mapping";
+import assetTypeOfUseEn from "@/i18n/locales/en/assetTypeOfUse.json";
+import commonEn from "@/i18n/locales/en/common.json";
 
-describe("TypeOfUse error-mapping getErrorMessage", () => {
-  const mockT = vi.fn((key: string, values?: Record<string, string>) => {
-    if (key === "apiErrors.referencedIn") {
-      return `Cannot deactivate or delete this ${values?.entity} because it is referenced in: ${values?.tables}.`;
+const t = createTranslator({ locale: "en", messages: { assetTypeOfUse: assetTypeOfUseEn }, namespace: "assetTypeOfUse" });
+const tCommon = createTranslator({ locale: "en", messages: { common: commonEn }, namespace: "common" });
+const map = (message: string, statusCode = 400) => getErrorMessage(message, statusCode, t as never, tCommon as never, "Type of Use");
+
+const hasMasters = (entity: string, verb: "deleted" | "deactivated", masters: string) =>
+  `This ${entity} cannot be ${verb} because it has ${masters}. Please delete all ${masters} for this ${entity} first.`;
+const inUse = (entity: string, verb: "deleted" | "deactivated") => `This ${entity} cannot be ${verb} because it is in use.`;
+
+// Backend reference-check messages (ReferenceValidationService) for the three Type Of Use masters.
+const CASES: Array<[string, string[]]> = [
+  ["Type Of Use Group", ["Type Of Uses", "CV Rates"]],
+  ["Type Of Use", ["Sub Type Of Uses", "Use Factors"]],
+  ["Sub Type Of Use", ["Use Factors"]],
+];
+
+describe("type-of-use getErrorMessage reference errors", () => {
+  describe.each(CASES)("%s", (entity, masters) => {
+    it.each(["deleted", "deactivated"] as const)("translates the %s in-use message", (verb) => {
+      expect(map(inUse(entity, verb))).toBe(inUse(entity, verb));
+    });
+
+    it.each(["deleted", "deactivated"] as const)("translates the %s message with one child master", (verb) => {
+      const message = hasMasters(entity, verb, masters[0]);
+      expect(map(message)).toBe(message);
+    });
+
+    if (masters.length > 1) {
+      it.each(["deleted", "deactivated"] as const)("translates the %s message with two child masters", (verb) => {
+        const message = hasMasters(entity, verb, `${masters[0]} and ${masters[1]}`);
+        expect(map(message)).toBe(message);
+      });
     }
-    if (key === "type.title") return "Type of Use";
-    if (key === "subtype.title" || key === "subType.title") return "Sub-Types of Use";
-    if (key === "group.title") return "Use Group";
-    if (key === "apiErrors.inUse") return "Record is in use.";
-    if (key === "apiErrors.operationFailed") return "Something went wrong.";
-    return key;
-  });
 
-  const mockTCommon = vi.fn((key: string) => {
-    if (key === "errors.generic") return "Something went wrong.";
-    if (key === "errors.deleteError") return "Failed to delete record.";
-    return key;
-  });
-
-  beforeEach(() => {
-    mockT.mockClear();
-    mockTCommon.mockClear();
-  });
-
-  it("should dynamically parse referencedIn messages for type of use", () => {
-    const rawMessage = "Cannot deactivate/delete this AssetTypeOfUseMaster because it is referenced in: Asset SubType Of Use Master";
-    const result = getErrorMessage(rawMessage, 400, mockT, mockTCommon, "Type of Use");
-
-    expect(result).toBe("Cannot deactivate or delete this Type of Use because it is referenced in: Asset SubType Of Use Master.");
-    expect(mockT).toHaveBeenCalledWith("apiErrors.referencedIn", {
-      entity: "Type of Use",
-      tables: "Asset SubType Of Use Master",
+    it("detects only the deactivate messages", () => {
+      expect(isDeactivateBlockedMessage(hasMasters(entity, "deactivated", masters[0]))).toBe(true);
+      expect(isDeactivateBlockedMessage(inUse(entity, "deactivated"))).toBe(true);
+      expect(isDeactivateBlockedMessage(hasMasters(entity, "deleted", masters[0]))).toBe(false);
+      expect(isDeactivateBlockedMessage(inUse(entity, "deleted"))).toBe(false);
     });
   });
 
-  it("should dynamically parse referencedIn messages for subtype of use", () => {
-    const rawMessage = "Cannot deactivate/delete this AssetSubTypeOfUse because it is referenced in: Some Other Table";
-    const result = getErrorMessage(rawMessage, 400, mockT, mockTCommon, "Sub-Types of Use");
-
-    expect(result).toBe("Cannot deactivate or delete this Sub-Types of Use because it is referenced in: Some Other Table.");
-  });
-
-  it("should fall back to apiErrors.inUse for 409 status code without match", () => {
-    const result = getErrorMessage("Some random conflict message", 409, mockT, mockTCommon, "Type of Use");
-    expect(result).toBe("Record is in use.");
-  });
-
-  it("should fall back to a generic error for non-matching 500 error", () => {
-    const result = getErrorMessage("Server exploded", 500, mockT, mockTCommon, "Type of Use");
-    expect(result).toBe("Something went wrong.");
+  it("leaves other messages to the shared mapping", () => {
+    expect(isDeactivateBlockedMessage("Group Code already exists")).toBe(false);
+    expect(map("Server exploded", 500)).toBe(assetTypeOfUseEn.apiErrors.operationFailed);
   });
 });

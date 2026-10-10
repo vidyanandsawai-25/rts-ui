@@ -50,7 +50,8 @@ function normalizeRateableValueResponse(data: RateableValueResponse): RateableVa
  */
 export async function getRateableValue(
     propertyId: number | string,
-    financeYear?: number
+    financeYear?: number,
+    forceRecalculate: boolean = true
 ): Promise<ActionResult<RateableValueResponse>> {
     try {
         const propertyIdNum = validatePropertyId(propertyId);
@@ -59,11 +60,24 @@ export async function getRateableValue(
             return { success: false, error: 'Invalid property ID' };
         }
 
-        const endpoint = financeYear
-            ? `/rateable-value/${propertyIdNum}?financeYear=${financeYear}`
+        const queryParams = new URLSearchParams();
+        if (financeYear) {
+            queryParams.set('financeYear', String(financeYear));
+        }
+        if (forceRecalculate !== undefined) {
+            queryParams.set('forceRecalculate', String(forceRecalculate));
+        }
+
+        const queryString = queryParams.toString();
+        const endpoint = queryString
+            ? `/rateable-value/${propertyIdNum}?${queryString}`
             : `/rateable-value/${propertyIdNum}`;
 
-        const response = await apiClient.post<RateableValueResponse>(endpoint, undefined, {
+        const payload = {
+            forceRecalculate,
+        };
+
+        const response = await apiClient.post<RateableValueResponse>(endpoint, payload, {
             cache: 'no-store',
         });
 

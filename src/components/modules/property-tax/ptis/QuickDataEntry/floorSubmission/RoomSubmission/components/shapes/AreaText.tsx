@@ -15,13 +15,17 @@ export const AreaText: React.FC<AreaTextProps> = ({
     y,
     roomNo,
 }) => {
-    if (area <= 0) return null;
+    if (area <= 0 || !Number.isFinite(area)) return null;
+    const textStr = `${area.toFixed(2)} ${unit}`;
+    const boxWidth = Math.max(90, textStr.length * 8.5 + 16);
+    const rectX = x - boxWidth / 2;
+
     return (
         <g className="animate-in fade-in duration-500">
             {roomNo && (
                 <text
                     x={x}
-                    y={y - 25}
+                    y={y - 22}
                     fill="#1E3A8A"
                     fontSize="16"
                     fontWeight="900"
@@ -32,13 +36,13 @@ export const AreaText: React.FC<AreaTextProps> = ({
                 </text>
             )}
             <rect
-                x={x - 50}
+                x={rectX}
                 y={y - 12}
-                width="100"
+                width={boxWidth}
                 height="24"
                 rx="6"
                 fill="white"
-                fillOpacity="0.9"
+                fillOpacity="0.95"
                 stroke="#10B981"
                 strokeWidth="1.5"
                 className="drop-shadow-sm"
@@ -51,7 +55,7 @@ export const AreaText: React.FC<AreaTextProps> = ({
                 fontWeight="700"
                 textAnchor="middle"
             >
-                {area.toFixed(2)} {unit}
+                {textStr}
             </text>
         </g>
     );

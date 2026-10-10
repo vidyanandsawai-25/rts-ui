@@ -28,8 +28,13 @@
   "list": {
     "loading": "Refreshing data...",
     "headers": {
+      "typeCode": "Grievance Type Code",
       "name": "Category Name",
+      "nameLocal": "Local Name",
+      "codeFormat": "Code Format",
       "sla": "SLA (Days)",
+      "displaySequence": "Sequence",
+      "targetTableName": "Target Table",
       "status": "Status",
       "description": "Description",
       "actions": "Actions"
@@ -55,7 +60,7 @@
     }
   },
   "filters": {
-    "searchPlaceholder": "Search by category name or description...",
+    "searchPlaceholder": "Search by category name, code, or description...",
     "filterBy": "Filter By",
     "allStatus": "All Statuses",
     "active": "Active",
@@ -74,25 +79,51 @@
       "add": "Add Category"
     },
     "fields": {
+      "typeCode": "Grievance Type Code",
+      "typeCodePlaceholder": "e.g., GRV_WATER_LEAK",
       "name": "Category Name",
       "namePlaceholder": "Enter category name",
+      "nameLocal": "Local Name",
+      "nameLocalPlaceholder": "Enter local category name",
+      "codeFormat": "Code Format",
+      "codeFormatPlaceholder": "e.g., WTR-{YYYY}-{MM}-{DD}-{SEQ}",
       "sla": "Resolution SLA (Days)",
-      "slaPlaceholder": "e.g., 7",
+      "slaPlaceholder": "e.g., 3",
+      "displaySequence": "Display Sequence",
+      "displaySequencePlaceholder": "e.g., 1",
+      "targetTableName": "Target Table Name",
+      "targetTableNamePlaceholder": "e.g., tbl_water_supply_grievances",
+      "requiresFieldCorrection": "Requires Field Correction",
+      "requiresFieldCorrectionDesc": "Check if complaint requires field verification and correction",
       "description": "Description",
       "descPlaceholder": "Enter detailed description",
       "active": "Active Status",
       "activeDesc": "Toggle to enable or disable this category"
     },
     "errors": {
-      "nameReq": "Category name is required",
-      "nameMinLength": "Name must be at least 3 characters",
-      "nameMaxLength": "Name cannot exceed 100 characters",
+      "typeCodeReq": "Grievance type code is required",
+      "typeCodeMaxLength": "Type code cannot exceed 50 characters",
+      "typeCodeInvalidFormat": "Type code must only contain letters, numbers, underscores, and hyphens",
+      "typeNameReq": "Category name is required",
+      "typeNameMaxLength": "Name cannot exceed 200 characters",
+      "typeNameLocalReq": "Local name is required",
+      "typeNameLocalMaxLength": "Local name cannot exceed 200 characters",
+      "codeFormatReq": "Code format is required",
+      "codeFormatMaxLength": "Code format cannot exceed 100 characters",
+      "codeFormatInvalidFormat": "Invalid code format pattern",
+      "targetTableNameReq": "Target table name is required",
+      "targetTableNameMaxLength": "Target table name cannot exceed 200 characters",
+      "targetTableNameInvalidFormat": "Invalid target table name format",
+      "requiresFieldCorrectionReq": "Requires field correction is required",
+      "displaySequenceReq": "Display sequence is required",
+      "displaySequenceInvalid": "Display sequence must be a non-negative number",
       "descReq": "Description is required",
       "descMinLength": "Description must be at least 3 characters",
       "descMaxLength": "Description cannot exceed 500 characters",
-      "slaMaxLength": "Resolution SLA cannot exceed 3 digits",
+      "slaMaxLength": "Resolution SLA cannot exceed 4 digits",
       "slaReq": "Resolution SLA is required",
-      "slaPositiveInteger": "Resolution SLA must be a positive integer",
+      "slaPositiveInteger": "Resolution SLA must be a number",
+      "slaMustBeNonNegative": "Resolution SLA must be 0 or greater",
       "slaMaxDays": "Resolution SLA cannot exceed 365 days",
       "invalidFormat": "Invalid format",
       "operationFailed": "Operation failed",
@@ -129,13 +160,23 @@
     "tryAgain": "Retry"
   },
   "apiErrors": {
-    "duplicateRecord": "Please check Category Name - duplicates not allowed.",
+    "duplicateRecord": "Asset Grievance Category already exists. Duplicates not allowed.",
     "AssetGrievanceCategory_CategoryName_Duplicate": "Category Name already exists.",
+    "AssetGrievanceCategory_GrievanceTypeCode_Duplicate": "Grievance Type Code already exists.",
     "validationError": "Invalid data provided. Please check all fields.",
     "invalidData": "Invalid data provided. Please check all fields.",
     "notFound": "Asset grievance category not found.",
     "inUse": "Cannot deactivate/delete this Asset Grievance Category because it is referenced by other records.",
     "operationFailed": "Operation failed. Please try again later.",
-    "referencedIn": "Cannot deactivate or delete this {entity} because it is referenced in: {tables}."
+    "referenceBlocked": {
+      "grievanceCategory": {
+        "deleteHasMasters": "This Grievance Category cannot be deleted because it has {masters}. Please delete all {masters} for this Grievance Category first.",
+        "deactivateHasMasters": "This Grievance Category cannot be deactivated because it has {masters}. Please delete all {masters} for this Grievance Category first."
+      }
+    },
+    "referenceMasters": {
+      "grievanceRemarks": "Grievance Remarks",
+      "and": "and"
+    }
   }
 }

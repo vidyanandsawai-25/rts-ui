@@ -13,7 +13,8 @@
   "stats": {
     "financeYear": "Finance Year",
     "totalProperties": "Total Properties",
-    "eligibleRecords": "Eligible Records",
+    "transmastProperties": "Already Taxed",
+    "eligibleRecords": "Pending Properties",
     "skippedLocked": "Skipped / Locked",
     "runningJobs": "Running Jobs"
   },
@@ -43,7 +44,9 @@
       "propertyWise": "Property Wise",
       "propertyWiseDesc": "Selected properties",
       "propertyRange": "Property Range",
-      "propertyRangeDesc": "From-to property range"
+      "propertyRangeDesc": "From-to property range",
+      "masterDataChange": "Master Data Change",
+      "masterDataChangeDesc": "Properties needing recalculation"
     },
     "zoneNodeSelect": "Zone / Node",
     "zoneNodeSelectPlaceholder": "Select Zone / Node",
@@ -125,7 +128,10 @@
     "proceed": "Proceed & Start Execution",
     "scheduleExecutionButton": "Schedule Execution",
     "operation": "Operation",
-    "backgroundNotice": "This operation will run in the background. You can monitor the progress in the 'Audit & Monitor' tab."
+    "backgroundNotice": "This operation will run in the background. You can monitor the progress in the 'Audit & Monitor' tab.",
+    "forceRecalculate": "Force recalculate",
+    "forceRecalculateHint": "Ignore cached values and recompute from scratch for every selected property",
+    "masterDataNotice": "Recalculates taxes for all properties flagged due to master data changes in FY {financeYear}."
   },
   "dynamicFields": {
     "labels": {
@@ -156,7 +162,8 @@
     "internalValidationNotice": "System will internally validate zone, ward and property sequence during preview.",
     "headerTitle": {
       "property": "PROPERTY WISE — SEARCH AND ADD SPECIFIC PROPERTIES",
-      "range": "PROPERTY RANGE — ENTER FROM PROPERTY NO. AND TO PROPERTY NO."
+      "range": "PROPERTY RANGE — ENTER FROM PROPERTY NO. AND TO PROPERTY NO.",
+      "select": "SELECT"
     }
   },
   "Skip_AlreadyProcessed": "Already Processed",
@@ -166,6 +173,8 @@
   "Skip_InvalidScope": "Invalid Scope",
   "Skip_PermissionRestricted": "Permission Restricted",
   "Skip_ApprovalRequired": "Approval Required",
+  "Skip_RateNotFound": "Rate not configured",
+  "Skip_TaxPercentageMissing": "Tax percentage not configured",
   "excel": {
     "total": "total: {count}",
     "eligible": "eligible: {count}",
@@ -196,8 +205,9 @@
     "subtitle": "Review selected records and their eligibility before executing the operation",
     "close": "Close",
     "totalSelected": "Total Selected",
-    "eligible": "Eligible",
+    "eligible": "Pending",
     "skipped": "Skipped",
+    "alreadyTaxed": "Already Taxed",
     "requiresApproval": "Requires Approval",
     "columns": {
       "zone": "Zone",
@@ -209,6 +219,26 @@
     "status": {
       "eligible": "Eligible",
       "skipped": "Skipped"
+    }
+  },
+  "skipReasons": {
+    "AlreadyProcessed": "Taxes are already calculated for this property for the selected finance year",
+    "DetailsMissing": "Property details not found for one or more properties",
+    "PropertyLocked": "Property is locked",
+    "RateNotFound": "Rate not configured for one or more property details",
+    "TaxPercentageMissing": "Tax percentage not configured for one or more property details",
+    "CVRateMappingNotFound": "No CSN rate mapping found for this property (Capital Value)",
+    "CVRateNotFound": "Rate not configured for one or more property details (Capital Value)",
+    "CVTaxPercentageMissing": "Tax percentage not configured for one or more property details (Capital Value)",
+    "detailsMissingPrefix": "Property details not found: ",
+    "detailsMissingSuffix": " missing",
+    "fields": {
+      "floorType": "Floor type",
+      "constructionType": "Construction type",
+      "carpetArea": "Carpet area",
+      "builtupArea": "Built-up area",
+      "typeOfUse": "Type of use",
+      "assessmentYear": "Assessment year"
     }
   },
   "error": {
@@ -230,8 +260,15 @@
     "desc1": "This screen supports Add Tax operation",
     "desc2": "Use the scope cards to switch between All Properties, Zone, Ward, Building, Property and Range modes."
   },
+  "confirmations": {
+    "overrideAlreadyTaxed": {
+      "title": "Already Taxed Properties Found",
+      "confirmText": "Yes"
+    }
+  },
   "messages": {
     "skippedCount": "{count} properties were skipped / Locked.",
+    "alreadyTaxedCount": "{count} properties already have tax calculated for this finance year. Do you want to recalculate the taxes?",
     "selectedTimeInPast": "Selected time is in the past. Please choose a future time.",
     "timeReset": "Time reset to {time} to ensure it is in the future.",
     "selectTimeRequired": "Please select a time.",
@@ -345,5 +382,37 @@
     "title": "Operation Restricted",
     "message": "For finance year \"{financeYear}\" you cannot do add taxes.",
     "subtext": "Please select current finance year to perform tax operation."
+  },
+  "masterDataChange": {
+    "banner": "Master data changed ({remarkSummary}) — {count} properties may need tax recalculation",
+    "defaultRemark": "Master Data",
+    "viewProperties": "View Properties",
+    "modalTitle": "Properties Flagged for Recalculation",
+    "modalSubtitle": "{count} properties may need tax recalculation due to a master data change",
+    "alertTitle": "Master Data Changes Detected – Tax Recalculation Pending",
+    "alertDescription": "{count} properties have pending tax recalculation flags due to master table changes.",
+    "scheduled": "Scheduled",
+    "proceedExecution": "Proceed Execution",
+    "exporting": "Exporting...",
+    "exportAffectedProperties": "Export Affected Properties (CSV)",
+    "selectFinanceYearExportError": "Please select a finance year before exporting.",
+    "exportActionUnavailable": "Export action is not available.",
+    "exportingCsvToast": "Exporting master data affected properties CSV...",
+    "exportSuccessToast": "Export download completed successfully!",
+    "exportFailedToast": "Failed to export master data changes CSV",
+    "exportCsv": "Export CSV",
+    "exportingDownloading": "Export downloading, please wait...",
+    "exportCompleted": "Export download completed",
+    "exportFailed": "Failed to export properties",
+    "columns": {
+      "zone": "Zone",
+      "ward": "Ward",
+      "propertyNo": "Property No",
+      "partitionNo": "Partition No",
+      "upicId": "UPIC ID",
+      "owner": "Owner",
+      "remark": "Remark",
+      "flaggedAt": "Flagged At"
+    }
   }
 }

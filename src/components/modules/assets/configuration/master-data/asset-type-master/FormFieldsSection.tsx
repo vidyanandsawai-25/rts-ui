@@ -4,6 +4,7 @@ import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/select";
 import { RadioGroup, RadioGroupItem } from "@/components/common/radio-group";
 import { ValidationMessage } from "@/components/common/ValidationMessage";
+import { ToggleSwitch } from "@/components/common/ToggleSwitch";
 import { TextArea } from "@/components/common/Textarea";
 import type { FormFieldsSectionProps } from "@/types/asset-masters/asset-type.types";
 
@@ -19,27 +20,13 @@ export function FormFieldsSection({
   onBlur,
   onSelectChange,
   onRadioChange,
+  onToggleSubUnit,
   t,
   categoryOptions,
   codeRef,
 }: ExtendedFormFieldsSectionProps) {
   return (
     <div className="rounded-xl border border-[#DCEAFF] bg-slate-50 p-5 space-y-4">
-      <div className="space-y-1">
-        <Label className="block text-sm font-medium text-slate-700">
-          {t("labels.category")} <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          options={categoryOptions}
-          value={String(formData.group ?? "")}
-          onChange={(_, v) => onSelectChange("group", String(v))}
-          placeholder={t("placeholders.category")}
-          error={showError("group") ? " " : undefined}
-          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
-        />
-        <ValidationMessage message={errors.group} visible={showError("group")} />
-      </div>
-
       <div>
         <Input
           ref={codeRef}
@@ -57,6 +44,21 @@ export function FormFieldsSection({
         <ValidationMessage message={errors.code} visible={showError("code")} />
       </div>
 
+      <div className="space-y-1">
+        <Label className="block text-sm font-medium text-slate-700">
+          {t("labels.category")} <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          options={categoryOptions}
+          value={String(formData.group ?? "")}
+          onChange={(_, v) => onSelectChange("group", String(v))}
+          placeholder={t("placeholders.category")}
+          error={showError("group") ? " " : undefined}
+          className="w-full placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.group} visible={showError("group")} />
+      </div>
+
       <div>
         <Input
           name="name"
@@ -71,6 +73,21 @@ export function FormFieldsSection({
           className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
         />
         <ValidationMessage message={errors.name} visible={showError("name")} />
+      </div>
+
+      <div>
+        <Input
+          name="typeNameLocal"
+          label={t("labels.typeNameLocal")}
+          value={formData.typeNameLocal || ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={t("placeholders.typeNameLocal")}
+          maxLength={200}
+          error={showError("typeNameLocal") ? " " : undefined}
+          className="placeholder:text-slate-500 placeholder:text-[13px] text-[13px] text-slate-700"
+        />
+        <ValidationMessage message={errors.typeNameLocal} visible={showError("typeNameLocal")} />
       </div>
 
       <div className="space-y-3">
@@ -96,6 +113,20 @@ export function FormFieldsSection({
           </div>
         </RadioGroup>
         <ValidationMessage message={errors.registrationType} visible={showError("registrationType")} />
+      </div>
+
+      <div className="flex items-center justify-between rounded-xl border border-[#DCEAFF] bg-white p-3">
+        <div>
+          <div className="font-medium text-slate-800 text-sm">{t("labels.isSubUnit")}</div>
+          <div className="text-xs text-slate-500">{t("labels.isSubUnitDescription")}</div>
+        </div>
+        <ToggleSwitch
+          checked={formData.isSubUnit}
+          onChange={onToggleSubUnit}
+          showPopup={false}
+          activeLabel={`${t("labels.isSubUnit")}: ${t("labels.yes")}`}
+          inactiveLabel={`${t("labels.isSubUnit")}: ${t("labels.no")}`}
+        />
       </div>
 
       <div>

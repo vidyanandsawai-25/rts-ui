@@ -5,21 +5,30 @@ import { getTranslations } from 'next-intl/server';
 
 import {
   PropertyBasicDetailsApiItem,
-  PropertyBasicDetailsResponse,
   PropertyCategoryApiItem,
-  PropertyCategoryApiResponse,
   PropertyTypeApiItem,
-  PropertyTypeApiResponse,
   TaxDetailsApiResponse,
   UpdatePropertyBasicDetailsDto,
   WingItem,
-  WingResponse,
   MoujaItem,
-  MoujaResponse,
   TaxZoneItem,
-  TaxZoneResponse,
 } from '@/types/property-basic-details.types';
 import { ActionResult } from '@/types/common.types';
+
+import {
+  isPropertyBasicDetailsShape,
+  normalizePropertyBasicDetails,
+  isPropertyTypeShape,
+  normalizePropertyType,
+  isPropertyCategoryShape,
+  normalizePropertyCategory,
+  isMoujaShape,
+  normalizeMouja,
+  isTaxZoneShape,
+  normalizeTaxZone,
+  isWingShape,
+  normalizeWing,
+} from './property-basic-details.guard';
 
 /* ---------------- PROPERTY TYPE ---------------- */
 export async function getPropertyTypes(
@@ -27,18 +36,31 @@ export async function getPropertyTypes(
   pageSize: number,
   searchTerm?: string
 ): Promise<PropertyTypeApiItem[]> {
-  const params = new URLSearchParams();
-  params.append('PageSize', pageSize.toString());
-  if (searchTerm?.trim()) {
-    params.append('SearchTerm', searchTerm.trim());
-  }
-  params.append('PageNo', pageNumber.toString());
+  try {
+    const params = new URLSearchParams();
+    params.append('PageSize', pageSize.toString());
+    if (searchTerm?.trim()) {
+      params.append('SearchTerm', searchTerm.trim());
+    }
+    params.append('PageNo', pageNumber.toString());
 
-  const response = await apiClient.get<PropertyTypeApiResponse>(
-    `/PropertyTypeMaster?${params.toString()}`
-  );
-  const t = await getTranslations('quickDataEntry');
-  return handleApiResponse(response, t('property.errors.fetchPropertyTypes')).items ?? [];
+    const response = await apiClient.get<unknown>(
+      `/PropertyTypeMaster?${params.toString()}`
+    );
+
+    if (!response.success || !response.data) return [];
+
+    const rootData = response.data;
+    const rawList = Array.isArray(rootData)
+      ? rootData
+      : (typeof rootData === 'object' && rootData !== null && 'items' in rootData && Array.isArray((rootData as { items: unknown }).items))
+        ? (rootData as { items: unknown[] }).items
+        : [];
+
+    return rawList.filter(isPropertyTypeShape).map(normalizePropertyType);
+  } catch {
+    return [];
+  }
 }
 
 /* ---------------- PROPERTY CATEGORY ---------------- */
@@ -47,31 +69,71 @@ export async function getPropertyCategories(
   pageSize: number,
   searchTerm?: string
 ): Promise<PropertyCategoryApiItem[]> {
-  const params = new URLSearchParams();
-  params.append('PageSize', pageSize.toString());
-  if (searchTerm?.trim()) {
-    params.append('SearchTerm', searchTerm.trim());
+  try {
+    const params = new URLSearchParams();
+    params.append('PageSize', pageSize.toString());
+    if (searchTerm?.trim()) {
+      params.append('SearchTerm', searchTerm.trim());
+    }
+    params.append('PageNo', pageNumber.toString());
+
+    const response = await apiClient.get<unknown>(
+      `/PropertyCategory?${params.toString()}`
+    );
+
+    if (!response.success || !response.data) return [];
+
+    const rootData = response.data;
+    const rawList = Array.isArray(rootData)
+      ? rootData
+      : (typeof rootData === 'object' && rootData !== null && 'items' in rootData && Array.isArray((rootData as { items: unknown }).items))
+        ? (rootData as { items: unknown[] }).items
+        : [];
+
+    return rawList.filter(isPropertyCategoryShape).map(normalizePropertyCategory);
+  } catch {
+    return [];
   }
-  params.append('PageNo', pageNumber.toString());
-
-  const response = await apiClient.get<PropertyCategoryApiResponse>(
-    `/PropertyCategory?${params.toString()}`
-  );
-
-  const t = await getTranslations('quickDataEntry');
-  return handleApiResponse(response, t('property.errors.fetchPropertyCategories')).items ?? [];
 }
 
 /* ---------------- PROPERTY BASIC DETAILS ---------------- */
 export async function getPropertyBasicDetails(
   propertyId: number
 ): Promise<PropertyBasicDetailsApiItem | null> {
-  const response = await apiClient.get<PropertyBasicDetailsResponse>(
-    `/Property/${propertyId}/basic-details`
-  );
+  try {
+    const response = await apiClient.get<unknown>(
+      `/Property/${propertyId}/basic-details`
+    );
 
-  const t = await getTranslations('quickDataEntry');
-  return handleApiResponse(response, t('property.errors.fetchPropertyBasicDetails')).items;
+    if (response.success && response.data) {
+      const rootData = response.data;
+      const payload = (typeof rootData === 'object' && rootData !== null && 'items' in rootData)
+        ? (rootData as { items: unknown }).items
+        : rootData;
+
+      if (isPropertyBasicDetailsShape(payload)) {
+        return normalizePropertyBasicDetails(payload);
+      }
+    }
+  } catch (_e) {
+    // Primary endpoint failed, fallback below
+  }
+
+  // Fallback: Try individual property top section
+  try {
+    const { fetchIndividualQcTopSection } = await import('@/lib/api/ptis/individual');
+    const individualRes = await fetchIndividualQcTopSection(propertyId);
+    if (individualRes.success && individualRes.data) {
+      const item = individualRes.data;
+      if (isPropertyBasicDetailsShape(item)) {
+        return normalizePropertyBasicDetails(item);
+      }
+    }
+  } catch (_e) {
+    // ignore
+  }
+
+  return null;
 }
 
 /* ---------------- UPDATE PROPERTY BASIC DETAILS ---------------- */
@@ -92,16 +154,25 @@ export async function getWingMaster(
   pageSize: number,
   searchTerm?: string
 ): Promise<WingItem[]> {
-  const params = new URLSearchParams();
-  params.append('PageSize', pageSize.toString());
-  if (searchTerm?.trim()) {
-    params.append('SearchTerm', searchTerm.trim());
+  try {
+    const params = new URLSearchParams();
+    params.append('PageSize', pageSize.toString());
+    if (searchTerm?.trim()) {
+      params.append('SearchTerm', searchTerm.trim());
+    }
+    params.append('PageNo', pageNumber.toString());
+    const response = await apiClient.get<unknown>(`/Wing?${params.toString()}`);
+    if (!response.success || !response.data) return [];
+    const rootData = response.data;
+    const rawList = Array.isArray(rootData)
+      ? rootData
+      : (typeof rootData === 'object' && rootData !== null && 'items' in rootData && Array.isArray((rootData as { items: unknown }).items))
+        ? (rootData as { items: unknown[] }).items
+        : [];
+    return rawList.filter(isWingShape).map(normalizeWing);
+  } catch {
+    return [];
   }
-  params.append('PageNo', pageNumber.toString());
-  const response = await apiClient.get<WingResponse>(`/Wing?${params.toString()}`);
-  const t = await getTranslations('quickDataEntry');
-
-  return handleApiResponse(response, t('property.errors.fetchWingMaster')).items ?? [];
 }
 
 export async function getMoujaMaster(
@@ -109,16 +180,25 @@ export async function getMoujaMaster(
   pageSize: number,
   searchTerm?: string
 ): Promise<MoujaItem[]> {
-  const params = new URLSearchParams();
-  params.append('PageSize', pageSize.toString());
-  if (searchTerm?.trim()) {
-    params.append('SearchTerm', searchTerm.trim());
+  try {
+    const params = new URLSearchParams();
+    params.append('PageSize', pageSize.toString());
+    if (searchTerm?.trim()) {
+      params.append('SearchTerm', searchTerm.trim());
+    }
+    params.append('PageNo', pageNumber.toString());
+    const response = await apiClient.get<unknown>(`/Mouja?${params.toString()}`);
+    if (!response.success || !response.data) return [];
+    const rootData = response.data;
+    const rawList = Array.isArray(rootData)
+      ? rootData
+      : (typeof rootData === 'object' && rootData !== null && 'items' in rootData && Array.isArray((rootData as { items: unknown }).items))
+        ? (rootData as { items: unknown[] }).items
+        : [];
+    return rawList.filter(isMoujaShape).map(normalizeMouja);
+  } catch {
+    return [];
   }
-  params.append('PageNo', pageNumber.toString());
-  const response = await apiClient.get<MoujaResponse>(`/Mouja?${params.toString()}`);
-  const t = await getTranslations('quickDataEntry');
-
-  return handleApiResponse(response, t('property.errors.fetchMoujaMaster')).items ?? [];
 }
 
 /** Fetches CV tax details for a property. */
@@ -137,16 +217,25 @@ export async function getTaxZones(
   pageSize: number = 100,
   searchTerm?: string
 ): Promise<TaxZoneItem[]> {
-  const params = new URLSearchParams();
-  params.append('PageSize', pageSize.toString());
-  if (searchTerm?.trim()) {
-    params.append('SearchTerm', searchTerm.trim());
+  try {
+    const params = new URLSearchParams();
+    params.append('PageSize', pageSize.toString());
+    if (searchTerm?.trim()) {
+      params.append('SearchTerm', searchTerm.trim());
+    }
+    params.append('PageNo', pageNumber.toString());
+    const response = await apiClient.get<unknown>(`/TaxZone?${params.toString()}`);
+    if (!response.success || !response.data) return [];
+    const rootData = response.data;
+    const rawList = Array.isArray(rootData)
+      ? rootData
+      : (typeof rootData === 'object' && rootData !== null && 'items' in rootData && Array.isArray((rootData as { items: unknown }).items))
+        ? (rootData as { items: unknown[] }).items
+        : [];
+    return rawList.filter(isTaxZoneShape).map(normalizeTaxZone);
+  } catch {
+    return [];
   }
-  params.append('PageNo', pageNumber.toString());
-  const response = await apiClient.get<TaxZoneResponse>(`/TaxZone?${params.toString()}`);
-  const t = await getTranslations('quickDataEntry');
-
-  return handleApiResponse(response, t('property.errors.fetchTaxZones')).items ?? [];
 }
 
 /* ---------------- DELETE ALL DETAILS BY PROPERTY ID ---------------- */

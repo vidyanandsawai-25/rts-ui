@@ -30,7 +30,6 @@ export function useTypeFormValidation({
   t,
 }: UseTypeFormValidationProps) {
   const typeOfUseLabel = useAliasLabel("Type_Of_Use", t("aliasFallback.typeOfUse"));
-  const categoryLabel = useAliasLabel("Category", t("aliasFallback.category"));
   
   // Duplicate check for type code
   const isDuplicateCode = (code: string): boolean => {
@@ -76,12 +75,6 @@ export function useTypeFormValidation({
       typeOfUseGroupId: (value: unknown) => {
         const groupId = Number(value);
         if (!groupId) return t('messages.groupRequired', { typeOfUse: typeOfUseLabel });
-        return undefined;
-      },
-      
-      typeOfUseCategoryId: (value: unknown) => {
-        const categoryId = Number(value);
-        if (!categoryId) return t('messages.categoryRequired', { category: categoryLabel });
         return undefined;
       },
       

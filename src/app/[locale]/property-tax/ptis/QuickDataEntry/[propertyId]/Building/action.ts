@@ -11,19 +11,23 @@ import {
   getFloorCertificates,
   saveCertificate,
   deletePropertyCertificate,
+  deletePropertyCertificateByDocumentId,
   getSocietyWingTypesWithStatus,
   postApartmentQcCertificateRecord,
+  deleteApartmentQcCertificateRecord,
+  type ApartmentQcCertificateRecordPayload,
 } from "@/lib/api/building.service";
+import { getDocumentDetails } from "@/lib/api/document.service";
 import { fetchApartmentQcCertificateGrid } from "@/lib/api/ptis/apartment/apartment-qc-top-section.service";
-import { uploadDocument } from "@/lib/api/document.service";
-import { DEPARTMENT_ID, MODULE_ID, REFERENCE_TABLE, BINDING_PURPOSE, DOCUMENT_TYPE } from "@/lib/constants/document.constants";
+
 import { 
   PropertyCertificateWithStatusDto, 
   PropertyCertificateUploadResponseDto, 
   PropertyCertificateBulkSaveDto,
   FloorCertificatesResponseDto,
   SaveCertificateResponseDto,
-  SaveCertificateRequestDto
+  SaveCertificateRequestDto,
+  CreateCertificateRecordResponseDto
 } from "@/types/building-permission.types";
 import { revalidatePath } from "next/cache";
 import { ApiResponse } from "@/types/common.types";
@@ -33,6 +37,23 @@ import {
   parseJsonApiError,
   handleActionError,
 } from "@/lib/utils/action-error-helpers";
+
+export async function revalidateBuildingAndPropertyRoutes(locale: string, propertyId: string): Promise<void> {
+  const paths = [
+    `/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`,
+    `/${locale}/property-tax/ptis/apartment`,
+    `/${locale}/property-tax/ptis/individual`,
+    `/${locale}/property-tax/ptis`,
+  ];
+  for (const path of paths) {
+    try {
+      revalidatePath(path, 'page');
+    } catch (err) {
+      logger.warn('revalidatePath failed', { path, err });
+    }
+  }
+}
+
 
 /**
  * Building-specific error cleaner: extends common patterns with
@@ -118,11 +139,14 @@ export async function getCertificateTypeMasterAction(): Promise<ApiResponse<unkn
   }
 }
 
-export async function getWingsByPropertyAction(propertyId: string): Promise<ApiResponse<unknown[]>> {
+export async function getWingsByPropertyAction(
+  propertyId: string,
+  societyId?: number | string | null
+): Promise<ApiResponse<unknown[]>> {
   try {
-    return await getWingsByProperty(propertyId);
+    return await getWingsByProperty(propertyId, societyId);
   } catch (error: unknown) {
-    logger.error("getWingsByPropertyAction failed", { propertyId, error: error as Error });
+    logger.error("getWingsByPropertyAction failed", { propertyId, societyId, error: error as Error });
     return handleActionError(error, "building.errors.notFound", undefined, "quickDataEntry", cleanBuildingApiError);
   }
 }
@@ -180,9 +204,29 @@ export async function saveCertificateAction(
   data: SaveCertificateRequestDto
 ): Promise<ApiResponse<SaveCertificateResponseDto>> {
   try {
-    const result = await saveCertificate(data);
+    const finalData = { ...data };
+    
+    // Only apartment inner properties should ever have wingDetailId.
+    // For individual properties (no positive societyDetailId), wingDetailId and societyDetailId must strictly be null.
+    if (!finalData.societyDetailId || Number(finalData.societyDetailId) <= 0) {
+      finalData.societyDetailId = null;
+      finalData.wingDetailId = null;
+    } else if (finalData.societyDetailId && Number(finalData.societyDetailId) > 0 && !finalData.wingDetailId && finalData.propertyDetailsId) {
+      // Fallback wing resolution ONLY for apartment inner properties that belong to a society and have propertyDetailsId
+      try {
+        const wingsRes = await getWingsByProperty(propertyId);
+        if (wingsRes.success && Array.isArray(wingsRes.data) && wingsRes.data.length > 0) {
+          const rawWing = wingsRes.data[0] as Record<string, unknown>;
+          const wId = Number(rawWing.wingDetailId || rawWing.WingDetailId || rawWing.societyWingId || rawWing.SocietyWingId);
+          if (!isNaN(wId) && wId > 0) finalData.wingDetailId = wId;
+        }
+      } catch (err) {
+        logger.warn('Could not resolve wing fallback in saveCertificateAction', { err });
+      }
+    }
+    const result = await saveCertificate(finalData);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return result;
   } catch (error: unknown) {
@@ -205,7 +249,7 @@ export async function replaceCertificateDocumentAction(
 
     const result = await replaceCertificateDocument(propertyCertificateId, file, propIdNum, certTypeId);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return result;
   } catch (error: unknown) {
@@ -223,6 +267,35 @@ export async function saveBuildingPermissionsAction(
   try {
     const payloadStr = formData.get("certificates") as string;
     const payload = JSON.parse(payloadStr) as PropertyCertificateBulkSaveDto;
+
+    // Clean up certificates: individual properties (no positive societyDetailId) must NEVER have wingDetailId or societyDetailId
+    payload.certificates.forEach((c) => {
+      if (!c.societyDetailId || Number(c.societyDetailId) <= 0) {
+        c.societyDetailId = null;
+        c.wingDetailId = null;
+      }
+    });
+
+    // Fallback wing resolution ONLY for apartment inner units that belong to a society and have propertyDetailsId
+    const missingWingInSociety = payload.certificates.some(c => c.societyDetailId && Number(c.societyDetailId) > 0 && !c.wingDetailId && c.propertyDetailsId);
+    if (missingWingInSociety && propertyId) {
+      try {
+        const wingsRes = await getWingsByProperty(propertyId);
+        if (wingsRes.success && Array.isArray(wingsRes.data) && wingsRes.data.length > 0) {
+          const rawWing = wingsRes.data[0] as Record<string, unknown>;
+          const wId = Number(rawWing.wingDetailId || rawWing.WingDetailId || rawWing.societyWingId || rawWing.SocietyWingId);
+          if (!isNaN(wId) && wId > 0) {
+            payload.certificates.forEach((c) => {
+              if (c.societyDetailId && Number(c.societyDetailId) > 0 && !c.wingDetailId && c.propertyDetailsId) {
+                c.wingDetailId = wId;
+              }
+            });
+          }
+        }
+      } catch (err) {
+        logger.warn('Could not resolve society/wing fallback in saveBuildingPermissionsAction', { err });
+      }
+    }
 
     // Group certificates by propertyDetailsId to fetch their baseline statuses concurrently
     const detailsIds = Array.from(new Set(payload.certificates.map(c => c.propertyDetailsId ?? null)));
@@ -255,7 +328,11 @@ export async function saveBuildingPermissionsAction(
           deleteTasks.push(deleteCertificateDocument(oldGuid));
         }
       } else if (!file && !cert.existingDocumentGuid && oldGuid) {
-        deleteTasks.push(deleteCertificateDocument(oldGuid));
+        if (cert.markedForDeletion) {
+          deleteTasks.push(deleteCertificateDocument(oldGuid));
+        } else {
+          cert.existingDocumentGuid = oldGuid;
+        }
       }
       certificatesToSave.push(cert);
     }
@@ -324,7 +401,7 @@ export async function saveBuildingPermissionsAction(
     }
 
     if (!skipRevalidate) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return { success: true };
   } catch (error: unknown) {
@@ -341,7 +418,7 @@ export async function deleteCertificateDocumentAction(
   try {
     const result = await deleteCertificateDocument(documentGuid);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, propertyId);
     }
     return result;
   } catch (error: unknown) {
@@ -360,7 +437,7 @@ export async function deletePropertyCertificateAction(
   try {
     const result = await deletePropertyCertificate(propertyId, certificateTypeId, propertyDetailsId);
     if (result.success) {
-      revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${frontendPropertyIdString}/Building`, 'page');
+      revalidateBuildingAndPropertyRoutes(locale, frontendPropertyIdString);
     }
     return result;
   } catch (error: unknown) {
@@ -372,85 +449,380 @@ export async function deletePropertyCertificateAction(
 export async function postApartmentQcCertificateRecordAction(
   locale: string,
   propertyId: string,
-  payload: {
-    level: "Apartment" | "Wing" | "Unit";
-    selectedWingDetailId: number | null;
-    selectedUnitIds: number[];
-    isAllUnitsSelected?: boolean;
-    certificateTypeId: number;
-    certificateDate: string;
-    certificateNumber: string;
-    status?: string;
-    societyDetailId?: number | null;
-    attachedFile?: File | null;
-  }
-): Promise<ApiResponse<unknown>> {
+  formData: FormData
+): Promise<ApiResponse<CreateCertificateRecordResponseDto>> {
   try {
-    let documentGuid: string | null = null;
-    if (payload.attachedFile) {
-      const uploadRes = await uploadDocument(payload.attachedFile, {
-        departmentId: DEPARTMENT_ID.PTIS,
-        moduleId: MODULE_ID.PropertyCertificate,
-        referenceTableName: REFERENCE_TABLE.PropertyCertificate,
-        bindingPurpose: BINDING_PURPOSE.MainDocument,
-        documentType: DOCUMENT_TYPE.Certificate,
-        isPrimaryDocument: true,
-      });
-      documentGuid = uploadRes?.documentGuid || null;
+    const payloadStr = formData.get("payload") as string;
+    if (!payloadStr) {
+      return { success: false, error: "Missing payload data" };
     }
-
+    const payload = JSON.parse(payloadStr) as {
+      level: "Apartment" | "Wing" | "Unit";
+      selectedWingDetailId: number | null;
+      selectedUnitIds: number[];
+      selectedUnitDetailsIds?: number[];
+      isAllUnitsSelected?: boolean;
+      certificateTypeId: number;
+      certificateDate: string;
+      certificateNumber: string;
+      status?: string;
+      societyDetailId?: number | null;
+      documentGuid?: string | null;
+      existingDocumentGuid?: string | null;
+      propertyCertificateId?: number | null;
+      isFileModified?: boolean;
+      hasNewDocument?: boolean;
+      preserveExistingDocument?: boolean;
+      fileName?: string | null;
+    };
+    const rawFile = formData.get("file");
+    const attachedFile = (rawFile instanceof File && rawFile.size > 0 && rawFile.name) ? rawFile : null;
     const certNo = payload.certificateNumber?.trim() || "";
     const issueDate = payload.certificateDate || "";
     const status = payload.status || "Active";
+    const isFileModified = payload.isFileModified ?? Boolean(attachedFile);
+    const resolvedDocGuid = !isFileModified
+      ? (payload.documentGuid || payload.existingDocumentGuid || undefined)
+      : undefined;
 
     const validSocietyDetailId = (payload.societyDetailId && payload.societyDetailId > 0) ? payload.societyDetailId : undefined;
+    let validWingDetailId = validSocietyDetailId ? payload.selectedWingDetailId : undefined;
+
+    if (validSocietyDetailId && !validWingDetailId && propertyId && payload.level !== 'Apartment') {
+      try {
+        const wingsRes = await getWingsByProperty(propertyId);
+        if (wingsRes.success && Array.isArray(wingsRes.data) && wingsRes.data.length > 0) {
+          const rawWing = wingsRes.data[0] as Record<string, unknown>;
+          const wId = Number(rawWing.wingDetailId || rawWing.WingDetailId || rawWing.societyWingId || rawWing.SocietyWingId);
+          if (!isNaN(wId) && wId > 0) {
+            validWingDetailId = wId;
+          }
+        }
+      } catch (err) {
+        logger.warn('Could not resolve wing ID from fallback in postApartmentQcCertificateRecordAction', { err });
+      }
+    }
+
+    const effectiveFileName = attachedFile ? attachedFile.name : (payload.fileName || undefined);
+
+    const baseRecordPayload: Omit<ApartmentQcCertificateRecordPayload, 'level'> = {
+      certificateTypeId: payload.certificateTypeId,
+      certificateNo: certNo,
+      certificateIssueDate: issueDate,
+      issueDate: issueDate,
+      status,
+      ...(validSocietyDetailId ? { societyId: validSocietyDetailId, societyDetailId: validSocietyDetailId } : {}),
+      ...(resolvedDocGuid ? { documentGuid: resolvedDocGuid, existingDocumentGuid: resolvedDocGuid } : {}),
+      ...(payload.propertyCertificateId ? { propertyCertificateId: payload.propertyCertificateId } : {}),
+      ...(effectiveFileName ? { fileName: effectiveFileName } : {}),
+      isFileModified,
+      hasDocument: !isFileModified && Boolean(resolvedDocGuid),
+    };
+
+    const selectedIds = payload.selectedUnitIds && payload.selectedUnitIds.length > 0 ? payload.selectedUnitIds : [];
+    const selectedDetailIds = payload.selectedUnitDetailsIds && payload.selectedUnitDetailsIds.length > 0
+      ? payload.selectedUnitDetailsIds
+      : selectedIds;
+
+    let res: ApiResponse<CreateCertificateRecordResponseDto>;
 
     if (payload.level === "Apartment") {
       // Apartment → level 0
-      const res = await postApartmentQcCertificateRecord({
+      res = await postApartmentQcCertificateRecord({
+        ...baseRecordPayload,
         level: 0,
-        ...(validSocietyDetailId ? { societyId: validSocietyDetailId, societyDetailId: validSocietyDetailId } : {}),
-        certificateTypeId: payload.certificateTypeId,
-        certificateNo: certNo,
-        certificateIssueDate: issueDate,
-        status,
-        documentGuid,
       });
-      if (!res.success) return res;
-    } else if (payload.level === "Wing" || (payload.level === "Unit" && payload.isAllUnitsSelected)) {
-      // Wing (or Unit-level-all-selected) → level 1
-      const res = await postApartmentQcCertificateRecord({
+    } else if (payload.level === "Wing") {
+      // Wing → level 1
+      res = await postApartmentQcCertificateRecord({
+        ...baseRecordPayload,
         level: 1,
-        ...(validSocietyDetailId ? { societyId: validSocietyDetailId, societyDetailId: validSocietyDetailId } : {}),
-        wingDetailId: payload.selectedWingDetailId,
-        certificateTypeId: payload.certificateTypeId,
-        certificateNo: certNo,
-        certificateIssueDate: issueDate,
-        status,
-        documentGuid,
+        wingDetailId: validWingDetailId,
       });
-      if (!res.success) return res;
-    } else if (payload.level === "Unit") {
+    } else {
       // Unit level → level 2 with unitPropertyIds array
-      const selectedIds = payload.selectedUnitIds.length > 0 ? payload.selectedUnitIds : [];
-      const res = await postApartmentQcCertificateRecord({
+      res = await postApartmentQcCertificateRecord({
+        ...baseRecordPayload,
         level: 2,
-        ...(validSocietyDetailId ? { societyId: validSocietyDetailId, societyDetailId: validSocietyDetailId } : {}),
-        wingDetailId: payload.selectedWingDetailId,
+        entityScope: 'Property',
+        wingDetailId: validWingDetailId,
         unitPropertyIds: selectedIds,
-        certificateTypeId: payload.certificateTypeId,
-        certificateNo: certNo,
-        certificateIssueDate: issueDate,
-        status,
-        documentGuid,
+        propertyDetailsIds: selectedDetailIds,
+        ...(selectedDetailIds.length === 1 ? { propertyDetailsId: selectedDetailIds[0] } : {}),
+        ...(selectedIds.length === 1 ? { propertyId: selectedIds[0] } : {}),
       });
-      if (!res.success) return res;
     }
 
-    revalidatePath(`/${locale}/property-tax/ptis/QuickDataEntry/${propertyId}/Building`, 'page');
-    return { success: true, message: "Certificate saved successfully" };
+    if (!res.success) return res;
+
+    interface CreateCertificateRecordResponseLike {
+      propertyCertificateIds?: number[];
+      PropertyCertificateIds?: number[];
+      propertyCertificateId?: number;
+      PropertyCertificateId?: number;
+    }
+
+    // If a document was attached, upload it for every created/updated PropertyCertificate record
+    const rawData = res.data as CreateCertificateRecordResponseLike | undefined;
+    let createdCertIds: number[] = [];
+    if (rawData) {
+      const rawIds = rawData.propertyCertificateIds ?? rawData.PropertyCertificateIds;
+      if (Array.isArray(rawIds)) {
+        createdCertIds = rawIds.map(Number).filter((n) => !isNaN(n) && n > 0);
+      } else if (typeof rawData.propertyCertificateId === 'number' && rawData.propertyCertificateId > 0) {
+        createdCertIds = [rawData.propertyCertificateId];
+      } else if (typeof rawData.PropertyCertificateId === 'number' && rawData.PropertyCertificateId > 0) {
+        createdCertIds = [rawData.PropertyCertificateId];
+      }
+    }
+
+    // Robust Fallback: if createdCertIds is empty and we have an attachedFile, query to resolve the certificate ID
+    if (attachedFile && createdCertIds.length === 0) {
+      try {
+        if (payload.level === 'Wing' && payload.selectedWingDetailId) {
+          const wingCertsRes = await getSocietyWingTypesWithStatusAction(payload.societyDetailId, payload.selectedWingDetailId);
+          if (wingCertsRes.success && wingCertsRes.data) {
+            const match = wingCertsRes.data.find((c) => c.certificateTypeId === payload.certificateTypeId);
+            if (match?.propertyCertificateId && match.propertyCertificateId > 0) {
+              createdCertIds = [match.propertyCertificateId];
+            }
+          }
+        } else if (payload.level === 'Apartment' && payload.societyDetailId) {
+          const socCertsRes = await getSocietyWingTypesWithStatusAction(payload.societyDetailId, null);
+          if (socCertsRes.success && socCertsRes.data) {
+            const match = socCertsRes.data.find((c) => c.certificateTypeId === payload.certificateTypeId);
+            if (match?.propertyCertificateId && match.propertyCertificateId > 0) {
+              createdCertIds = [match.propertyCertificateId];
+            }
+          }
+        } else if (payload.level === 'Unit' && (payload.selectedUnitIds?.length > 0 || selectedDetailIds?.length > 0)) {
+          const allTargetIds = Array.from(new Set([...(payload.selectedUnitIds || []), ...(selectedDetailIds || [])]));
+          for (const uPropId of allTargetIds) {
+            const unitCertsRes = await getBuildingPermissionsAction(String(uPropId));
+            if (unitCertsRes.success && unitCertsRes.data) {
+              const match = unitCertsRes.data.find((c) => c.certificateTypeId === payload.certificateTypeId);
+              if (match?.propertyCertificateId && match.propertyCertificateId > 0 && !createdCertIds.includes(match.propertyCertificateId)) {
+                createdCertIds.push(match.propertyCertificateId);
+              }
+            }
+          }
+
+          if (createdCertIds.length === 0) {
+            const gridRes = await fetchApartmentQcCertificateGrid({
+              wingDetailsId: validWingDetailId ?? payload.selectedWingDetailId,
+              societyId: validSocietyDetailId ?? payload.societyDetailId,
+            });
+            if (gridRes.success && gridRes.data) {
+              const rawGrid = gridRes.data as Record<string, unknown>;
+              const uCerts = (rawGrid.unitCertificates || rawGrid.UnitCertificates || []) as Record<string, unknown>[];
+              for (const c of uCerts) {
+                const typeId = Number(c.certificateTypeId ?? c.CertificateTypeId);
+                const propId = Number(c.propertyId ?? c.PropertyId ?? 0);
+                const propDetailsId = Number(c.propertyDetailsId ?? c.PropertyDetailsId ?? 0);
+                const rawCovered = (c.coveredPropertyIds || c.CoveredPropertyIds || []) as number[];
+                const isMatched = typeId === payload.certificateTypeId && (
+                  allTargetIds.includes(propId) ||
+                  allTargetIds.includes(propDetailsId) ||
+                  allTargetIds.some((id) => rawCovered.includes(id))
+                );
+                if (isMatched) {
+                  const matchedId = Number(c.propertyCertificateId ?? c.PropertyCertificateId ?? 0);
+                  if (matchedId > 0 && !createdCertIds.includes(matchedId)) {
+                    createdCertIds.push(matchedId);
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (fallbackErr) {
+        logger.warn('Could not resolve created certificate ID via fallback', { error: fallbackErr as Error });
+      }
+    }
+
+    if (attachedFile) {
+      if (createdCertIds.length === 0) {
+        return {
+          success: false,
+          error: 'Certificate was saved, but the certificate ID could not be identified to attach the document. Please try re-attaching the file.',
+        };
+      }
+
+      const uploadTasks = createdCertIds.map((certId) =>
+        replaceCertificateDocument(
+          certId,
+          attachedFile,
+          Number(propertyId),
+          payload.certificateTypeId
+        )
+      );
+      const uploadResults = await Promise.all(uploadTasks);
+      const failedUpload = uploadResults.find((r) => !r.success);
+      if (failedUpload) {
+        logger.error('Document binding upload encountered issue', {
+          propertyId,
+          error: failedUpload.error ? new Error(failedUpload.error) : undefined,
+        });
+        return {
+          success: false,
+          error: failedUpload.error || 'Certificate metadata was saved, but document upload failed. Please try re-attaching the document.',
+        };
+      }
+    }
+
+    revalidateBuildingAndPropertyRoutes(locale, propertyId);
+    return {
+      success: true,
+      data: res.data,
+      message: res.message || 'Certificate saved successfully',
+    };
   } catch (error: unknown) {
-    logger.error("postApartmentQcCertificateRecordAction failed", { propertyId, error: error as Error });
-    return handleActionError(error, "building.saveError", locale, "quickDataEntry", cleanBuildingApiError);
+    logger.error('postApartmentQcCertificateRecordAction failed', { propertyId, error: error as Error });
+    return handleActionError(error, 'building.saveError', locale, 'quickDataEntry', cleanBuildingApiError);
   }
 }
+
+export interface DeletePropertyCertificateRecordParams {
+  certificateTypeId: number;
+  documentGuid?: string | null;
+  documentId?: number | null;
+  propertyCertificateId?: number | null;
+  level?: "Apartment" | "Wing" | "Unit" | "Floor" | "Property" | string;
+  selectedWingDetailId?: number | null;
+  selectedUnitIds?: number[];
+  selectedFloorIds?: number[];
+  propertyDetailsId?: number | null;
+  societyDetailId?: number | null;
+}
+
+export async function deletePropertyCertificateRecordAction(
+  locale: string,
+  propertyId: string,
+  params: DeletePropertyCertificateRecordParams
+): Promise<ApiResponse<void>> {
+  try {
+    const validSocietyDetailId = (params.societyDetailId && params.societyDetailId > 0)
+      ? params.societyDetailId
+      : undefined;
+    let validWingDetailId = validSocietyDetailId ? params.selectedWingDetailId : undefined;
+
+    if (validSocietyDetailId && !validWingDetailId && propertyId && params.level !== 'Apartment') {
+      try {
+        const wingsRes = await getWingsByProperty(propertyId);
+        if (wingsRes.success && Array.isArray(wingsRes.data) && wingsRes.data.length > 0) {
+          const rawWing = wingsRes.data[0] as Record<string, unknown>;
+          const wId = Number(rawWing.wingDetailId || rawWing.WingDetailId || rawWing.societyWingId || rawWing.SocietyWingId);
+          if (!isNaN(wId) && wId > 0) {
+            validWingDetailId = wId;
+          }
+        }
+      } catch (err) {
+        logger.warn('Could not resolve wing ID from fallback in deletePropertyCertificateRecordAction', { err });
+      }
+    }
+
+    // 1. Apartment/QC context: Route through deleteApartmentQcCertificateRecord
+    if (validSocietyDetailId) {
+      let levelNum = 0; // 0 = Apartment
+      if (params.level === "Wing") {
+        levelNum = 1;
+      } else if (params.level === "Unit") {
+        levelNum = 2;
+      }
+
+      // If level is Unit, ensure we pass the selected unit property IDs
+      const unitPropertyIds = (params.level === "Unit" && params.selectedUnitIds && params.selectedUnitIds.length > 0)
+        ? params.selectedUnitIds
+        : (params.level === "Unit" && !isNaN(Number(propertyId)) && Number(propertyId) > 0 ? [Number(propertyId)] : undefined);
+
+      const qcRes = await deleteApartmentQcCertificateRecord({
+        level: levelNum,
+        societyDetailId: validSocietyDetailId,
+        wingDetailId: validWingDetailId ?? null,
+        unitPropertyIds: unitPropertyIds,
+        certificateTypeId: params.certificateTypeId,
+        documentGuid: params.documentGuid ?? null,
+      });
+
+      if (qcRes.success) {
+        revalidateBuildingAndPropertyRoutes(locale, propertyId);
+        return {
+          success: true,
+          message: qcRes.message || "Certificate record deleted successfully",
+        };
+      }
+      
+      logger.warn("deleteApartmentQcCertificateRecord returned failure, falling back to direct certificate deletion", {
+        propertyId,
+        params,
+        errorMessage: qcRes.error,
+      });
+    }
+
+    // 2. Standalone / Individual Property / Non-Society fallback
+    let docId = params.documentId;
+
+    // If documentGuid is provided but not documentId, resolve DocumentId via getDocumentDetails
+    if (!docId && params.documentGuid && params.documentGuid.trim().length > 0 && params.documentGuid !== "pending") {
+      try {
+        const docRes = await getDocumentDetails(params.documentGuid);
+        if (docRes.success && docRes.data) {
+          const raw = docRes.data as unknown as Record<string, unknown>;
+          const items = raw?.items as Record<string, unknown> | undefined;
+          const resolvedId = (items?.id ?? raw?.id ?? docRes.data.id) as number | undefined;
+          if (typeof resolvedId === "number" && resolvedId > 0) {
+            docId = resolvedId;
+          }
+        }
+      } catch (err) {
+        logger.warn("Could not resolve document details for delete", { documentGuid: params.documentGuid, err });
+      }
+    }
+
+    if (docId && docId > 0) {
+      // Primary soft delete: DELETE /api/property-certificates/by-document/{documentId}
+      const res = await deletePropertyCertificateByDocumentId(docId);
+      if (res.success) {
+        revalidateBuildingAndPropertyRoutes(locale, propertyId);
+        return {
+          success: true,
+          message: res.message || "Certificate and attached document deleted successfully",
+        };
+      }
+      logger.warn("deletePropertyCertificateByDocumentId returned unsuccessful, attempting fallback", {
+        docId,
+        error: res.error ? new Error(res.error) : undefined,
+      });
+    }
+
+    // Fallback if documentGuid exists
+    if (params.documentGuid && params.documentGuid.trim().length > 0 && params.documentGuid !== "pending") {
+      await deleteCertificateDocument(params.documentGuid);
+    }
+
+    // Fallback delete by propertyId & certificateTypeId
+    if (params.certificateTypeId) {
+      const propIdNum = parseInt(propertyId);
+      if (params.level === "Unit" && params.selectedUnitIds && params.selectedUnitIds.length > 0) {
+        await Promise.all(
+          params.selectedUnitIds.map((uId) => deletePropertyCertificate(uId, params.certificateTypeId, null))
+        );
+      } else if (params.level === "Floor" && params.selectedFloorIds && params.selectedFloorIds.length > 0) {
+        await Promise.all(
+          params.selectedFloorIds.map((fId) => deletePropertyCertificate(propIdNum, params.certificateTypeId, fId))
+        );
+      } else {
+        await deletePropertyCertificate(propIdNum, params.certificateTypeId, params.propertyDetailsId ?? null);
+      }
+    }
+
+    revalidateBuildingAndPropertyRoutes(locale, propertyId);
+    return {
+      success: true,
+      message: "Certificate deleted successfully",
+    };
+  } catch (error: unknown) {
+    logger.error("deletePropertyCertificateRecordAction failed", { propertyId, params, error: error as Error });
+    return handleActionError(error, "building.deleteError", locale, "quickDataEntry", cleanBuildingApiError);
+  }
+}

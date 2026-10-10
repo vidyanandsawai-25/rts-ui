@@ -9,7 +9,9 @@ import { useTranslations } from 'next-intl';
 export function useFooterActionHandler(
   onAction?: (command: string) => void,
   categoryId?: number,
-  societyDetailId?: number
+  societyDetailId?: number,
+  categoryName?: string,
+  wingDetailId?: number
 ) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -66,10 +68,21 @@ export function useFooterActionHandler(
       const subTab = searchParams.get('subTab') || undefined;
       const showDetails = searchParams.get('showDetails') || undefined;
 
-      const societyIdParam = searchParams.get('societyId') || undefined;
-      const wingIdParam = searchParams.get('wingId') || undefined;
-      const wingDetailIdParam = searchParams.get('wingDetailId') || undefined;
-      const explicitSocDetailId = searchParams.get('societyDetailId') || societyIdParam || (societyDetailId ? String(societyDetailId) : undefined);
+      const pathnameSegments = pathname.split('/').filter(Boolean);
+      const locale = pathnameSegments[0] || 'en';
+      const isApartment = pathname.includes('/property-tax/ptis/apartment') || pathname.includes('/apartment');
+      const isIndividual = categoryId === 2 || (categoryId !== undefined && categoryId !== 1);
+
+      const societyIdParam = !isIndividual ? (searchParams.get('societyId') || undefined) : undefined;
+      const wingIdParam = !isIndividual ? (searchParams.get('wingId') || undefined) : undefined;
+      const wingDetailIdParam = !isIndividual ? (searchParams.get('wingDetailId') || searchParams.get('wingdetailid') || undefined) : undefined;
+      const wingNameParam = !isIndividual ? (searchParams.get('wingName') || searchParams.get('wingname') || undefined) : undefined;
+      const explicitSocDetailId = !isIndividual
+        ? (searchParams.get('societyDetailId') || searchParams.get('societydetailid') || societyIdParam || (societyDetailId ? String(societyDetailId) : undefined))
+        : undefined;
+      const explicitWingDetailId = !isIndividual
+        ? (wingDetailIdParam || (wingDetailId ? String(wingDetailId) : undefined))
+        : undefined;
 
       const rateableExpand = searchParams.getAll('rateableExpand');
       const capitalExpand = searchParams.getAll('capitalExpand');
@@ -78,10 +91,6 @@ export function useFooterActionHandler(
       const rateableExpandParam = rateableExpand.length > 0 ? rateableExpand : undefined;
       const capitalExpandParam = capitalExpand.length > 0 ? capitalExpand : undefined;
       const dualExpandParam = dualExpand.length > 0 ? dualExpand : undefined;
-
-      const pathnameSegments = pathname.split('/').filter(Boolean);
-      const locale = pathnameSegments[0] || 'en';
-      const isApartment = pathname.includes('/property-tax/ptis/apartment') || pathname.includes('/apartment');
 
       const result = await handleFooterAction(command, {
         propertyId,
@@ -99,18 +108,18 @@ export function useFooterActionHandler(
         capitalExpand: capitalExpandParam,
         dualExpand: dualExpandParam,
         categoryId,
-        societyDetailId: explicitSocDetailId ? Number(explicitSocDetailId) : societyDetailId,
+        categoryName,
+        societyDetailId: explicitSocDetailId ? Number(explicitSocDetailId) : undefined,
         societyId: societyIdParam,
-        wingDetailId: wingDetailIdParam,
+        wingDetailId: explicitWingDetailId,
         wingId: wingIdParam,
+        wingName: wingNameParam,
         isApartment,
       });
       if (result.success) {
         toast.success(result.message || 'Action executed.');
-      } else {
-        const errorMsg = result.error
-          ? (t.has(result.error) ? t(result.error) : result.error)
-          : 'Action failed.';
+      } else if (result.error) {
+        const errorMsg = t.has(result.error) ? t(result.error) : result.error;
         toast.error(errorMsg);
       }
     });

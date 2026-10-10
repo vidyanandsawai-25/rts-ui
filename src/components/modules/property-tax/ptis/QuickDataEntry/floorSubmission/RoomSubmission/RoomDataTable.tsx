@@ -10,6 +10,8 @@ import { OffsetData } from "@/types/offset-details.types";
 import { COLUMN_WIDTHS } from "./RoomTableConfig";
 import { cn } from "@/lib/utils/cn";
 
+import { isRecordOpenPlot } from "@/hooks/ptis/floorSubmission/useFloorAreaValidation";
+
 
 export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: boolean }> = (props) => {
     const {
@@ -27,14 +29,7 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
         floorData,
     } = props;
 
-    const isOpenSpaceSection =
-        floorData?.selectedFloorType === 'OpenPlot' ||
-        floorData?.isOpenPlot === true ||
-        String(floorData?.floorId) === '77' ||
-        String(floorData?.conTyp || '').toLowerCase().includes('open plot') ||
-        String(floorData?.constructionType || '').toLowerCase().includes('open plot') ||
-        String(floorData?.floor || '').toLowerCase().includes('open plot') ||
-        String(floorData?.floorDescription || '').toLowerCase().includes('open plot');
+    const isOpenSpaceSection = isRecordOpenPlot(floorData);
 
     const t = useTranslations("quickDataEntry");
 
@@ -143,16 +138,19 @@ export const RoomDataTable: React.FC<RoomDataTableProps & { isUtilityCategory?: 
                     label: t("roomSubmission.table.outer"),
                     width: COLUMN_WIDTHS.outer,
                     align: "center",
-                    render: (val: unknown) => (
-                        <div className="flex justify-center">
-                            <span className={cn(
-                                "px-2 py-0.5 rounded text-[10px] font-bold",
-                                val === "Yes" ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-blue-50 text-blue-600 border border-blue-100"
-                            )}>
-                                {val === "Yes" ? t("floor.yes") : t("floor.no")}
-                            </span>
-                        </div>
-                    )
+                    render: (val: unknown, row: RoomData) => {
+                        const isOuter = val === "Yes" || val === true || val === "true" || row.outer === "Yes" || (row.outer as unknown) === true || row.outerYesNo === true || (row as Record<string, unknown>).OuterYesNo === true;
+                        return (
+                            <div className="flex justify-center">
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded text-[10px] font-bold",
+                                    isOuter ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-blue-50 text-blue-600 border border-blue-100"
+                                )}>
+                                    {isOuter ? t("floor.yes") : t("floor.no")}
+                                </span>
+                            </div>
+                        );
+                    }
                 }
             ] : []),
             {

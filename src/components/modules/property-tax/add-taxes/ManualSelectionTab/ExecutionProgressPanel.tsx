@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { getJobPropertiesAction, getJobStatusAction } from '@/app/[locale]/property-tax/add-taxes/actions';
+import { fetchJobPropertiesClient, fetchJobStatusClient } from '@/lib/api/add-taxes/operations.client';
 import { getProgressPanelColumns } from './ExecutionProgressPanelColumns';
 import { logger } from '@/lib/utils/logger';
 import type { JobPropertyItem } from '@/types/addTaxes.types';
@@ -79,7 +79,7 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
     const fetchProgress = async () => {
       try {
         // Fetch overall status first from status API
-        const statusRes = await getJobStatusAction(numericJobId);
+        const statusRes = await fetchJobStatusClient(numericJobId);
         if (!isSubscribed) return;
 
         if (statusRes?.success && statusRes.data) {
@@ -104,7 +104,7 @@ export function ExecutionProgressPanel({ jobId, totalRecords, onComplete }: Exec
         }
 
         // Fetch logs for the master table
-        const propertiesRes = await getJobPropertiesAction(numericJobId, pageNumber, pageSize) as JobPropertiesResult | null;
+        const propertiesRes = await fetchJobPropertiesClient(numericJobId, pageNumber, pageSize) as JobPropertiesResult | null;
         if (!isSubscribed) return;
 
         if (propertiesRes && propertiesRes.items) {

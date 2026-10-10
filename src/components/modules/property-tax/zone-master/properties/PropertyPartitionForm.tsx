@@ -30,6 +30,7 @@ import {
   usePartitionSubmit,
   useBuildingList,
   useSocietyWingDetails,
+  useWingDetailsMastList,
 } from "@/hooks/zoneMaster";
 
 export default function PropertyPartitionForm({
@@ -83,6 +84,8 @@ export default function PropertyPartitionForm({
     floors,
     societyDetails,
     setSocietyDetails,
+    wingDetailsMast,
+    setWingDetailsMast,
     showPreview,
     setShowPreview,
     previewData,
@@ -90,7 +93,7 @@ export default function PropertyPartitionForm({
     loadingPreview,
     setLoadingPreview,
     selectedProperty,
-    selectedSocietyDetailId,
+    selectedWingDetailId,
     INITIAL,
   } = usePartitionFormState({
     selectedPropertyId,
@@ -109,6 +112,13 @@ export default function PropertyPartitionForm({
     propertyId: form.mainPropertyId,
   });
 
+  // Fetch WingDetailsMast (the actual per-wing list) for this property's
+  // single SocietyDetailsMast record, if one exists.
+  const { refetchWingDetailsMast } = useWingDetailsMastList({
+    societyDetailsMastId: societyDetails[0]?.id,
+    setWingDetailsMast,
+  });
+
   // Use hooks for options
   const {
     propertyOptions,
@@ -118,7 +128,7 @@ export default function PropertyPartitionForm({
     toFloorOptions,
   } = usePartitionFormOptions({
     allProperties,
-    societyDetails,
+    wingDetailsMast,
     wings,
     floors,
     form,
@@ -156,8 +166,8 @@ export default function PropertyPartitionForm({
     newWingName,
     setNewWingName,
     addingWing,
-    editingSocietyDetailId,
-    setEditingSocietyDetailId,
+    editingWingDetailId,
+    setEditingWingDetailId,
     newWingId,
     setNewWingId,
     newWingNo,
@@ -170,22 +180,51 @@ export default function PropertyPartitionForm({
     societyDetails,
     setSocietyDetails,
     wings,
+    wingDetailsMast,
+    setWingDetailsMast,
     selectedPropertyId,
-    onWingSaveSuccess: refetchWingDetails,
+    onWingSaveSuccess: async () => {
+      await Promise.all([refetchWingDetails(), refetchWingDetailsMast()]);
+    },
   });
 
-  // Enhance wing summaries with amenity counts and property counts from API
+  // Enhance wing summaries with amenity counts and property counts from API.
+  // wingDetails (from useSocietyWingDetails/society-wing-details API) is
+  // matched here by wingNo since that API is unaffected by this migration.
   const enhancedWingSummaries = useMemo(() => {
-    return wingSummaries.map(summary => {
-      // Find matching wing detail by societyDetailId
-      const wingDetail = wingDetails.find(detail => detail.societyDetailId === summary.societyDetailId);
+    const realWingRows = wingSummaries.map(summary => {
+      const wingDetail = wingDetails.find(detail => detail.wingNo === summary.wingNo);
       return {
         ...summary,
         aminityCount: wingDetail?.aminityCount ?? 0,
         propertyCount: wingDetail?.propertyCount,
       };
     });
-  }, [wingSummaries, wingDetails]);
+
+    if (!selectedProperty) return realWingRows;
+
+    // "Main Society" (property-level, no wing) row - always shown, no actions.
+    const mainSocietyAmenityCount = allProperties.filter((p) => {
+      return (
+        p.propertyNo === selectedProperty.propertyNo &&
+        p.partitionNo?.startsWith("AM") &&
+        !p.partitionNo?.includes("-")
+      );
+    }).length;
+
+    const mainSocietyRow: WingSummary = {
+      wingName: societyDetails[0]?.societyName?.trim() || t("partitionForm.amenity.mainSociety"),
+      count: 0,
+      wingMasterId: -1,
+      wingNo: undefined,
+      wingDetailId: -1,
+      propertyCount: 0,
+      aminityCount: mainSocietyAmenityCount,
+      isMainSociety: true,
+    };
+
+    return [mainSocietyRow, ...realWingRows];
+  }, [wingSummaries, wingDetails, selectedProperty, allProperties, societyDetails, t]);
 
   // Use hooks for building preview
   const { handlePreviewBuilding } = useBuildingPreview({
@@ -210,6 +249,11 @@ export default function PropertyPartitionForm({
     selectedProperty,
     wings,
     wingDetails,
+    wingDetailsMast,
+    setWingDetailsMast,
+    societyDetails,
+    setSocietyDetails,
+    selectedPropertyId,
     floors,
     validate,
     setLoading,
@@ -253,9 +297,9 @@ export default function PropertyPartitionForm({
     t,
     wingAlias,
     onEditWing: (row) => {
-      setEditingSocietyDetailId(row.societyDetailId);
-      setNewWingId(row.wingId);
-      setNewWingNo(row.wingNo || getWingNoById(row.wingId));
+      setEditingWingDetailId(row.wingDetailId);
+      setNewWingId(row.wingMasterId);
+      setNewWingNo(row.wingNo || getWingNoById(row.wingMasterId));
       setNewWingName(row.wingName);
       setShowAddWingForm(true);
     },
@@ -267,7 +311,7 @@ export default function PropertyPartitionForm({
       setShowWingConfig(true);
       toast.info(`Selected ${wingAlias} ${row.wingName} (${row.wingNo}) for updates`);
     }
-  }), [t, wingAlias, setEditingSocietyDetailId, setNewWingId, setNewWingNo, getWingNoById, setNewWingName, setShowAddWingForm, setForm, setShowWingConfig]);
+  }), [t, wingAlias, setEditingWingDetailId, setNewWingId, setNewWingNo, getWingNoById, setNewWingName, setShowAddWingForm, setForm, setShowWingConfig]);
 
   // Helper to reset wing configuration fields
   const resetWingConfigFields = () => {
@@ -290,12 +334,13 @@ export default function PropertyPartitionForm({
     setForm(INITIAL);
     setErrors({});
     setSocietyDetails([]);
+    setWingDetailsMast([]);
     setShowWingConfig(false);
     setShowAddWingForm(false);
     setNewWingId(null);
     setNewWingNo("");
     setNewWingName("");
-    setEditingSocietyDetailId(null);
+    setEditingWingDetailId(null);
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete("partitionPropertyId");
@@ -345,7 +390,7 @@ export default function PropertyPartitionForm({
             }
             label={
               showAddWingForm
-                ? (editingSocietyDetailId ? t("partitionForm.wing.editWing", { wing: wingAlias }) : t("partitionForm.wing.addWing", { wing: wingAlias }))
+                ? (editingWingDetailId ? t("partitionForm.wing.editWing", { wing: wingAlias }) : t("partitionForm.wing.addWing", { wing: wingAlias }))
                 : form.partitionType === "amenity" 
                 ? t("partitionForm.amenity.createAmenity") 
                 : form.partitionType === "partition"
@@ -469,10 +514,10 @@ export default function PropertyPartitionForm({
                 errors={errors}
                 setErrors={setErrors}
                 addingWing={addingWing}
-                editingSocietyDetailId={editingSocietyDetailId}
+                editingWingDetailId={editingWingDetailId}
                 onCancel={() => {
                   setShowAddWingForm(false);
-                  setEditingSocietyDetailId(null);
+                  setEditingWingDetailId(null);
                   setNewWingId(null);
                   setNewWingNo("");
                   setNewWingName("");
@@ -520,6 +565,7 @@ export default function PropertyPartitionForm({
                   errors={errors}
                   setErrors={setErrors}
                   wingDetails={wingDetails}
+                  societyDetails={societyDetails}
                   calculateMaxAmenity={calculateMaxAmenity}
                   t={t}
                 />
@@ -550,12 +596,12 @@ export default function PropertyPartitionForm({
         wardId={selectedWard?.id}
         propertyTypeId={selectedProperty?.propertyTypeId ?? undefined}
         categoryId={selectedProperty?.categoryId ?? undefined}
-        societyDetailId={selectedSocietyDetailId}
+        wingDetailId={selectedWingDetailId}
         onGenerateSuccess={async () => {
           setShowPreview(false);
           setShowWingConfig(false);
           resetWingConfigFields();
-          await refetchWingDetails();
+          await Promise.all([refetchWingDetails(), refetchWingDetailsMast()]);
           onSuccess?.();
         }}
       />

@@ -11,6 +11,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getOwnershipTypeColumns } from "./OwnershipTypeColumns";
 import type { SortDirection } from "@/components/common/SortableColumnHeader";
 import { deleteOwnershipTypeAction } from "@/app/[locale]/assets/configuration/master-data/ownership-type/actions";
+import { mapOwnershipTypeApiError } from "@/hooks/asset-masters/ownership-type/validation";
 import type { OwnershipTypeProps, OwnershipType } from "@/types/asset-masters/ownership-type.types";
 
 export function OwnershipTypeMaster({
@@ -32,7 +33,7 @@ export function OwnershipTypeMaster({
 
   const searchParams = useSearchParams();
   const search = searchParams.get("search") || "";
-  const sortBy = searchParams.get("sortBy") || "ownershipType";
+  const sortBy = searchParams.get("sortBy") || "ownershipTypeName";
   const sortOrder = (searchParams.get("sortOrder") as SortDirection) || "asc";
 
   const handleSort = useCallback((field: string) => {
@@ -87,7 +88,7 @@ export function OwnershipTypeMaster({
           const result = await deleteOwnershipTypeAction(String(row.id));
 
           if (!result.success) {
-            toast.error(result.error || tCommon("errors.deleteError"));
+            toast.error(mapOwnershipTypeApiError(result, t, tCommon));
             return;
           }
 
@@ -98,11 +99,13 @@ export function OwnershipTypeMaster({
         }
       },
     });
-  }, [confirm, tCommon, router]);
+  }, [confirm, t, tCommon, router]);
 
   return (
     <div className="space-y-6">
       <MasterTable<OwnershipType>
+        theadClassName="!bg-[#0f3d8a] !bg-none hover:!bg-[#0f3d8a] [&_*]:!text-white [&_button:hover]:!bg-transparent [&_button:hover]:!text-white/80"
+        footerClassName="[&_.bg-\[\#2563EB\]]:!bg-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!border-[#0f3d8a] [&_.bg-\[\#2563EB\]]:!text-white hover:[&_.bg-\[\#2563EB\]]:!bg-[#0b2f6b]"
         columns={columns as Column<OwnershipType>[]}
         data={data as OwnershipType[]}
         loading={isPending}

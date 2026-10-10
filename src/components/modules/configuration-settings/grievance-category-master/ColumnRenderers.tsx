@@ -114,7 +114,7 @@ export const renderActions = (
 export const renderDescription = (value: unknown): ReactNode => (
   <div className="max-w-[200px]">
     <span
-      className="text-xs text-slate-500 line-clamp-2 leading-relaxed italic"
+      className="text-xs text-slate-500 line-clamp-2 leading-relaxed italic break-all [word-break:break-all]"
       title={value ? String(value) : ''}
     >
       {value ? String(value) : '-'}

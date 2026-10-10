@@ -51,6 +51,18 @@ export const normalizePartition = (val: string | null | undefined): string => {
   const trimmed = (val ?? '').trim();
   return trimmed === '0' ? '' : trimmed;
 };
+
+/**
+ * Formats a 12-digit Aadhar number into 4-digit groups (e.g. 5856 7591 4738).
+ */
+export function formatAadharNumber(aadhar?: string | null): string {
+  if (!aadhar || aadhar === '-' || aadhar.trim() === '') return '';
+  const digits = aadhar.replace(/\D/g, '');
+  if (digits.length === 12) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8, 12)}`;
+  }
+  return aadhar.trim();
+}
 // --- PTIS Specific Formatting Utilities ---
 
 function formatNumber(
@@ -137,10 +149,45 @@ export function toTitleCase(str: string | null | undefined): string {
 
 // --- Reassessment Specific Formatting Utilities ---
 
-export function formatCompactCurrency(val: number): string {
+export function formatCompactCurrency(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '₹0';
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === '0') return '₹0';
+    if (trimmed.startsWith('₹') || trimmed.startsWith('-₹') || trimmed.startsWith('+₹')) return trimmed;
+
+    const isNegative = trimmed.startsWith('-');
+    const cleanStr = trimmed.replace(/^[-\s]+/, '');
+
+    if (cleanStr.endsWith('Crore') || cleanStr.endsWith('Cr')) {
+      const numPart = cleanStr.replace(/Crore|Cr/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}Cr`;
+    }
+    if (cleanStr.endsWith('Lakh')) {
+      const numPart = cleanStr.replace(/Lakh/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}L`;
+    }
+    if (/L$/i.test(cleanStr)) {
+      const numPart = cleanStr.replace(/L$/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}L`;
+    }
+    if (/k$/i.test(cleanStr)) {
+      const numPart = cleanStr.replace(/k$/i, '').trim();
+      return `${isNegative ? '-' : ''}₹${numPart}k`;
+    }
+    const parsed = parseFloat(cleanStr.replace(/,/g, ''));
+    if (!isNaN(parsed)) {
+      val = isNegative ? -parsed : parsed;
+    } else {
+      return `${isNegative ? '-' : ''}₹${cleanStr}`;
+    }
+  }
+
   const absVal = Math.abs(val);
   let formatted = '';
-  if (absVal >= 100000) {
+  if (absVal >= 10000000) {
+    formatted = `${(absVal / 10000000).toFixed(2).replace(/\.00$/, '').replace(/0$/, '')}Cr`;
+  } else if (absVal >= 100000) {
     formatted = `${(absVal / 100000).toFixed(2).replace(/\.00$/, '').replace(/0$/, '')}L`;
   } else if (absVal >= 1000) {
     formatted = `${(absVal / 1000).toFixed(1).replace(/\.0$/, '')}k`;
@@ -166,12 +213,24 @@ export function sumReassessmentTaxAmounts(taxes: Record<string, number>): number
   );
 }
 
-export function formatCompactCurrencyWithSign(val: number): string {
-  const formatted = formatCompactCurrency(Math.abs(val));
-  return val >= 0 ? `+${formatted}` : `-${formatted}`;
+export function formatCompactCurrencyWithSign(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '+₹0';
+  const str = String(val).trim();
+  if (str.startsWith('+') || str.startsWith('-')) return str;
+  const formatted = formatCompactCurrency(val);
+  return formatted.startsWith('-') ? formatted : `+${formatted}`;
 }
 
-export function formatFullCurrency(val: number): string {
+export function formatFullCurrency(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '₹0';
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === '0') return '₹0';
+    if (trimmed.startsWith('₹')) return trimmed;
+    const parsed = parseFloat(trimmed.replace(/,/g, ''));
+    if (isNaN(parsed)) return `₹${trimmed}`;
+    val = parsed;
+  }
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
@@ -213,4 +272,10 @@ export function formatReassessmentTaxCurrency(value: number, compareWith?: numbe
 
 export function formatReassessmentNumber(value: number): string {
   return value.toLocaleString('en-IN');
+}
+
+export function getNumberLocale(locale?: string): string {
+  if (locale === 'mr') return 'mr-IN';
+  if (locale === 'hi') return 'hi-IN';
+  return 'en-IN';
 }

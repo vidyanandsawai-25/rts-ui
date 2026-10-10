@@ -10,6 +10,15 @@ export type RateableTax = PtisTaxDetail;
 export type RateableValueTaxes = RateableTax[];
 
 /**
+ * Request payload / query options for Rateable Value API
+ */
+export interface RateableValueRequest {
+    /** Force recalculation of rateable value ignoring cache */
+    forceRecalculate?: boolean;
+}
+
+
+/**
  * Policy information for rateable value calculation
  */
 export interface RateableValuePolicy {

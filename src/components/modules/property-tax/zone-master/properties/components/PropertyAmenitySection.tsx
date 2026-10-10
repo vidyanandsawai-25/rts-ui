@@ -71,7 +71,19 @@ function PropertyAmenitySectionInner({
     t,
   });
 
-  if (!wingsLoading && societyDetails.length === 0 && directDeleteFallback) {
+  if (wingsLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-6 w-32 bg-gray-100 animate-pulse rounded" />
+        <div className="h-24 bg-gray-100 animate-pulse rounded-lg border border-gray-100" />
+      </div>
+    );
+  }
+
+  if (
+    (!shouldShowWingDropdown || wingOptions.length === 0 || societyDetails.length === 0) &&
+    directDeleteFallback
+  ) {
     return <>{directDeleteFallback}</>;
   }
 
