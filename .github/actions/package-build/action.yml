@@ -137,7 +137,13 @@ runs:
 
         # Copy public folder (images, fonts, etc.)
         Copy-Item -Path 'public' -Destination "$deploymentDir\public" -Recurse
-
+ 
+        # If standalone created a project subdirectory (e.g. ntis-ui), ensure assets are mirrored there
+        if (Test-Path "$deploymentDir\ntis-ui") {
+          Copy-Item -Path 'public' -Destination "$deploymentDir\ntis-ui\public" -Recurse -Force
+          Copy-Item -Path '.next\static' -Destination "$deploymentDir\ntis-ui\.next\static" -Recurse -Force
+        }
+ 
         # Verify static files
         $staticFiles = Get-ChildItem -Path "$deploymentDir\.next\static" -Recurse -File
         Write-Output "✓ Static files: $($staticFiles.Count)"
