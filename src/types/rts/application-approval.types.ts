@@ -208,6 +208,8 @@ export interface RtsApplicationVerificationItem {
   canIssueCertificate: boolean;
   isManualCertificate: boolean;
   canViewCertificate: boolean;
+  certificateType?: number;
+  isCertificateRequired?: boolean;
   serviceId?: number | null;
   serviceName?: string | null;
   serviceFees?: number | null;

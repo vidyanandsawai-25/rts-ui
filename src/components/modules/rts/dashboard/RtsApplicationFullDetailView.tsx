@@ -292,7 +292,10 @@ export default function RtsApplicationFullDetailView({
                   {t('viewReceipt')}
                 </Button>
               )}
-              {isApproved && data?.details?.issuedCertificateGuid && (
+              {isApproved &&
+                data?.details?.isCertificateRequired !== false &&
+                data?.details?.certificateType !== 0 &&
+                data?.details?.issuedCertificateGuid && (
                 <Button
                   type="button"
                   icon={FileCheck2}

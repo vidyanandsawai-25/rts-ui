@@ -258,7 +258,9 @@ export async function getRtsApplicationProcessDataAction(
     details.data &&
     !details.data.issuedCertificateGuid &&
     details.data.applicationNo &&
-    details.data.applicationStatus?.toLowerCase().includes('approv')
+    details.data.applicationStatus?.toLowerCase().includes('approv') &&
+    details.data.isCertificateRequired !== false &&
+    details.data.certificateType !== 0
   ) {
     try {
       const { getIssuedCertificateByApplicationNo } = await import(
@@ -319,7 +321,9 @@ export async function getRtsApplicationFullDetailDataAction(
     details.data &&
     !details.data.issuedCertificateGuid &&
     details.data.applicationNo &&
-    details.data.applicationStatus?.toLowerCase().includes('approv')
+    details.data.applicationStatus?.toLowerCase().includes('approv') &&
+    details.data.isCertificateRequired !== false &&
+    details.data.certificateType !== 0
   ) {
     try {
       const { getIssuedCertificateByApplicationNo } = await import(
