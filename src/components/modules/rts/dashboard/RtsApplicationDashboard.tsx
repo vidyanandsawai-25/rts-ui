@@ -187,9 +187,10 @@ export default function RtsApplicationDashboard({
   );
 
   const deptOptions = useMemo(() => {
+    const activeDepartments = departments.filter((department) => department.isActive !== false);
     return [
       { label: t('applicationDashboard.filters.allDepartments'), value: '' },
-      ...departments.map((department) => ({
+      ...activeDepartments.map((department) => ({
         label: locale === 'mr' && department.departmentNameLocal?.trim()
           ? department.departmentNameLocal.trim()
           : department.departmentName,
@@ -199,11 +200,16 @@ export default function RtsApplicationDashboard({
   }, [departments, locale, t]);
 
   const serviceOptions = useMemo(() => {
-    const selectedDepartment = departments.find(
+    const activeDepartments = departments.filter((department) => department.isActive !== false);
+    const selectedDepartment = activeDepartments.find(
       (department) => toApplicationFilterSlug(department.departmentName) === filters.department
     );
     const availableServices = selectedDepartment
-      ? services.filter((service) => service.departmentId === selectedDepartment.id)
+      ? services.filter(
+          (service) =>
+            service.departmentId === selectedDepartment.id &&
+            service.isActive !== false
+        )
       : [];
     return [
       { label: t('applicationDashboard.filters.allServices'), value: '' },

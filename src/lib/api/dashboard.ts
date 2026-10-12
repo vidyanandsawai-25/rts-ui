@@ -43,7 +43,10 @@ function resolveServiceIcon(apiIcon: string | null | undefined) {
 
 export async function getDashboardDepartments(): Promise<DepartmentDTO[]> {
 
-  const [departments, services] = await Promise.all([getAllRtsDepartments(), getAllRtsServices()]);
+  const [departments, services] = await Promise.all([
+    getAllRtsDepartments({ IsActive: true }),
+    getAllRtsServices({ IsActive: true }),
+  ]);
 
   return departments
     .filter((department) => department.isActive)

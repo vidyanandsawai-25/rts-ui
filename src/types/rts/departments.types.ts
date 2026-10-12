@@ -44,6 +44,7 @@ export interface RtsDepartmentQueryParams {
   PageNumber?: number;
   PageSize?: number;
   SearchTerm?: string;
+  IsActive?: boolean;
 }
 
 export interface TrackingStage {

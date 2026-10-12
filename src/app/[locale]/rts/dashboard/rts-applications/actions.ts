@@ -1611,9 +1611,15 @@ export async function getAdminApplicationsGridAction(): Promise<AdminApplication
 }
 
 export async function getRtsApplicationFilterOptionsAction() {
-  const [departments, services] = await Promise.all([getAllRtsDepartments(), getAllRtsServices()]);
+  const [departments, services] = await Promise.all([
+    getAllRtsDepartments({ IsActive: true }),
+    getAllRtsServices({ IsActive: true }),
+  ]);
 
-  return { departments, services };
+  return {
+    departments: (departments ?? []).filter((department) => department.isActive !== false),
+    services: (services ?? []).filter((service) => service.isActive !== false),
+  };
 }
 
 export async function submitApplicationActionAction(
