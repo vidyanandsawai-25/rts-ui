@@ -5,7 +5,7 @@ import { getLayoutShellContextFromCookies } from '@/lib/utils/cookie';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Sidebar } from './Sidebar';
-import { type MenuItem } from '@/types/menu.types';
+import { type MenuItem, type SubMenuItem } from '@/types/menu.types';
 import { sidebarNavigationService } from '@/lib/api/sidebar-navigation.service';
 import { userScreenAccessService } from '@/lib/api/user-screen-access.service';
 import { getUserIdFromCookies } from '@/lib/utils/auth-session';
@@ -130,6 +130,40 @@ const fetchUserMenuItems = cache(async (userId: number, token?: string) => {
   return fetchGlobalMenuItems();
 });
 
+function ensureRtsMenuItems(items: MenuItem[]): MenuItem[] {
+  const rtsReportItem: SubMenuItem = {
+    name: 'RTS Reports',
+    href: '/rts/dashboard/rts-reports',
+    departmentId: 5,
+    departmentName: 'Right to Services',
+    moduleId: 1005,
+    moduleName: 'RTS',
+    screenCode: 'RTS_REPORTS',
+  };
+
+  const rtsIndex = items.findIndex(
+    (item) =>
+      item.departmentId === 5 ||
+      item.name.toLowerCase().includes('rts') ||
+      item.name.toLowerCase().includes('right to service') ||
+      item.subItems?.some((sub) => sub.departmentId === 5 || sub.href?.includes('/rts'))
+  );
+
+  if (rtsIndex >= 0) {
+    const existing = items[rtsIndex];
+    const existingSubs = existing.subItems || [];
+    if (!existingSubs.some((s) => s.href?.toLowerCase().includes('rts-report'))) {
+      const updatedSubs = [...existingSubs, rtsReportItem];
+      return items.map((item, idx) =>
+        idx === rtsIndex ? { ...item, subItems: updatedSubs } : item
+      );
+    }
+    return items;
+  }
+
+  return items;
+}
+
 const getLayoutChromeData = cache(async () => {
   const headerList = await headers();
   const clientIp = clientIpFromHeaders(headerList);
@@ -150,6 +184,8 @@ const getLayoutChromeData = cache(async () => {
     menuItems = result.menuItems;
     rawScreens = result.rawScreens;
   }
+
+  menuItems = ensureRtsMenuItems(menuItems);
 
   return {
     clientIp,
