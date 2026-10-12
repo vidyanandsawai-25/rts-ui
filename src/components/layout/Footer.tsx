@@ -37,7 +37,7 @@ export function Footer({ ulbData }: FooterProps) {
           ? 'bg-gradient-to-r from-[#000428] to-[#004e92]'
           : isDarkTheme
             ? 'bg-[#0B132B] border-t border-slate-800'
-            : 'bg-[#143D7D]'
+            : 'bg-[#4b70a6]'
       }`}>
         <Card
           padding="none"
