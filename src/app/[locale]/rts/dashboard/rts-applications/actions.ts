@@ -1610,6 +1610,17 @@ export async function getAdminApplicationsGridAction(): Promise<AdminApplication
   return result.rows;
 }
 
+export async function exportAllFilteredApplicationsAction(
+  filters: Partial<RtsApplicationsDashboardFilterInput> = {}
+): Promise<AdminApplicationGridRow[]> {
+  const result = await getRtsApplicationsDashboardAction({
+    ...filters,
+    pageNumber: 1,
+    pageSize: 10000,
+  });
+  return result.rows;
+}
+
 export async function getRtsApplicationFilterOptionsAction() {
   const [departments, services] = await Promise.all([
     getAllRtsDepartments({ IsActive: true }),

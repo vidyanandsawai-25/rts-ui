@@ -55,6 +55,9 @@ import {
 import type { RtsApplicationDocumentItem } from '@/types/rts/application-approval.types';
 import type { RtsDepartmentApiItem } from '@/types/rts/departments.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
+import RtsExportDropdown from '@/components/modules/rts/reports/RtsExportDropdown';
+import { exportRtsApplications, type ReportExportFormat } from '@/lib/utils/rts/report-engine/rtsDomainReports';
+import { exportAllFilteredApplicationsAction } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 
 interface RtsApplicationDashboardProps {
   kpis: ApplicationsDashboardKpis;
@@ -276,6 +279,63 @@ export default function RtsApplicationDashboard({
       </button>
     );
   }, [filters, updateUrl]);
+
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportReport = useCallback(
+    async (format: ReportExportFormat, scope: 'page' | 'all') => {
+      setIsExporting(true);
+      try {
+        let exportRows: AdminApplicationGridRow[] = gridRows;
+        if (scope === 'all' && pagination.totalCount > gridRows.length) {
+          const selectedDept = departments.find(
+            (d) => toApplicationFilterSlug(d.departmentName) === filters.department
+          );
+          const selectedSvc = services.find(
+            (s) => toApplicationFilterSlug(s.serviceName) === filters.service
+          );
+
+          exportRows = await exportAllFilteredApplicationsAction({
+            departmentId: selectedDept?.id,
+            departmentName: selectedDept?.departmentName,
+            serviceId: selectedSvc?.id,
+            status: filters.status || undefined,
+            search: filters.search || undefined,
+            fromDate: filters.fromDate || undefined,
+            toDate: filters.toDate || undefined,
+            myApplications: filters.myApplications,
+          });
+        }
+
+        const activeDeptObj = departments.find(
+          (d) => toApplicationFilterSlug(d.departmentName) === filters.department
+        );
+        const activeSvcObj = services.find(
+          (s) => toApplicationFilterSlug(s.serviceName) === filters.service
+        );
+
+        exportRtsApplications(exportRows, {
+          format,
+          departmentName: activeDeptObj?.departmentName,
+          appliedFilters: {
+            Department: activeDeptObj?.departmentName || 'All Departments',
+            Service: activeSvcObj?.serviceName || 'All Services',
+            Status: filters.status || 'All Statuses',
+            'Date Range': filters.fromDate
+              ? `${filters.fromDate} to ${filters.toDate || 'Present'}`
+              : undefined,
+            Search: filters.search || undefined,
+            'My Applications': filters.myApplications ? 'Yes' : undefined,
+          },
+        });
+      } catch (err) {
+        console.error('Failed to export RTS applications report:', err);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [departments, filters, gridRows, pagination.totalCount, services]
+  );
 
   const updateDrawerUrl = useCallback(
     (changes: Record<string, string>, actionId?: string) => {
@@ -942,6 +1002,13 @@ export default function RtsApplicationDashboard({
                 inactiveLabel={t('applicationDashboard.filters.showMyApplications')}
               />
             </div>
+
+            <RtsExportDropdown
+              onExport={handleExportReport}
+              currentPageCount={gridRows.length}
+              totalFilteredCount={pagination.totalCount}
+              isLoading={isExporting}
+            />
 
             {hasActiveTableFilters && (
               <Button
