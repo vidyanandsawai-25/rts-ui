@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   FileText,
   Eye,
@@ -61,6 +62,9 @@ interface ColumnDef {
 
 export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: string }) {
   const [, startTransition] = useTransition();
+  const t = useTranslations('rts.reportsCenter');
+  const isMr = locale === 'mr';
+  const numLocale = isMr ? 'mr-IN' : 'en-IN';
 
   // 1. Report Domain Selection
   const [activeDomain, setActiveDomain] = useState<ReportDomain>('COLLECTIONS');
@@ -121,79 +125,79 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
     return lookups.services.filter((s) => s.departmentId === deptIdNum);
   }, [lookups.services, selectedDeptId]);
 
-  // 6. Column Definitions per Domain
+  // 6. Column Definitions per Domain (100% localized via next-intl)
   const domainColumnsMap = useMemo<Record<ReportDomain, ColumnDef[]>>(() => {
     return {
       COLLECTIONS: [
-        { key: 'srNo', label: 'Sr. No.', defaultVisible: true, align: 'center' },
-        { key: 'receiptNo', label: 'Receipt No. (पावती क्र.)', defaultVisible: true, align: 'center' },
-        { key: 'createdDate', label: 'Receipt Date (तारीख)', defaultVisible: true, align: 'center' },
-        { key: 'applicationNo', label: 'Application No. (अर्ज क्र.)', defaultVisible: true, align: 'left' },
-        { key: 'citizenName', label: 'Citizen Name (नागरिकाचे नाव)', defaultVisible: true, align: 'left' },
-        { key: 'departmentName', label: 'Department (विभाग)', defaultVisible: true, align: 'left' },
-        { key: 'serviceName', label: 'Service Name (सेवा)', defaultVisible: true, align: 'left' },
-        { key: 'paymentMode', label: 'Payment Mode (भरणा पद्धत)', defaultVisible: true, align: 'center' },
-        { key: 'totalAmount', label: 'Amount (रक्कम ₹)', defaultVisible: true, align: 'right', isNumeric: true },
-        { key: 'bankName', label: 'Bank / Gateway', defaultVisible: true, align: 'left' },
-        { key: 'instrumentNo', label: 'Cheque / Ref No.', defaultVisible: false, align: 'center' },
-        { key: 'paymentStatus', label: 'Status (स्थिती)', defaultVisible: true, align: 'center' },
+        { key: 'srNo', label: t('columns.srNo'), defaultVisible: true, align: 'center' },
+        { key: 'receiptNo', label: t('columns.receiptNo'), defaultVisible: true, align: 'center' },
+        { key: 'createdDate', label: t('columns.receiptDate'), defaultVisible: true, align: 'center' },
+        { key: 'applicationNo', label: t('columns.applicationNo'), defaultVisible: true, align: 'left' },
+        { key: 'citizenName', label: t('columns.citizenName'), defaultVisible: true, align: 'left' },
+        { key: 'departmentName', label: t('columns.departmentName'), defaultVisible: true, align: 'left' },
+        { key: 'serviceName', label: t('columns.serviceName'), defaultVisible: true, align: 'left' },
+        { key: 'paymentMode', label: t('columns.paymentMode'), defaultVisible: true, align: 'center' },
+        { key: 'totalAmount', label: t('columns.totalAmount'), defaultVisible: true, align: 'right', isNumeric: true },
+        { key: 'bankName', label: t('columns.bankName'), defaultVisible: true, align: 'left' },
+        { key: 'instrumentNo', label: t('columns.instrumentNo'), defaultVisible: false, align: 'center' },
+        { key: 'paymentStatus', label: t('columns.paymentStatus'), defaultVisible: true, align: 'center' },
       ],
       APPLICATIONS: [
-        { key: 'id', label: 'Sr. No.', defaultVisible: true, align: 'center' },
-        { key: 'applicationNo', label: 'Application No. (अर्ज क्र.)', defaultVisible: true, align: 'left' },
-        { key: 'applicationDate', label: 'Applied Date (अर्ज तारीख)', defaultVisible: true, align: 'center' },
-        { key: 'applicantName', label: 'Applicant Name (अर्जदाराचे नाव)', defaultVisible: true, align: 'left' },
-        { key: 'departmentName', label: 'Department (विभाग)', defaultVisible: true, align: 'left' },
-        { key: 'serviceName', label: 'Service (सेवा)', defaultVisible: true, align: 'left' },
-        { key: 'currentStatus', label: 'Current Status (सद्यस्थिती)', defaultVisible: true, align: 'center' },
-        { key: 'assignedTo', label: 'Assigned Officer (अधिकारी)', defaultVisible: true, align: 'left' },
-        { key: 'expectedSlaDays', label: 'SLA (Days)', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'remainingDays', label: 'Timeline Status', defaultVisible: true, align: 'center' },
-        { key: 'propertyNo', label: 'Property / UPIC No.', defaultVisible: false, align: 'center' },
-        { key: 'remarks', label: 'Remarks (शेरा)', defaultVisible: false, align: 'left' },
+        { key: 'id', label: t('columns.srNo'), defaultVisible: true, align: 'center' },
+        { key: 'applicationNo', label: t('columns.applicationNo'), defaultVisible: true, align: 'left' },
+        { key: 'applicationDate', label: t('columns.applicationDate'), defaultVisible: true, align: 'center' },
+        { key: 'applicantName', label: t('columns.applicantName'), defaultVisible: true, align: 'left' },
+        { key: 'departmentName', label: t('columns.departmentName'), defaultVisible: true, align: 'left' },
+        { key: 'serviceName', label: t('columns.serviceName'), defaultVisible: true, align: 'left' },
+        { key: 'currentStatus', label: t('columns.currentStatus'), defaultVisible: true, align: 'center' },
+        { key: 'assignedTo', label: t('columns.assignedTo'), defaultVisible: true, align: 'left' },
+        { key: 'expectedSlaDays', label: t('columns.expectedSlaDays'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'remainingDays', label: t('columns.remainingDays'), defaultVisible: true, align: 'center' },
+        { key: 'propertyNo', label: t('columns.propertyNo'), defaultVisible: false, align: 'center' },
+        { key: 'remarks', label: t('columns.remarks'), defaultVisible: false, align: 'left' },
       ],
       SLA_COMPLIANCE: [
-        { key: 'id', label: 'Sr. No.', defaultVisible: true, align: 'center' },
-        { key: 'applicationNo', label: 'Application No.', defaultVisible: true, align: 'left' },
-        { key: 'applicantName', label: 'Applicant Name', defaultVisible: true, align: 'left' },
-        { key: 'departmentName', label: 'Department', defaultVisible: true, align: 'left' },
-        { key: 'serviceName', label: 'Service Name', defaultVisible: true, align: 'left' },
-        { key: 'expectedSlaDays', label: 'Mandated SLA', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'overdueDays', label: 'Timeline Compliance', defaultVisible: true, align: 'center' },
-        { key: 'currentStatus', label: 'Workflow Status', defaultVisible: true, align: 'center' },
-        { key: 'assignedTo', label: 'Designated Officer', defaultVisible: true, align: 'left' },
-        { key: 'remarks', label: 'Delay Reason / Remarks', defaultVisible: true, align: 'left' },
+        { key: 'id', label: t('columns.srNo'), defaultVisible: true, align: 'center' },
+        { key: 'applicationNo', label: t('columns.applicationNo'), defaultVisible: true, align: 'left' },
+        { key: 'applicantName', label: t('columns.applicantName'), defaultVisible: true, align: 'left' },
+        { key: 'departmentName', label: t('columns.departmentName'), defaultVisible: true, align: 'left' },
+        { key: 'serviceName', label: t('columns.serviceName'), defaultVisible: true, align: 'left' },
+        { key: 'expectedSlaDays', label: t('columns.expectedSlaDays'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'overdueDays', label: t('columns.overdueDays'), defaultVisible: true, align: 'center' },
+        { key: 'currentStatus', label: t('columns.currentStatus'), defaultVisible: true, align: 'center' },
+        { key: 'assignedTo', label: t('columns.assignedTo'), defaultVisible: true, align: 'left' },
+        { key: 'remarks', label: t('columns.remarks'), defaultVisible: true, align: 'left' },
       ],
       SETTLEMENT: [
-        { key: 'transactionId', label: 'Sr. No.', defaultVisible: true, align: 'center' },
-        { key: 'applicationNo', label: 'Application No.', defaultVisible: true, align: 'left' },
-        { key: 'receiptNo', label: 'Receipt No.', defaultVisible: true, align: 'center' },
-        { key: 'citizenName', label: 'Citizen Name', defaultVisible: true, align: 'left' },
-        { key: 'serviceName', label: 'Service Name', defaultVisible: true, align: 'left' },
-        { key: 'paymentMode', label: 'Payment Mode', defaultVisible: true, align: 'center' },
-        { key: 'totalAmount', label: 'Amount (₹)', defaultVisible: true, align: 'right', isNumeric: true },
-        { key: 'instrumentNo', label: 'Instrument / Cheque No.', defaultVisible: true, align: 'center' },
-        { key: 'instrumentDate', label: 'Instrument Date', defaultVisible: true, align: 'center' },
-        { key: 'bankName', label: 'Bank Name', defaultVisible: true, align: 'left' },
-        { key: 'clearanceDate', label: 'Clearance Date', defaultVisible: true, align: 'center' },
-        { key: 'approvalStatus', label: 'Settlement Status', defaultVisible: true, align: 'center' },
-        { key: 'remarks', label: 'Action Remarks', defaultVisible: false, align: 'left' },
+        { key: 'transactionId', label: t('columns.srNo'), defaultVisible: true, align: 'center' },
+        { key: 'applicationNo', label: t('columns.applicationNo'), defaultVisible: true, align: 'left' },
+        { key: 'receiptNo', label: t('columns.receiptNo'), defaultVisible: true, align: 'center' },
+        { key: 'citizenName', label: t('columns.citizenName'), defaultVisible: true, align: 'left' },
+        { key: 'serviceName', label: t('columns.serviceName'), defaultVisible: true, align: 'left' },
+        { key: 'paymentMode', label: t('columns.paymentMode'), defaultVisible: true, align: 'center' },
+        { key: 'totalAmount', label: t('columns.totalAmount'), defaultVisible: true, align: 'right', isNumeric: true },
+        { key: 'instrumentNo', label: t('columns.instrumentNo'), defaultVisible: true, align: 'center' },
+        { key: 'instrumentDate', label: t('columns.instrumentDate'), defaultVisible: true, align: 'center' },
+        { key: 'bankName', label: t('columns.bankName'), defaultVisible: true, align: 'left' },
+        { key: 'clearanceDate', label: t('columns.clearanceDate'), defaultVisible: true, align: 'center' },
+        { key: 'approvalStatus', label: t('columns.approvalStatus'), defaultVisible: true, align: 'center' },
+        { key: 'remarks', label: t('columns.remarks'), defaultVisible: false, align: 'left' },
       ],
       DEPARTMENT_SUMMARY: [
-        { key: 'srNo', label: 'Sr. No.', defaultVisible: true, align: 'center' },
-        { key: 'departmentName', label: 'Department (विभाग)', defaultVisible: true, align: 'left' },
-        { key: 'serviceName', label: 'Service (सेवा)', defaultVisible: true, align: 'left' },
-        { key: 'totalApplications', label: 'Total Applications (एकूण अर्ज)', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'approvedCount', label: 'Approved (मंजूर)', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'approvedPercentage', label: 'Approval %', defaultVisible: true, align: 'center' },
-        { key: 'pendingCount', label: 'Pending (प्रलंबित)', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'rejectedCount', label: 'Rejected (नामंजूर)', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'overdueCount', label: 'SLA Breached (मुदत उलटलेले)', defaultVisible: true, align: 'center', isNumeric: true },
-        { key: 'slaAdherencePercentage', label: 'SLA Compliance %', defaultVisible: true, align: 'center' },
-        { key: 'totalCollectionAmount', label: 'Fee Revenue (एकूण संकलन ₹)', defaultVisible: true, align: 'right', isNumeric: true },
+        { key: 'srNo', label: t('columns.srNo'), defaultVisible: true, align: 'center' },
+        { key: 'departmentName', label: t('columns.departmentName'), defaultVisible: true, align: 'left' },
+        { key: 'serviceName', label: t('columns.serviceName'), defaultVisible: true, align: 'left' },
+        { key: 'totalApplications', label: t('columns.totalApplications'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'approvedCount', label: t('columns.approvedCount'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'approvedPercentage', label: t('columns.approvedPercentage'), defaultVisible: true, align: 'center' },
+        { key: 'pendingCount', label: t('columns.pendingCount'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'rejectedCount', label: t('columns.rejectedCount'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'overdueCount', label: t('columns.overdueCount'), defaultVisible: true, align: 'center', isNumeric: true },
+        { key: 'slaAdherencePercentage', label: t('columns.slaAdherencePercentage'), defaultVisible: true, align: 'center' },
+        { key: 'totalCollectionAmount', label: t('columns.totalCollectionAmount'), defaultVisible: true, align: 'right', isNumeric: true },
       ],
     };
-  }, []);
+  }, [t]);
 
   // 7. Visible Columns State
   const [visibleColumns, setVisibleColumns] = useState<Record<ReportDomain, string[]>>({
@@ -295,6 +299,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           const res = await getRtsCollectionsReportDataAction({
             pageNumber,
             pageSize,
+            departmentId: deptIdNum,
+            serviceId: svcIdNum,
             paymentMode: selectedMode !== 'ALL' ? selectedMode : undefined,
             statusCode: selectedStatus !== 'ALL' ? selectedStatus : undefined,
             fromDate: fromDate || undefined,
@@ -447,8 +453,10 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
       if (activeDomain === 'COLLECTIONS') {
         let exportData = collectionItems;
         if (scope === 'all' && totalCount > collectionItems.length) {
-          toast.info('Fetching full collection dataset for export...');
+          toast.info(t('export.downloading'));
           exportData = await getAllCollectionsForExportAction({
+            departmentId: selectedDeptId !== 'ALL' ? Number(selectedDeptId) : undefined,
+            serviceId: selectedServiceId !== 'ALL' ? Number(selectedServiceId) : undefined,
             paymentMode: selectedMode !== 'ALL' ? selectedMode : undefined,
             statusCode: selectedStatus !== 'ALL' ? selectedStatus : undefined,
             fromDate: fromDate || undefined,
@@ -462,11 +470,11 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           appliedFilters,
           visibleColumnKeys: userVisibleKeys,
         });
-        toast.success(`Collections Report exported (${exportData.length} records)`);
+        toast.success(`Exported (${exportData.length} records)`);
       } else if (activeDomain === 'APPLICATIONS') {
         let exportData = applicationRows;
         if (scope === 'all' && totalCount > applicationRows.length) {
-          toast.info('Fetching full applications dataset for export...');
+          toast.info(t('export.downloading'));
           exportData = await getAllApplicationsForExportAction({
             departmentId: selectedDeptId !== 'ALL' ? Number(selectedDeptId) : undefined,
             serviceId: selectedServiceId !== 'ALL' ? Number(selectedServiceId) : undefined,
@@ -482,11 +490,11 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           appliedFilters,
           visibleColumnKeys: userVisibleKeys,
         });
-        toast.success(`Applications Report exported (${exportData.length} records)`);
+        toast.success(`Exported (${exportData.length} records)`);
       } else if (activeDomain === 'SLA_COMPLIANCE') {
         let exportData = applicationRows;
         if (scope === 'all' && totalCount > applicationRows.length) {
-          toast.info('Fetching full SLA dataset for export...');
+          toast.info(t('export.downloading'));
           exportData = await getAllApplicationsForExportAction({
             departmentId: selectedDeptId !== 'ALL' ? Number(selectedDeptId) : undefined,
             serviceId: selectedServiceId !== 'ALL' ? Number(selectedServiceId) : undefined,
@@ -502,12 +510,14 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           appliedFilters,
           visibleColumnKeys: userVisibleKeys,
         });
-        toast.success(`SLA Compliance Report exported (${exportData.length} records)`);
+        toast.success(`Exported (${exportData.length} records)`);
       } else if (activeDomain === 'SETTLEMENT') {
         let exportData = collectionItems;
         if (scope === 'all' && totalCount > collectionItems.length) {
-          toast.info('Fetching full settlement dataset for export...');
+          toast.info(t('export.downloading'));
           exportData = await getAllCollectionsForExportAction({
+            departmentId: selectedDeptId !== 'ALL' ? Number(selectedDeptId) : undefined,
+            serviceId: selectedServiceId !== 'ALL' ? Number(selectedServiceId) : undefined,
             paymentMode: selectedMode !== 'ALL' ? selectedMode : undefined,
             statusCode: selectedStatus !== 'ALL' ? selectedStatus : undefined,
             fromDate: fromDate || undefined,
@@ -520,14 +530,14 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           appliedFilters,
           visibleColumnKeys: userVisibleKeys,
         });
-        toast.success(`Settlement Report exported (${exportData.length} records)`);
+        toast.success(`Exported (${exportData.length} records)`);
       } else if (activeDomain === 'DEPARTMENT_SUMMARY') {
         exportRtsDepartmentSummary(summaryItems, {
           format,
           appliedFilters,
           visibleColumnKeys: userVisibleKeys,
         });
-        toast.success(`Department MIS Summary exported (${summaryItems.length} records)`);
+        toast.success(`Exported (${summaryItems.length} records)`);
       }
     } catch (err) {
       console.error('Export failed:', err);
@@ -537,14 +547,14 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
     }
   };
 
-  // 12. Helper Badges and Formatters
+  // 12. Helper Badges and Formatters (100% localized, no english in marathi)
   const renderStatusBadge = (statusStr: string) => {
-    const s = (statusStr || 'PENDING').toUpperCase();
+    const s = (statusStr || '').toUpperCase();
     if (s.includes('APPROV') || s.includes('CLEARED') || s.includes('PAID') || s.includes('SUCCESS')) {
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200">
           <CheckCircle2 className="h-3 w-3" />
-          {statusStr || 'Approved'}
+          {t('status.approved')}
         </span>
       );
     }
@@ -552,21 +562,39 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 border border-rose-200">
           <XCircle className="h-3 w-3" />
-          {statusStr || 'Rejected'}
+          {s.includes('CANCEL') ? t('status.cancelled') : s.includes('BOUNC') ? t('status.bounced') : t('status.rejected')}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 border border-amber-200">
         <Clock className="h-3 w-3" />
-        {statusStr || 'Pending'}
+        {s.includes('PROCESS') ? t('status.inProcess') : s.includes('CLEARANCE') ? t('status.pendingClearance') : t('status.pending')}
       </span>
     );
   };
 
+  const formatPaymentMode = (mode: string | undefined | null) => {
+    const m = (mode || '').toUpperCase();
+    if (m.includes('CASH')) return t('paymentModes.cash');
+    if (m.includes('CHEQUE')) return t('paymentModes.cheque');
+    if (m.includes('DD')) return t('paymentModes.dd');
+    return t('paymentModes.online');
+  };
+
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(numLocale);
+    } catch {
+      return '—';
+    }
+  };
+
   return (
     <div className="space-y-4 pb-12">
-      {/* 1. Header Card - Official Akola Municipal Corporation Banner */}
+      {/* 1. Header Card - Official Banner */}
       <Card
         padding="sm"
         className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center"
@@ -578,14 +606,14 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-extrabold tracking-tight text-slate-800">
-                RTS Central Report Engine (आर.टी.एस. केंद्रीय अहवाल केंद्र)
+                {t('title')}
               </h1>
               <span className="rounded-full bg-blue-50 border border-blue-200 px-3 py-0.5 text-xs font-bold text-[#173B73]">
-                Municipal Corporation Hub
+                {t('badge')}
               </span>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              महसूल संकलन (Revenue), अर्ज नोंदवही, सेवा हमी कायदा (SLA) मुदत, बँक सेटलमेंट व विभागनिहाय प्रगती अहवाल प्रणाली
+              {t('subtitle')}
             </p>
           </div>
         </div>
@@ -597,25 +625,25 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             <Link
               href={`/${locale}/rts/dashboard/rts-applications`}
               className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition"
-              title="View Applications Dashboard"
+              title={t('tabs.applications')}
             >
-              <span>Applications</span>
+              <span>{t('tabs.applications')}</span>
               <ExternalLink className="h-3 w-3 text-slate-400" />
             </Link>
             <Link
               href={`/${locale}/rts/dashboard/rts-settlement`}
               className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition"
-              title="View Settlement Counter"
+              title={t('tabs.settlement')}
             >
-              <span>Settlement</span>
+              <span>{t('tabs.settlement')}</span>
               <ExternalLink className="h-3 w-3 text-slate-400" />
             </Link>
             <Link
               href={`/${locale}/rts/dashboard/rts-mis`}
               className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition"
-              title="View MIS Analytics"
+              title={t('tabs.departmentSummary')}
             >
-              <span>MIS</span>
+              <span>{t('tabs.departmentSummary')}</span>
               <ExternalLink className="h-3 w-3 text-slate-400" />
             </Link>
           </div>
@@ -626,10 +654,10 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             onClick={loadReportData}
             disabled={isLoading}
             className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
-            title="Refresh Report Data"
+            title={t('filters.resetAll')}
           >
             <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">{t('filters.done')}</span>
           </button>
 
           {/* Export Dropdown */}
@@ -644,18 +672,18 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             }
             totalFilteredCount={totalCount}
             isLoading={isExporting}
-            buttonLabel="Download Report"
+            buttonLabel={t('export.button')}
           />
         </div>
       </Card>
 
-      {/* 2. Report Domain Switcher (5 Major Report Categories) */}
+      {/* 2. Report Domain Switcher (5 Major Report Categories - 100% localized) */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {[
           {
             id: 'COLLECTIONS' as ReportDomain,
-            label: 'Revenue & Collections',
-            sub: 'महसूल संकलन व भरणा',
+            label: t('tabs.collections'),
+            sub: t('tabs.collectionsSub'),
             icon: IndianRupee,
             badge: activeDomain === 'COLLECTIONS' ? totalCount : null,
             color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
@@ -663,8 +691,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           },
           {
             id: 'APPLICATIONS' as ReportDomain,
-            label: 'Applications Register',
-            sub: 'अर्ज मास्टर नोंदवही',
+            label: t('tabs.applications'),
+            sub: t('tabs.applicationsSub'),
             icon: FileText,
             badge: activeDomain === 'APPLICATIONS' ? totalCount : null,
             color: 'text-blue-700 bg-blue-50 border-blue-200',
@@ -672,8 +700,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           },
           {
             id: 'SLA_COMPLIANCE' as ReportDomain,
-            label: 'SLA Timeline & Delays',
-            sub: 'सेवा हमी मुदत व विलंब',
+            label: t('tabs.sla'),
+            sub: t('tabs.slaSub'),
             icon: Clock,
             badge: activeDomain === 'SLA_COMPLIANCE' ? totalCount : null,
             color: 'text-amber-700 bg-amber-50 border-amber-200',
@@ -681,8 +709,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           },
           {
             id: 'SETTLEMENT' as ReportDomain,
-            label: 'Payment Settlement',
-            sub: 'बँक क्लिअरन्स व ऑडिट',
+            label: t('tabs.settlement'),
+            sub: t('tabs.settlementSub'),
             icon: CreditCard,
             badge: activeDomain === 'SETTLEMENT' ? totalCount : null,
             color: 'text-indigo-700 bg-indigo-50 border-indigo-200',
@@ -690,8 +718,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           },
           {
             id: 'DEPARTMENT_SUMMARY' as ReportDomain,
-            label: 'Department MIS Summary',
-            sub: 'विभाग व सेवा सारांश',
+            label: t('tabs.departmentSummary'),
+            sub: t('tabs.departmentSummarySub'),
             icon: Building2,
             badge: activeDomain === 'DEPARTMENT_SUMMARY' ? summaryItems.length : null,
             color: 'text-purple-700 bg-purple-50 border-purple-200',
@@ -724,7 +752,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 </div>
                 {typeof domain.badge === 'number' && !isNaN(domain.badge) && (
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
-                    {domain.badge.toLocaleString()}
+                    {domain.badge.toLocaleString(numLocale)}
                   </span>
                 )}
               </div>
@@ -740,45 +768,66 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
       {/* 3. KPI Highlights Bar for Current Domain */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
         <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Entries</p>
-          <p className="mt-1 font-mono text-2xl font-black text-slate-800">{(totalCount ?? 0).toLocaleString()}</p>
-          <p className="mt-0.5 text-[10px] text-slate-500">Matching active filters</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            {t('kpi.totalRecords')}
+          </p>
+          <p className="mt-1 font-mono text-2xl font-black text-slate-800">
+            {(totalCount ?? 0).toLocaleString(numLocale)}
+          </p>
+          <p className="mt-0.5 text-[10px] text-slate-500">
+            {t('kpi.matchingFilters')}
+          </p>
         </div>
 
         {totalAmount > 0 && (
           <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3.5 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Total Fee Revenue</p>
-            <p className="mt-1 font-mono text-2xl font-black text-emerald-800">₹{(totalAmount ?? 0).toLocaleString('en-IN')}</p>
-            <p className="mt-0.5 text-[10px] text-emerald-600">Municipal collection sum</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
+              {t('kpi.totalRevenue')}
+            </p>
+            <p className="mt-1 font-mono text-2xl font-black text-emerald-800">
+              ₹{(totalAmount ?? 0).toLocaleString(numLocale, { minimumFractionDigits: 2 })}
+            </p>
+            <p className="mt-0.5 text-[10px] text-emerald-600">
+              {t('kpi.revenueSub')}
+            </p>
           </div>
         )}
 
         <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3.5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Active Department</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+            {t('kpi.activeDepartment')}
+          </p>
           <p className="mt-1 text-sm font-bold truncate text-blue-900">
             {selectedDeptId === 'ALL'
-              ? 'All Departments'
-              : lookups.departments.find((d) => d.id === Number(selectedDeptId))?.departmentName || 'Selected'}
+              ? t('kpi.allDepartments')
+              : (() => {
+                  const d = lookups.departments.find((x) => x.id === Number(selectedDeptId));
+                  return isMr && d?.departmentNameLocal ? d.departmentNameLocal : d?.departmentName || t('kpi.activeDepartment');
+                })()}
           </p>
           <p className="mt-0.5 text-[10px] text-blue-600">
-            {selectedServiceId === 'ALL' ? 'All Services' : 'Specific service selected'}
+            {selectedServiceId === 'ALL' ? t('filters.allServices') : t('filters.service')}
           </p>
         </div>
 
         <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-3.5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Filter Scope</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">
+            {t('kpi.filterScope')}
+          </p>
           <p className="mt-1 text-sm font-bold text-amber-900">
-            {activeFiltersCount > 0 ? `${activeFiltersCount} Filters Applied` : 'Unfiltered All'}
+            {activeFiltersCount > 0 ? t('filters.activeFiltersCount', { count: activeFiltersCount }) : t('filters.unfilteredAll')}
           </p>
           <p className="mt-0.5 text-[10px] text-amber-600">
-            {datePreset !== 'ALL' ? datePreset : 'Entire date history'}
+            {datePreset !== 'ALL' ? t(`filters.${datePreset.toLowerCase()}`) || datePreset : t('kpi.allHistory')}
           </p>
         </div>
 
         <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-3.5 shadow-sm col-span-2 sm:col-span-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600">Export Readiness</p>
-          <p className="mt-1 text-sm font-bold text-purple-900">Excel / CSV / PDF</p>
-          <p className="mt-0.5 text-[10px] text-purple-600">UTF-8 Devanagari Compatible</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600">
+            {t('kpi.exportReadiness')}
+          </p>
+          <p className="mt-1 text-sm font-bold text-purple-900">{t('kpi.exportFormats')}</p>
+          <p className="mt-0.5 text-[10px] text-purple-600">{t('kpi.exportEncoding')}</p>
         </div>
       </div>
 
@@ -793,7 +842,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
             >
               <SlidersHorizontal className="h-3.5 w-3.5 text-blue-600" />
-              <span>{showFilters ? 'Hide Filters' : 'Show Filters'}</span>
+              <span>{showFilters ? t('filters.hideFilters') : t('filters.showFilters')}</span>
               {activeFiltersCount > 0 && (
                 <span className="rounded-full bg-blue-600 px-1.5 py-0.2 text-[10px] font-bold text-white">
                   {activeFiltersCount}
@@ -810,7 +859,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:underline ml-2"
               >
                 <RotateCcw className="h-3 w-3" />
-                <span>Reset All ({activeFiltersCount})</span>
+                <span>{t('filters.resetAll')} ({activeFiltersCount})</span>
               </button>
             )}
           </div>
@@ -824,7 +873,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             >
               <Eye className="h-3.5 w-3.5 text-slate-500" />
               <span>
-                Customize Columns ({visibleColumns[activeDomain].length}/{domainColumnsMap[activeDomain].length})
+                {t('filters.columns')} ({visibleColumns[activeDomain].length}/{domainColumnsMap[activeDomain].length})
               </span>
               <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform ${isColumnDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -833,14 +882,14 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             {isColumnDropdownOpen && (
               <div className="absolute right-0 z-50 mt-1.5 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-xl ring-1 ring-black/5">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-bold text-slate-700">Display Columns</span>
+                  <span className="text-xs font-bold text-slate-700">{t('filters.displayColumns')}</span>
                   <div className="flex gap-2 text-[10px]">
                     <button
                       type="button"
                       onClick={handleSelectAllColumns}
                       className="text-blue-600 font-bold hover:underline"
                     >
-                      All
+                      {t('filters.selectAllColumns')}
                     </button>
                     <span className="text-slate-300">|</span>
                     <button
@@ -848,7 +897,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       onClick={handleResetDefaultColumns}
                       className="text-slate-500 font-bold hover:underline"
                     >
-                      Default
+                      {t('filters.resetColumns')}
                     </button>
                   </div>
                 </div>
@@ -879,7 +928,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                     onClick={() => setIsColumnDropdownOpen(false)}
                     className="rounded-md bg-blue-600 px-3 py-1 text-xs font-bold text-white hover:bg-blue-700"
                   >
-                    Done
+                    {t('filters.done')}
                   </button>
                 </div>
               </div>
@@ -887,13 +936,13 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           </div>
         </div>
 
-        {/* Collapsible Filter Inputs */}
+        {/* Collapsible Filter Inputs (100% localized, no parenthesis bilingual strings) */}
         {showFilters && (
           <div className="pt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* 1. Department Filter */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Department (विभाग)
+                {t('filters.department')}
               </label>
               <select
                 value={selectedDeptId}
@@ -904,10 +953,10 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 }}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="ALL">All Active Departments (सर्व विभाग)</option>
+                <option value="ALL">{t('filters.allDepartments')}</option>
                 {lookups.departments.map((dept) => (
                   <option key={dept.id} value={dept.id.toString()}>
-                    {dept.departmentNameLocal || dept.departmentName}
+                    {isMr && dept.departmentNameLocal ? dept.departmentNameLocal : dept.departmentName}
                   </option>
                 ))}
               </select>
@@ -916,7 +965,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             {/* 2. Service Filter */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Service (सेवा)
+                {t('filters.service')}
               </label>
               <select
                 value={selectedServiceId}
@@ -926,10 +975,10 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 }}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="ALL">All Services (सर्व सेवा)</option>
+                <option value="ALL">{t('filters.allServices')}</option>
                 {filteredServices.map((svc) => (
                   <option key={svc.id} value={svc.id.toString()}>
-                    {svc.serviceNameLocal || svc.serviceName}
+                    {isMr && svc.serviceNameLocal ? svc.serviceNameLocal : svc.serviceName}
                   </option>
                 ))}
               </select>
@@ -938,7 +987,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             {/* 3. Status Filter */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Status (स्थिती)
+                {t('filters.status')}
               </label>
               <select
                 value={selectedStatus}
@@ -948,30 +997,30 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 }}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="ALL">All Statuses (सर्व स्थिती)</option>
+                <option value="ALL">{t('filters.allStatuses')}</option>
                 {activeDomain === 'COLLECTIONS' || activeDomain === 'SETTLEMENT' ? (
                   <>
-                    <option value="PENDING_CLEARANCE">Pending Clearance</option>
-                    <option value="CLEARED">Cleared / Approved</option>
-                    <option value="BOUNCED">Bounced / Rejected</option>
-                    <option value="CANCELLED">Receipt Cancelled</option>
+                    <option value="PENDING_CLEARANCE">{t('status.pendingClearance')}</option>
+                    <option value="CLEARED">{t('status.cleared')}</option>
+                    <option value="BOUNCED">{t('status.bounced')}</option>
+                    <option value="CANCELLED">{t('status.cancelled')}</option>
                   </>
                 ) : (
                   <>
-                    <option value="Pending">Pending (प्रलंबित)</option>
-                    <option value="Approved">Approved (मंजूर)</option>
-                    <option value="Rejected">Rejected (नामंजूर)</option>
-                    <option value="InProcess">In Process (प्रक्रियेत)</option>
+                    <option value="Pending">{t('status.pending')}</option>
+                    <option value="Approved">{t('status.approved')}</option>
+                    <option value="Rejected">{t('status.rejected')}</option>
+                    <option value="InProcess">{t('status.inProcess')}</option>
                   </>
                 )}
               </select>
             </div>
 
-            {/* 4. Payment Mode (for Collections / Settlement) OR SLA Status */}
+            {/* 4. Payment Mode OR SLA Status */}
             {activeDomain === 'COLLECTIONS' || activeDomain === 'SETTLEMENT' ? (
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  Payment Mode (भरणा पद्धत)
+                  {t('filters.paymentMode')}
                 </label>
                 <select
                   value={selectedMode}
@@ -981,17 +1030,17 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                   }}
                   className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="ALL">All Modes (सर्व पद्धती)</option>
-                  <option value="CASH">Cash Counter (रोख)</option>
-                  <option value="CHEQUE">Cheque (धनादेश)</option>
-                  <option value="DD">Demand Draft (डीडी)</option>
-                  <option value="ONLINE">Online / Gateway / UPI</option>
+                  <option value="ALL">{t('filters.allModes')}</option>
+                  <option value="CASH">{t('paymentModes.cash')}</option>
+                  <option value="CHEQUE">{t('paymentModes.cheque')}</option>
+                  <option value="DD">{t('paymentModes.dd')}</option>
+                  <option value="ONLINE">{t('paymentModes.online')}</option>
                 </select>
               </div>
             ) : (
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  SLA Timeline Condition
+                  {t('filters.slaCondition')}
                 </label>
                 <select
                   value={selectedSla}
@@ -1001,10 +1050,10 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                   }}
                   className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="ALL">All SLA States</option>
-                  <option value="WITHIN_SLA">Within SLA (विहित मुदतीत)</option>
-                  <option value="DUE_TODAY">Due Today (आज मुदत समाप्त)</option>
-                  <option value="OVERDUE">SLA Breached / Overdue (विलंबित)</option>
+                  <option value="ALL">{t('filters.allSla')}</option>
+                  <option value="WITHIN_SLA">{t('filters.withinSla')}</option>
+                  <option value="DUE_TODAY">{t('filters.dueToday')}</option>
+                  <option value="OVERDUE">{t('filters.overdue')}</option>
                 </select>
               </div>
             )}
@@ -1012,27 +1061,27 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             {/* 5. Date Range Presets */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Date Preset (कालावधी)
+                {t('filters.datePreset')}
               </label>
               <select
                 value={datePreset}
                 onChange={(e) => handleDatePresetChange(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="ALL">All Time (सर्व कालावधी)</option>
-                <option value="TODAY">Today (आज)</option>
-                <option value="YESTERDAY">Yesterday (काल)</option>
-                <option value="WEEK">Last 7 Days (मागील ७ दिवस)</option>
-                <option value="MONTH">This Month (चालू महिना)</option>
-                <option value="LAST_30">Last 30 Days (मागील ३० दिवस)</option>
-                <option value="QUARTER">This Quarter (चालू तिमाही)</option>
+                <option value="ALL">{t('filters.allDates')}</option>
+                <option value="TODAY">{t('filters.today')}</option>
+                <option value="YESTERDAY">{t('filters.yesterday')}</option>
+                <option value="WEEK">{t('filters.week')}</option>
+                <option value="MONTH">{t('filters.month')}</option>
+                <option value="LAST_30">{t('filters.last30')}</option>
+                <option value="QUARTER">{t('filters.quarter')}</option>
               </select>
             </div>
 
             {/* 6. Custom From Date */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                From Date (पासून)
+                {t('filters.fromDate')}
               </label>
               <input
                 type="date"
@@ -1049,7 +1098,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             {/* 7. Custom To Date */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                To Date (पर्यंत)
+                {t('filters.toDate')}
               </label>
               <input
                 type="date"
@@ -1066,12 +1115,12 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             {/* 8. Search Input */}
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                Search (शोध)
+                {t('filters.search')}
               </label>
               <div className="relative mt-1">
                 <input
                   type="text"
-                  placeholder="App No, Receipt, Citizen, Cheque..."
+                  placeholder={t('filters.searchPlaceholder')}
                   value={searchText}
                   onChange={(e) => {
                     setSearchText(e.target.value);
@@ -1092,15 +1141,15 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-extrabold text-slate-800">
-              Live Data Preview: {activeDomain.replace('_', ' ')}
+              {t('table.livePreview')} {domainColumnsMap[activeDomain] ? t(`tabs.${activeDomain === 'COLLECTIONS' ? 'collections' : activeDomain === 'APPLICATIONS' ? 'applications' : activeDomain === 'SLA_COMPLIANCE' ? 'sla' : activeDomain === 'SETTLEMENT' ? 'settlement' : 'departmentSummary'}`) : ''}
             </span>
             <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-mono font-bold text-slate-700">
-              {(totalCount ?? 0).toLocaleString()} Records
+              {t('table.recordsCount', { count: (totalCount ?? 0).toLocaleString(numLocale) })}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-500">Rows per page:</label>
+            <label className="text-xs text-slate-500">{t('table.pageSize')}</label>
             <select
               value={pageSize}
               onChange={(e) => {
@@ -1170,7 +1219,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                   >
                     <div className="flex items-center justify-center gap-2">
                       <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
-                      <span>Loading report dataset...</span>
+                      <span>{t('table.loading')}</span>
                     </div>
                   </td>
                 </tr>
@@ -1181,7 +1230,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       colSpan={visibleColumns[activeDomain].length}
                       className="py-12 text-center text-xs font-semibold text-slate-400"
                     >
-                      No matching collection or settlement transactions found.
+                      {t('table.noRecords')}
                     </td>
                   </tr>
                 ) : (
@@ -1209,7 +1258,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         )}
                         {visibleColumns[activeDomain].includes('createdDate') && (
                           <td className="px-3 py-2.5 text-center text-slate-600">
-                            {item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-IN') : '—'}
+                            {formatDate(item.createdDate)}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('applicationNo') && (
@@ -1221,37 +1270,41 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                           <td className="px-3 py-2.5 font-medium text-slate-800">{item.citizenName || '—'}</td>
                         )}
                         {visibleColumns[activeDomain].includes('departmentName') && (
-                          <td className="px-3 py-2.5 text-slate-600">{item.departmentName || '—'}</td>
+                          <td className="px-3 py-2.5 text-slate-600">
+                            {isMr && item.departmentNameLocal ? item.departmentNameLocal : item.departmentName || '—'}
+                          </td>
                         )}
                         {visibleColumns[activeDomain].includes('serviceName') && (
-                          <td className="px-3 py-2.5 text-slate-700 font-medium">{item.serviceName || '—'}</td>
+                          <td className="px-3 py-2.5 text-slate-700 font-medium">
+                            {isMr && item.serviceNameLocal ? item.serviceNameLocal : item.serviceName || '—'}
+                          </td>
                         )}
                         {visibleColumns[activeDomain].includes('paymentMode') && (
                           <td className="px-3 py-2.5 text-center font-bold text-slate-700">
                             <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px]">
-                              {(item.paymentMode || '—').toUpperCase()}
+                              {formatPaymentMode(item.paymentMode)}
                             </span>
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('totalAmount') && (
                           <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900">
-                            ₹{Number(item.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            ₹{Number(item.totalAmount || 0).toLocaleString(numLocale, { minimumFractionDigits: 2 })}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('bankName') && (
-                          <td className="px-3 py-2.5 text-slate-600">{item.bankName || 'Cash Counter'}</td>
+                          <td className="px-3 py-2.5 text-slate-600">{item.bankName || t('paymentModes.cash')}</td>
                         )}
                         {visibleColumns[activeDomain].includes('instrumentNo') && (
                           <td className="px-3 py-2.5 text-center font-mono text-slate-600">{item.instrumentNo || '—'}</td>
                         )}
                         {visibleColumns[activeDomain].includes('instrumentDate') && (
                           <td className="px-3 py-2.5 text-center text-slate-600">
-                            {item.instrumentDate ? new Date(item.instrumentDate).toLocaleDateString('en-IN') : '—'}
+                            {formatDate(item.instrumentDate)}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('clearanceDate') && (
                           <td className="px-3 py-2.5 text-center text-slate-600">
-                            {item.clearanceDate ? new Date(item.clearanceDate).toLocaleDateString('en-IN') : '—'}
+                            {formatDate(item.clearanceDate)}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('approvalStatus') && (
@@ -1278,7 +1331,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       colSpan={visibleColumns[activeDomain].length}
                       className="py-12 text-center text-xs font-semibold text-slate-400"
                     >
-                      No department summary available.
+                      {t('table.noRecords')}
                     </td>
                   </tr>
                 ) : (
@@ -1288,19 +1341,23 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         <td className="px-3 py-2.5 text-center font-mono font-bold text-slate-500">{idx + 1}</td>
                       )}
                       {visibleColumns[activeDomain].includes('departmentName') && (
-                        <td className="px-3 py-2.5 font-bold text-slate-800">{item.departmentName}</td>
+                        <td className="px-3 py-2.5 font-bold text-slate-800">
+                          {isMr && item.departmentNameLocal ? item.departmentNameLocal : item.departmentName}
+                        </td>
                       )}
                       {visibleColumns[activeDomain].includes('serviceName') && (
-                        <td className="px-3 py-2.5 text-slate-700">{item.serviceName}</td>
+                        <td className="px-3 py-2.5 text-slate-700">
+                          {isMr && item.serviceNameLocal ? item.serviceNameLocal : item.serviceName}
+                        </td>
                       )}
                       {visibleColumns[activeDomain].includes('totalApplications') && (
                         <td className="px-3 py-2.5 text-center font-mono font-bold text-slate-800">
-                          {item.totalApplications.toLocaleString()}
+                          {item.totalApplications.toLocaleString(numLocale)}
                         </td>
                       )}
                       {visibleColumns[activeDomain].includes('approvedCount') && (
                         <td className="px-3 py-2.5 text-center font-mono font-bold text-emerald-700">
-                          {item.approvedCount.toLocaleString()}
+                          {item.approvedCount.toLocaleString(numLocale)}
                         </td>
                       )}
                       {visibleColumns[activeDomain].includes('approvedPercentage') && (
@@ -1312,17 +1369,17 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       )}
                       {visibleColumns[activeDomain].includes('pendingCount') && (
                         <td className="px-3 py-2.5 text-center font-mono font-bold text-amber-700">
-                          {item.pendingCount.toLocaleString()}
+                          {item.pendingCount.toLocaleString(numLocale)}
                         </td>
                       )}
                       {visibleColumns[activeDomain].includes('rejectedCount') && (
                         <td className="px-3 py-2.5 text-center font-mono font-bold text-rose-700">
-                          {item.rejectedCount.toLocaleString()}
+                          {item.rejectedCount.toLocaleString(numLocale)}
                         </td>
                       )}
                       {visibleColumns[activeDomain].includes('overdueCount') && (
                         <td className="px-3 py-2.5 text-center font-mono font-bold text-orange-700">
-                          {item.overdueCount.toLocaleString()}
+                          {item.overdueCount.toLocaleString(numLocale)}
                         </td>
                       )}
                       {visibleColumns[activeDomain].includes('slaAdherencePercentage') && (
@@ -1332,7 +1389,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       )}
                       {visibleColumns[activeDomain].includes('totalCollectionAmount') && (
                         <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900">
-                          ₹{(item.totalCollectionAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          ₹{(item.totalCollectionAmount || 0).toLocaleString(numLocale, { minimumFractionDigits: 2 })}
                         </td>
                       )}
                     </tr>
@@ -1345,7 +1402,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       colSpan={visibleColumns[activeDomain].length}
                       className="py-12 text-center text-xs font-semibold text-slate-400"
                     >
-                      No matching RTS applications found.
+                      {t('table.noRecords')}
                     </td>
                   </tr>
                 ) : (
@@ -1368,7 +1425,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         )}
                         {visibleColumns[activeDomain].includes('applicationDate') && (
                           <td className="px-3 py-2.5 text-center text-slate-600">
-                            {row.applicationDate ? new Date(row.applicationDate).toLocaleDateString('en-IN') : '—'}
+                            {formatDate(row.applicationDate)}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('applicantName') && (
@@ -1376,12 +1433,12 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         )}
                         {visibleColumns[activeDomain].includes('departmentName') && (
                           <td className="px-3 py-2.5 text-slate-600">
-                            {row.departmentNameLocal || row.departmentName || '—'}
+                            {isMr && row.departmentNameLocal ? row.departmentNameLocal : row.departmentName || '—'}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('serviceName') && (
                           <td className="px-3 py-2.5 text-slate-700 font-medium">
-                            {row.serviceNameLocal || row.serviceName || '—'}
+                            {isMr && row.serviceNameLocal ? row.serviceNameLocal : row.serviceName || '—'}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('currentStatus') && (
@@ -1392,22 +1449,22 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         )}
                         {visibleColumns[activeDomain].includes('expectedSlaDays') && (
                           <td className="px-3 py-2.5 text-center font-mono text-slate-700">
-                            {row.expectedSlaDays ? `${row.expectedSlaDays} Days` : '7 Days'}
+                            {row.expectedSlaDays ? `${row.expectedSlaDays}` : '7'}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('remainingDays') && (
                           <td className="px-3 py-2.5 text-center">
                             {row.overdueDays && row.overdueDays > 0 ? (
                               <span className="rounded bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-bold text-rose-700">
-                                {row.overdueDays} Days Overdue
+                                {row.overdueDays} {t('table.daysOverdue')}
                               </span>
                             ) : row.dueDays === 0 || row.remainingDays === 0 ? (
                               <span className="rounded bg-orange-50 border border-orange-200 px-2 py-0.5 text-[11px] font-bold text-orange-700">
-                                Due Today
+                                {t('table.dueToday')}
                               </span>
                             ) : (
                               <span className="rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
-                                {row.remainingDays ?? 0} Days Left
+                                {row.remainingDays ?? 0} {t('table.daysLeft')}
                               </span>
                             )}
                           </td>
@@ -1416,11 +1473,11 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                           <td className="px-3 py-2.5 text-center">
                             {row.overdueDays && row.overdueDays > 0 ? (
                               <span className="rounded bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-bold text-rose-700">
-                                {row.overdueDays}d Breached
+                                {row.overdueDays} {t('table.breached')}
                               </span>
                             ) : (
                               <span className="rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
-                                Compliant
+                                {t('table.compliant')}
                               </span>
                             )}
                           </td>
@@ -1445,13 +1502,13 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
               <tfoot className="border-t-2 border-slate-300 bg-slate-100/80 font-bold">
                 <tr>
                   <td colSpan={visibleColumns[activeDomain].length - 3} className="px-3 py-2.5 text-right uppercase">
-                    TOTAL AMOUNT (एकूण बेरीज):
+                    {t('table.totalAmountSum')}
                   </td>
                   <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900 text-sm">
-                    ₹{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹{totalAmount.toLocaleString(numLocale, { minimumFractionDigits: 2 })}
                   </td>
                   <td colSpan={2} className="px-3 py-2.5 text-left text-slate-500 font-normal">
-                    {totalCount.toLocaleString()} total entries
+                    {t('table.totalEntriesCount', { count: (totalCount ?? 0).toLocaleString(numLocale) })}
                   </td>
                 </tr>
               </tfoot>
@@ -1463,8 +1520,11 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
         {totalPages > 1 && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3">
             <span className="text-xs text-slate-500">
-              Showing page <strong className="text-slate-800">{pageNumber}</strong> of{' '}
-              <strong className="text-slate-800">{totalPages}</strong> ({(totalCount ?? 0).toLocaleString()} total records)
+              {t('table.showing', {
+                current: pageNumber,
+                totalPages: totalPages,
+                total: (totalCount ?? 0).toLocaleString(numLocale),
+              })}
             </span>
 
             <div className="flex items-center gap-1.5">
@@ -1474,7 +1534,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 onClick={() => setPageNumber(1)}
                 className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40"
               >
-                First
+                {t('table.first')}
               </button>
               <button
                 type="button"
@@ -1482,7 +1542,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
                 className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40"
               >
-                Prev
+                {t('table.previous')}
               </button>
               <span className="px-2 text-xs font-bold text-blue-700 font-mono">
                 {pageNumber} / {totalPages}
@@ -1493,7 +1553,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 onClick={() => setPageNumber((p) => Math.min(totalPages, p + 1))}
                 className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40"
               >
-                Next
+                {t('table.next')}
               </button>
               <button
                 type="button"
@@ -1501,7 +1561,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 onClick={() => setPageNumber(totalPages)}
                 className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40"
               >
-                Last
+                {t('table.last')}
               </button>
             </div>
           </div>

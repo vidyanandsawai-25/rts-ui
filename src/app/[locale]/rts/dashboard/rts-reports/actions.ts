@@ -1,17 +1,29 @@
 'use server';
 
+import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
+import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
+import {
+  getBanks,
+  getPendingClearancePayments,
+  type PendingClearanceItem,
+  type PendingClearanceQuery,
+} from '@/lib/api/rts/rtspayment.service';
+import { getApprovalApplicationsPaged } from '@/lib/api/rts/rts-application-approval.service';
+import type { RtsApprovalApplicationListItem } from '@/types/rts/application-approval.types';
 import {
   getRtsApplicationsDashboardAction,
-  getRtsApplicationFilterOptionsAction,
   type AdminApplicationGridRow,
   type RtsApplicationsDashboardFilters,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
-import {
-  getPendingClearancePaymentsAction,
-  getBanksAction,
-} from '@/app/[locale]/service/payment/actions';
-import type { PendingClearanceItem, PendingClearanceQuery } from '@/lib/api/rts/rtspayment.service';
+import { computeOverdueDays, computeRemainingDays } from '@/lib/utils/rts/application-grid';
 import type { DepartmentSummaryReportItem } from '@/lib/utils/rts/report-engine/rtsDomainReports';
+
+function parseSlaDays(sla: string | number | undefined | null): number {
+  if (typeof sla === 'number') return Number.isFinite(sla) ? Math.max(0, sla) : 0;
+  if (!sla) return 0;
+  const parsed = parseInt(String(sla), 10);
+  return Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
+}
 
 export interface RtsReportsFilterOptions {
   departments: Array<{ id: number; departmentName: string; departmentNameLocal?: string | null }>;
@@ -23,20 +35,103 @@ export interface RtsReportsFilterOptions {
  * 1. Load initial lookups for filter bars
  */
 export async function getRtsReportsLookupsAction(): Promise<RtsReportsFilterOptions> {
-  const [filterOpts, banksRes] = await Promise.all([
-    getRtsApplicationFilterOptionsAction().catch(() => ({ departments: [], services: [] })),
-    getBanksAction().catch(() => ({ success: false, data: [] })),
+  const [departments, services, banks] = await Promise.all([
+    getAllRtsDepartments().catch((err) => {
+      console.error('Error fetching departments for reports:', err);
+      return [];
+    }),
+    getAllRtsServices().catch((err) => {
+      console.error('Error fetching services for reports:', err);
+      return [];
+    }),
+    getBanks().catch((err) => {
+      console.error('Error fetching banks for reports:', err);
+      return [];
+    }),
   ]);
 
   return {
-    departments: filterOpts.departments || [],
-    services: filterOpts.services || [],
-    banks: banksRes.success && banksRes.data ? banksRes.data : [],
+    departments: (departments || []).map((d) => ({
+      id: d.id,
+      departmentName: d.departmentName,
+      departmentNameLocal: d.departmentNameLocal,
+    })),
+    services: (services || []).map((s) => ({
+      id: s.id,
+      serviceName: s.serviceName,
+      serviceNameLocal: s.serviceNameLocal,
+      departmentId: s.departmentId,
+    })),
+    banks: (banks || []).map((b) => ({
+      id: b.id,
+      bankName: b.bankName,
+      ifscCode: b.ifscCode,
+    })),
+  };
+}
+
+function mapApprovalAppToGridRow(app: RtsApprovalApplicationListItem): AdminApplicationGridRow {
+  const slaDays = parseSlaDays(app.sla);
+  const isActionable =
+    (app.applicationStatus || '').toLowerCase() === 'pending' ||
+    (app.applicationStatus || '').toLowerCase() === 'submitted';
+
+  const remainingDays =
+    app.remainingDays != null
+      ? app.remainingDays
+      : isActionable
+        ? computeRemainingDays(app.createdDate, slaDays)
+        : null;
+
+  const dueDays = app.dueDays ?? null;
+
+  const overdueDays =
+    app.overdueDays != null
+      ? app.overdueDays
+      : isActionable
+        ? computeOverdueDays(app.createdDate, slaDays)
+        : null;
+
+  const remarks = app.remark || '—';
+  const currentStageName = app.applicationStatus
+    ? app.applicationStatus.charAt(0).toUpperCase() + app.applicationStatus.slice(1)
+    : 'Pending';
+  const officerFullName = [app.officerFirstName, app.officerLastName]
+    .map((name) => name?.trim())
+    .filter((name): name is string => Boolean(name))
+    .join(' ');
+  const assignedToStr = app.userName?.trim() || '—';
+  const assignedToName = officerFullName || assignedToStr;
+
+  return {
+    source: 'approval',
+    applicationId: app.id,
+    applicationNo: app.applicationNo,
+    propertyNo: app.propertyNo?.trim() || null,
+    upicId: app.upicId?.trim() || null,
+    applicationDate: app.createdDate,
+    applicantName: app.applicantName?.trim() || '—',
+    serviceName: app.serviceName || 'Unknown Service',
+    serviceNameLocal: app.serviceNameLocal?.trim() || null,
+    departmentName: app.departmentName || 'Unknown Department',
+    departmentNameLocal: app.departmentNameLocal?.trim() || null,
+    currentStatus: app.applicationStatus,
+    currentStageName,
+    remarks,
+    expectedSlaDays: slaDays,
+    remainingDays,
+    dueDays,
+    overdueDays,
+    lastUpdatedDate: app.updatedDate || app.createdDate,
+    assignedTo: assignedToStr,
+    assignedToName,
+    assignedToRole: '',
+    assignedUserId: app.userId ?? null,
   };
 }
 
 /**
- * 2. Fetch Applications Report Data
+ * 2. Fetch Applications Report Data (Flexible Page Size)
  */
 export async function getRtsApplicationsReportDataAction(
   filters: Partial<RtsApplicationsDashboardFilters> = {},
@@ -47,6 +142,37 @@ export async function getRtsApplicationsReportDataAction(
   totalCount: number;
   totalPages: number;
 }> {
+  try {
+    const pagedResult = await getApprovalApplicationsPaged({
+      pageNumber,
+      pageSize,
+      departmentId: filters.departmentId,
+      serviceId: filters.serviceId,
+      search: filters.search,
+      applicationNo: filters.applicationNo,
+      status: filters.status,
+      fromDate: filters.fromDate,
+      toDate: filters.toDate,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+    });
+
+    if (pagedResult && Array.isArray(pagedResult.applications) && pagedResult.applications.length > 0) {
+      const rows = pagedResult.applications.map(mapApprovalAppToGridRow);
+      const totalCount = pagedResult.totalCount ?? rows.length;
+      const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+      return {
+        rows,
+        totalCount,
+        totalPages,
+      };
+    }
+  } catch (err) {
+    console.warn('getApprovalApplicationsPaged failed, falling back to dashboard action:', err);
+  }
+
+  // Fallback to getRtsApplicationsDashboardAction
   const result = await getRtsApplicationsDashboardAction({
     ...filters,
     pageNumber,
@@ -68,6 +194,28 @@ export async function getRtsApplicationsReportDataAction(
 export async function getAllApplicationsForExportAction(
   filters: Partial<RtsApplicationsDashboardFilters> = {}
 ): Promise<AdminApplicationGridRow[]> {
+  try {
+    const pagedResult = await getApprovalApplicationsPaged({
+      pageNumber: 1,
+      pageSize: 5000,
+      departmentId: filters.departmentId,
+      serviceId: filters.serviceId,
+      search: filters.search,
+      applicationNo: filters.applicationNo,
+      status: filters.status,
+      fromDate: filters.fromDate,
+      toDate: filters.toDate,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+    });
+
+    if (pagedResult && Array.isArray(pagedResult.applications) && pagedResult.applications.length > 0) {
+      return pagedResult.applications.map(mapApprovalAppToGridRow);
+    }
+  } catch (err) {
+    console.warn('getAllApplicationsForExportAction approval paged error:', err);
+  }
+
   const result = await getRtsApplicationsDashboardAction({
     ...filters,
     pageNumber: 1,
@@ -86,8 +234,19 @@ export async function getRtsCollectionsReportDataAction(
   totalPages: number;
   totalAmount: number;
 }> {
-  const res = await getPendingClearancePaymentsAction(query);
-  if (!res.success || !res.data) {
+  try {
+    const res = await getPendingClearancePayments(query);
+    const items = res.items || [];
+    const totalAmount = res.totalAmount ?? items.reduce((sum, item) => sum + (Number(item.totalAmount) || 0), 0);
+
+    return {
+      items,
+      totalCount: res.totalCount || items.length,
+      totalPages: res.totalPages || Math.max(1, Math.ceil((res.totalCount || items.length) / (query.pageSize || 25))),
+      totalAmount,
+    };
+  } catch (err) {
+    console.error('Error fetching clearance payments:', err);
     return {
       items: [],
       totalCount: 0,
@@ -95,16 +254,6 @@ export async function getRtsCollectionsReportDataAction(
       totalAmount: 0,
     };
   }
-
-  const items = res.data.items || [];
-  const totalAmount = items.reduce((sum, item) => sum + (Number(item.totalAmount) || 0), 0);
-
-  return {
-    items,
-    totalCount: res.data.totalCount || items.length,
-    totalPages: res.data.totalPages || 1,
-    totalAmount,
-  };
 }
 
 /**
@@ -113,12 +262,17 @@ export async function getRtsCollectionsReportDataAction(
 export async function getAllCollectionsForExportAction(
   query: Omit<PendingClearanceQuery, 'pageNumber' | 'pageSize'>
 ): Promise<PendingClearanceItem[]> {
-  const res = await getPendingClearancePaymentsAction({
-    ...query,
-    pageNumber: 1,
-    pageSize: 10000,
-  });
-  return res.success && res.data?.items ? res.data.items : [];
+  try {
+    const res = await getPendingClearancePayments({
+      ...query,
+      pageNumber: 1,
+      pageSize: 10000,
+    });
+    return res.items || [];
+  } catch (err) {
+    console.error('Error fetching all collections for export:', err);
+    return [];
+  }
 }
 
 /**
@@ -130,26 +284,29 @@ export async function getRtsDepartmentSummaryReportDataAction(
   toDate?: string
 ): Promise<DepartmentSummaryReportItem[]> {
   try {
-    // Fetch applications and clearance payments to aggregate live departmental summaries
     const [appsResult, clearanceResult] = await Promise.all([
-      getRtsApplicationsDashboardAction({
+      getApprovalApplicationsPaged({
+        pageNumber: 1,
+        pageSize: 5000,
         departmentId,
         fromDate,
         toDate,
-        pageNumber: 1,
-      }),
-      getPendingClearancePaymentsAction({
+      }).catch(() => null),
+      getPendingClearancePayments({
         fromDate,
         toDate,
         pageNumber: 1,
         pageSize: 10000,
-      }),
+      }).catch(() => null),
     ]);
 
-    const apps = appsResult.rows || [];
-    const payments = clearanceResult.success && clearanceResult.data?.items ? clearanceResult.data.items : [];
+    const apps: AdminApplicationGridRow[] =
+      appsResult?.applications && appsResult.applications.length > 0
+        ? appsResult.applications.map(mapApprovalAppToGridRow)
+        : (await getRtsApplicationsDashboardAction({ departmentId, fromDate, toDate, pageNumber: 1 })).rows || [];
 
-    // Group by Department + Service
+    const payments = clearanceResult?.items || [];
+
     const groupMap = new Map<string, DepartmentSummaryReportItem>();
 
     apps.forEach((app) => {
@@ -160,7 +317,9 @@ export async function getRtsDepartmentSummaryReportDataAction(
       if (!groupMap.has(key)) {
         groupMap.set(key, {
           departmentName: deptName,
+          departmentNameLocal: app.departmentNameLocal || undefined,
           serviceName: svcName,
+          serviceNameLocal: app.serviceNameLocal || undefined,
           totalApplications: 0,
           approvedCount: 0,
           approvedPercentage: 0,
@@ -189,7 +348,6 @@ export async function getRtsDepartmentSummaryReportDataAction(
       }
     });
 
-    // Map payments to department collections
     payments.forEach((pay) => {
       const deptName = pay.departmentName || 'General Administration';
       const svcName = pay.serviceName || 'Standard Service';
@@ -201,7 +359,6 @@ export async function getRtsDepartmentSummaryReportDataAction(
       }
     });
 
-    // Compute percentages
     const summaryItems: DepartmentSummaryReportItem[] = [];
     let idx = 1;
     groupMap.forEach((item) => {

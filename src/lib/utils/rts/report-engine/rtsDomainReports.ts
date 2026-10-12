@@ -35,7 +35,9 @@ export interface RtsSlaExportOptions extends BaseReportExportOptions {
 export interface DepartmentSummaryReportItem {
   srNo?: number;
   departmentName: string;
+  departmentNameLocal?: string;
   serviceName?: string;
+  serviceNameLocal?: string;
   totalApplications: number;
   approvedCount: number;
   approvedPercentage: number;

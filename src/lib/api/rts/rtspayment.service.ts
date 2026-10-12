@@ -178,6 +178,8 @@ export interface PendingClearanceQuery {
   fromDate?: string;
   toDate?: string;
   searchText?: string;
+  departmentId?: number;
+  serviceId?: number;
   pageNumber?: number;
   pageSize?: number;
 }
@@ -190,7 +192,9 @@ export interface PendingClearanceItem {
   citizenName?: string;
   citizenMobile?: string;
   serviceName: string;
+  serviceNameLocal?: string;
   departmentName: string;
+  departmentNameLocal?: string;
   paymentMode: string;
   totalAmount: number;
   currency: string;
@@ -263,6 +267,7 @@ export interface BulkClearanceResponse {
 export interface PagedItemsResult<T> {
   items: T[];
   totalCount: number;
+  totalAmount?: number;
   pageNumber: number;
   pageSize: number;
   totalPages: number;
@@ -277,6 +282,8 @@ export async function getPendingClearancePayments(
   if (query.fromDate) params.append("fromDate", query.fromDate);
   if (query.toDate) params.append("toDate", query.toDate);
   if (query.searchText) params.append("searchText", query.searchText);
+  if (query.departmentId) params.append("departmentId", query.departmentId.toString());
+  if (query.serviceId) params.append("serviceId", query.serviceId.toString());
   if (query.pageNumber) params.append("pageNumber", query.pageNumber.toString());
   if (query.pageSize) params.append("pageSize", query.pageSize.toString());
 
