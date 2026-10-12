@@ -834,9 +834,8 @@ export default function RtsApplicationDashboard({
             </p>
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-1 lg:items-end">
-            <div className="flex w-full min-w-0 flex-wrap items-end gap-3 lg:justify-end">
-            <div className="w-full sm:w-44 space-y-1">
+          <div className="flex min-w-0 flex-1 flex-wrap items-end justify-start gap-2 lg:justify-end">
+            <div className="w-full space-y-1 sm:w-36 lg:w-40">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {t('applicationDashboard.table.department')}
               </Label>
@@ -850,7 +849,7 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            <div className="w-full sm:w-44 space-y-1">
+            <div className="w-full space-y-1 sm:w-36 lg:w-40">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {t('applicationDashboard.table.serviceName')}
               </Label>
@@ -863,7 +862,7 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            <div className="w-full sm:w-32 space-y-1">
+            <div className="w-full space-y-1 sm:w-28 lg:w-32">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {tCommon('status.label')}
               </Label>
@@ -875,7 +874,7 @@ export default function RtsApplicationDashboard({
               />
             </div>
 
-            <div className="w-full sm:w-[15.5rem] space-y-1">
+            <div className="w-full space-y-1 sm:w-[13.5rem] lg:w-[14.5rem]">
               <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
                 {t('applicationDashboard.filters.dateRange')}
               </Label>
@@ -910,49 +909,44 @@ export default function RtsApplicationDashboard({
               </div>
             </div>
 
+            <div className="w-full space-y-1 sm:w-44 lg:w-52">
+              <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
+                {tCommon('actions.search')}
+              </Label>
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onEnter={() => updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' })}
+                placeholder={t('applicationDashboard.applications.searchPlaceholder')}
+                className="mb-0 w-full font-medium"
+              />
             </div>
 
-            <div className="flex w-full shrink-0 flex-wrap items-end justify-center gap-2 lg:justify-end">
-              <div className="w-full flex-none space-y-1 md:w-72">
-                <Label className="text-[10px] font-bold uppercase text-[#3d3d3d]">
-                  {tCommon('actions.search')}
-                </Label>
-                <SearchInput
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  onEnter={() => updateUrl({ ...filters, search: searchTerm.trim(), pageNumber: '1' })}
-                  placeholder={t('applicationDashboard.applications.searchPlaceholder')}
-                  className="mb-0 w-full font-medium"
-                />
-              </div>
-
-              <div className="flex h-9 flex-none items-center rounded-lg border border-slate-200 bg-slate-50 px-3">
-                <ToggleSwitch
-                  checked={filters.myApplications}
-                  onChange={(checked) => updateUrl({
-                    ...filters,
-                    myApplications: checked,
-                    pageNumber: '1',
-                  })}
-                  label={t('applicationDashboard.filters.showMyApplications')}
-                  showPopup={false}
-                  activeLabel={t('applicationDashboard.filters.showMyApplications')}
-                  inactiveLabel={t('applicationDashboard.filters.showMyApplications')}
-                />
-              </div>
-
-              {hasActiveTableFilters && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={clearTableFilters}
-                  className="mb-0.5"
-                >
-                  {t('applicationDashboard.filters.clearFilters')}
-                </Button>
-              )}
+            <div className="flex h-9 flex-none items-center rounded-lg border border-slate-200 bg-slate-50 px-3">
+              <ToggleSwitch
+                checked={filters.myApplications}
+                onChange={(checked) => updateUrl({
+                  ...filters,
+                  myApplications: checked,
+                  pageNumber: '1',
+                })}
+                label={t('applicationDashboard.filters.showMyApplications')}
+                showPopup={false}
+                activeLabel={t('applicationDashboard.filters.showMyApplications')}
+                inactiveLabel={t('applicationDashboard.filters.showMyApplications')}
+              />
             </div>
 
+            {hasActiveTableFilters && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={clearTableFilters}
+                className="mb-0.5"
+              >
+                {t('applicationDashboard.filters.clearFilters')}
+              </Button>
+            )}
           </div>
         </div>
 
