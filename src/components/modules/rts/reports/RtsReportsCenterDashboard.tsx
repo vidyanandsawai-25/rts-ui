@@ -1,39 +1,27 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
+import { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
 import Link from 'next/link';
 import {
-  FileSpreadsheet,
   FileText,
-  FileCode,
-  Download,
-  Filter,
   Eye,
   RefreshCw,
   Search,
-  Calendar,
   Building2,
-  Briefcase,
   IndianRupee,
   Layers,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertTriangle,
   RotateCcw,
   SlidersHorizontal,
   ChevronDown,
   ArrowUpDown,
   CreditCard,
-  Building,
-  HelpCircle,
   ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Card,
-  Button,
-} from '@/components/common';
+import { Card } from '@/components/common';
 import RtsExportDropdown from '@/components/modules/rts/reports/RtsExportDropdown';
 import {
   exportRtsApplications,
@@ -54,7 +42,7 @@ import {
   type RtsReportsFilterOptions,
 } from '@/app/[locale]/rts/dashboard/rts-reports/actions';
 import type { AdminApplicationGridRow } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
-import type { PendingClearanceItem } from '@/types/rts/payment.types';
+import type { PendingClearanceItem } from '@/lib/api/rts/rtspayment.service';
 
 export type ReportDomain =
   | 'COLLECTIONS'
@@ -104,7 +92,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
 
   // 4. Sorting State
   const [sortKey, setSortKey] = useState<string>('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // 5. Lookups
   const [lookups, setLookups] = useState<RtsReportsFilterOptions>({
@@ -1159,7 +1147,15 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         }`}
                       >
                         <span>{col.label}</span>
-                        <ArrowUpDown className="h-3 w-3 opacity-60 hover:opacity-100" />
+                        <ArrowUpDown
+                          className={`h-3 w-3 ${
+                            sortKey === col.key
+                              ? sortOrder === 'asc'
+                                ? 'text-amber-300 opacity-100 rotate-180'
+                                : 'text-amber-300 opacity-100'
+                              : 'opacity-60 hover:opacity-100'
+                          }`}
+                        />
                       </div>
                     </th>
                   ))}

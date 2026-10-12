@@ -1611,12 +1611,11 @@ export async function getAdminApplicationsGridAction(): Promise<AdminApplication
 }
 
 export async function exportAllFilteredApplicationsAction(
-  filters: Partial<RtsApplicationsDashboardFilterInput> = {}
+  filters: Partial<RtsApplicationsDashboardFilters> = {}
 ): Promise<AdminApplicationGridRow[]> {
   const result = await getRtsApplicationsDashboardAction({
     ...filters,
     pageNumber: 1,
-    pageSize: 10000,
   });
   return result.rows;
 }

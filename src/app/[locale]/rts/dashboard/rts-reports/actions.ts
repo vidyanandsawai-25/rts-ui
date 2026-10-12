@@ -4,14 +4,13 @@ import {
   getRtsApplicationsDashboardAction,
   getRtsApplicationFilterOptionsAction,
   type AdminApplicationGridRow,
-  type RtsApplicationsDashboardFilterInput,
+  type RtsApplicationsDashboardFilters,
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import {
   getPendingClearancePaymentsAction,
   getBanksAction,
-  getClearanceStatsAction,
 } from '@/app/[locale]/service/payment/actions';
-import type { PendingClearanceItem, PendingClearanceQuery } from '@/types/rts/payment.types';
+import type { PendingClearanceItem, PendingClearanceQuery } from '@/lib/api/rts/rtspayment.service';
 import type { DepartmentSummaryReportItem } from '@/lib/utils/rts/report-engine/rtsDomainReports';
 
 export interface RtsReportsFilterOptions {
@@ -40,7 +39,7 @@ export async function getRtsReportsLookupsAction(): Promise<RtsReportsFilterOpti
  * 2. Fetch Applications Report Data
  */
 export async function getRtsApplicationsReportDataAction(
-  filters: Partial<RtsApplicationsDashboardFilterInput> = {},
+  filters: Partial<RtsApplicationsDashboardFilters> = {},
   pageNumber = 1,
   pageSize = 25
 ): Promise<{
@@ -51,13 +50,15 @@ export async function getRtsApplicationsReportDataAction(
   const result = await getRtsApplicationsDashboardAction({
     ...filters,
     pageNumber,
-    pageSize,
   });
+
+  const totalCount = result.pagination?.totalCount ?? result.rows.length;
+  const totalPages = result.pagination?.totalPages ?? Math.max(1, Math.ceil(totalCount / pageSize));
 
   return {
     rows: result.rows,
-    totalCount: result.totalCount,
-    totalPages: Math.max(1, Math.ceil(result.totalCount / pageSize)),
+    totalCount,
+    totalPages,
   };
 }
 
@@ -65,12 +66,11 @@ export async function getRtsApplicationsReportDataAction(
  * 3. Fetch Full Applications Data for Export (up to 10,000)
  */
 export async function getAllApplicationsForExportAction(
-  filters: Partial<RtsApplicationsDashboardFilterInput> = {}
+  filters: Partial<RtsApplicationsDashboardFilters> = {}
 ): Promise<AdminApplicationGridRow[]> {
   const result = await getRtsApplicationsDashboardAction({
     ...filters,
     pageNumber: 1,
-    pageSize: 10000,
   });
   return result.rows;
 }
@@ -137,7 +137,6 @@ export async function getRtsDepartmentSummaryReportDataAction(
         fromDate,
         toDate,
         pageNumber: 1,
-        pageSize: 10000,
       }),
       getPendingClearancePaymentsAction({
         fromDate,

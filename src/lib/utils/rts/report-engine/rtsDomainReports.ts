@@ -6,7 +6,7 @@ import {
   RtsReportConfig,
 } from './rtsReportEngine';
 import type { AdminApplicationGridRow } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
-import type { PendingClearanceItemDto } from '@/types/rts/payment.types';
+import type { PendingClearanceItem as PendingClearanceItemDto } from '@/lib/api/rts/rtspayment.service';
 
 export type ReportExportFormat = 'excel' | 'csv' | 'pdf';
 
@@ -518,7 +518,7 @@ export function exportRtsSlaCompliance(
       key: 'overdueDays',
       width: 20,
       align: 'center',
-      formatter: (val, row) => {
+      formatter: (_val, row) => {
         if (row.overdueDays && row.overdueDays > 0) {
           return `BREACHED (${row.overdueDays} Days Overdue)`;
         }
@@ -543,7 +543,7 @@ export function exportRtsSlaCompliance(
       key: 'assignedTo',
       width: 24,
       align: 'left',
-      formatter: (val, row) => row.assignedToName || val || '—',
+      formatter: (val, row) => String(row.assignedToName || val || '—'),
     },
     {
       header: 'Remarks / Delay Reason',
