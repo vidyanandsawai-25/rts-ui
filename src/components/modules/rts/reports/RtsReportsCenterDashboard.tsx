@@ -734,7 +734,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                 >
                   <IconComponent className="h-4 w-4" />
                 </div>
-                {domain.badge !== null && (
+                {typeof domain.badge === 'number' && !isNaN(domain.badge) && (
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
                     {domain.badge.toLocaleString()}
                   </span>
@@ -753,14 +753,14 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
         <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Entries</p>
-          <p className="mt-1 font-mono text-2xl font-black text-slate-800">{totalCount.toLocaleString()}</p>
+          <p className="mt-1 font-mono text-2xl font-black text-slate-800">{(totalCount ?? 0).toLocaleString()}</p>
           <p className="mt-0.5 text-[10px] text-slate-500">Matching active filters</p>
         </div>
 
         {totalAmount > 0 && (
           <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3.5 shadow-sm">
             <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Total Fee Revenue</p>
-            <p className="mt-1 font-mono text-2xl font-black text-emerald-800">₹{totalAmount.toLocaleString('en-IN')}</p>
+            <p className="mt-1 font-mono text-2xl font-black text-emerald-800">₹{(totalAmount ?? 0).toLocaleString('en-IN')}</p>
             <p className="mt-0.5 text-[10px] text-emerald-600">Municipal collection sum</p>
           </div>
         )}
@@ -1107,7 +1107,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
               Live Data Preview: {activeDomain.replace('_', ' ')}
             </span>
             <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-mono font-bold text-slate-700">
-              {totalCount.toLocaleString()} Records
+              {(totalCount ?? 0).toLocaleString()} Records
             </span>
           </div>
 
@@ -1468,7 +1468,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3">
             <span className="text-xs text-slate-500">
               Showing page <strong className="text-slate-800">{pageNumber}</strong> of{' '}
-              <strong className="text-slate-800">{totalPages}</strong> ({totalCount.toLocaleString()} total records)
+              <strong className="text-slate-800">{totalPages}</strong> ({(totalCount ?? 0).toLocaleString()} total records)
             </span>
 
             <div className="flex items-center gap-1.5">

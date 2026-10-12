@@ -35,8 +35,6 @@ import {
   Modal,
   Label,
 } from '@/components/common';
-import RtsExportDropdown from '@/components/modules/rts/reports/RtsExportDropdown';
-import { exportRtsPaymentSettlement, type ReportExportFormat } from '@/lib/utils/rts/report-engine/rtsDomainReports';
 import {
   getPendingClearancePaymentsAction,
   getClearanceStatsAction,
@@ -247,47 +245,6 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     setFromDate('');
     setToDate('');
     setPageNumber(1);
-  };
-
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExportReport = async (format: ReportExportFormat, scope: 'page' | 'all') => {
-    setIsExporting(true);
-    try {
-      let exportData: PendingClearanceItem[] = items;
-      if (scope === 'all' && totalCount > items.length) {
-        toast.info('Fetching all filtered transactions for report...');
-        const res = await getPendingClearancePaymentsAction({
-          pageNumber: 1,
-          pageSize: 10000,
-          statusCode: activeTab !== 'ALL' ? activeTab : undefined,
-          paymentMode: selectedMode !== 'ALL' ? selectedMode : undefined,
-          searchText: searchText.trim() || undefined,
-          fromDate: fromDate || undefined,
-          toDate: toDate || undefined,
-        });
-        if (res.success && res.data?.items) {
-          exportData = res.data.items;
-        }
-      }
-
-      exportRtsPaymentSettlement(exportData, {
-        format,
-        appliedFilters: {
-          'Payment Mode': selectedMode !== 'ALL' ? selectedMode : 'All Modes',
-          Status: activeTab !== 'ALL' ? activeTab : 'All Statuses',
-          Bank: selectedBankName !== 'ALL' ? selectedBankName : undefined,
-          Search: searchText || undefined,
-          'Date Range': fromDate ? `${fromDate} to ${toDate || 'Present'}` : undefined,
-        },
-      });
-      toast.success(`Report exported successfully (${exportData.length} records)`);
-    } catch (err) {
-      console.error('Failed to export payment settlement report:', err);
-      toast.error('Failed to export settlement report.');
-    } finally {
-      setIsExporting(false);
-    }
   };
 
   // 1. Handle Approve Modal
@@ -634,13 +591,6 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
             <Layers className="h-4 w-4 text-blue-600" />
             <span>Reports Center</span>
           </Link>
-
-          <RtsExportDropdown
-            onExport={handleExportReport}
-            currentPageCount={items.length}
-            totalFilteredCount={totalCount}
-            isLoading={isExporting}
-          />
 
           <a
             href="/api/rts/clearance-template"

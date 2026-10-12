@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { resolveIcon } from '@/lib/utils/icon-mapping';
 import { locales } from '@/i18n/config';
-import type { MenuItem } from '@/types/menu.types';
+import type { MenuItem, SubMenuItem } from '@/types/menu.types';
 import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
 import { SidebarFrame } from './SidebarFrame';
@@ -57,9 +57,51 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
 
   const currentDept = getDepartment(pathWithoutLocale);
 
+  const enrichedMenuItems = useMemo(() => {
+    const rtsSubItems: SubMenuItem[] = [
+      { name: 'Applications Dashboard', href: '/rts/dashboard/rts-applications' },
+      { name: 'Payment Settlement', href: '/rts/dashboard/rts-settlement' },
+      { name: 'Reports Center', href: '/rts/dashboard/rts-reports' },
+      { name: 'RTS MIS Dashboard', href: '/rts/dashboard/rts-mis' },
+    ];
+
+    const rtsGroupIndex = menuItems.findIndex(
+      (item) =>
+        item.name.toLowerCase().includes('rts') ||
+        item.name.toLowerCase().includes('right to service') ||
+        item.href?.includes('/rts') ||
+        item.subItems?.some((sub) => sub.href?.includes('/rts'))
+    );
+
+    if (rtsGroupIndex >= 0) {
+      const existingGroup = menuItems[rtsGroupIndex];
+      const existingSubs = existingGroup.subItems || [];
+      const mergedSubs = [...existingSubs];
+      rtsSubItems.forEach((target) => {
+        if (!mergedSubs.some((s) => s.href?.toLowerCase() === target.href?.toLowerCase())) {
+          mergedSubs.push(target);
+        }
+      });
+      return menuItems.map((item, idx) =>
+        idx === rtsGroupIndex ? { ...item, subItems: mergedSubs } : item
+      );
+    }
+
+    return [
+      ...menuItems,
+      {
+        name: 'Right to Services (RTS)',
+        nameHi: 'लोकसेवा हक्क (RTS)',
+        iconName: 'FileText',
+        href: '#',
+        subItems: rtsSubItems,
+      },
+    ];
+  }, [menuItems]);
+
   const filterableDepartments = useMemo(() => {
-    const depts = new Set<string>(['configuration-settings']);
-    menuItems.forEach((item) => {
+    const depts = new Set<string>(['configuration-settings', 'rts']);
+    enrichedMenuItems.forEach((item) => {
       if (item.href && item.href !== '#') {
         const dept = getDepartment(item.href);
         if (dept && dept !== 'home' && dept !== 'dashboard') {
@@ -78,14 +120,14 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
       }
     });
     return Array.from(depts);
-  }, [menuItems]);
+  }, [enrichedMenuItems]);
 
   const isFilterable = filterableDepartments.includes(currentDept);
 
   const filteredMenuItems = useMemo(() => {
-    if (!isFilterable) return menuItems;
+    if (!isFilterable) return enrichedMenuItems;
 
-    return menuItems
+    return enrichedMenuItems
       .map((item) => {
         if (item.subItems && item.subItems.length > 0) {
           const filteredSub = item.subItems.filter((sub) => {
@@ -109,7 +151,7 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
         }
         return false;
       });
-  }, [menuItems, currentDept, isFilterable]);
+  }, [enrichedMenuItems, currentDept, isFilterable]);
 
   const allPaths: string[] = [];
   filteredMenuItems.forEach((item) => {
