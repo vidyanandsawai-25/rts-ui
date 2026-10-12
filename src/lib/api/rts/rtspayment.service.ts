@@ -120,7 +120,9 @@ export interface RecordOfflinePaymentPayload {
   amount?: number;
   instrumentNo?: string;
   instrumentDate?: string;
+  bankId?: number;
   bankName?: string;
+  branchName?: string;
   remarks?: string;
 }
 
@@ -169,3 +171,224 @@ export async function getPaymentStatus(applicationId: number): Promise<PaymentSt
     return null;
   }
 }
+
+export interface PendingClearanceQuery {
+  paymentMode?: string;
+  statusCode?: string;
+  fromDate?: string;
+  toDate?: string;
+  searchText?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface PendingClearanceItem {
+  transactionId: number;
+  transactionNo: string;
+  applicationId: number;
+  applicationNo: string;
+  citizenName?: string;
+  citizenMobile?: string;
+  serviceName: string;
+  departmentName: string;
+  paymentMode: string;
+  totalAmount: number;
+  currency: string;
+  bankId?: number;
+  bankName?: string;
+  branchName?: string;
+  instrumentNo?: string;
+  instrumentDate?: string;
+  clearanceDate?: string;
+  bankRefNo?: string;
+  gatewayPaymentId?: string;
+  receiptNo?: string;
+  receiptDate?: string;
+  paymentDate?: string;
+  paymentStatus: string;
+  statusBadgeColor?: string;
+  approvalStatus?: string;
+  isReceiptCancelled: boolean;
+  cancellationReason?: string;
+  failureReason?: string;
+  remarks?: string;
+  createdDate: string;
+}
+
+export interface PendingClearanceStats {
+  totalPendingDdCheque: number;
+  totalPendingOnline: number;
+  totalClearedToday: number;
+  totalBounced: number;
+  totalCancelled: number;
+  totalClearedAmountToday: number;
+}
+
+export interface ApprovePaymentPayload {
+  transactionId: number;
+  clearanceDate?: string;
+  bankRefNo?: string;
+  remarks?: string;
+}
+
+export interface DisapprovePaymentPayload {
+  transactionId: number;
+  reason: string;
+  remarks?: string;
+}
+
+export interface CancelReceiptPayload {
+  transactionId: number;
+  reason: string;
+  remarks?: string;
+}
+
+export interface BulkClearanceRowResult {
+  rowIndex: number;
+  applicationNo: string;
+  instrumentNo?: string;
+  action: string;
+  success: boolean;
+  message: string;
+}
+
+export interface BulkClearanceResponse {
+  totalRows: number;
+  processedCount: number;
+  successCount: number;
+  failureCount: number;
+  results: BulkClearanceRowResult[];
+}
+
+export interface PagedItemsResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export async function getPendingClearancePayments(
+  query: PendingClearanceQuery
+): Promise<PagedItemsResult<PendingClearanceItem>> {
+  const params = new URLSearchParams();
+  if (query.paymentMode) params.append("paymentMode", query.paymentMode);
+  if (query.statusCode) params.append("statusCode", query.statusCode);
+  if (query.fromDate) params.append("fromDate", query.fromDate);
+  if (query.toDate) params.append("toDate", query.toDate);
+  if (query.searchText) params.append("searchText", query.searchText);
+  if (query.pageNumber) params.append("pageNumber", query.pageNumber.toString());
+  if (query.pageSize) params.append("pageSize", query.pageSize.toString());
+
+  const res = await apiClient.get<ApiResponseWrapper<PagedItemsResult<PendingClearanceItem>>>(
+    `/RTSPayment/pending-clearance?${params.toString()}`
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to fetch pending clearance items");
+  }
+  return res.data.items;
+}
+
+export async function getClearanceStats(): Promise<PendingClearanceStats> {
+  const res = await apiClient.get<ApiResponseWrapper<PendingClearanceStats>>("/RTSPayment/clearance-stats");
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to fetch clearance statistics");
+  }
+  return res.data.items;
+}
+
+export async function approveClearance(payload: ApprovePaymentPayload): Promise<VerifyPaymentResult> {
+  const res = await apiClient.post<ApiResponseWrapper<VerifyPaymentResult>>(
+    "/RTSPayment/approve-clearance",
+    payload
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to approve clearance");
+  }
+  return res.data.items;
+}
+
+export async function disapproveClearance(payload: DisapprovePaymentPayload): Promise<VerifyPaymentResult> {
+  const res = await apiClient.post<ApiResponseWrapper<VerifyPaymentResult>>(
+    "/RTSPayment/disapprove-clearance",
+    payload
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to disapprove clearance");
+  }
+  return res.data.items;
+}
+
+export async function cancelReceipt(payload: CancelReceiptPayload): Promise<VerifyPaymentResult> {
+  const res = await apiClient.post<ApiResponseWrapper<VerifyPaymentResult>>(
+    "/RTSPayment/cancel-receipt",
+    payload
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to cancel receipt");
+  }
+  return res.data.items;
+}
+
+export async function uploadBulkClearance(formData: FormData): Promise<BulkClearanceResponse> {
+  const res = await apiClient.post<ApiResponseWrapper<BulkClearanceResponse>>(
+    "/RTSPayment/bulk-clearance-upload",
+    formData
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to process bulk clearance upload");
+  }
+  return res.data.items;
+}
+
+export interface RTSBankLookup {
+  id: number;
+  bankCode: string;
+  bankName: string;
+  branchName?: string;
+  ifscCode?: string;
+}
+
+export interface ReceiptCancellationLog {
+  id: number;
+  transactionId: number;
+  applicationId: number;
+  receiptNumber: string;
+  originalAmount: number;
+  paymentMode: string;
+  instrumentNo?: string;
+  bankId?: number;
+  bankName?: string;
+  cancelledBy?: number;
+  cancelledByName?: string;
+  cancelledDate: string;
+  cancellationReason: string;
+  approvedBy?: number;
+  approvedByName?: string;
+  approvedDate?: string;
+  approvalRemarks?: string;
+  createdDate: string;
+}
+
+export async function getBanks(): Promise<RTSBankLookup[]> {
+  try {
+    const res = await apiClient.get<ApiResponseWrapper<RTSBankLookup[]>>("/RTSPayment/banks");
+    return res.data?.items || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getCancellationLogs(applicationId?: number, transactionId?: number): Promise<ReceiptCancellationLog[]> {
+  try {
+    const params = new URLSearchParams();
+    if (applicationId) params.append("applicationId", applicationId.toString());
+    if (transactionId) params.append("transactionId", transactionId.toString());
+    const res = await apiClient.get<ApiResponseWrapper<ReceiptCancellationLog[]>>(`/RTSPayment/cancellation-logs?${params.toString()}`);
+    return res.data?.items || [];
+  } catch {
+    return [];
+  }
+}
+
+

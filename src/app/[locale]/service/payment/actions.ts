@@ -7,6 +7,14 @@ import {
   getPaymentReceipt,
   getPaymentReceiptByNo,
   getPaymentStatus,
+  getPendingClearancePayments,
+  getClearanceStats,
+  approveClearance,
+  disapproveClearance,
+  cancelReceipt,
+  uploadBulkClearance,
+  getBanks,
+  getCancellationLogs,
   type CreatePaymentOrderPayload,
   type PaymentOrderResult,
   type VerifyPaymentPayload,
@@ -14,6 +22,16 @@ import {
   type RecordOfflinePaymentPayload,
   type PaymentReceiptResult,
   type PaymentStatusResult,
+  type PendingClearanceQuery,
+  type PendingClearanceItem,
+  type PendingClearanceStats,
+  type ApprovePaymentPayload,
+  type DisapprovePaymentPayload,
+  type CancelReceiptPayload,
+  type BulkClearanceResponse,
+  type PagedItemsResult,
+  type RTSBankLookup,
+  type ReceiptCancellationLog,
 } from "@/lib/api/rts/rtspayment.service";
 
 export async function createPaymentOrderAction(
@@ -99,3 +117,125 @@ export async function getPaymentStatusAction(
     };
   }
 }
+
+export async function getPendingClearancePaymentsAction(
+  query: PendingClearanceQuery
+): Promise<{ success: boolean; data?: PagedItemsResult<PendingClearanceItem>; error?: string }> {
+  try {
+    const data = await getPendingClearancePayments(query);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch pending clearance payments."
+    };
+  }
+}
+
+export async function getClearanceStatsAction(): Promise<{
+  success: boolean;
+  data?: PendingClearanceStats;
+  error?: string;
+}> {
+  try {
+    const data = await getClearanceStats();
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch clearance statistics."
+    };
+  }
+}
+
+export async function approveClearanceAction(
+  payload: ApprovePaymentPayload
+): Promise<{ success: boolean; data?: VerifyPaymentResult; error?: string }> {
+  try {
+    const data = await approveClearance(payload);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to approve clearance."
+    };
+  }
+}
+
+export async function disapproveClearanceAction(
+  payload: DisapprovePaymentPayload
+): Promise<{ success: boolean; data?: VerifyPaymentResult; error?: string }> {
+  try {
+    const data = await disapproveClearance(payload);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to disapprove clearance."
+    };
+  }
+}
+
+export async function cancelReceiptAction(
+  payload: CancelReceiptPayload
+): Promise<{ success: boolean; data?: VerifyPaymentResult; error?: string }> {
+  try {
+    const data = await cancelReceipt(payload);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to cancel receipt."
+    };
+  }
+}
+
+export async function uploadBulkClearanceAction(
+  formData: FormData
+): Promise<{ success: boolean; data?: BulkClearanceResponse; error?: string }> {
+  try {
+    const data = await uploadBulkClearance(formData);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to process bulk clearance upload."
+    };
+  }
+}
+
+export async function getBanksAction(): Promise<{
+  success: boolean;
+  data?: RTSBankLookup[];
+  error?: string;
+}> {
+  try {
+    const data = await getBanks();
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch bank list."
+    };
+  }
+}
+
+export async function getCancellationLogsAction(
+  applicationId?: number,
+  transactionId?: number
+): Promise<{
+  success: boolean;
+  data?: ReceiptCancellationLog[];
+  error?: string;
+}> {
+  try {
+    const data = await getCancellationLogs(applicationId, transactionId);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch cancellation audit logs."
+    };
+  }
+}
+

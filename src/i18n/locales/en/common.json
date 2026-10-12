@@ -354,5 +354,10 @@
     "errorIcon": "Error icon",
     "zoomLevel": "Zoom level",
     "loadError": "Failed to load image. Please try again."
-  }
+  },
+  "refresh": "Refresh",
+  "search": "Search",
+  "filter": "Filter",
+  "previous": "Previous",
+  "next": "Next"
 }
