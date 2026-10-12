@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -22,6 +23,7 @@ import {
   TimerReset,
   TriangleAlert,
   UserRound,
+  Layers,
 } from 'lucide-react';
 
 import {
@@ -1002,6 +1004,15 @@ export default function RtsApplicationDashboard({
                 inactiveLabel={t('applicationDashboard.filters.showMyApplications')}
               />
             </div>
+
+            <Link
+              href={`/${locale}/rts/dashboard/rts-reports`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-3 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
+              title="Open Central RTS Reports Engine"
+            >
+              <Layers className="h-3.5 w-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Reports Center</span>
+            </Link>
 
             <RtsExportDropdown
               onExport={handleExportReport}

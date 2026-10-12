@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useTransition, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   CheckCircle2,
@@ -26,6 +27,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Layers,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -624,6 +626,15 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/${locale}/rts/dashboard/rts-reports`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/70 px-3.5 py-2 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
+            title="Open RTS Central Report Engine"
+          >
+            <Layers className="h-4 w-4 text-blue-600" />
+            <span>Reports Center</span>
+          </Link>
+
           <RtsExportDropdown
             onExport={handleExportReport}
             currentPageCount={items.length}
