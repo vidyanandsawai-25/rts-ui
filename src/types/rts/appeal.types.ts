@@ -182,7 +182,8 @@ export interface RTSAppealProcessDetailsDto {
 export interface ProcessRTSAppealActionDto {
   appealId: number;
   action: 'Approve' | 'Reject' | 'Return' | 'Allowed' | 'Dismissed';
-  remarks: string;
+  remark?: string;
+  remarks?: string;
 }
 
 export interface RTSAppealQueryParameters {

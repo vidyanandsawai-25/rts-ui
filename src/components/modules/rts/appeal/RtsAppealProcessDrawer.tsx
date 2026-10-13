@@ -87,6 +87,7 @@ export default function RtsAppealProcessDrawer({
       const payload: ProcessRTSAppealActionDto = {
         appealId: appealDetails.appealId,
         action: selectedAction,
+        remark: orderRemarks.trim(),
         remarks: orderRemarks.trim(),
       };
 
