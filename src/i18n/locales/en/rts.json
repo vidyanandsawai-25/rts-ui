@@ -1862,5 +1862,35 @@
       "breached": "Breached",
       "compliant": "Compliant"
     }
+  },
+  "appeals": {
+    "title": "Appeals Management Center",
+    "subtitle": "First & Second Appellate Adjudication under Maharashtra Right to Public Services Act (MRTSA 2015)",
+    "reviewTitle": "Appeal Review & Adjudication",
+    "reviewSubtitle": "Hearing under Maharashtra Right to Public Services Act 2015",
+    "citizenModalTitle": "RTS Statutory Appeal Filing",
+    "citizenModalSubtitle": "File First / Second Statutory Appeal under MRTSA 2015",
+    "kpi": {
+      "total": "Total Appeals",
+      "pending": "Pending Adjudication",
+      "approved": "Allowed / Relief",
+      "rejected": "Dismissed / Rejected",
+      "returned": "Returned for Re-check",
+      "first": "1st Appeals",
+      "second": "2nd Appeals",
+      "delayed": "Delayed / Condonation"
+    },
+    "actions": {
+      "review": "Review & Adjudicate",
+      "fileAppeal": "File Appeal",
+      "verifyApp": "Verify Application",
+      "submitOrder": "Submit Final Order"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "returned": "Returned"
+    }
   }
 }

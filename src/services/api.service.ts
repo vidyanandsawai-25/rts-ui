@@ -55,6 +55,7 @@ class ApiClient {
     '/RTSPayment',
     '/RTSCitizenSession',
     '/RTSApplication',
+    '/RTSAppeal',
     '/RTSApplicationDocument',
     '/RTSApplicationTracking',
     '/rts-certificate',

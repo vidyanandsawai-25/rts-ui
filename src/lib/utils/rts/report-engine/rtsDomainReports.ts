@@ -7,6 +7,7 @@ import {
 } from './rtsReportEngine';
 import type { AdminApplicationGridRow } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import type { PendingClearanceItem as PendingClearanceItemDto } from '@/lib/api/rts/rtspayment.service';
+import type { RTSAppealDashboardDetailsDto } from '@/types/rts/appeal.types';
 
 export type ReportExportFormat = 'excel' | 'csv' | 'pdf';
 
@@ -29,6 +30,10 @@ export interface RtsCollectionExportOptions extends BaseReportExportOptions {
 }
 
 export interface RtsSlaExportOptions extends BaseReportExportOptions {
+  departmentName?: string;
+}
+
+export interface RtsAppealsExportOptions extends BaseReportExportOptions {
   departmentName?: string;
 }
 
@@ -680,6 +685,138 @@ export function exportRtsDepartmentSummary(
       appliedFilters: options.appliedFilters,
       totalRecords: data.length,
       totalAmount,
+    },
+    columns,
+    data,
+  };
+
+  if (options.format === 'excel') {
+    exportRtsReportToExcel(config);
+  } else if (options.format === 'csv') {
+    exportRtsReportToCsv(config);
+  } else if (options.format === 'pdf') {
+    exportRtsReportToPdf(config);
+  }
+}
+
+/**
+ * 6. RTS Appeals Register & Adjudication Report Exporter
+ */
+export function exportRtsAppeals(
+  data: RTSAppealDashboardDetailsDto[],
+  options: RtsAppealsExportOptions
+) {
+  const allColumns: RtsReportColumn<RTSAppealDashboardDetailsDto>[] = [
+    {
+      header: 'Sr. No.',
+      key: 'id',
+      width: 8,
+      align: 'center',
+      formatter: (_val, _row, index) => index + 1,
+    },
+    {
+      header: 'Appeal No.',
+      key: 'appealNo',
+      width: 20,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Original Application No.',
+      key: 'applicationNo',
+      width: 20,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Applicant Name',
+      key: 'applicantName',
+      width: 24,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Mobile',
+      key: 'mobileNumber',
+      width: 15,
+      align: 'center',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Department',
+      key: 'departmentName',
+      width: 22,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Service',
+      key: 'serviceName',
+      width: 26,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Appeal Tier',
+      key: 'appealLevelDisplay',
+      width: 14,
+      align: 'center',
+      formatter: (_val, row) => row.appealLevelDisplay || (row.appealLevel === 2 ? '2nd Appeal' : '1st Appeal'),
+    },
+    {
+      header: 'Statutory Ground',
+      key: 'appealTypeName',
+      width: 18,
+      align: 'center',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Filing Date',
+      key: 'filingDate',
+      width: 16,
+      align: 'center',
+      formatter: (val) => {
+        if (!val) return '—';
+        try {
+          return new Date(String(val)).toLocaleDateString('en-IN');
+        } catch {
+          return String(val);
+        }
+      },
+    },
+    {
+      header: 'Appeal Status',
+      key: 'appealStatus',
+      width: 16,
+      align: 'center',
+      formatter: (val) => String(val || 'Submitted'),
+    },
+    {
+      header: 'Delay Condonation Required',
+      key: 'isDelayed',
+      width: 20,
+      align: 'center',
+      formatter: (val) => (val ? 'Yes (Section 18)' : 'No'),
+    },
+    {
+      header: 'Officer Speaking Order / Remarks',
+      key: 'actionRemarks',
+      width: 30,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+  ];
+
+  const columns = applyVisibleColumns(allColumns, options.visibleColumnKeys);
+
+  const config: RtsReportConfig<RTSAppealDashboardDetailsDto> = {
+    fileName: options.fileName || `RTS_Appeals_Register_${new Date().toISOString().slice(0, 10)}`,
+    metadata: {
+      title: 'RTS Statutory Appeals Register & Adjudication Report (अपील नोंदवही अहवाल)',
+      subtitle: 'Maharashtra Right to Public Services Act (MRTSA 2015) Appellate Adjudication Compliance',
+      generatedBy: options.officerName || 'Appellate Authority Officer',
+      appliedFilters: options.appliedFilters,
+      totalRecords: data.length,
     },
     columns,
     data,

@@ -17,6 +17,8 @@ import {
 } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import { computeOverdueDays, computeRemainingDays } from '@/lib/utils/rts/application-grid';
 import type { DepartmentSummaryReportItem } from '@/lib/utils/rts/report-engine/rtsDomainReports';
+import { getAppealDashboardGrid } from '@/lib/api/rts/rtsappeal.service';
+import type { RTSAppealDashboardDetailsDto, RTSAppealQueryParameters } from '@/types/rts/appeal.types';
 
 function parseSlaDays(sla: string | number | undefined | null): number {
   if (typeof sla === 'number') return Number.isFinite(sla) ? Math.max(0, sla) : 0;
@@ -374,6 +376,60 @@ export async function getRtsDepartmentSummaryReportDataAction(
     return summaryItems.sort((a, b) => b.totalApplications - a.totalApplications);
   } catch (err) {
     console.error('Error generating RTS Department Summary Report data:', err);
+    return [];
+  }
+}
+
+/**
+ * 7. Fetch Appeals Report Data for Grid
+ */
+export async function getRtsAppealsReportDataAction(
+  params: RTSAppealQueryParameters = {}
+): Promise<{
+  items: RTSAppealDashboardDetailsDto[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}> {
+  try {
+    const res = await getAppealDashboardGrid(params);
+    const totalCount = res.totalCount || 0;
+    const pageSize = params.pageSize || 25;
+    return {
+      items: res.items || [],
+      totalCount,
+      pageNumber: params.pageNumber || 1,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
+    };
+  } catch (err) {
+    console.error('Error fetching appeals report data:', err);
+    return {
+      items: [],
+      totalCount: 0,
+      pageNumber: 1,
+      pageSize: 25,
+      totalPages: 1,
+    };
+  }
+}
+
+/**
+ * 8. Fetch Full Appeals Data for Export (up to 10,000)
+ */
+export async function getAllAppealsForExportAction(
+  params: RTSAppealQueryParameters = {}
+): Promise<RTSAppealDashboardDetailsDto[]> {
+  try {
+    const res = await getAppealDashboardGrid({
+      ...params,
+      pageNumber: 1,
+      pageSize: 10000,
+    });
+    return res.items || [];
+  } catch (err) {
+    console.error('Error fetching all appeals for export:', err);
     return [];
   }
 }

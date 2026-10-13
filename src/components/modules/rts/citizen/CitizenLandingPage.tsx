@@ -34,6 +34,7 @@ import type { DepartmentDTO } from '@/types/rts-citizen.types';
 import type { CitizenLandingApplicationCounts } from '@/types/rts/rtsmisdashboard.types';
 import { CitizenJourneyHero } from './CitizenJourneyHero';
 import ApplicationAndTrackingDrawer from './ApplicationAndTrackingDrawer';
+import CitizenAppealModal from './CitizenAppealModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,8 @@ export function CitizenLandingPage({
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [isAppealModalOpen, setIsAppealModalOpen] = useState(false);
+  const [appealModalAppNo, setAppealModalAppNo] = useState('');
   const [isCreatingExternalApplication, startExternalTransition] = useTransition();
   const departmentScrollRef = useRef<HTMLElement | null>(null);
   const departmentScrollFrameRef = useRef<number | null>(null);
@@ -502,6 +505,10 @@ export function CitizenLandingPage({
                   onClick={() => {
                     if (action.id === 'track' || action.id === 'pay' || action.id === 'download') {
                       updateTrackingDrawerRoute(true);
+                      return;
+                    }
+                    if (action.id === 'appeal') {
+                      setIsAppealModalOpen(true);
                       return;
                     }
                     handleActionClick();
@@ -998,6 +1005,16 @@ export function CitizenLandingPage({
         initialSearchValue={trackParam}
         initialReceiptValue={receiptParam}
         onClose={() => updateTrackingDrawerRoute(false)}
+      />
+
+      <CitizenAppealModal
+        isOpen={isAppealModalOpen}
+        onClose={() => {
+          setIsAppealModalOpen(false);
+          setAppealModalAppNo('');
+        }}
+        initialApplicationNo={appealModalAppNo}
+        locale={locale}
       />
     </div>
   );

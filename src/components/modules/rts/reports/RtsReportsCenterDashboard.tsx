@@ -20,6 +20,7 @@ import {
   ArrowUpDown,
   CreditCard,
   ExternalLink,
+  Scale,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '@/components/common';
@@ -30,6 +31,7 @@ import {
   exportRtsCollections,
   exportRtsSlaCompliance,
   exportRtsDepartmentSummary,
+  exportRtsAppeals,
   type ReportExportFormat,
   type DepartmentSummaryReportItem,
 } from '@/lib/utils/rts/report-engine/rtsDomainReports';
@@ -40,15 +42,19 @@ import {
   getRtsCollectionsReportDataAction,
   getAllCollectionsForExportAction,
   getRtsDepartmentSummaryReportDataAction,
+  getRtsAppealsReportDataAction,
+  getAllAppealsForExportAction,
   type RtsReportsFilterOptions,
 } from '@/app/[locale]/rts/dashboard/rts-reports/actions';
 import type { AdminApplicationGridRow } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import type { PendingClearanceItem } from '@/lib/api/rts/rtspayment.service';
+import type { RTSAppealDashboardDetailsDto } from '@/types/rts/appeal.types';
 
 export type ReportDomain =
   | 'COLLECTIONS'
   | 'APPLICATIONS'
   | 'SLA_COMPLIANCE'
+  | 'APPEALS'
   | 'SETTLEMENT'
   | 'DEPARTMENT_SUMMARY';
 
@@ -64,6 +70,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
   const [, startTransition] = useTransition();
   const t = useTranslations('rts.reportsCenter');
   const isMr = locale === 'mr';
+  const isHi = locale === 'hi';
   const numLocale = isMr ? 'mr-IN' : 'en-IN';
 
   // 1. Report Domain Selection
@@ -86,6 +93,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
   const [applicationRows, setApplicationRows] = useState<AdminApplicationGridRow[]>([]);
   const [collectionItems, setCollectionItems] = useState<PendingClearanceItem[]>([]);
   const [summaryItems, setSummaryItems] = useState<DepartmentSummaryReportItem[]>([]);
+  const [appealItems, setAppealItems] = useState<RTSAppealDashboardDetailsDto[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -196,14 +204,29 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
         { key: 'slaAdherencePercentage', label: t('columns.slaAdherencePercentage'), defaultVisible: true, align: 'center' },
         { key: 'totalCollectionAmount', label: t('columns.totalCollectionAmount'), defaultVisible: true, align: 'right', isNumeric: true },
       ],
+      APPEALS: [
+        { key: 'srNo', label: t('columns.srNo'), defaultVisible: true, align: 'center' },
+        { key: 'appealNo', label: isMr ? 'अपील क्रमांक' : 'Appeal No', defaultVisible: true, align: 'left' },
+        { key: 'applicationNo', label: t('columns.applicationNo'), defaultVisible: true, align: 'left' },
+        { key: 'applicantName', label: t('columns.applicantName'), defaultVisible: true, align: 'left' },
+        { key: 'departmentName', label: t('columns.departmentName'), defaultVisible: true, align: 'left' },
+        { key: 'serviceName', label: t('columns.serviceName'), defaultVisible: true, align: 'left' },
+        { key: 'appealLevel', label: isMr ? 'अपील स्तर' : 'Tier', defaultVisible: true, align: 'center' },
+        { key: 'appealTypeName', label: isMr ? 'तक्रार प्रकार' : 'Ground', defaultVisible: true, align: 'center' },
+        { key: 'createdDate', label: isMr ? 'दाखल दिनांक' : 'Filing Date', defaultVisible: true, align: 'center' },
+        { key: 'appealStatus', label: t('columns.currentStatus'), defaultVisible: true, align: 'center' },
+        { key: 'delayCondonation', label: isMr ? 'विलंब माफी' : 'Delay Condonation', defaultVisible: true, align: 'center' },
+        { key: 'actionRemarks', label: t('columns.remarks'), defaultVisible: false, align: 'left' },
+      ],
     };
-  }, [t]);
+  }, [t, isMr]);
 
   // 7. Visible Columns State
   const [visibleColumns, setVisibleColumns] = useState<Record<ReportDomain, string[]>>({
     COLLECTIONS: domainColumnsMap.COLLECTIONS.filter((c) => c.defaultVisible).map((c) => c.key),
     APPLICATIONS: domainColumnsMap.APPLICATIONS.filter((c) => c.defaultVisible).map((c) => c.key),
     SLA_COMPLIANCE: domainColumnsMap.SLA_COMPLIANCE.filter((c) => c.defaultVisible).map((c) => c.key),
+    APPEALS: domainColumnsMap.APPEALS.filter((c) => c.defaultVisible).map((c) => c.key),
     SETTLEMENT: domainColumnsMap.SETTLEMENT.filter((c) => c.defaultVisible).map((c) => c.key),
     DEPARTMENT_SUMMARY: domainColumnsMap.DEPARTMENT_SUMMARY.filter((c) => c.defaultVisible).map((c) => c.key),
   });
@@ -355,6 +378,18 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           setTotalPages(1);
           const totalRev = res.reduce((sum, item) => sum + (item.totalCollectionAmount || 0), 0);
           setTotalAmount(totalRev);
+        } else if (activeDomain === 'APPEALS') {
+          const res = await getRtsAppealsReportDataAction({
+            pageNumber,
+            pageSize,
+            searchTerm: searchText.trim() || undefined,
+            appealStatus: selectedStatus !== 'ALL' ? selectedStatus : undefined,
+          });
+
+          setAppealItems(res.items);
+          setTotalCount(res.totalCount);
+          setTotalPages(res.totalPages);
+          setTotalAmount(0);
         }
       } catch (err) {
         console.error('Error fetching RTS report data:', err);
@@ -538,6 +573,21 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           visibleColumnKeys: userVisibleKeys,
         });
         toast.success(`Exported (${summaryItems.length} records)`);
+      } else if (activeDomain === 'APPEALS') {
+        let exportData = appealItems;
+        if (scope === 'all' && totalCount > appealItems.length) {
+          toast.info(t('export.downloading'));
+          exportData = await getAllAppealsForExportAction({
+            searchTerm: searchText.trim() || undefined,
+            appealStatus: selectedStatus !== 'ALL' ? selectedStatus : undefined,
+          });
+        }
+        exportRtsAppeals(exportData, {
+          format,
+          appliedFilters,
+          visibleColumnKeys: userVisibleKeys,
+        });
+        toast.success(`Exported (${exportData.length} records)`);
       }
     } catch (err) {
       console.error('Export failed:', err);
@@ -724,6 +774,15 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
             badge: activeDomain === 'DEPARTMENT_SUMMARY' ? summaryItems.length : null,
             color: 'text-purple-700 bg-purple-50 border-purple-200',
             activeClass: 'border-purple-600 bg-white ring-2 ring-purple-500/20 text-purple-900',
+          },
+          {
+            id: 'APPEALS' as ReportDomain,
+            label: isMr ? 'अपील नोंदवही व अहवाल' : isHi ? 'अपील पंजी व रिपोर्ट' : 'Appeals Register',
+            sub: isMr ? '१ ली व २ री अपीले, तक्रारीचा आधार व निकाल' : isHi ? 'प्रथम व द्वितीय अपील, शिकायत व निर्णय' : '1st & 2nd Appeals, Grounds & Orders',
+            icon: Scale,
+            badge: activeDomain === 'APPEALS' ? totalCount : null,
+            color: 'text-amber-800 bg-amber-50 border-amber-300',
+            activeClass: 'border-amber-600 bg-white ring-2 ring-amber-500/20 text-amber-950',
           },
         ].map((domain) => {
           const isActive = activeDomain === domain.id;
@@ -1394,6 +1453,102 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                       )}
                     </tr>
                   ))
+                )
+              ) : activeDomain === 'APPEALS' ? (
+                appealItems.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={visibleColumns[activeDomain].length}
+                      className="py-12 text-center text-xs font-semibold text-slate-400"
+                    >
+                      {t('table.noRecords')}
+                    </td>
+                  </tr>
+                ) : (
+                  appealItems.map((item, idx) => {
+                    const isEven = idx % 2 === 1;
+                    return (
+                      <tr
+                        key={item.id || idx}
+                        className={`transition hover:bg-blue-50/40 ${isEven ? 'bg-slate-50/40' : 'bg-white'}`}
+                      >
+                        {visibleColumns[activeDomain].includes('srNo') && (
+                          <td className="px-3 py-2.5 text-center font-mono font-bold text-slate-500">
+                            {(pageNumber - 1) * pageSize + idx + 1}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('appealNo') && (
+                          <td className="px-3 py-2.5 font-mono font-bold text-blue-700">
+                            {item.appealNo || (item.id ? `APP-${item.id}` : '—')}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('applicationNo') && (
+                          <td className="px-3 py-2.5 font-mono font-bold text-slate-700">
+                            {item.applicationNo || `RTS${item.applicationId}`}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('applicantName') && (
+                          <td className="px-3 py-2.5 font-medium text-slate-800">
+                            {item.applicantName || '—'}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('departmentName') && (
+                          <td className="px-3 py-2.5 text-slate-600">
+                            {item.departmentName || '—'}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('serviceName') && (
+                          <td className="px-3 py-2.5 text-slate-700 font-medium">
+                            {item.serviceName || '—'}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('appealLevel') && (
+                          <td className="px-3 py-2.5 text-center">
+                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${
+                              item.appealLevel === 2
+                                ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                            }`}>
+                              {item.appealLevelDisplay || (item.appealLevel === 2 ? '2nd Appeal' : '1st Appeal')}
+                            </span>
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('appealTypeName') && (
+                          <td className="px-3 py-2.5 text-center">
+                            <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">
+                              {item.appealTypeName || '—'}
+                            </span>
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('createdDate') && (
+                          <td className="px-3 py-2.5 text-center text-slate-600 font-mono text-xs">
+                            {formatDate(item.filingDate)}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('appealStatus') && (
+                          <td className="px-3 py-2.5 text-center">
+                            {renderStatusBadge(item.appealStatus || 'Submitted')}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('delayCondonation') && (
+                          <td className="px-3 py-2.5 text-center">
+                            {item.isDelayed ? (
+                              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
+                                {isMr ? 'कलम १८ आवश्यक' : 'Sec 18 Req'}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-xs">—</span>
+                            )}
+                          </td>
+                        )}
+                        {visibleColumns[activeDomain].includes('actionRemarks') && (
+                          <td className="px-3 py-2.5 text-slate-600 text-xs max-w-xs truncate">
+                            {item.actionRemarks || '—'}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
                 )
               ) : (
                 applicationRows.length === 0 ? (
