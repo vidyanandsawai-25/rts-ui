@@ -210,8 +210,9 @@ export interface RtsApplicationVerificationItem {
   canViewCertificate: boolean;
   serviceId?: number | null;
   serviceName?: string | null;
-  serviceFees?: number | null;
-  feesRequired?: boolean;
+  paymentTransactionId?: number | null;
+  payableFee?: number | null;
+  hasPaymentTransaction?: boolean;
   isPaid?: boolean;
   paymentStatus?: string | null;
   receiptNo?: string | null;

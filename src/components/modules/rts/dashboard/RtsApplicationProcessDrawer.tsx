@@ -324,9 +324,13 @@ export default function RtsApplicationProcessDrawer({
 
   const effectiveIsPaid = isPaidLocal ?? verification?.isPaid ?? false;
   const effectiveReceiptNo = receiptNoLocal ?? verification?.receiptNo ?? null;
+  const payableFee = Number(verification?.payableFee ?? 0);
+  const hasOutstandingPayment = Boolean(
+    verification?.hasPaymentTransaction && payableFee > 0 && !effectiveIsPaid
+  );
   const isFreeService = Boolean(
     verification &&
-    (verification.feesRequired === false || Number(verification.serviceFees ?? 0) <= 0)
+    (!verification.hasPaymentTransaction || payableFee <= 0)
   );
 
   const isApproved = Boolean(
@@ -353,7 +357,7 @@ export default function RtsApplicationProcessDrawer({
           if (action.key === 'canPay') {
             // If already paid, DO NOT show "Record Payment" button!
             if (effectiveIsPaid) return false;
-            return Boolean(verification.canPay || (verification.feesRequired && !effectiveIsPaid));
+            return Boolean(verification.canPay || hasOutstandingPayment);
           }
           return Boolean(verification[action.key]);
         })
@@ -529,9 +533,9 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
-    if (actionKey === 'canApprove' && verification?.feesRequired && !effectiveIsPaid) {
+    if (actionKey === 'canApprove' && hasOutstandingPayment) {
       toast.warning(
-        `नागरिकाचे शासकीय शुल्क (₹${verification.serviceFees ?? 0}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`
+        `नागरिकाचे शासकीय शुल्क (₹${payableFee}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`
       );
       return;
     }
@@ -660,7 +664,7 @@ export default function RtsApplicationProcessDrawer({
                   const isEditLockedWorkflowAction = isEditing;
                   const isApproveBlockedByFee =
                     (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
-                    Boolean(verification?.feesRequired && !effectiveIsPaid);
+                    hasOutstandingPayment;
                   const isRecordPaymentDisabled = action.key === 'canPay' && isFreeService;
                   const isVerificationBlockedByCitizenResubmission =
                     action.key === 'canVerifyDocument' && isRevertedToCitizen;
@@ -1127,7 +1131,7 @@ export default function RtsApplicationProcessDrawer({
                               </div>
                               <div>
                                 <p className="text-xs font-extrabold text-emerald-900">
-                                  शासकीय शुल्क प्राप्त (Fee Paid): ₹{verification?.serviceFees ?? 0}
+                                  शासकीय शुल्क प्राप्त (Fee Paid): ₹{payableFee}
                                 </p>
                                 <p className="text-[11px] font-medium text-emerald-700">
                                   पावती क्र. : {effectiveReceiptNo || 'उपलब्ध'}
@@ -1147,7 +1151,7 @@ export default function RtsApplicationProcessDrawer({
                             </Button>
                           </div>
                         </section>
-                      ) : verification.feesRequired || (verification.serviceFees ?? 0) > 0 ? (
+                      ) : hasOutstandingPayment ? (
                         <section className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-3.5 shadow-sm">
                           <div className="flex flex-col gap-2.5">
                             <div className="flex items-start gap-2.5">
@@ -1156,7 +1160,7 @@ export default function RtsApplicationProcessDrawer({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-extrabold text-amber-900">
-                                  शासकीय शुल्क प्रलंबित: ₹{verification?.serviceFees ?? 0}
+                                  शासकीय शुल्क प्रलंबित: ₹{payableFee}
                                 </p>
                                 <p className="text-[11px] font-medium text-amber-700 leading-relaxed">
                                   नागरिकाने ऑनलाइन भरावे किंवा CFC काऊंटरवर जमा करावे. शुल्क
@@ -1532,7 +1536,7 @@ export default function RtsApplicationProcessDrawer({
           applicationId={applicationId}
           applicationNo={headerApplicationNo}
           serviceName={record?.serviceName || verification?.serviceName || undefined}
-          serviceFees={verification?.serviceFees}
+          payableFee={verification?.payableFee}
           applicantName={applicantName}
           onSuccess={(receipt) => {
             setIsOfflinePaymentModalOpen(false);
