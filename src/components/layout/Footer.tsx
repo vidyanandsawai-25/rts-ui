@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Card } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
 import { getCookieValue } from '@/lib/utils/cookie';
+import { getLocaleFromPathname } from '@/i18n/config';
 
 interface FooterProps {
   ulbData?: UlbMaster;
@@ -27,6 +28,16 @@ export function Footer({ ulbData }: FooterProps) {
 
   const isAssets = pathname.includes('/assets');
   const isDarkTheme = isAssets || pathname.includes('/property-tax/ptis');
+  const isRts = pathname.includes('/rts');
+  const locale = getLocaleFromPathname(pathname);
+
+  const departmentDisplayName = isRts
+    ? locale === 'mr'
+      ? 'लोकसेवा हक्क विभाग'
+      : locale === 'hi'
+        ? 'लोक सेवा अधिकार विभाग'
+        : 'RTS Department'
+    : t('app.departmentName');
 
   return (
     <footer className="relative z-30 mt-auto print:hidden transition-all duration-300">
@@ -55,7 +66,7 @@ export function Footer({ ulbData }: FooterProps) {
                 </span>
               ) : null}
               <div className="flex flex-wrap items-center justify-center gap-1 font-medium text-blue-50/80 sm:justify-start">
-                <span>{t('app.departmentName')}</span>
+                <span>{departmentDisplayName}</span>
                 <span className="mx-1 hidden sm:inline">•</span>
                 <span>
                   © {currentYear} {t('footer.copyright')}

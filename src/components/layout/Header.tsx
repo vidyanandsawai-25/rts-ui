@@ -13,6 +13,8 @@ import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18
 import { logoutAction } from '@/app/[locale]/login/actions';
 import { ChangePasswordModal } from './ChangePasswordModal';
 
+import { resolveDepartmentContext } from '@/lib/utils/department-context';
+
 const HEADER_COLORS = {
   background: '#4b70a6',
   userCardFrom: '#243B7C',
@@ -124,6 +126,31 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
   const headerDetails = t('app.assessmentSystem');
+
+  const deptContext = useMemo(() => {
+    return resolveDepartmentContext({
+      pathname,
+      menuItems,
+    });
+  }, [pathname, menuItems]);
+
+  const departmentDisplayName = useMemo(() => {
+    const rawDeptName = deptContext?.departmentName?.trim();
+    if (!rawDeptName) return t('app.departmentName');
+
+    const lower = rawDeptName.toLowerCase();
+    if (lower.includes('rts') || lower.includes('right to service')) {
+      if (locale === 'mr') return 'लोकसेवा हक्क विभाग';
+      if (locale === 'hi') return 'लोक सेवा अधिकार विभाग';
+      return 'RTS Department';
+    }
+
+    if (lower.includes('property') || lower.includes('ptis')) {
+      return t('app.departmentName');
+    }
+
+    return rawDeptName;
+  }, [deptContext?.departmentName, locale, t]);
 
   const activeMenuName = useMemo(() => {
     if (!menuItems || menuItems.length === 0) return null;
@@ -298,7 +325,7 @@ export function Header({ ulbData, userDisplayName, clientIp, menuItems }: Header
               ) : null}
 
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{t('app.departmentName')}</span>
+                <span>{departmentDisplayName}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
                 <span className="font-semibold text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>
