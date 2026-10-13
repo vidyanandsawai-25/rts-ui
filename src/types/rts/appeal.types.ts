@@ -1,8 +1,8 @@
 /**
- * RTS Appeal Management Types
- * Corresponding to Maharashtra Right to Public Services Act (MRTSA 2015)
- * Appellate Authority Subsystem.
- */
+* RTS Appeal Management Types
+* Corresponding to Maharashtra Right to Public Services Act (MRTSA 2015)
+* Appellate Authority Subsystem.
+*/
 
 export interface RTSAppealTypeDto {
   id: number;
@@ -164,26 +164,19 @@ export interface RTSAppealProcessDetailsDto {
   actionDate?: string | null;
   actionByName?: string | null;
   actionByUserName?: string | null;
-  applicationId?: number;
-  applicationNo?: string;
-  serviceId?: number;
-  serviceName?: string;
-  departmentId?: number;
-  departmentName?: string;
   applicantName?: string;
   applicantMobile?: string;
   applicantEmail?: string;
-  mobileNumber?: string;
+  applicationId?: number;
+  applicationNo?: string;
+  serviceName?: string;
+  departmentName?: string;
   application?: RTSAppealApplicationSummaryDto;
-  appealDetails?: RTSAppealApplicationSummaryDto;
+  history?: RTSAppealHistoryItemDto[];
+  timeline?: RTSAppealTimelineItemDto[];
+  previousAppeals?: RTSAppealPreviousSummaryDto[];
   dynamicFields?: RTSAppealDynamicFieldDto[];
   documents?: RTSAppealDocumentDto[];
-  timeline?: RTSAppealHistoryItemDto[];
-  history?: RTSAppealHistoryItemDto[];
-  previousAppeals?: RTSAppealPreviousSummaryDto[];
-  canApprove?: boolean;
-  canReject?: boolean;
-  canReturn?: boolean;
 }
 
 export interface ProcessRTSAppealActionDto {

@@ -312,7 +312,7 @@ export default function RtsAppealProcessDrawer({
                           <Phone className="h-4 w-4 text-slate-500" />
                           <div>
                             <span className="text-[10px] text-slate-400 block font-bold">{isMr ? 'मोबाईल' : 'Mobile'}</span>
-                            <span className="text-slate-800 font-black">{appealDetails.application?.applicantMobile || appealDetails.mobileNumber || '-'}</span>
+                            <span className="text-slate-800 font-black">{appealDetails.application?.applicantMobile || appealDetails.applicantMobile || '-'}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
