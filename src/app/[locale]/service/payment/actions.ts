@@ -7,6 +7,7 @@ import {
   getPaymentReceipt,
   getPaymentReceiptByNo,
   getPaymentStatus,
+  initializePendingPayment,
   type CreatePaymentOrderPayload,
   type PaymentOrderResult,
   type VerifyPaymentPayload,
@@ -96,6 +97,20 @@ export async function getPaymentStatusAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Failed to fetch payment status."
+    };
+  }
+}
+
+export async function initializePendingPaymentAction(
+  applicationId: number
+): Promise<{ success: boolean; data?: PaymentStatusResult; error?: string }> {
+  try {
+    const data = await initializePendingPayment(applicationId);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to initialize payment details.'
     };
   }
 }

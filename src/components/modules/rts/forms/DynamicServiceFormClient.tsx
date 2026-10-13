@@ -1,17 +1,17 @@
 // @ts-nocheck
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { isValidMapLocationValue } from "@/lib/utils/rts/map-location-value";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { isValidMapLocationValue } from '@/lib/utils/rts/map-location-value';
 import {
   getFileLatLogDocumentGuid,
   getFileLatLogFile,
   getFileLatLogMetadata,
   isFileLatLogFieldValue,
   serializeFileLatLogCaptureMetadata,
-} from "@/lib/utils/rts/file-lat-log-value";
+} from '@/lib/utils/rts/file-lat-log-value';
 import {
   ArrowLeft,
   Check,
@@ -29,37 +29,49 @@ import {
   AlertCircle,
   Download,
   type LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
-import { isConditionMet } from "@/lib/utils/rts/conditions";
-import { VALIDATION_RULES } from "@/lib/utils/validationRegistry";
+import { isConditionMet } from '@/lib/utils/rts/conditions';
+import { VALIDATION_RULES } from '@/lib/utils/validationRegistry';
 
-const DEFAULT_INDIAN_MOBILE_PATTERN = "^[7-9][0-9]{9}$";
-const DEFAULT_GMAIL_EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@gmail\\.com$";
+const DEFAULT_INDIAN_MOBILE_PATTERN = '^[7-9][0-9]{9}$';
+const DEFAULT_GMAIL_EMAIL_PATTERN = '^[A-Za-z0-9._%+-]+@gmail\\.com$';
 
-import { type FormField, type NormalizeRule, type CustomValidate, type InputMode } from "@/types/rts/form.types";
-import { type SaveDraftValuesRequest } from "@/types/rts.types";
-import { useLanguage } from "@/components/Providers/LanguageProvider";
-import DynamicFieldRenderer from "@/components/modules/rts/forms/DynamicFieldRenderer";
+import {
+  type FormField,
+  type NormalizeRule,
+  type CustomValidate,
+  type InputMode,
+} from '@/types/rts/form.types';
+import { type SaveDraftValuesRequest } from '@/types/rts.types';
+import { useLanguage } from '@/components/Providers/LanguageProvider';
+import DynamicFieldRenderer from '@/components/modules/rts/forms/DynamicFieldRenderer';
 import {
   buildOldServiceFormConfigFromRtsFieldDefinitions,
   extractRtsFieldDefinitionItems,
-} from "@/lib/utils/rts/rts-field-definition-mapper";
-import { resolveApplicantContact } from "@/lib/utils/rts/rts-application-payload";
-import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
-import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
-import type { PaymentReceiptResult } from "@/lib/api/rts/rtspayment.service";
+} from '@/lib/utils/rts/rts-field-definition-mapper';
+import {
+  buildRtsApplicationUpdatePayload,
+  resolveApplicantContact,
+} from '@/lib/utils/rts/rts-application-payload';
+import { PaymentCheckoutModal } from '@/components/modules/rts/citizen/PaymentCheckoutModal';
+import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
+import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
+import { evaluateRtsFeeAction } from '@/app/[locale]/service/[serviceId]/actions';
+import type { RtsFeeEvaluationResult } from '@/types/rts/rts-rulemaster.types';
+import type { RtsApplicationResubmitContext } from '@/types/rts/rts-application.types';
 
 const MySwal = withReactContent(Swal);
 
 const Button = ({ children, className, variant, onClick }: any) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center ${variant === "outline" ? "border-2 bg-transparent" : ""
-      } ${className}`}
+    className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center ${
+      variant === 'outline' ? 'border-2 bg-transparent' : ''
+    } ${className}`}
   >
     {children}
   </button>
@@ -73,7 +85,7 @@ interface ServiceFormProps {
   serviceTitle?: string;
   initialGroups?: any[] | { items?: any[] };
   submitApplicationAction?: (payload: FormData) => Promise<CreateRtsApplicationResponse>;
-  submitState?: "form" | "success";
+  submitState?: 'form' | 'success';
   successTrackingId?: string;
   successApplicationStatus?: string;
   isLoggedIn?: boolean;
@@ -82,6 +94,7 @@ interface ServiceFormProps {
   isResubmitMode?: boolean;
   resubmitApplicationId?: number;
   resubmitApplicationNo?: string;
+  resubmitContext?: RtsApplicationResubmitContext;
   officerRemark?: string | null;
   prefilledValues?: Record<string, any>;
   existingDocuments?: any[];
@@ -104,35 +117,37 @@ function serializeFormValue(value: any) {
   if (value === undefined || value === null) return null;
   if (value instanceof File) return value.name;
   if (Array.isArray(value)) return value.length ? JSON.stringify(value) : null;
-  if (typeof value === "object") return JSON.stringify(value);
+  if (typeof value === 'object') return JSON.stringify(value);
 
   const text = String(value).trim();
-  return text === "" ? null : text;
+  return text === '' ? null : text;
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"]/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-  })[character] || character);
+  return value.replace(
+    /[&<>"]/g,
+    (character) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+      })[character] || character
+  );
 }
 
 function getLocalizedLabelText(label: any, language: string): string {
-  if (!label) return "";
-  if (typeof label === "string") return label.trim();
-  if (typeof label === "object") {
-    return (
-      label?.[language] ||
+  if (!label) return '';
+  if (typeof label === 'string') return label.trim();
+  if (typeof label === 'object') {
+    return (label?.[language] ||
       label?.en ||
       label?.hi ||
       label?.mr ||
-      Object.values(label).find((value) => typeof value === "string" && value.trim()) ||
-      ""
-    ) as string;
+      Object.values(label).find((value) => typeof value === 'string' && value.trim()) ||
+      '') as string;
   }
-  return "";
+  return '';
 }
 
 export default function DynamicServiceFormClient({
@@ -143,15 +158,16 @@ export default function DynamicServiceFormClient({
   serviceTitle: serviceTitleFromServer,
   initialGroups,
   submitApplicationAction,
-  submitState = "form",
-  successTrackingId = "",
-  successApplicationStatus = "",
+  submitState = 'form',
+  successTrackingId = '',
+  successApplicationStatus = '',
   isLoggedIn = false,
   serviceFees,
   feesRequired,
   isResubmitMode = false,
   resubmitApplicationId,
   resubmitApplicationNo,
+  resubmitContext,
   officerRemark,
   prefilledValues,
   existingDocuments,
@@ -159,7 +175,7 @@ export default function DynamicServiceFormClient({
 }: ServiceFormProps) {
   const router = useRouter();
   const { language } = useLanguage();
-  const t = useTranslations("rts.serviceForm");
+  const t = useTranslations('rts.serviceForm');
 
   const [activeSection, setActiveSection] = useState(0);
   const [darkMode] = useState(false);
@@ -169,6 +185,8 @@ export default function DynamicServiceFormClient({
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState<{ [key: string]: any }>({});
+  const [feeEstimate, setFeeEstimate] = useState<RtsFeeEvaluationResult | null>(null);
+  const [feeEstimateError, setFeeEstimateError] = useState('');
   const [currentApplicationId, setCurrentApplicationId] = useState<number | null>(null);
   const [showSuccessPaymentModal, setShowSuccessPaymentModal] = useState(false);
   const [checkoutAppInfo, setCheckoutAppInfo] = useState<{
@@ -176,8 +194,10 @@ export default function DynamicServiceFormClient({
     applicationNo: string;
     serviceName: string;
     fees: number;
+    feeEvaluation?: RtsFeeEvaluationResult;
   } | null>(null);
-  const [successReceiptModalData, setSuccessReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [successReceiptModalData, setSuccessReceiptModalData] =
+    useState<PaymentReceiptResult | null>(null);
 
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -198,6 +218,50 @@ export default function DynamicServiceFormClient({
     [serviceId, apiItems]
   );
   const baseSteps = useMemo(() => apiConfig?.steps || [], [apiConfig]);
+
+  // This is an estimate only. Payment creation evaluates persisted values again
+  // on the server and never accepts this client-side amount.
+  const feeFieldValues = useMemo(() => {
+    const values: Array<{ fieldDefinitionId: number; fieldCode?: string; value?: string | null }> =
+      [];
+    for (const step of baseSteps || []) {
+      for (const field of step.fields || []) {
+        const fieldDefinitionId = Number(
+          field?.rawApi?.id ?? field?.fieldDefinitionId ?? field?.backendFieldId
+        );
+        if (!Number.isSafeInteger(fieldDefinitionId) || fieldDefinitionId <= 0) continue;
+        values.push({
+          fieldDefinitionId,
+          fieldCode: field?.rawApi?.fieldCode ?? field?.fieldCode,
+          value: serializeFormValue(formData[String(field.id)]),
+        });
+      }
+    }
+    return values;
+  }, [baseSteps, formData]);
+
+  useEffect(() => {
+    const numericServiceId = Number(serviceId);
+    if (!Number.isSafeInteger(numericServiceId) || numericServiceId <= 0) return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      const result = await evaluateRtsFeeAction(numericServiceId, feeFieldValues);
+      if (cancelled) return;
+      if (result.success) {
+        setFeeEstimate(result.data ?? null);
+        setFeeEstimateError('');
+      } else {
+        setFeeEstimate(null);
+        setFeeEstimateError(result.error || 'Unable to calculate the payable fee.');
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [serviceId, feeFieldValues]);
 
   /**
    * Initialize default values from API/defaultValue or prefilledValues in resubmit mode.
@@ -220,7 +284,7 @@ export default function DynamicServiceFormClient({
               (rawId ? prefilledValues[rawId] : undefined) ??
               (fieldDefId ? prefilledValues[fieldDefId] : undefined);
 
-            if (val !== undefined && val !== null && val !== "") {
+            if (val !== undefined && val !== null && val !== '') {
               next[key] = val;
               continue;
             }
@@ -228,13 +292,13 @@ export default function DynamicServiceFormClient({
 
           if (Object.prototype.hasOwnProperty.call(next, key)) continue;
 
-          if (field.type === "checkbox") {
+          if (field.type === 'checkbox') {
             const options = Array.isArray(field.options) ? field.options : [];
 
             if (options.length > 1) {
               if (Array.isArray(field.defaultValue)) {
                 next[key] = field.defaultValue.map(String);
-              } else if (typeof field.defaultValue === "string" && field.defaultValue.trim()) {
+              } else if (typeof field.defaultValue === 'string' && field.defaultValue.trim()) {
                 next[key] = [field.defaultValue];
               } else {
                 next[key] = [];
@@ -243,16 +307,16 @@ export default function DynamicServiceFormClient({
               const singleOptionValue = options[0]?.value;
               next[key] =
                 field.defaultValue === true ||
-                field.defaultValue === "true" ||
-                field.defaultValue === "Agree" ||
-                field.defaultValue === "Yes" ||
+                field.defaultValue === 'true' ||
+                field.defaultValue === 'Agree' ||
+                field.defaultValue === 'Yes' ||
                 (singleOptionValue ? field.defaultValue === singleOptionValue : false) ||
                 false;
             }
-          } else if (field.type === "checkboxDropdown") {
+          } else if (field.type === 'checkboxDropdown') {
             next[key] = Array.isArray(field.defaultValue) ? field.defaultValue : [];
           } else {
-            next[key] = field.defaultValue ?? "";
+            next[key] = field.defaultValue ?? '';
           }
         }
       }
@@ -272,7 +336,7 @@ export default function DynamicServiceFormClient({
 
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith("rtsDraft:") && key.endsWith(`:${serviceId}`)) {
+        if (key && key.startsWith('rtsDraft:') && key.endsWith(`:${serviceId}`)) {
           const raw = localStorage.getItem(key);
           if (raw) {
             const parsed = JSON.parse(raw);
@@ -287,20 +351,36 @@ export default function DynamicServiceFormClient({
       if (foundData && foundKey) {
         const formattedDate = new Date(foundData.savedAt).toLocaleString();
         MySwal.fire({
-          title: language === "en" ? "Restore Draft?" : language === "hi" ? "ड्राफ्ट पुनर्स्थापित करें?" : "मसुदा पुनर्संचयित करायचा?",
-          text: language === "en"
-            ? `We found a draft saved on ${formattedDate}. Would you like to restore it?`
-            : language === "hi"
-              ? `हमें ${formattedDate} पर सहेजा गया एक ड्राफ्ट मिला। क्या आप इसे पुनर्स्थापित करना चाहेंगे?`
-              : `आम्हाला ${formattedDate} रोजी जतन केलेला मसुदा सापडला. आपण तो पुनर्संचयित करू इच्छिता?`,
-          icon: "question",
+          title:
+            language === 'en'
+              ? 'Restore Draft?'
+              : language === 'hi'
+                ? 'ड्राफ्ट पुनर्स्थापित करें?'
+                : 'मसुदा पुनर्संचयित करायचा?',
+          text:
+            language === 'en'
+              ? `We found a draft saved on ${formattedDate}. Would you like to restore it?`
+              : language === 'hi'
+                ? `हमें ${formattedDate} पर सहेजा गया एक ड्राफ्ट मिला। क्या आप इसे पुनर्स्थापित करना चाहेंगे?`
+                : `आम्हाला ${formattedDate} रोजी जतन केलेला मसुदा सापडला. आपण तो पुनर्संचयित करू इच्छिता?`,
+          icon: 'question',
           showCancelButton: true,
-          confirmButtonText: language === "en" ? "Yes, Restore" : language === "hi" ? "हाँ, पुनर्स्थापित करें" : "होय, पुनर्संचयित करा",
-          cancelButtonText: language === "en" ? "No, Start Fresh" : language === "hi" ? "नहीं, नया शुरू करें" : "नाही, नवीन सुरू करा",
-          confirmButtonColor: "#0d9488",
-          cancelButtonColor: "#ef4444",
-          background: darkMode ? "#1f2937" : "#ffffff",
-          color: darkMode ? "#ffffff" : "#000000",
+          confirmButtonText:
+            language === 'en'
+              ? 'Yes, Restore'
+              : language === 'hi'
+                ? 'हाँ, पुनर्स्थापित करें'
+                : 'होय, पुनर्संचयित करा',
+          cancelButtonText:
+            language === 'en'
+              ? 'No, Start Fresh'
+              : language === 'hi'
+                ? 'नहीं, नया शुरू करें'
+                : 'नाही, नवीन सुरू करा',
+          confirmButtonColor: '#0d9488',
+          cancelButtonColor: '#ef4444',
+          background: darkMode ? '#1f2937' : '#ffffff',
+          color: darkMode ? '#ffffff' : '#000000',
         }).then((result) => {
           if (result.isConfirmed) {
             if (foundData.applicationId) {
@@ -313,12 +393,13 @@ export default function DynamicServiceFormClient({
               }));
             }
             MySwal.fire({
-              icon: "success",
-              title: language === "en" ? "Restored" : language === "hi" ? "पुनर्स्थापित" : "पुनर्संचयित",
+              icon: 'success',
+              title:
+                language === 'en' ? 'Restored' : language === 'hi' ? 'पुनर्स्थापित' : 'पुनर्संचयित',
               timer: 1500,
               showConfirmButton: false,
-              background: darkMode ? "#1f2937" : "#ffffff",
-              color: darkMode ? "#ffffff" : "#000000",
+              background: darkMode ? '#1f2937' : '#ffffff',
+              color: darkMode ? '#ffffff' : '#000000',
             });
           } else {
             localStorage.removeItem(foundKey!);
@@ -326,7 +407,7 @@ export default function DynamicServiceFormClient({
         });
       }
     } catch (e) {
-      console.error("Error checking draft:", e);
+      console.error('Error checking draft:', e);
     }
   }, [serviceId, language, darkMode]);
 
@@ -335,9 +416,9 @@ export default function DynamicServiceFormClient({
   };
 
   const isDeclarationStep = (step: any) => {
-    const id = String(step?.id ?? "").toLowerCase();
-    const en = String(step?.title?.en ?? "").toLowerCase();
-    return id.includes("declaration") || en.includes("declaration");
+    const id = String(step?.id ?? '').toLowerCase();
+    const en = String(step?.title?.en ?? '').toLowerCase();
+    return id.includes('declaration') || en.includes('declaration');
   };
 
   const sections = useMemo(() => {
@@ -352,12 +433,9 @@ export default function DynamicServiceFormClient({
   }, [sections.length]);
 
   const serviceTitle =
-    serviceTitleFromServer ||
-    steps[0]?.title?.[language] ||
-    steps[0]?.title?.en ||
-    "Service";
+    serviceTitleFromServer || steps[0]?.title?.[language] || steps[0]?.title?.en || 'Service';
 
-  const isFieldEmpty = (value: any) => value === undefined || value === null || value === "";
+  const isFieldEmpty = (value: any) => value === undefined || value === null || value === '';
 
   const normalizeRuleList = (rules?: NormalizeRule | NormalizeRule[]) => {
     if (!rules) return [];
@@ -368,10 +446,10 @@ export default function DynamicServiceFormClient({
     const normalized = normalizeRuleList(rules);
 
     return normalized.reduce((next, rule) => {
-      if (rule === "trim") return next.trim();
-      if (rule === "uppercase") return next.toUpperCase();
-      if (rule === "removeSpaces") return next.replace(/\s+/g, "");
-      if (rule === "removeCommas") return next.replace(/,/g, "");
+      if (rule === 'trim') return next.trim();
+      if (rule === 'uppercase') return next.toUpperCase();
+      if (rule === 'removeSpaces') return next.replace(/\s+/g, '');
+      if (rule === 'removeCommas') return next.replace(/,/g, '');
       return next;
     }, value);
   };
@@ -388,10 +466,11 @@ export default function DynamicServiceFormClient({
     const validation = field?.validation || {};
     const key = field?.validationKey;
     const rule = key ? VALIDATION_RULES[key] : undefined;
-    const isMobileField = String(field?.type ?? "").toLowerCase() === "tel";
-    const isEmailField = String(field?.type ?? "").toLowerCase() === "email";
+    const isMobileField = String(field?.type ?? '').toLowerCase() === 'tel';
+    const isEmailField = String(field?.type ?? '').toLowerCase() === 'email';
     const configuredPattern = validation.pattern ?? field?.pattern ?? rule?.pattern;
-    const hasConfiguredPattern = typeof configuredPattern === "string" && configuredPattern.trim().length > 0;
+    const hasConfiguredPattern =
+      typeof configuredPattern === 'string' && configuredPattern.trim().length > 0;
 
     return {
       pattern: hasConfiguredPattern
@@ -403,18 +482,32 @@ export default function DynamicServiceFormClient({
             : undefined,
       minLength: validation.minLength ?? field?.minLength ?? rule?.minLength,
       maxLength: validation.maxLength ?? field?.maxLength ?? rule?.maxLength,
-      exactLength: validation.exactLength ?? field?.exactLength ?? rule?.exactLength ?? (isMobileField ? 10 : undefined),
+      exactLength:
+        validation.exactLength ??
+        field?.exactLength ??
+        rule?.exactLength ??
+        (isMobileField ? 10 : undefined),
       min: validation.min ?? field?.min ?? rule?.min,
       max: validation.max ?? field?.max ?? rule?.max,
       minDate: validation.minDate,
       maxDate: validation.maxDate,
       minTime: validation.minTime,
       maxTime: validation.maxTime,
-      allow: validation.allow ?? field?.allow ?? rule?.allow ?? (isMobileField ? "numeric" : undefined),
+      allow:
+        validation.allow ?? field?.allow ?? rule?.allow ?? (isMobileField ? 'numeric' : undefined),
       normalize: validation.normalize ?? field?.normalize ?? rule?.normalize,
       customValidate: validation.customValidate ?? field?.customValidate ?? rule?.customValidate,
-      inputMode: validation.inputMode ?? field?.inputMode ?? rule?.inputMode ?? (isMobileField ? "numeric" : undefined),
-      message: validation.message ?? rule?.message ?? (isMobileField ? "Enter a valid 10-digit mobile number starting with 7, 8, or 9." : undefined),
+      inputMode:
+        validation.inputMode ??
+        field?.inputMode ??
+        rule?.inputMode ??
+        (isMobileField ? 'numeric' : undefined),
+      message:
+        validation.message ??
+        rule?.message ??
+        (isMobileField
+          ? 'Enter a valid 10-digit mobile number starting with 7, 8, or 9.'
+          : undefined),
     };
   };
 
@@ -434,52 +527,53 @@ export default function DynamicServiceFormClient({
     if (!allow) return null;
 
     const key = allow.toLowerCase();
-    const flags = allow.includes("\\p{") ? "gu" : "g";
+    const flags = allow.includes('\\p{') ? 'gu' : 'g';
 
-    if (key === "numeric" || key === "digits") return { kind: "chars" as const, regex: /[0-9]/g };
-    if (key === "letters") return { kind: "chars" as const, regex: /[\p{L}\p{M}\s]/gu };
-    if (key === "decimal") return { kind: "decimal" as const };
-    if (key === "alpha") return { kind: "chars" as const, regex: /[\p{L}\p{M}\s.'-]/gu };
-    if (key === "alphanumeric") return { kind: "chars" as const, regex: /[A-Za-z0-9]/g };
+    if (key === 'numeric' || key === 'digits') return { kind: 'chars' as const, regex: /[0-9]/g };
+    if (key === 'letters') return { kind: 'chars' as const, regex: /[\p{L}\p{M}\s]/gu };
+    if (key === 'decimal') return { kind: 'decimal' as const };
+    if (key === 'alpha') return { kind: 'chars' as const, regex: /[\p{L}\p{M}\s.'-]/gu };
+    if (key === 'alphanumeric') return { kind: 'chars' as const, regex: /[A-Za-z0-9]/g };
 
     try {
-      if (allow.includes("^") || allow.includes("$")) {
+      if (allow.includes('^') || allow.includes('$')) {
         const charClass = allow.match(/\[[^\]]+\]/);
-        if (charClass) return { kind: "chars" as const, regex: new RegExp(charClass[0], flags) };
-        if (allow.includes("\\d")) return { kind: "chars" as const, regex: /[0-9]/g };
-        if (allow.toLowerCase().includes("a-z")) return { kind: "chars" as const, regex: /[A-Za-z]/g };
+        if (charClass) return { kind: 'chars' as const, regex: new RegExp(charClass[0], flags) };
+        if (allow.includes('\\d')) return { kind: 'chars' as const, regex: /[0-9]/g };
+        if (allow.toLowerCase().includes('a-z'))
+          return { kind: 'chars' as const, regex: /[A-Za-z]/g };
         return null;
       }
 
-      return { kind: "chars" as const, regex: new RegExp(allow, flags) };
+      return { kind: 'chars' as const, regex: new RegExp(allow, flags) };
     } catch {
       return null;
     }
   };
 
   const sanitizeInputValue = (rawValue: any, field: FormField | any) => {
-    if (typeof rawValue !== "string") return rawValue;
+    if (typeof rawValue !== 'string') return rawValue;
 
     const { allow, normalize, base, exactLength } = getMergedRules(field);
     let next = rawValue;
 
     const allowRule = resolveAllowRule(allow);
 
-    if (allowRule?.kind === "decimal") {
-      next = next.replace(/[^0-9.]/g, "");
-      const firstDot = next.indexOf(".");
+    if (allowRule?.kind === 'decimal') {
+      next = next.replace(/[^0-9.]/g, '');
+      const firstDot = next.indexOf('.');
       if (firstDot !== -1) {
-        next = `${next.slice(0, firstDot + 1)}${next.slice(firstDot + 1).replace(/\./g, "")}`;
+        next = `${next.slice(0, firstDot + 1)}${next.slice(firstDot + 1).replace(/\./g, '')}`;
       }
-    } else if (allowRule?.kind === "chars") {
+    } else if (allowRule?.kind === 'chars') {
       const matches = next.match(allowRule.regex);
-      next = matches ? matches.join("") : "";
+      next = matches ? matches.join('') : '';
     }
 
     next = applyNormalize(next, normalize);
 
     const maxLen = exactLength ?? base.maxLength;
-    if (typeof maxLen === "number" && maxLen >= 0 && next.length > maxLen) {
+    if (typeof maxLen === 'number' && maxLen >= 0 && next.length > maxLen) {
       next = next.slice(0, maxLen);
     }
 
@@ -492,10 +586,10 @@ export default function DynamicServiceFormClient({
     const validators = Array.isArray(custom) ? custom : [custom];
 
     for (const validator of validators) {
-      if (typeof validator === "function") {
+      if (typeof validator === 'function') {
         const result = validator(value, formData);
-        if (typeof result === "string") return result;
-        if (result === false) return "Invalid value";
+        if (typeof result === 'string') return result;
+        if (result === false) return 'Invalid value';
       }
     }
 
@@ -504,145 +598,152 @@ export default function DynamicServiceFormClient({
 
   const getFieldLabelText = (field: FormField | any) => {
     const label = field?.label;
-    if (!label) return "this field";
-    if (typeof label === "string") return label.trim() || "this field";
+    if (!label) return 'this field';
+    if (typeof label === 'string') return label.trim() || 'this field';
 
-    return (
-      label?.[language] ||
+    return (label?.[language] ||
       label?.en ||
-      Object.values(label).find((value) => typeof value === "string" && value.trim()) ||
-      "this field"
-    ) as string;
+      Object.values(label).find((value) => typeof value === 'string' && value.trim()) ||
+      'this field') as string;
   };
 
   const formatAcceptedFileTypes = (formats?: string[]) => {
-    if (!Array.isArray(formats) || formats.length === 0) return "file";
-    return formats.join(", ");
+    if (!Array.isArray(formats) || formats.length === 0) return 'file';
+    return formats.join(', ');
   };
 
   const matchesAllowedFileTypes = (file: File, formats?: string[]) => {
     if (!formats?.length) return true;
 
-    const extension = file.name.includes(".")
-      ? file.name.split(".").pop()?.toLowerCase() ?? ""
-      : "";
+    const extension = file.name.includes('.')
+      ? (file.name.split('.').pop()?.toLowerCase() ?? '')
+      : '';
 
     return formats.some((format) => format.toLowerCase() === extension);
   };
 
-  const matchesFileLatLogTypes = (file: File, field: FormField | any, source: "camera" | "upload") => {
+  const matchesFileLatLogTypes = (
+    file: File,
+    field: FormField | any,
+    source: 'camera' | 'upload'
+  ) => {
     const formats = field?.validation?.acceptedFormats;
     if (Array.isArray(formats) && formats.length) return matchesAllowedFileTypes(file, formats);
     const accept = field?.validation?.accept;
-    if (typeof accept === "string" && accept.trim()) {
-      const extension = file.name.includes(".") ? `.${file.name.split(".").pop()?.toLowerCase() ?? ""}` : "";
-      const acceptsFile = accept.split(",").map((entry: string) => entry.trim().toLowerCase()).some((entry: string) => {
-        if (!entry) return false;
-        if (entry.startsWith(".")) return entry === extension;
-        if (entry.endsWith("/*")) return file.type.toLowerCase().startsWith(entry.slice(0, -1));
-        return entry === file.type.toLowerCase();
-      });
-      return source === "camera" ? acceptsFile && file.type.startsWith("image/") : acceptsFile;
+    if (typeof accept === 'string' && accept.trim()) {
+      const extension = file.name.includes('.')
+        ? `.${file.name.split('.').pop()?.toLowerCase() ?? ''}`
+        : '';
+      const acceptsFile = accept
+        .split(',')
+        .map((entry: string) => entry.trim().toLowerCase())
+        .some((entry: string) => {
+          if (!entry) return false;
+          if (entry.startsWith('.')) return entry === extension;
+          if (entry.endsWith('/*')) return file.type.toLowerCase().startsWith(entry.slice(0, -1));
+          return entry === file.type.toLowerCase();
+        });
+      return source === 'camera' ? acceptsFile && file.type.startsWith('image/') : acceptsFile;
     }
-    return source === "camera"
-      ? file.type.startsWith("image/")
-      : file.type.startsWith("image/") || file.type === "application/pdf";
+    return source === 'camera'
+      ? file.type.startsWith('image/')
+      : file.type.startsWith('image/') || file.type === 'application/pdf';
   };
 
   const getInvalidRuleMessage = (
     field: FormField | any,
     rule:
-      | "pattern"
-      | "exactLength"
-      | "minLength"
-      | "maxLength"
-      | "min"
-      | "max"
-      | "minDate"
-      | "maxDate"
-      | "minTime"
-      | "maxTime"
-      | "number"
-      | "fileType"
-      | "fileSize"
+      | 'pattern'
+      | 'exactLength'
+      | 'minLength'
+      | 'maxLength'
+      | 'min'
+      | 'max'
+      | 'minDate'
+      | 'maxDate'
+      | 'minTime'
+      | 'maxTime'
+      | 'number'
+      | 'fileType'
+      | 'fileSize'
   ) => {
-    const fieldType = String(field?.type ?? "").toLowerCase();
+    const fieldType = String(field?.type ?? '').toLowerCase();
     const labelText = getFieldLabelText(field);
     const validation = field?.validation ?? {};
 
-    if (typeof validation.message === "string" && validation.message.trim()) {
+    if (typeof validation.message === 'string' && validation.message.trim()) {
       return validation.message.trim();
     }
 
-    if (rule === "fileType") {
+    if (rule === 'fileType') {
       return `Please upload your ${formatAcceptedFileTypes(validation.acceptedFormats)}`;
     }
 
-    if (rule === "fileSize" && typeof validation.maxFileSizeMb === "number") {
+    if (rule === 'fileSize' && typeof validation.maxFileSizeMb === 'number') {
       return `Please upload a file smaller than ${validation.maxFileSizeMb} MB`;
     }
 
-    if (rule === "number") return "Enter a valid number";
-    if (rule === "exactLength" && typeof validation.exactLength === "number") {
+    if (rule === 'number') return 'Enter a valid number';
+    if (rule === 'exactLength' && typeof validation.exactLength === 'number') {
       return `Please enter exactly ${validation.exactLength} characters`;
     }
-    if (rule === "minLength" && typeof validation.minLength === "number") {
+    if (rule === 'minLength' && typeof validation.minLength === 'number') {
       return `Please enter at least ${validation.minLength} characters`;
     }
-    if (rule === "maxLength" && typeof validation.maxLength === "number") {
+    if (rule === 'maxLength' && typeof validation.maxLength === 'number') {
       return `Please enter no more than ${validation.maxLength} characters`;
     }
-    if (rule === "min" && typeof validation.min === "number") {
+    if (rule === 'min' && typeof validation.min === 'number') {
       return `Minimum value is ${validation.min}`;
     }
-    if (rule === "max" && typeof validation.max === "number") {
+    if (rule === 'max' && typeof validation.max === 'number') {
       return `Maximum value is ${validation.max}`;
     }
-    if (rule === "minDate" && validation.minDate) {
+    if (rule === 'minDate' && validation.minDate) {
       return `Date must be on or after ${validation.minDate}`;
     }
-    if (rule === "maxDate" && validation.maxDate) {
+    if (rule === 'maxDate' && validation.maxDate) {
       return `Date must be on or before ${validation.maxDate}`;
     }
-    if (rule === "minTime" && validation.minTime) {
+    if (rule === 'minTime' && validation.minTime) {
       return `Time must be at or after ${validation.minTime}`;
     }
-    if (rule === "maxTime" && validation.maxTime) {
+    if (rule === 'maxTime' && validation.maxTime) {
       return `Time must be at or before ${validation.maxTime}`;
     }
 
-    if (fieldType === "email") return `Please enter a valid ${labelText}`;
-    if (fieldType === "tel") return "Please enter a valid Phone No.";
-    if (fieldType === "number") return "Please enter a valid Value";
-    if (fieldType === "date") return "Please enter a valid Date";
-    if (fieldType === "time") return "Please enter a valid time";
-    if (fieldType === "datetime-local") return "Please enter a valid date and time";
+    if (fieldType === 'email') return `Please enter a valid ${labelText}`;
+    if (fieldType === 'tel') return 'Please enter a valid Phone No.';
+    if (fieldType === 'number') return 'Please enter a valid Value';
+    if (fieldType === 'date') return 'Please enter a valid Date';
+    if (fieldType === 'time') return 'Please enter a valid time';
+    if (fieldType === 'datetime-local') return 'Please enter a valid date and time';
 
     return `Please enter a valid ${labelText}`;
   };
 
   const getEmptyRequiredMessage = (field: FormField | any) => {
-    const fieldType = String(field?.type ?? "").toLowerCase();
+    const fieldType = String(field?.type ?? '').toLowerCase();
     const labelText = getFieldLabelText(field);
 
-    if (fieldType === "checkbox") {
+    if (fieldType === 'checkbox') {
       const options = Array.isArray(field?.options) ? field.options : [];
       return options.length > 1
-        ? "Please check one or more options to continue"
-        : "Please check this to continue";
+        ? 'Please check one or more options to continue'
+        : 'Please check this to continue';
     }
 
-    if (fieldType === "radio") return "Please select any one of Option";
-    if (fieldType === "select") return "Please select an option";
-    if (fieldType === "number") return "Please enter a Value";
-    if (fieldType === "tel") return "Please enter Phone No.";
-    if (fieldType === "time") return "Please enter a time";
-    if (fieldType === "date") return "Please enter a Date";
-    if (fieldType === "datetime-local") return "Please enter a date and time";
-    if (fieldType === "file" || fieldType === "filelatlog") {
+    if (fieldType === 'radio') return 'Please select any one of Option';
+    if (fieldType === 'select') return 'Please select an option';
+    if (fieldType === 'number') return 'Please enter a Value';
+    if (fieldType === 'tel') return 'Please enter Phone No.';
+    if (fieldType === 'time') return 'Please enter a time';
+    if (fieldType === 'date') return 'Please enter a Date';
+    if (fieldType === 'datetime-local') return 'Please enter a date and time';
+    if (fieldType === 'file' || fieldType === 'filelatlog') {
       const formats = field?.validation?.acceptedFormats;
-      return fieldType === "filelatlog" && !formats?.length && !field?.validation?.accept
-        ? t("fileLatLog.uploadFileHint")
+      return fieldType === 'filelatlog' && !formats?.length && !field?.validation?.accept
+        ? t('fileLatLog.uploadFileHint')
         : `Please upload your ${formatAcceptedFileTypes(formats)}`;
     }
 
@@ -657,38 +758,39 @@ export default function DynamicServiceFormClient({
     if (!shouldRenderField(field)) return null;
 
     const { base } = getMergedRules(field);
-    const fieldId = String(field?.id ?? "");
+    const fieldId = String(field?.id ?? '');
     const value = formData[fieldId];
-    const fieldType = String(field?.type ?? "");
+    const fieldType = String(field?.type ?? '');
 
     const isCertField =
-      fieldId === "certOC" ||
-      fieldId === "certCC" ||
-      fieldId === "certElectricityBill" ||
-      fieldId === "certOther" ||
-      fieldId === "existingCertOC" ||
-      fieldId === "existingCertCC" ||
-      fieldId === "existingCertElectricityBill" ||
-      fieldId === "existingCertOther";
+      fieldId === 'certOC' ||
+      fieldId === 'certCC' ||
+      fieldId === 'certElectricityBill' ||
+      fieldId === 'certOther' ||
+      fieldId === 'existingCertOC' ||
+      fieldId === 'existingCertCC' ||
+      fieldId === 'existingCertElectricityBill' ||
+      fieldId === 'existingCertOther';
 
     if (isCertField) {
-      const isExisting = fieldId.startsWith("existing");
-      const oc = formData[isExisting ? "existingCertOC" : "certOC"] === true;
-      const cc = formData[isExisting ? "existingCertCC" : "certCC"] === true;
-      const eb = formData[isExisting ? "existingCertElectricityBill" : "certElectricityBill"] === true;
+      const isExisting = fieldId.startsWith('existing');
+      const oc = formData[isExisting ? 'existingCertOC' : 'certOC'] === true;
+      const cc = formData[isExisting ? 'existingCertCC' : 'certCC'] === true;
+      const eb =
+        formData[isExisting ? 'existingCertElectricityBill' : 'certElectricityBill'] === true;
 
-      if (fieldId === (isExisting ? "existingCertCC" : "certCC")) {
-        if (!oc && !cc) return "CC is required if OC is not available.";
+      if (fieldId === (isExisting ? 'existingCertCC' : 'certCC')) {
+        if (!oc && !cc) return 'CC is required if OC is not available.';
       }
 
-      if (fieldId === (isExisting ? "existingCertElectricityBill" : "certElectricityBill")) {
-        if (!oc && eb && !cc) return "CC must be selected if Electricity Bill is selected.";
+      if (fieldId === (isExisting ? 'existingCertElectricityBill' : 'certElectricityBill')) {
+        if (!oc && eb && !cc) return 'CC must be selected if Electricity Bill is selected.';
       }
 
       return null;
     }
 
-    if (fieldType === "checkbox") {
+    if (fieldType === 'checkbox') {
       const options = Array.isArray(field?.options) ? field.options : [];
 
       if (options.length > 1) {
@@ -701,8 +803,8 @@ export default function DynamicServiceFormClient({
       if (
         field?.required &&
         value !== true &&
-        value !== "Agree" &&
-        value !== "Yes" &&
+        value !== 'Agree' &&
+        value !== 'Yes' &&
         value !== options[0]?.value
       ) {
         return getEmptyRequiredMessage(field);
@@ -710,15 +812,15 @@ export default function DynamicServiceFormClient({
       return null;
     }
 
-    if (fieldType === "map" || fieldType === "locationPicker") {
+    if (fieldType === 'map' || fieldType === 'locationPicker') {
       if (field?.required && isFieldEmpty(value)) return getEmptyRequiredMessage(field);
       if (isFieldEmpty(value)) return null;
       if (!isValidMapLocationValue(value)) {
-        return t("map.validation");
+        return t('map.validation');
       }
     }
 
-    if (fieldType.toLowerCase() === "filelatlog") {
+    if (fieldType.toLowerCase() === 'filelatlog') {
       const selectedFile = getFileLatLogFile(value);
       const documentGuid = getFileLatLogDocumentGuid(value);
       const metadata = getFileLatLogMetadata(value);
@@ -730,21 +832,27 @@ export default function DynamicServiceFormClient({
       if (!selectedFile && !documentGuid) return null;
 
       if (!metadata) {
-        return rawMetadata && typeof rawMetadata === "object" && (rawMetadata as { source?: unknown }).source === "upload"
-          ? t("fileLatLog.mapLinkInvalid")
-          : t("fileLatLog.mapLinkRequired");
+        return rawMetadata &&
+          typeof rawMetadata === 'object' &&
+          (rawMetadata as { source?: unknown }).source === 'upload'
+          ? t('fileLatLog.mapLinkInvalid')
+          : t('fileLatLog.mapLinkRequired');
       }
 
       if (selectedFile) {
         if (!matchesFileLatLogTypes(selectedFile, field, metadata.source)) {
-          return (Array.isArray(field?.validation?.acceptedFormats) && field.validation.acceptedFormats.length) || field?.validation?.accept
-            ? getInvalidRuleMessage(field, "fileType")
-            : metadata.source === "camera" ? t("fileLatLog.imageOnly") : t("fileLatLog.uploadFileHint");
+          return (Array.isArray(field?.validation?.acceptedFormats) &&
+            field.validation.acceptedFormats.length) ||
+            field?.validation?.accept
+            ? getInvalidRuleMessage(field, 'fileType')
+            : metadata.source === 'camera'
+              ? t('fileLatLog.imageOnly')
+              : t('fileLatLog.uploadFileHint');
         }
 
         const maxFileSizeMb = field?.validation?.maxFileSizeMb;
-        if (typeof maxFileSizeMb === "number" && selectedFile.size > maxFileSizeMb * 1024 * 1024) {
-          return getInvalidRuleMessage(field, "fileSize");
+        if (typeof maxFileSizeMb === 'number' && selectedFile.size > maxFileSizeMb * 1024 * 1024) {
+          return getInvalidRuleMessage(field, 'fileSize');
         }
       }
       return null;
@@ -756,125 +864,139 @@ export default function DynamicServiceFormClient({
     if (value instanceof File) {
       const acceptedFormats = field?.validation?.acceptedFormats;
       if (!matchesAllowedFileTypes(value, acceptedFormats)) {
-        return getInvalidRuleMessage(field, "fileType");
+        return getInvalidRuleMessage(field, 'fileType');
       }
 
       const maxFileSizeMb = field?.validation?.maxFileSizeMb;
-      if (typeof maxFileSizeMb === "number") {
+      if (typeof maxFileSizeMb === 'number') {
         const maxBytes = maxFileSizeMb * 1024 * 1024;
         if (value.size > maxBytes) {
-          return getInvalidRuleMessage(field, "fileSize");
+          return getInvalidRuleMessage(field, 'fileSize');
         }
       }
       return null;
     }
 
-    const strValue = Array.isArray(value) ? value.join(",") : String(value);
+    const strValue = Array.isArray(value) ? value.join(',') : String(value);
     const lowerFieldType = fieldType.toLowerCase();
 
     if (base.pattern) {
       try {
-        const regex = base.pattern.includes("\\p{") ? new RegExp(base.pattern, "u") : new RegExp(base.pattern);
-        if (!regex.test(strValue)) return getInvalidRuleMessage(field, "pattern");
+        const regex = base.pattern.includes('\\p{')
+          ? new RegExp(base.pattern, 'u')
+          : new RegExp(base.pattern);
+        if (!regex.test(strValue)) return getInvalidRuleMessage(field, 'pattern');
       } catch {
         // ignore invalid regex
       }
     }
 
-    if ((lowerFieldType === "date" || lowerFieldType === "datetime-local" || lowerFieldType === "month") && base.minDate && strValue < base.minDate) {
+    if (
+      (lowerFieldType === 'date' ||
+        lowerFieldType === 'datetime-local' ||
+        lowerFieldType === 'month') &&
+      base.minDate &&
+      strValue < base.minDate
+    ) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), minDate: base.minDate },
         },
-        "minDate"
+        'minDate'
       );
     }
 
-    if ((lowerFieldType === "date" || lowerFieldType === "datetime-local" || lowerFieldType === "month") && base.maxDate && strValue > base.maxDate) {
+    if (
+      (lowerFieldType === 'date' ||
+        lowerFieldType === 'datetime-local' ||
+        lowerFieldType === 'month') &&
+      base.maxDate &&
+      strValue > base.maxDate
+    ) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), maxDate: base.maxDate },
         },
-        "maxDate"
+        'maxDate'
       );
     }
 
-    if (lowerFieldType === "time" && base.minTime && strValue < base.minTime) {
+    if (lowerFieldType === 'time' && base.minTime && strValue < base.minTime) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), minTime: base.minTime },
         },
-        "minTime"
+        'minTime'
       );
     }
 
-    if (lowerFieldType === "time" && base.maxTime && strValue > base.maxTime) {
+    if (lowerFieldType === 'time' && base.maxTime && strValue > base.maxTime) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), maxTime: base.maxTime },
         },
-        "maxTime"
+        'maxTime'
       );
     }
 
     const exactLen = base.exactLength;
 
-    if (typeof exactLen === "number" && strValue.length !== exactLen) {
+    if (typeof exactLen === 'number' && strValue.length !== exactLen) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), exactLength: exactLen },
         },
-        "exactLength"
+        'exactLength'
       );
     }
 
-    if (typeof base.minLength === "number" && strValue.length < base.minLength) {
+    if (typeof base.minLength === 'number' && strValue.length < base.minLength) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), minLength: base.minLength },
         },
-        "minLength"
+        'minLength'
       );
     }
 
-    if (typeof base.maxLength === "number" && strValue.length > base.maxLength) {
+    if (typeof base.maxLength === 'number' && strValue.length > base.maxLength) {
       return getInvalidRuleMessage(
         {
           ...field,
           validation: { ...(field?.validation ?? {}), maxLength: base.maxLength },
         },
-        "maxLength"
+        'maxLength'
       );
     }
 
-    if (typeof base.min === "number" || typeof base.max === "number") {
+    if (typeof base.min === 'number' || typeof base.max === 'number') {
       const numValue = Number(strValue);
 
-      if (Number.isNaN(numValue)) return getInvalidRuleMessage(field, "number");
+      if (Number.isNaN(numValue)) return getInvalidRuleMessage(field, 'number');
 
-      if (typeof base.min === "number" && numValue < base.min) {
+      if (typeof base.min === 'number' && numValue < base.min) {
         return getInvalidRuleMessage(
           {
             ...field,
             validation: { ...(field?.validation ?? {}), min: base.min },
           },
-          "min"
+          'min'
         );
       }
 
-      if (typeof base.max === "number" && numValue > base.max) {
+      if (typeof base.max === 'number' && numValue > base.max) {
         return getInvalidRuleMessage(
           {
             ...field,
             validation: { ...(field?.validation ?? {}), max: base.max },
           },
-          "max"
+          'max'
         );
       }
     }
@@ -897,9 +1019,9 @@ export default function DynamicServiceFormClient({
   };
 
   const normalizeSelectValue = (value: any) => {
-    if (value && typeof value === "object" && !(value instanceof File)) {
-      if ("value" in value) return value.value;
-      if ("id" in value) return value.id;
+    if (value && typeof value === 'object' && !(value instanceof File)) {
+      if ('value' in value) return value.value;
+      if ('id' in value) return value.id;
     }
 
     return value;
@@ -916,13 +1038,13 @@ export default function DynamicServiceFormClient({
   useEffect(() => {
     const onDocClick = (event: any) => {
       const element = event.target as HTMLElement;
-      if (!element.closest("[data-checkbox-dd]")) {
+      if (!element.closest('[data-checkbox-dd]')) {
         setOpenCheckboxDropdown({});
       }
     };
 
-    document.addEventListener("click", onDocClick);
-    return () => document.removeEventListener("click", onDocClick);
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
   }, []);
 
   useEffect(() => {
@@ -964,11 +1086,11 @@ export default function DynamicServiceFormClient({
 
     const currentRef = scrollContainerRef.current;
 
-    if (currentRef) currentRef.addEventListener("scroll", handleScroll);
+    if (currentRef) currentRef.addEventListener('scroll', handleScroll);
     updateActiveSectionFromScroll();
 
     return () => {
-      if (currentRef) currentRef.removeEventListener("scroll", handleScroll);
+      if (currentRef) currentRef.removeEventListener('scroll', handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [sections.length]);
@@ -986,7 +1108,7 @@ export default function DynamicServiceFormClient({
 
     container.scrollTo({
       top: Math.max(0, section.offsetTop - headerH - 16),
-      behavior: "smooth",
+      behavior: 'smooth',
     });
 
     setTimeout(() => {
@@ -998,7 +1120,7 @@ export default function DynamicServiceFormClient({
     if (isLoggedIn) {
       router.push(`/${locale}/service/dashboard`);
     } else {
-      router.push(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+      router.push(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ''}`);
     }
   };
 
@@ -1018,7 +1140,9 @@ export default function DynamicServiceFormClient({
       }
     }
 
-    const missing = required.filter((item) => item.value == null || String(item.value).trim() === "");
+    const missing = required.filter(
+      (item) => item.value == null || String(item.value).trim() === ''
+    );
 
     return missing;
   };
@@ -1050,7 +1174,7 @@ export default function DynamicServiceFormClient({
     for (const step of steps || []) {
       for (const field of step.fields || []) {
         if (!shouldRenderField(field)) continue;
-        if (field.type === "label" || field.type === "hidden") continue;
+        if (field.type === 'label' || field.type === 'hidden') continue;
 
         const key = String(field.id);
         const groupId = fieldToGroupIdMap.get(key);
@@ -1065,7 +1189,7 @@ export default function DynamicServiceFormClient({
         });
       }
     }
-    return { currentStep: "Step1", values };
+    return { currentStep: 'Step1', values };
   };
 
   const buildSubmitFormData = () => {
@@ -1082,12 +1206,12 @@ export default function DynamicServiceFormClient({
     for (const step of steps || []) {
       for (const field of step.fields || []) {
         if (!shouldRenderField(field)) continue;
-        const fieldType = String(field?.type || "").toLowerCase();
-        if (fieldType !== "file" && fieldType !== "filelatlog") continue;
+        const fieldType = String(field?.type || '').toLowerCase();
+        if (fieldType !== 'file' && fieldType !== 'filelatlog') continue;
 
-        const fieldId = String(field?.id ?? "");
+        const fieldId = String(field?.id ?? '');
         const rawValue = formData[fieldId];
-        const fileValue = fieldType === "filelatlog" ? getFileLatLogFile(rawValue) : rawValue;
+        const fileValue = fieldType === 'filelatlog' ? getFileLatLogFile(rawValue) : rawValue;
 
         if (!(fileValue instanceof File) || fileValue.size <= 0) {
           continue;
@@ -1100,29 +1224,26 @@ export default function DynamicServiceFormClient({
           fieldId,
           fieldDefinitionId: Number(field?.fieldDefinitionId ?? field?.rawApi?.id ?? 0),
           fieldName: String(
-            field?.rawApi?.fieldCode ||
-              field?.groupFieldId ||
-              field?.id ||
-              field?.fieldCode ||
-              ""
+            field?.rawApi?.fieldCode || field?.groupFieldId || field?.id || field?.fieldCode || ''
           ),
           fieldLabel: getLocalizedLabelText(field?.label, language),
-          textValue: fieldType === "filelatlog" && isFileLatLogFieldValue(rawValue)
-            ? serializeFileLatLogCaptureMetadata(rawValue.metadata)
-            : null,
+          textValue:
+            fieldType === 'filelatlog' && isFileLatLogFieldValue(rawValue)
+              ? serializeFileLatLogCaptureMetadata(rawValue.metadata)
+              : null,
         });
       }
     }
 
     submitBundle.append(
-      "submitInput",
+      'submitInput',
       JSON.stringify({
         formValues: formData,
         steps,
         departmentId,
         serviceId,
         createdBy: 0,
-        applicationStatus: "Submitted",
+        applicationStatus: 'Submitted',
         fileFields,
         tokenTD: tokenTD || undefined,
       })
@@ -1174,26 +1295,25 @@ export default function DynamicServiceFormClient({
       );
 
       MySwal.fire({
-        icon: "success",
-        title: "Draft Saved",
-        text: "Your progress has been saved locally.",
+        icon: 'success',
+        title: 'Draft Saved',
+        text: 'Your progress has been saved locally.',
         timer: 2000,
         showConfirmButton: false,
-        background: darkMode ? "#1f2937" : "#ffffff",
-        color: darkMode ? "#ffffff" : "#000000",
-        customClass: { popup: "rounded-xl shadow-xl" },
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
+        customClass: { popup: 'rounded-xl shadow-xl' },
       });
     } catch (err: any) {
-
       const apiErr = parseBackendError(err);
 
       MySwal.fire({
-        icon: "error",
-        title: "Error",
-        text: apiErr?.message || err?.message || "Failed to save draft",
-        background: darkMode ? "#1f2937" : "#ffffff",
-        color: darkMode ? "#ffffff" : "#000000",
-        customClass: { popup: "rounded-xl shadow-xl" },
+        icon: 'error',
+        title: 'Error',
+        text: apiErr?.message || err?.message || 'Failed to save draft',
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
+        customClass: { popup: 'rounded-xl shadow-xl' },
       });
     }
   };
@@ -1202,12 +1322,12 @@ export default function DynamicServiceFormClient({
     navigator.clipboard.writeText(text);
 
     MySwal.fire({
-      icon: "success",
-      title: "Copied!",
+      icon: 'success',
+      title: 'Copied!',
       timer: 1000,
       showConfirmButton: false,
       toast: true,
-      position: "top-end",
+      position: 'top-end',
     });
   };
 
@@ -1220,14 +1340,15 @@ export default function DynamicServiceFormClient({
       scrollToSection(firstInvalidIndex);
 
       MySwal.fire({
-        icon: "error",
-        title: language === "en" ? "Incomplete Form" : "अपूर्ण फॉर्म",
-        text: language === "en"
-          ? "Please fill all required fields highlighted in red."
-          : "कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।",
-        confirmButtonColor: "#ef4444",
-        background: darkMode ? "#1f2937" : "#ffffff",
-        color: darkMode ? "#ffffff" : "#000000",
+        icon: 'error',
+        title: language === 'en' ? 'Incomplete Form' : 'अपूर्ण फॉर्म',
+        text:
+          language === 'en'
+            ? 'Please fill all required fields highlighted in red.'
+            : 'कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।',
+        confirmButtonColor: '#ef4444',
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
       });
 
       logRequiredMissing();
@@ -1237,78 +1358,93 @@ export default function DynamicServiceFormClient({
     if (isResubmitMode && resubmitApplicationId) {
       setIsSubmitting(true);
       try {
-        const { citizenResubmitApplicationAction, uploadCitizenDocumentAction } = await import(
-          "@/app/[locale]/service/dashboard/actions"
-        );
+        const { updateRtsApplicationAction, uploadRtsResubmitDocumentAction } =
+          await import('@/app/[locale]/service/[serviceId]/actions');
 
-        const fieldValuesPayload: any[] = [];
+        if (!resubmitContext) {
+          throw new Error('Unable to load the application workflow details for resubmission.');
+        }
+
+        const documentGuidByFieldDefinitionId: Record<string, string> = {};
+        const textValueByFieldDefinitionId: Record<string, string> = {};
         for (const step of baseSteps || []) {
           for (const field of step.fields || []) {
             const fieldDefId = Number(field.rawApi?.id || field.fieldDefinitionId || field.id);
             if (!fieldDefId || isNaN(fieldDefId)) continue;
 
             const val = formData[String(field.id)];
-            let docGuid: string | null = null;
-            const fieldType = String(field.type ?? "").toLowerCase();
-            const fileLatLogValue = fieldType === "filelatlog" && isFileLatLogFieldValue(val)
-              ? val
-              : null;
-            const selectedFile = fileLatLogValue ? getFileLatLogFile(fileLatLogValue) : val instanceof File ? val : null;
+            const fieldType = String(field.type ?? '').toLowerCase();
+            if (fieldType !== 'file' && fieldType !== 'filelatlog') continue;
+
+            const fileLatLogValue =
+              fieldType === 'filelatlog' && isFileLatLogFieldValue(val) ? val : null;
+            const selectedFile = fileLatLogValue
+              ? getFileLatLogFile(fileLatLogValue)
+              : val instanceof File
+                ? val
+                : null;
 
             if (selectedFile) {
               const fd = new FormData();
-              fd.append("file", selectedFile);
-              const upRes = await uploadCitizenDocumentAction(fd);
+              fd.append('file', selectedFile);
+              const upRes = await uploadRtsResubmitDocumentAction(fd);
               if (upRes.success && upRes.documentGuid) {
-                docGuid = upRes.documentGuid;
+                documentGuidByFieldDefinitionId[String(fieldDefId)] = upRes.documentGuid;
               } else {
                 throw new Error(
                   upRes.error ||
-                    (language === "en"
-                      ? "The replacement document could not be uploaded."
-                      : "नवीन कागदपत्र अपलोड करता आले नाही.")
+                    (language === 'en'
+                      ? 'The replacement document could not be uploaded.'
+                      : 'नवीन कागदपत्र अपलोड करता आले नाही.')
                 );
               }
             } else if (fileLatLogValue && getFileLatLogDocumentGuid(fileLatLogValue)) {
-              docGuid = getFileLatLogDocumentGuid(fileLatLogValue);
-            } else if (typeof val === "string" && val.startsWith("guid:")) {
-              docGuid = val.replace("guid:", "");
+              documentGuidByFieldDefinitionId[String(fieldDefId)] = getFileLatLogDocumentGuid(fileLatLogValue)!;
+            } else if (typeof val === 'string' && val.startsWith('guid:')) {
+              documentGuidByFieldDefinitionId[String(fieldDefId)] = val.replace('guid:', '');
             } else {
               const existDoc = existingDocuments?.find((d) => d.fieldDefinitionId === fieldDefId);
               if (existDoc?.documentGuid) {
-                docGuid = existDoc.documentGuid;
+                documentGuidByFieldDefinitionId[String(fieldDefId)] = existDoc.documentGuid;
               }
             }
 
-            fieldValuesPayload.push({
-              fieldDefinitionId: fieldDefId,
-              textValue: fieldType === "filelatlog"
-                ? serializeFileLatLogCaptureMetadata(fileLatLogValue?.metadata)
-                : fieldType !== "file" && typeof val === "string" ? val : null,
-              numberValue: typeof val === "number" ? val : null,
-              dateValue: field.type === "date" && typeof val === "string" ? val : null,
-              booleanValue: typeof val === "boolean" ? val : null,
-              documentGuid: docGuid,
-            });
+            if (fieldType === 'filelatlog') {
+              const metadata = serializeFileLatLogCaptureMetadata(fileLatLogValue?.metadata);
+              if (metadata) textValueByFieldDefinitionId[String(fieldDefId)] = metadata;
+            }
           }
         }
 
-        const res = await citizenResubmitApplicationAction(
+        const res = await updateRtsApplicationAction(
           resubmitApplicationId,
-          "Application updated and resubmitted by citizen with corrections.",
-          fieldValuesPayload
+          buildRtsApplicationUpdatePayload({
+            formData,
+            steps: baseSteps,
+            resubmitContext,
+            remark: 'Application updated and resubmitted by citizen with corrections.',
+            documentGuidByFieldDefinitionId,
+            textValueByFieldDefinitionId,
+          })
         );
 
         if (res.success) {
-          const appNo = resubmitApplicationNo || `RTS${resubmitApplicationId}`;
+          const appNo = res.items?.applicationNo?.trim() || resubmitApplicationNo || `RTS${resubmitApplicationId}`;
           await MySwal.fire({
-            icon: "success",
-            title: language === "en" ? "Application Resubmitted!" : "अर्ज पुन्हा सादर झाला!",
-            text: res.message || (language === "en" ? "Your application has been updated and resubmitted successfully." : "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे."),
-            confirmButtonText: language === "en" ? "🔍 View Application & Track Status" : "🔍 अर्ज व ट्रॅकिंग स्थिती पहा",
-            confirmButtonColor: "#059669",
-            background: darkMode ? "#1f2937" : "#ffffff",
-            color: darkMode ? "#ffffff" : "#000000",
+            icon: 'success',
+            title: language === 'en' ? 'Application Resubmitted!' : 'अर्ज पुन्हा सादर झाला!',
+            text:
+              res.message ||
+              (language === 'en'
+                ? 'Your application has been updated and resubmitted successfully.'
+                : 'आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे.'),
+            confirmButtonText:
+              language === 'en'
+                ? '🔍 View Application & Track Status'
+                : '🔍 अर्ज व ट्रॅकिंग स्थिती पहा',
+            confirmButtonColor: '#059669',
+            background: darkMode ? '#1f2937' : '#ffffff',
+            color: darkMode ? '#ffffff' : '#000000',
           });
 
           if (isLoggedIn) {
@@ -1318,20 +1454,20 @@ export default function DynamicServiceFormClient({
           }
         } else {
           MySwal.fire({
-            icon: "error",
-            title: language === "en" ? "Resubmit Failed" : "पुन्हा सादर करणे अयशस्वी",
-            text: res.message || "Failed to resubmit application.",
-            confirmButtonColor: "#ef4444",
-            background: darkMode ? "#1f2937" : "#ffffff",
-            color: darkMode ? "#ffffff" : "#000000",
+            icon: 'error',
+            title: language === 'en' ? 'Resubmit Failed' : 'पुन्हा सादर करणे अयशस्वी',
+            text: res.message || 'Failed to resubmit application.',
+            confirmButtonColor: '#ef4444',
+            background: darkMode ? '#1f2937' : '#ffffff',
+            color: darkMode ? '#ffffff' : '#000000',
           });
         }
       } catch (err: any) {
         MySwal.fire({
-          icon: "error",
-          title: language === "en" ? "Error" : "त्रुटी",
-          text: err?.message || "An unexpected error occurred.",
-          confirmButtonColor: "#ef4444",
+          icon: 'error',
+          title: language === 'en' ? 'Error' : 'त्रुटी',
+          text: err?.message || 'An unexpected error occurred.',
+          confirmButtonColor: '#ef4444',
         });
       } finally {
         setIsSubmitting(false);
@@ -1343,12 +1479,12 @@ export default function DynamicServiceFormClient({
 
     try {
       const payload = collectFormData();
-      const step = payload.currentStep || "Step1";
+      const step = payload.currentStep || 'Step1';
       const applicationId = ensureApplicationId();
       const submitBundle = buildSubmitFormData();
 
       if (!submitApplicationAction) {
-        throw new Error("submitApplicationAction is missing");
+        throw new Error('submitApplicationAction is missing');
       }
 
       const response = await submitApplicationAction(submitBundle);
@@ -1360,7 +1496,7 @@ export default function DynamicServiceFormClient({
       try {
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.startsWith("rtsDraft:") && key.endsWith(`:${serviceId}`)) {
+          if (key && key.startsWith('rtsDraft:') && key.endsWith(`:${serviceId}`)) {
             localStorage.removeItem(key);
           }
         }
@@ -1374,70 +1510,72 @@ export default function DynamicServiceFormClient({
 
       const applicantName =
         (formData.applicantFirstName
-          ? `${formData.applicantFirstName} ${formData.applicantLastName || ""}`.trim()
-          : "") ||
+          ? `${formData.applicantFirstName} ${formData.applicantLastName || ''}`.trim()
+          : '') ||
         formData.applicantFullName ||
         formData.firstName ||
         formData.directorName ||
-        "Applicant";
+        'Applicant';
 
       const newApplication = {
         id: newId,
         applicationId,
-        serviceName: typeof serviceTitle === "string" ? serviceTitle : "Service",
+        serviceName: typeof serviceTitle === 'string' ? serviceTitle : 'Service',
         applicantName,
         submittedDate: submissionDate,
         currentStage: 1,
         progress: 25,
         status: newStatus,
-        userUpicId: "RTS2024001234",
+        userUpicId: 'RTS2024001234',
         stages: [
           {
             stage: 1,
-            name: "Application Submitted",
-            status: "approved",
+            name: 'Application Submitted',
+            status: 'approved',
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString(),
-            remark: "System: Application received successfully.",
+            remark: 'System: Application received successfully.',
           },
           {
             stage: 2,
-            name: "Document Verification",
-            status: "pending",
-            officer: "-",
-            date: "-",
-            time: "-",
-            remark: "Pending review.",
+            name: 'Document Verification',
+            status: 'pending',
+            officer: '-',
+            date: '-',
+            time: '-',
+            remark: 'Pending review.',
           },
           {
             stage: 3,
-            name: "Final Approval",
-            status: "pending",
-            officer: "-",
-            date: "-",
-            time: "-",
-            remark: "Pending.",
+            name: 'Final Approval',
+            status: 'pending',
+            officer: '-',
+            date: '-',
+            time: '-',
+            remark: 'Pending.',
           },
         ],
       };
 
-      const existingData = JSON.parse(localStorage.getItem("rtsApplications") || "{}");
+      const existingData = JSON.parse(localStorage.getItem('rtsApplications') || '{}');
       existingData[newId] = newApplication;
-      localStorage.setItem("rtsApplications", JSON.stringify(existingData));
+      localStorage.setItem('rtsApplications', JSON.stringify(existingData));
 
-      const rawAppId = Number(response?.items?.id) || parseInt(newId.replace(/\D/g, ""), 10) || 1;
-      const appFees = Number(serviceFees) > 0 ? Number(serviceFees) : (feesRequired ? 50 : 0);
+      const rawAppId = Number(response?.items?.id) || parseInt(newId.replace(/\D/g, ''), 10) || 1;
+      const appFees = Math.max(0, Number(response?.items?.paymentRequiredFee ?? 0));
 
       if (appFees > 0) {
         MySwal.fire({
-          icon: "success",
-          title: language === "en"
-            ? "Application Submitted!"
-            : language === "hi"
-              ? "आवेदन सबमिट हुआ!"
-              : "अर्ज यशस्वीरित्या सादर झाला!",
-          html: language === "en"
-            ? `<div class="space-y-3 p-2 text-center">
+          icon: 'success',
+          title:
+            language === 'en'
+              ? 'Application Submitted!'
+              : language === 'hi'
+                ? 'आवेदन सबमिट हुआ!'
+                : 'अर्ज यशस्वीरित्या सादर झाला!',
+          html:
+            language === 'en'
+              ? `<div class="space-y-3 p-2 text-center">
                  <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
                  <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
                  <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
@@ -1445,8 +1583,8 @@ export default function DynamicServiceFormClient({
                  </div>
                  <p class="text-xs text-gray-500 font-medium">Please proceed to pay the statutory fee now or pay later from your citizen dashboard.</p>
                </div>`
-            : language === "hi"
-              ? `<div class="space-y-3 p-2 text-center">
+              : language === 'hi'
+                ? `<div class="space-y-3 p-2 text-center">
                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
                    <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
                    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
@@ -1454,7 +1592,7 @@ export default function DynamicServiceFormClient({
                    </div>
                    <p class="text-xs text-gray-500 font-medium">कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।</p>
                  </div>`
-              : `<div class="space-y-3 p-2 text-center">
+                : `<div class="space-y-3 p-2 text-center">
                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
                    <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
                    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
@@ -1463,19 +1601,29 @@ export default function DynamicServiceFormClient({
                    <p class="text-xs text-gray-500 font-medium">कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.</p>
                  </div>`,
           showCancelButton: true,
-          confirmButtonText: language === "en" ? "💳 Pay Government Fee Now" : language === "hi" ? "💳 अभी शुल्क भरें" : "💳 आताच शुल्क भरा",
-          cancelButtonText: language === "en" ? "🔍 Track Application" : language === "hi" ? "🔍 आवेदन ट्रैक करें" : "🔍 अर्ज ट्रॅक करा",
-          confirmButtonColor: "#059669",
-          cancelButtonColor: "#2563eb",
-          background: darkMode ? "#1f2937" : "#ffffff",
-          color: darkMode ? "#ffffff" : "#000000",
-          customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
+          confirmButtonText:
+            language === 'en'
+              ? '💳 Pay Government Fee Now'
+              : language === 'hi'
+                ? '💳 अभी शुल्क भरें'
+                : '💳 आताच शुल्क भरा',
+          cancelButtonText:
+            language === 'en'
+              ? '🔍 Track Application'
+              : language === 'hi'
+                ? '🔍 आवेदन ट्रैक करें'
+                : '🔍 अर्ज ट्रॅक करा',
+          confirmButtonColor: '#059669',
+          cancelButtonColor: '#2563eb',
+          background: darkMode ? '#1f2937' : '#ffffff',
+          color: darkMode ? '#ffffff' : '#000000',
+          customClass: { popup: 'rounded-xl shadow-xl border border-teal-500/20' },
         }).then((swalRes) => {
           if (swalRes.isConfirmed) {
             setCheckoutAppInfo({
               applicationId: rawAppId,
               applicationNo: newId,
-              serviceName: typeof serviceTitle === "string" ? serviceTitle : "RTS Service",
+              serviceName: typeof serviceTitle === 'string' ? serviceTitle : 'RTS Service',
               fees: appFees,
             });
             setShowSuccessPaymentModal(true);
@@ -1483,27 +1631,33 @@ export default function DynamicServiceFormClient({
             if (isLoggedIn) {
               router.replace(`/${locale}/service/dashboard?details=${encodeURIComponent(newId)}`);
             } else {
-              router.replace(`/${locale}?track=${encodeURIComponent(newId)}&applicaAndtracking=true`);
+              router.replace(
+                `/${locale}?track=${encodeURIComponent(newId)}&applicaAndtracking=true`
+              );
             }
           }
         });
       } else {
         MySwal.fire({
-          icon: "success",
-          title: language === "en"
-            ? "Application Submitted!"
-            : language === "hi"
-              ? "आवेदन सबमिट हुआ!"
-              : "अर्ज यशस्वीरित्या सादर झाला!",
+          icon: 'success',
+          title:
+            language === 'en'
+              ? 'Application Submitted!'
+              : language === 'hi'
+                ? 'आवेदन सबमिट हुआ!'
+                : 'अर्ज यशस्वीरित्या सादर झाला!',
           html: `<div class="space-y-3 p-2 text-center">
-                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${language === "en" ? "Application Tracking ID" : "अर्ज ट्रॅकिंग आयडी"}</p>
+                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${language === 'en' ? 'Application Tracking ID' : 'अर्ज ट्रॅकिंग आयडी'}</p>
                    <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
                  </div>`,
-          confirmButtonText: language === "en" ? "🔍 View Application & Track Status" : "🔍 अर्ज व ट्रॅकिंग स्थिती पहा",
-          confirmButtonColor: "#059669",
-          background: darkMode ? "#1f2937" : "#ffffff",
-          color: darkMode ? "#ffffff" : "#000000",
-          customClass: { popup: "rounded-xl shadow-xl border border-teal-500/20" },
+          confirmButtonText:
+            language === 'en'
+              ? '🔍 View Application & Track Status'
+              : '🔍 अर्ज व ट्रॅकिंग स्थिती पहा',
+          confirmButtonColor: '#059669',
+          background: darkMode ? '#1f2937' : '#ffffff',
+          color: darkMode ? '#ffffff' : '#000000',
+          customClass: { popup: 'rounded-xl shadow-xl border border-teal-500/20' },
         }).then(() => {
           if (isLoggedIn) {
             router.replace(`/${locale}/service/dashboard?details=${encodeURIComponent(newId)}`);
@@ -1516,12 +1670,12 @@ export default function DynamicServiceFormClient({
       const apiErr = parseBackendError(err);
 
       MySwal.fire({
-        icon: "error",
-        title: language === "en" ? "Submit Failed" : "सबमिट असफल",
-        text: apiErr?.message || err?.message || "Failed to submit application",
-        confirmButtonColor: "#ef4444",
-        background: darkMode ? "#1f2937" : "#ffffff",
-        color: darkMode ? "#ffffff" : "#000000",
+        icon: 'error',
+        title: language === 'en' ? 'Submit Failed' : 'सबमिट असफल',
+        text: apiErr?.message || err?.message || 'Failed to submit application',
+        confirmButtonColor: '#ef4444',
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
       });
     } finally {
       setIsSubmitting(false);
@@ -1539,15 +1693,15 @@ export default function DynamicServiceFormClient({
       scrollToSection(firstInvalidIndex);
 
       MySwal.fire({
-        icon: "error",
-        title: language === "en" ? "Incomplete Form" : "अपूर्ण फॉर्म",
+        icon: 'error',
+        title: language === 'en' ? 'Incomplete Form' : 'अपूर्ण फॉर्म',
         text:
-          language === "en"
-            ? "Please fill all required fields highlighted in red."
-            : "कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।",
-        confirmButtonColor: "#ef4444",
-        background: darkMode ? "#1f2937" : "#ffffff",
-        color: darkMode ? "#ffffff" : "#000000",
+          language === 'en'
+            ? 'Please fill all required fields highlighted in red.'
+            : 'कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।',
+        confirmButtonColor: '#ef4444',
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#ffffff' : '#000000',
       });
 
       logRequiredMissing();
@@ -1557,7 +1711,7 @@ export default function DynamicServiceFormClient({
     const applicantContact = resolveApplicantContact(formData, steps);
     if (applicantContact.missing.length) {
       const missingLabels = applicantContact.missing
-        .map((field) => field === 'applicantName' ? 'applicant name' : 'mobile number')
+        .map((field) => (field === 'applicantName' ? 'applicant name' : 'mobile number'))
         .join(' and ');
 
       MySwal.fire({
@@ -1574,17 +1728,44 @@ export default function DynamicServiceFormClient({
       return;
     }
 
+    const defaultServiceFee = Number(serviceFees ?? 0);
+    const baseFee = Number(feeEstimate?.baseFee ?? defaultServiceFee);
+    const addonFee = Number(feeEstimate?.addonFee ?? 0);
+    const totalFee = Number(feeEstimate?.payableAmount ?? baseFee + addonFee);
+    const baseFeeLabel =
+      (feeEstimate?.usedServiceFeeFallback ?? true)
+        ? t('confirmation.fee.serviceDefaultFee')
+        : t('confirmation.fee.baseFee');
+    const money = (amount: number) => `₹${amount.toFixed(2)}`;
+
     const confirmation = await MySwal.fire({
-      icon: "question",
-      title: t("confirmation.title"),
-      html: `<strong>${escapeHtml(t("confirmation.serviceName"))}: ${escapeHtml(serviceTitle)}</strong><br><br>${escapeHtml(t("confirmation.description"))}`,
+      icon: 'question',
+      title: t('confirmation.title'),
+      html: `<div class="space-y-4 text-center">
+        <strong class="block mb-5 px-2 text-base leading-relaxed">${escapeHtml(t('confirmation.serviceName'))}: ${escapeHtml(serviceTitle)}</strong>
+        <div class="grid grid-cols-2 gap-2 text-left mt-1">
+          <div class="rounded-lg border border-blue-100 bg-blue-50 p-3">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-blue-700">${escapeHtml(baseFeeLabel)}</p>
+            <p class="mt-1 text-lg font-bold text-slate-900">${money(baseFee)}</p>
+          </div>
+          <div class="rounded-lg border border-violet-100 bg-violet-50 p-3">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-violet-700">${escapeHtml(t('confirmation.fee.addonFee'))}</p>
+            <p class="mt-1 text-lg font-bold text-slate-900">${money(addonFee)}</p>
+          </div>
+        </div>
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-left">
+          <span class="text-sm font-semibold text-emerald-800">${escapeHtml(t('confirmation.fee.totalFee'))}</span>
+          <span class="float-right text-lg font-extrabold text-emerald-900">${money(totalFee)}</span>
+        </div>
+        <p class="text-sm text-slate-600">${escapeHtml(t('confirmation.description'))}</p>
+      </div>`,
       showCancelButton: true,
-      confirmButtonText: t("confirmation.confirm"),
-      cancelButtonText: t("confirmation.cancel"),
-      confirmButtonColor: "#059669",
-      cancelButtonColor: "#64748b",
-      background: darkMode ? "#1f2937" : "#ffffff",
-      color: darkMode ? "#ffffff" : "#000000",
+      confirmButtonText: t('confirmation.confirm'),
+      cancelButtonText: t('confirmation.cancel'),
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#64748b',
+      background: darkMode ? '#1f2937' : '#ffffff',
+      color: darkMode ? '#ffffff' : '#000000',
     });
 
     if (confirmation.isConfirmed) {
@@ -1593,26 +1774,28 @@ export default function DynamicServiceFormClient({
   };
 
   const getServiceIcon = (title: string) => {
-    if (title.includes("Applicant")) return User;
-    if (title.includes("Address")) return MapPin;
-    if (title.includes("Document")) return FileText;
-    if (title.includes("Property")) return Home;
-    if (title.includes("Business")) return Briefcase;
+    if (title.includes('Applicant')) return User;
+    if (title.includes('Address')) return MapPin;
+    if (title.includes('Document')) return FileText;
+    if (title.includes('Property')) return Home;
+    if (title.includes('Business')) return Briefcase;
     return Info;
   };
 
   const getStepIcon = (step: any): LucideIcon =>
-    step?.icon && iconMap[step.icon] ? iconMap[step.icon] : getServiceIcon(step?.title?.en || "");
+    step?.icon && iconMap[step.icon] ? iconMap[step.icon] : getServiceIcon(step?.title?.en || '');
 
-  if (submitState === "success") {
+  if (submitState === 'success') {
     return (
       <div
-        className={`fixed inset-0 flex items-center justify-center p-4 ${darkMode ? "bg-gray-900" : "bg-gray-50"
-          }`}
+        className={`fixed inset-0 flex items-center justify-center p-4 ${
+          darkMode ? 'bg-gray-900' : 'bg-gray-50'
+        }`}
       >
         <div
-          className={`w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${darkMode ? "bg-gray-800" : "bg-white"
-            }`}
+          className={`w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}
         >
           <div className="pt-12 pb-12 px-8 text-center space-y-8">
             <div className="flex justify-center">
@@ -1622,50 +1805,57 @@ export default function DynamicServiceFormClient({
             </div>
 
             <div className="space-y-2">
-              <h2 className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
-                {language === "en"
-                  ? "Application Submitted Successfully!"
-                  : language === "hi"
-                    ? "आवेदन सफलतापूर्वक जमा हुआ!"
-                    : "अर्ज यशस्वीरित्या सबमिट झाला!"}
+              <h2 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                {language === 'en'
+                  ? 'Application Submitted Successfully!'
+                  : language === 'hi'
+                    ? 'आवेदन सफलतापूर्वक जमा हुआ!'
+                    : 'अर्ज यशस्वीरित्या सबमिट झाला!'}
               </h2>
 
-              <p className={`${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                {language === "en"
-                  ? "Your application has been received and is under review."
-                  : language === "hi"
-                    ? "आपका आवेदन प्राप्त हुआ है और समीक्षाधीन है।"
-                    : "तुमचा अर्ज प्राप्त झाला आहे आणि तपासणीत आहे."}
+              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {language === 'en'
+                  ? 'Your application has been received and is under review.'
+                  : language === 'hi'
+                    ? 'आपका आवेदन प्राप्त हुआ है और समीक्षाधीन है।'
+                    : 'तुमचा अर्ज प्राप्त झाला आहे आणि तपासणीत आहे.'}
               </p>
             </div>
 
             <div
-              className={`p-6 rounded-xl border-2 border-dashed ${darkMode ? "bg-gray-700/50 border-teal-500/50" : "bg-teal-50 border-teal-200"
-                }`}
+              className={`p-6 rounded-xl border-2 border-dashed ${
+                darkMode ? 'bg-gray-700/50 border-teal-500/50' : 'bg-teal-50 border-teal-200'
+              }`}
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <FileText className={`w-4 h-4 ${darkMode ? "text-teal-400" : "text-teal-600"}`} />
+                  <FileText className={`w-4 h-4 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
                   <span
-                    className={`text-sm font-semibold uppercase tracking-wide ${darkMode ? "text-gray-300" : "text-gray-600"
-                      }`}
+                    className={`text-sm font-semibold uppercase tracking-wide ${
+                      darkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}
                   >
-                    {language === "en" ? "Application Tracking ID" : "ट्रैकिंग आईडी"}
+                    {language === 'en' ? 'Application Tracking ID' : 'ट्रैकिंग आईडी'}
                   </span>
                 </div>
 
                 <div
-                  className={`text-4xl font-mono font-bold tracking-wider ${darkMode ? "text-teal-400" : "text-teal-600"
-                    }`}
+                  className={`text-4xl font-mono font-bold tracking-wider ${
+                    darkMode ? 'text-teal-400' : 'text-teal-600'
+                  }`}
                 >
                   {successTrackingId}
                 </div>
 
-                <p className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                  {language === "en" ? "Save this ID to track status" : "स्थिति ट्रैक करने के लिए सहेजें"}
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {language === 'en'
+                    ? 'Save this ID to track status'
+                    : 'स्थिति ट्रैक करने के लिए सहेजें'}
                 </p>
                 {successApplicationStatus ? (
-                  <p className={`text-sm font-semibold ${darkMode ? "text-teal-300" : "text-teal-700"}`}>
+                  <p
+                    className={`text-sm font-semibold ${darkMode ? 'text-teal-300' : 'text-teal-700'}`}
+                  >
                     {successApplicationStatus}
                   </p>
                 ) : null}
@@ -1677,7 +1867,11 @@ export default function DynamicServiceFormClient({
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg py-3 font-bold cursor-pointer"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                {language === "en" ? "Pay Government Fee Now" : language === "hi" ? "शासकीय शुल्क अभी भरें" : "आताच शासकीय शुल्क भरा"}
+                {language === 'en'
+                  ? 'Pay Government Fee Now'
+                  : language === 'hi'
+                    ? 'शासकीय शुल्क अभी भरें'
+                    : 'आताच शासकीय शुल्क भरा'}
               </Button>
 
               <Button
@@ -1685,31 +1879,45 @@ export default function DynamicServiceFormClient({
                 className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-lg py-3 cursor-pointer"
               >
                 <Download className="w-4 h-4 mr-2" />
-                {language === "en" ? "Copy Tracking ID" : "आईडी कॉपी करें"}
+                {language === 'en' ? 'Copy Tracking ID' : 'आईडी कॉपी करें'}
               </Button>
 
               <Button
-                onClick={() => router.push(isLoggedIn ? `/${locale}/service/dashboard` : `/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`)}
+                onClick={() =>
+                  router.push(
+                    isLoggedIn
+                      ? `/${locale}/service/dashboard`
+                      : `/${locale}/service${departmentId ? `?deptId=${departmentId}` : ''}`
+                  )
+                }
                 variant="outline"
-                className={`${darkMode
-                  ? "border-gray-600 hover:bg-gray-700 text-white"
-                  : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                  } py-3 cursor-pointer`}
+                className={`${
+                  darkMode
+                    ? 'border-gray-600 hover:bg-gray-700 text-white'
+                    : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+                } py-3 cursor-pointer`}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {language === "en" ? "Back to Services" : language === "hi" ? "वापस जाएं" : "सेवांकडे परत जा"}
+                {language === 'en'
+                  ? 'Back to Services'
+                  : language === 'hi'
+                    ? 'वापस जाएं'
+                    : 'सेवांकडे परत जा'}
               </Button>
             </div>
 
             <div
-              className={`flex items-start gap-3 p-4 rounded-lg text-left ${darkMode ? "bg-blue-900/20" : "bg-blue-50"
-                }`}
+              className={`flex items-start gap-3 p-4 rounded-lg text-left ${
+                darkMode ? 'bg-blue-900/20' : 'bg-blue-50'
+              }`}
             >
-              <Info className={`w-5 h-5 flex-shrink-0 mt-0.5 ${darkMode ? "text-blue-400" : "text-blue-600"}`} />
-              <p className={`text-sm ${darkMode ? "text-blue-300" : "text-blue-800"}`}>
-                {language === "en"
-                  ? "You will receive SMS and email notifications regarding your application status. The processing will be completed within 15 working days."
-                  : "आपको अपने आवेदन की स्थिति के बारे में एसएमएस और ईमेल सूचनाएं प्राप्त होंगी।"}
+              <Info
+                className={`w-5 h-5 flex-shrink-0 mt-0.5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}
+              />
+              <p className={`text-sm ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                {language === 'en'
+                  ? 'You will receive SMS and email notifications regarding your application status. The processing will be completed within 15 working days.'
+                  : 'आपको अपने आवेदन की स्थिति के बारे में एसएमएस और ईमेल सूचनाएं प्राप्त होंगी।'}
               </p>
             </div>
           </div>
@@ -1717,7 +1925,7 @@ export default function DynamicServiceFormClient({
 
         {showSuccessPaymentModal && (
           <PaymentCheckoutModal
-            applicationId={parseInt(successTrackingId.replace(/\D/g, ""), 10) || 1}
+            applicationId={parseInt(successTrackingId.replace(/\D/g, ''), 10) || 1}
             applicationNo={successTrackingId}
             serviceName={serviceTitle}
             fees={50}
@@ -1740,27 +1948,30 @@ export default function DynamicServiceFormClient({
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col w-full mt-16 sm:mt-20 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-        }`}
+      className={`fixed inset-0 flex flex-col w-full mt-16 sm:mt-20 ${
+        darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
+      }`}
     >
       <div
         ref={headerRef}
-        className={`flex-shrink-0 w-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-          } border-b shadow-md z-10`}
+        className={`flex-shrink-0 w-full ${
+          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        } border-b shadow-md z-10`}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-shrink-0">
               <button
                 onClick={handleBack}
-                className={`inline-flex items-center px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${darkMode
-                  ? "border-gray-600 hover:bg-gray-700 text-white"
-                  : "border-gray-300 hover:bg-gray-50 text-gray-700 bg-white"
-                  }`}
+                className={`inline-flex items-center px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  darkMode
+                    ? 'border-gray-600 hover:bg-gray-700 text-white'
+                    : 'border-gray-300 hover:bg-gray-50 text-gray-700 bg-white'
+                }`}
               >
                 <ArrowLeft className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">
-                  {language === "en" ? "Back" : language === "hi" ? "पीछे" : "मागे"}
+                  {language === 'en' ? 'Back' : language === 'hi' ? 'पीछे' : 'मागे'}
                 </span>
               </button>
             </div>
@@ -1768,14 +1979,15 @@ export default function DynamicServiceFormClient({
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-center">
                 <div className="flex items-center gap-3 w-full max-w-xl">
-                  <div className={`h-px flex-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"}`} />
+                  <div className={`h-px flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
                   <h1
-                    className={`text-sm sm:text-lg font-semibold whitespace-nowrap ${darkMode ? "text-white" : "text-gray-800"
-                      }`}
+                    className={`text-sm sm:text-lg font-semibold whitespace-nowrap ${
+                      darkMode ? 'text-white' : 'text-gray-800'
+                    }`}
                   >
                     {serviceTitle}
                   </h1>
-                  <div className={`h-px flex-1 ${darkMode ? "bg-gray-700" : "bg-gray-200"}`} />
+                  <div className={`h-px flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`} />
                 </div>
               </div>
 
@@ -1791,13 +2003,14 @@ export default function DynamicServiceFormClient({
                         key={`${section.id}-${index}`}
                         onClick={() => scrollToSection(index)}
                         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all
-                          ${isActive
-                            ? "bg-teal-600 text-white border-teal-600"
-                            : isErr
-                              ? "bg-red-50 text-red-700 border-red-300"
-                              : darkMode
-                                ? "bg-gray-700 text-gray-100 border-gray-600"
-                                : "bg-white text-gray-700 border-gray-200"
+                          ${
+                            isActive
+                              ? 'bg-teal-600 text-white border-teal-600'
+                              : isErr
+                                ? 'bg-red-50 text-red-700 border-red-300'
+                                : darkMode
+                                  ? 'bg-gray-700 text-gray-100 border-gray-600'
+                                  : 'bg-white text-gray-700 border-gray-200'
                           }`}
                       >
                         {section.title?.[language] || section.title?.en}
@@ -1815,14 +2028,20 @@ export default function DynamicServiceFormClient({
 
       <div className="flex flex-1 overflow-hidden w-full">
         <aside
-          className={`w-48 lg:w-56 xl:w-64 flex-shrink-0 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-            } border-r p-3 lg:p-4 overflow-y-auto hidden md:block`}
+          className={`w-48 lg:w-56 xl:w-64 flex-shrink-0 ${
+            darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          } border-r p-3 lg:p-4 overflow-y-auto hidden md:block`}
         >
           <h3
-            className={`text-[10px] lg:text-xs font-bold uppercase tracking-wide mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"
-              }`}
+            className={`text-[10px] lg:text-xs font-bold uppercase tracking-wide mb-2 ${
+              darkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}
           >
-            {language === "en" ? "Form Sections" : language === "hi" ? "फॉर्म अनुभाग" : "फॉर्म विभाग"}
+            {language === 'en'
+              ? 'Form Sections'
+              : language === 'hi'
+                ? 'फॉर्म अनुभाग'
+                : 'फॉर्म विभाग'}
           </h3>
 
           <nav className="space-y-1 lg:space-y-1.5">
@@ -1836,28 +2055,30 @@ export default function DynamicServiceFormClient({
                 <button
                   key={step.id || index}
                   onClick={() => scrollToSection(index)}
-                  className={`w-full flex items-center gap-2 lg:gap-2.5 px-2 lg:px-3 py-2 lg:py-2.5 rounded-lg text-left transition-all ${isActive
-                    ? darkMode
-                      ? "bg-teal-900/30 text-teal-400 border-l-4 border-teal-500"
-                      : "bg-teal-50 text-teal-700 border-l-4 border-teal-500"
-                    : darkMode
-                      ? "text-gray-300 hover:bg-gray-700"
-                      : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`w-full flex items-center gap-2 lg:gap-2.5 px-2 lg:px-3 py-2 lg:py-2.5 rounded-lg text-left transition-all ${
+                    isActive
+                      ? darkMode
+                        ? 'bg-teal-900/30 text-teal-400 border-l-4 border-teal-500'
+                        : 'bg-teal-50 text-teal-700 border-l-4 border-teal-500'
+                      : darkMode
+                        ? 'text-gray-300 hover:bg-gray-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   <div
-                    className={`w-6 h-6 lg:w-7 lg:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isErr
-                      ? "bg-red-500 text-white"
-                      : isComplete
-                        ? "bg-green-500 text-white"
-                        : isActive
-                          ? darkMode
-                            ? "bg-teal-500/20 text-teal-400"
-                            : "bg-teal-100 text-teal-600"
-                          : darkMode
-                            ? "bg-gray-700 text-gray-400"
-                            : "bg-gray-100 text-gray-500"
-                      }`}
+                    className={`w-6 h-6 lg:w-7 lg:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isErr
+                        ? 'bg-red-500 text-white'
+                        : isComplete
+                          ? 'bg-green-500 text-white'
+                          : isActive
+                            ? darkMode
+                              ? 'bg-teal-500/20 text-teal-400'
+                              : 'bg-teal-100 text-teal-600'
+                            : darkMode
+                              ? 'bg-gray-700 text-gray-400'
+                              : 'bg-gray-100 text-gray-500'
+                    }`}
                   >
                     {isErr ? (
                       <AlertCircle className="w-3.5 h-3.5" />
@@ -1870,14 +2091,17 @@ export default function DynamicServiceFormClient({
 
                   <div className="flex-1 min-w-0">
                     <div
-                      className={`text-[10px] lg:text-xs font-medium truncate ${isActive ? "font-bold" : ""
-                        } ${isErr ? "text-red-500" : ""}`}
+                      className={`text-[10px] lg:text-xs font-medium truncate ${
+                        isActive ? 'font-bold' : ''
+                      } ${isErr ? 'text-red-500' : ''}`}
                     >
                       {step.title?.[language] || step.title?.en}
                     </div>
 
-                    <div className={`text-[9px] lg:text-[10px] ${isErr ? "text-red-500" : "text-gray-500"}`}>
-                      {isErr ? "Pending Action" : language === "en" ? "Section" : "खंड"} {index + 1}
+                    <div
+                      className={`text-[9px] lg:text-[10px] ${isErr ? 'text-red-500' : 'text-gray-500'}`}
+                    >
+                      {isErr ? 'Pending Action' : language === 'en' ? 'Section' : 'खंड'} {index + 1}
                     </div>
                   </div>
                 </button>
@@ -1896,10 +2120,12 @@ export default function DynamicServiceFormClient({
                 <div className="space-y-1.5 min-w-0 flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-black uppercase tracking-wide text-orange-950">
-                      {language === "en" ? "Officer Remark / Reason for Correction:" : "अधिकाऱ्याचा शेरा / दुरुस्तीचे कारण:"}
+                      {language === 'en'
+                        ? 'Officer Remark / Reason for Correction:'
+                        : 'अधिकाऱ्याचा शेरा / दुरुस्तीचे कारण:'}
                     </h3>
                     <span className="text-[10px] font-bold text-orange-800 bg-orange-200/80 px-2 py-0.5 rounded-full">
-                      {language === "en" ? "Action Required" : "तातडीने पूर्तता आवश्यक"}
+                      {language === 'en' ? 'Action Required' : 'तातडीने पूर्तता आवश्यक'}
                     </span>
                   </div>
                   {officerRemark && (
@@ -1908,7 +2134,7 @@ export default function DynamicServiceFormClient({
                     </div>
                   )}
                   <p className="text-[11px] font-medium text-orange-900 leading-relaxed">
-                    {language === "en"
+                    {language === 'en'
                       ? "Please correct the required details or re-upload the documents as instructed above, then click 'Update & Resubmit Application'."
                       : "कृपया वरील सूचनेनुसार आवश्यक त्या फील्ड्समध्ये दुरुस्ती करा किंवा कागदपत्रे पुन्हा अपलोड करून खालील 'दुरुस्ती करून पुन्हा सादर करा' बटणावर क्लिक करा."}
                   </p>
@@ -1930,29 +2156,40 @@ export default function DynamicServiceFormClient({
                 ref={(element) => {
                   sectionRefs.current[index] = element;
                 }}
-                className={`mb-2 sm:mb-3 rounded-lg ${darkMode
-                  ? "bg-gray-800 border border-gray-700"
-                  : "bg-white border border-gray-200 shadow-sm"
-                  } p-3 sm:p-4`}
+                className={`mb-2 sm:mb-3 rounded-lg ${
+                  darkMode
+                    ? 'bg-gray-800 border border-gray-700'
+                    : 'bg-white border border-gray-200 shadow-sm'
+                } p-3 sm:p-4`}
               >
-                <div className={`pb-2 mb-2 border-b ${darkMode ? "border-teal-500" : "border-teal-100"}`}>
+                <div
+                  className={`pb-2 mb-2 border-b ${darkMode ? 'border-teal-500' : 'border-teal-100'}`}
+                >
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className={`p-1.5 rounded-md ${darkMode ? "bg-teal-900/30" : "bg-teal-50"}`}>
+                    <div
+                      className={`p-1.5 rounded-md ${darkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}
+                    >
                       {(() => {
                         const Icon = getStepIcon(step);
                         return (
-                          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? "text-teal-400" : "text-teal-600"}`} />
+                          <Icon
+                            className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}
+                          />
                         );
                       })()}
                     </div>
 
                     <div>
-                      <h2 className={`text-sm sm:text-base font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
+                      <h2
+                        className={`text-sm sm:text-base font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}
+                      >
                         {step.title[language]}
                       </h2>
 
                       {step.description && (
-                        <p className={`text-xs mt-0.5 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        <p
+                          className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                        >
                           {step.description[language]}
                         </p>
                       )}
@@ -1964,7 +2201,7 @@ export default function DynamicServiceFormClient({
                   {(step.fields || []).map((field: any, fieldIndex: number) => {
                     if (!shouldRenderField(field)) return null;
 
-                    const fieldId = String(field?.id ?? "");
+                    const fieldId = String(field?.id ?? '');
                     const fieldDefinitionId = Number(
                       field?.rawApi?.id || field?.fieldDefinitionId || field?.backendFieldId
                     );
@@ -2006,60 +2243,73 @@ export default function DynamicServiceFormClient({
       </div>
 
       <div
-        className={`flex-shrink-0 w-full ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-          } border-t shadow-2xl`}
+        className={`flex-shrink-0 w-full ${
+          darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        } border-t shadow-2xl`}
       >
         <div className="w-full px-4 sm:px-6 py-2">
-          <div className="flex flex-row justify-end items-center gap-2 sm:gap-3">
-            <button
-              onClick={handleSaveProgress}
-              className={`flex items-center justify-center px-3 sm:px-5 py-1.5 rounded-md border font-medium text-xs transition-all
-                ${darkMode
-                  ? "border-teal-500 text-teal-400 hover:bg-teal-900/20"
-                  : "border-teal-500 text-teal-700 hover:bg-teal-50"
-                }`}
-            >
-              <Save className="w-3.5 h-3.5 mr-1.5" />
-              {language === "en" ? "Save Draft" : "सहेजें"}
-            </button>
-
-            <button
-              onClick={handleSubmitRequest}
-              disabled={isSubmitting}
-              className={`flex items-center justify-center px-4 sm:px-6 py-1.5 rounded-md ${
-                isResubmitMode
-                  ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700"
-                  : "bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
-              } text-white shadow font-medium text-xs transition-all
-                ${isSubmitting
-                  ? "opacity-70 cursor-not-allowed pointer-events-none"
-                  : ""
-                }`}
-            >
-              {isSubmitting ? (
-                <span className="flex items-center">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  {isResubmitMode
-                    ? language === "en"
-                      ? "Resubmitting..."
-                      : "सादर होत आहे..."
-                    : "Submitting..."}
-                </span>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-1.5" />
-                  <span>
-                    {isResubmitMode
-                      ? language === "en"
-                        ? "Update & Resubmit Application"
-                        : "दुरुस्ती करून पुन्हा सादर करा"
-                      : language === "en"
-                      ? "Submit Application"
-                      : "जमा करें"}
-                  </span>
-                </>
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-900">
+              <span className="font-medium">Payable government fee: </span>
+              <span className="font-bold">
+                ₹{Number(feeEstimate?.payableAmount ?? serviceFees ?? 0).toFixed(2)}
+              </span>
+              {feeEstimate?.usedServiceFeeFallback && (
+                <span className="ml-1 text-emerald-700">(standard service fee)</span>
               )}
-            </button>
+              {feeEstimateError && (
+                <span className="ml-1 text-amber-700">Estimate will be confirmed at payment.</span>
+              )}
+            </div>
+            <div className="flex flex-row justify-end items-center gap-2 sm:gap-3">
+              <button
+                onClick={handleSaveProgress}
+                className={`flex items-center justify-center px-3 sm:px-5 py-1.5 rounded-md border font-medium text-xs transition-all
+                ${
+                  darkMode
+                    ? 'border-teal-500 text-teal-400 hover:bg-teal-900/20'
+                    : 'border-teal-500 text-teal-700 hover:bg-teal-50'
+                }`}
+              >
+                <Save className="w-3.5 h-3.5 mr-1.5" />
+                {language === 'en' ? 'Save Draft' : 'सहेजें'}
+              </button>
+
+              <button
+                onClick={handleSubmitRequest}
+                disabled={isSubmitting}
+                className={`flex items-center justify-center px-4 sm:px-6 py-1.5 rounded-md ${
+                  isResubmitMode
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700'
+                    : 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
+                } text-white shadow font-medium text-xs transition-all
+                ${isSubmitting ? 'opacity-70 cursor-not-allowed pointer-events-none' : ''}`}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    {isResubmitMode
+                      ? language === 'en'
+                        ? 'Resubmitting...'
+                        : 'सादर होत आहे...'
+                      : 'Submitting...'}
+                  </span>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-1.5" />
+                    <span>
+                      {isResubmitMode
+                        ? language === 'en'
+                          ? 'Update & Resubmit Application'
+                          : 'दुरुस्ती करून पुन्हा सादर करा'
+                        : language === 'en'
+                          ? 'Submit Application'
+                          : 'जमा करें'}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2070,12 +2320,13 @@ export default function DynamicServiceFormClient({
           applicationNo={checkoutAppInfo.applicationNo}
           serviceName={checkoutAppInfo.serviceName}
           fees={checkoutAppInfo.fees}
+          feeEvaluation={checkoutAppInfo.feeEvaluation}
           onClose={() => {
             setShowSuccessPaymentModal(false);
             if (isLoggedIn) {
               router.replace(`/${locale}/service/dashboard`);
             } else {
-              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ''}`);
             }
           }}
           onSuccess={(receipt) => {
@@ -2093,7 +2344,7 @@ export default function DynamicServiceFormClient({
             if (isLoggedIn) {
               router.replace(`/${locale}/service/dashboard`);
             } else {
-              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ""}`);
+              router.replace(`/${locale}/service${departmentId ? `?deptId=${departmentId}` : ''}`);
             }
           }}
         />

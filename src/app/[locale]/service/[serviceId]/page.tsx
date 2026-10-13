@@ -12,6 +12,7 @@ import { isServiceUrlStruck } from "@/lib/utils/rts/service-navigation";
 import { parseFileLatLogCaptureMetadata } from "@/lib/utils/rts/file-lat-log-value";
 import { notifyAapleSarkarDocumentPending } from "@/lib/api/rts/rtsapplication.service";
 import { getRtsServiceByIdSSR, submitRtsApplicationAction } from "./actions";
+import type { RtsApplicationResubmitContext } from "@/types/rts/rts-application.types";
 
 interface ServicePageProps {
   params: Promise<{
@@ -165,6 +166,7 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   let existingDocuments: any[] = [];
   let officerRemark: string | null = null;
   let resubmitAppId: number = 0;
+  let resubmitContext: RtsApplicationResubmitContext | undefined;
   const fileLatLogFieldsByDefinitionId = new Map(
     (fieldDefinitions ?? [])
       .filter((field) => String(field.fieldType ?? "").trim().toLowerCase() === "filelatlog")
@@ -183,6 +185,15 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
       if (detail) {
         officerRemark = detail.remark || null;
         resubmitAppId = approvalApplicationId || detail.verification?.applicationId || parseInt(resolvedSearchParams.applicationNo.replace(/\D/g, ""), 10) || 0;
+        const currentStage = detail.workflow?.currentStage;
+        resubmitContext = {
+          serviceId: detail.serviceId || Number(serviceId) || 0,
+          approvalFlowId: detail.verification?.approvalFlowId || currentStage?.approvalFlowId || 0,
+          currentApprovalFlowStageId: detail.verification?.stageId || currentStage?.id || 0,
+          currentStageOrder: detail.verification?.stageOrder || currentStage?.stageOrder || 0,
+          userId: detail.verification?.officerId || currentStage?.userId || null,
+          applicationStatus: "Reverted",
+        };
         existingDocuments = detail.documents || [];
 
         for (const group of detail.answerGroups || []) {
@@ -222,6 +233,17 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
     }
   }
 
+  if (isResubmitMode && !resubmitContext) {
+    resubmitContext = {
+      serviceId: Number(serviceId) || 0,
+      approvalFlowId: 0,
+      currentApprovalFlowStageId: 0,
+      currentStageOrder: 0,
+      userId: null,
+      applicationStatus: "Reverted",
+    };
+  }
+
   return (
     <CitizenLayout>
       {hasFieldDefinitions ? (
@@ -242,6 +264,7 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
           isResubmitMode={isResubmitMode}
           resubmitApplicationId={resubmitAppId}
           resubmitApplicationNo={resolvedSearchParams?.applicationNo}
+          resubmitContext={resubmitContext}
           officerRemark={officerRemark}
           prefilledValues={prefilledValues}
           existingDocuments={existingDocuments}

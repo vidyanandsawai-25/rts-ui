@@ -86,11 +86,13 @@ export interface PaymentReceiptResult {
 }
 
 export interface PaymentStatusResult {
+  transactionId?: number | null;
   applicationId: number;
   applicationNo: string;
   serviceName: string;
   requiredFee: number;
   isFeeRequired: boolean;
+  hasPaymentTransaction?: boolean;
   paymentStatus: string;
   statusNameEn?: string | null;
   statusNameMr?: string | null;
@@ -168,4 +170,32 @@ export async function getPaymentStatus(applicationId: number): Promise<PaymentSt
   } catch {
     return null;
   }
+}
+
+/** Resolves payment snapshots for a dashboard page in one local API request. */
+export async function getPaymentStatuses(applicationNos: string[]): Promise<PaymentStatusResult[]> {
+  const normalizedApplicationNos = Array.from(
+    new Set(applicationNos.map((applicationNo) => applicationNo.trim()).filter(Boolean))
+  );
+  if (normalizedApplicationNos.length === 0) return [];
+
+  const res = await apiClient.post<ApiResponseWrapper<PaymentStatusResult[]>>(
+    '/RTSPayment/statuses',
+    { applicationNos: normalizedApplicationNos }
+  );
+  if (!res.data?.success || !Array.isArray(res.data.items)) {
+    throw new Error(res.data?.message || res.error || 'Failed to load payment statuses');
+  }
+  return res.data.items;
+}
+
+export async function initializePendingPayment(applicationId: number): Promise<PaymentStatusResult> {
+  const res = await apiClient.post<ApiResponseWrapper<PaymentStatusResult>>(
+    `/RTSPayment/initialize-pending/${applicationId}`,
+    {}
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || 'Failed to initialize payment details');
+  }
+  return res.data.items;
 }
