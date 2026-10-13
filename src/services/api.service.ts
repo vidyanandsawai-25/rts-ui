@@ -93,6 +93,18 @@ class ApiClient {
     '/Auth/validate-reset-token',
 
     '/UlbConfig',
+
+    '/RTSDepartment',
+    '/RTSService',
+    '/RTSPayment',
+    '/RTSCitizenSession',
+    '/RTSApplication',
+    '/RTSApplicationDocument',
+    '/RTSApplicationTracking',
+    '/rts-certificate',
+    '/rts-certificate-verification',
+    '/rts-service-officers',
+    '/AapleSarkar',
   ];
 
   constructor() {
