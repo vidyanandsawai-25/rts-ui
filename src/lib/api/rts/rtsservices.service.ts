@@ -13,6 +13,7 @@ function buildUrl(params: RtsServiceQueryParams = {}): string {
   if (params.PageNumber !== undefined) searchParams.set("PageNumber", String(params.PageNumber));
   if (params.PageSize !== undefined) searchParams.set("PageSize", String(params.PageSize));
   if (params.SearchTerm) searchParams.set("SearchTerm", params.SearchTerm);
+  if (params.IsActive !== undefined) searchParams.set("IsActive", String(params.IsActive));
 
   const query = searchParams.toString();
   return `/RTSService${query ? `?${query}` : ""}`;
@@ -38,20 +39,24 @@ export async function getRtsServicesPaged(
   return getRtsServices(params);
 }
 
-export async function getAllRtsServices(): Promise<RtsServiceApiItem[]> {
+export async function getAllRtsServices(
+  params: RtsServiceQueryParams = {}
+): Promise<RtsServiceApiItem[]> {
   const response = await getRtsServices({
     PageNumber: 1,
     PageSize: -1,
+    ...params,
   });
 
   return response.items;
 }
 
-export async function getServicesByDepartment(departmentId: number): Promise<RtsServiceApiItem[]> {
+export async function getServicesByDepartment(departmentId: number, isActive?: boolean): Promise<RtsServiceApiItem[]> {
   const response = await getRtsServices({
     DepartmentId: departmentId,
     PageNumber: 1,
     PageSize: -1,
+    ...(isActive !== undefined ? { IsActive: isActive } : {}),
   });
 
   return response.items;

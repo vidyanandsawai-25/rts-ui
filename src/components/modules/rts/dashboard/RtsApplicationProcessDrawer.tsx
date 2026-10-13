@@ -24,6 +24,7 @@ import {
   Save,
   Shield,
   Sparkles,
+  Upload,
   XCircle,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -340,10 +341,16 @@ export default function RtsApplicationProcessDrawer({
       data.verification.applicationStatus.toLowerCase() === 'approved')
   );
 
+  const certType = data?.details?.certificateType ?? verification?.certificateType ?? 0;
+  const isCertRequired =
+    (data?.details?.isCertificateRequired ?? verification?.isCertificateRequired ?? true) &&
+    certType !== 0;
+
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
 
   const openCertificateIssueModal = () => {
-    if (verification?.isManualCertificate) {
+    const isManual = certType === 2 || Boolean(verification?.isManualCertificate);
+    if (isManual) {
       setIsManualCertificateUploadOpen(true);
       return;
     }
@@ -733,52 +740,79 @@ export default function RtsApplicationProcessDrawer({
                   );
                 })}
 
-                {/* Certificate Action Button: Visible AFTER application is approved */}
-                {Boolean(isApproved) &&
-                  data?.details?.issuedCertificateGuid && (
+                {/* Certificate Action Button: Visible AFTER application is approved ONLY if certificate is required (CertificateType != 0) */}
+                {Boolean(isApproved) && isCertRequired && (
                   (() => {
                     const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
+                    const isManual = certType === 2 || Boolean(verification?.isManualCertificate);
 
-                    if (!hasCertificate) return null;
+                    // 1. Certificate already exists -> View Certificate
+                    if (hasCertificate) {
+                      return (
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="secondary"
+                          icon={Award}
+                          onClick={() => setIsPrintCertModalOpen(true)}
+                          className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
+                        >
+                          अधिकृत प्रमाणपत्र पहा (View Certificate)
+                        </Button>
+                      );
+                    }
 
-                    return (
-                      <Button
-                        type="button"
-                        size="xs"
-                        variant="secondary"
-                        icon={Award}
-                        onClick={() => setIsPrintCertModalOpen(true)}
-                        className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
-                      >
-                        अधिकृत प्रमाणपत्र पहा (View Certificate)
-                      </Button>
-                    );
+                    // 2. Manual Certificate (Type 2) -> Upload Certificate
+                    if (isManual) {
+                      return (
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="primary"
+                          icon={Upload}
+                          disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                          title={
+                            !hasOfficerAccess
+                              ? t('officerAccessDenied')
+                              : isEditing
+                                ? t('finishEditBeforeWorkflowAction')
+                                : undefined
+                          }
+                          onClick={openCertificateIssueModal}
+                          className="rounded-lg px-3 text-xs font-bold"
+                        >
+                          मॅन्युअल प्रमाणपत्र अपलोड करा (Upload Certificate)
+                        </Button>
+                      );
+                    }
+
+                    // 3. Digital Certificate (Type 1) -> Issue Certificate (if authorized)
+                    if (Boolean(verification?.canIssueCertificate) || Boolean(verification?.isFinalStage)) {
+                      return (
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="success"
+                          icon={Sparkles}
+                          disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                          title={
+                            !hasOfficerAccess
+                              ? t('officerAccessDenied')
+                              : isEditing
+                                ? t('finishEditBeforeWorkflowAction')
+                                : undefined
+                          }
+                          onClick={openCertificateIssueModal}
+                          className="rounded-lg px-3 text-xs font-bold"
+                        >
+                          {t('issueCertificate')}
+                        </Button>
+                      );
+                    }
+
+                    return null;
                   })()
                 )}
-
-                {/* The approval-officer response determines the certificate issue mode. */}
-                {isApproved &&
-                  Boolean(verification?.canIssueCertificate) &&
-                  !data?.details?.issuedCertificateGuid && (
-                    <Button
-                      type="button"
-                      size="xs"
-                      variant="success"
-                      icon={Sparkles}
-                      disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
-                      title={
-                        !hasOfficerAccess
-                          ? t('officerAccessDenied')
-                          : isEditing
-                            ? t('finishEditBeforeWorkflowAction')
-                            : undefined
-                      }
-                      onClick={openCertificateIssueModal}
-                      className="rounded-lg px-3 text-xs font-bold"
-                    >
-                      {t('issueCertificate')}
-                    </Button>
-                  )}
 
                 {/* Note Sheet: Visible to ALL officers once first verification is done / history exists */}
                 {Boolean(
@@ -854,6 +888,7 @@ export default function RtsApplicationProcessDrawer({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {headerStatus?.toLowerCase().includes('approv') &&
+                isCertRequired &&
                 data?.details?.issuedCertificateGuid && (
                   <button
                     type="button"

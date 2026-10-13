@@ -114,21 +114,23 @@ export default async function RtsApplicationDashboardPage({
   const department = departmentSlug
     ? departments.find(
         (item) =>
-          item.id.toString() === departmentSlug ||
-          toApplicationFilterSlug(item.departmentName) === departmentSlug
+          item.isActive !== false &&
+          (item.id.toString() === departmentSlug ||
+            toApplicationFilterSlug(item.departmentName) === departmentSlug)
       )
     : undefined;
 
   const service = requestedServiceSlug
     ? services.find(
         (item) =>
+          item.isActive !== false &&
           (!department || item.departmentId === department.id) &&
           (item.id.toString() === requestedServiceSlug ||
             toApplicationFilterSlug(item.serviceName) === requestedServiceSlug)
       )
     : undefined;
 
-  const effectiveDepartment = department || (service ? departments.find((d) => d.id === service.departmentId) : undefined);
+  const effectiveDepartment = department || (service ? departments.find((d) => d.id === service.departmentId && d.isActive !== false) : undefined);
 
   const requestedDocumentGuid = readQuery(query, 'doc', 'Doc')?.trim() ?? '';
   const requestedProcess = parseProcessRoute(readQuery(query, 'process', 'Process'));

@@ -257,7 +257,9 @@ export async function getRtsApplicationProcessDataAction(
     details.data &&
     !details.data.issuedCertificateGuid &&
     details.data.applicationNo &&
-    details.data.applicationStatus?.toLowerCase().includes('approv')
+    details.data.applicationStatus?.toLowerCase().includes('approv') &&
+    details.data.isCertificateRequired !== false &&
+    details.data.certificateType !== 0
   ) {
     try {
       const { getIssuedCertificateByApplicationNo } =
@@ -316,7 +318,9 @@ export async function getRtsApplicationFullDetailDataAction(
     details.data &&
     !details.data.issuedCertificateGuid &&
     details.data.applicationNo &&
-    details.data.applicationStatus?.toLowerCase().includes('approv')
+    details.data.applicationStatus?.toLowerCase().includes('approv') &&
+    details.data.isCertificateRequired !== false &&
+    details.data.certificateType !== 0
   ) {
     try {
       const { getIssuedCertificateByApplicationNo } =
@@ -1638,10 +1642,26 @@ export async function getAdminApplicationsGridAction(): Promise<AdminApplication
   return result.rows;
 }
 
-export async function getRtsApplicationFilterOptionsAction() {
-  const [departments, services] = await Promise.all([getAllRtsDepartments(), getAllRtsServices()]);
+export async function exportAllFilteredApplicationsAction(
+  filters: Partial<RtsApplicationsDashboardFilters> = {}
+): Promise<AdminApplicationGridRow[]> {
+  const result = await getRtsApplicationsDashboardAction({
+    ...filters,
+    pageNumber: 1,
+  });
+  return result.rows;
+}
 
-  return { departments, services };
+export async function getRtsApplicationFilterOptionsAction() {
+  const [departments, services] = await Promise.all([
+    getAllRtsDepartments({ IsActive: true }),
+    getAllRtsServices({ IsActive: true }),
+  ]);
+
+  return {
+    departments: (departments ?? []).filter((department) => department.isActive !== false),
+    services: (services ?? []).filter((service) => service.isActive !== false),
+  };
 }
 
 export async function submitApplicationActionAction(

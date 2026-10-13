@@ -116,8 +116,8 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
   let departmentTitle = "RTS Department";
   if (departmentId) {
     try {
-      const departments = await getAllRtsDepartments();
-      const dept = departments.find((d) => d.id === departmentId);
+      const departments = await getAllRtsDepartments({ IsActive: true });
+      const dept = departments.find((d) => d.id === departmentId && d.isActive !== false);
       if (dept) {
         departmentTitle =
           locale !== "en" && dept.departmentNameLocal?.trim()

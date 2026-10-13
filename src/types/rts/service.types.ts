@@ -48,4 +48,5 @@ export interface RtsServiceQueryParams {
   PageNumber?: number;
   PageSize?: number;
   SearchTerm?: string;
+  IsActive?: boolean;
 }

@@ -8,14 +8,11 @@ import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import { resolveIcon } from '@/lib/utils/icon-mapping';
 import { locales } from '@/i18n/config';
 import type { MenuItem } from '@/types/menu.types';
-import type { UserScreenAccess } from '@/types/user-screen-access.types';
-import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
 import { resolveDepartmentContext, isConfigurationSettingsItem } from '@/lib/utils/department-context';
 import { SidebarFrame } from './SidebarFrame';
 
 export interface SidebarProps {
   menuItems: MenuItem[];
-  screens?: UserScreenAccess[];
   locale: string;
 }
 
@@ -28,17 +25,13 @@ function withLocale(locale: string, href: string): string {
 /**
  * App sidebar: interactive and updates highlighting instantly on client-side routing.
  */
-export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
+export function Sidebar({ menuItems, locale }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const localePattern = new RegExp(`^/(${locales.join('|')})`);
   const pathWithoutLocale = pathname.replace(localePattern, '') || '/';
 
   const t = useTranslations('common');
-  const activeScreenContext = useMemo(
-    () => resolveActiveScreenContext(screens, pathname),
-    [screens, pathname]
-  );
 
   const deptContext = useMemo(() => {
     return resolveDepartmentContext({
@@ -193,7 +186,6 @@ export function Sidebar({ menuItems, screens, locale }: SidebarProps) {
           >
             {brandSubtitle}
           </span>
-          <span className={`text-[12px] font-medium whitespace-nowrap ${isDarkTheme ? 'text-slate-400' : 'text-gray-500'}`}>{brandSubtitle}</span>
         </div>
       </div>
 

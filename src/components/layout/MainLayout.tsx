@@ -159,19 +159,17 @@ const getLayoutChromeData = cache(async () => {
   };
 });
 async function SidebarWithData({ locale }: { locale: string }) {
-  const { menuItems, rawScreens } = await getLayoutChromeData();
-  return <Sidebar menuItems={menuItems} screens={rawScreens} locale={locale} />;
+  const { menuItems } = await getLayoutChromeData();
+  return <Sidebar menuItems={menuItems} locale={locale} />;
 }
 async function HeaderWithRequestContext() {
-  const { ulbData, userDisplayName, clientIp, menuItems, rawScreens } =
-    await getLayoutChromeData();
+  const { ulbData, userDisplayName, clientIp, menuItems } = await getLayoutChromeData();
   return (
     <Header
       ulbData={ulbData}
       userDisplayName={userDisplayName}
       clientIp={clientIp}
       menuItems={menuItems}
-      screens={rawScreens}
     />
   );
 }

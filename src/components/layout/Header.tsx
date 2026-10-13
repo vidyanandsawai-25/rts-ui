@@ -7,16 +7,16 @@ import { User, Settings, Lock, Globe, ChevronDown, LogOut, Router, Loader2, Aler
 import { useTranslations } from 'next-intl';
 import type { UlbMaster } from '@/types/master.types';
 import type { MenuItem } from '@/types/menu.types';
-import type { UserScreenAccess } from '@/types/user-screen-access.types';
 import { Badge, Button, Card, Tooltip } from '@/components/common';
 import { sanitizeInput } from '@/lib/utils/security';
-import { resolveActiveScreenContext } from '@/lib/utils/active-screen-context';
 import { locales, switchLocale, getLocaleFromPathname, type Locale } from '@/i18n/config';
 import { logoutAction } from '@/app/[locale]/login/actions';
 import { ChangePasswordModal } from './ChangePasswordModal';
 
+import { resolveDepartmentContext } from '@/lib/utils/department-context';
+
 const HEADER_COLORS = {
-  background: '#143D7D',
+  background: '#4b70a6',
   userCardFrom: '#243B7C',
   userCardTo: '#0C1B48',
 } as const;
@@ -70,16 +70,9 @@ interface HeaderProps {
   /** Best-effort client IP from request headers (server layout). */
   clientIp?: string;
   menuItems?: MenuItem[];
-  screens?: UserScreenAccess[];
 }
 
-export function Header({
-  ulbData,
-  userDisplayName,
-  clientIp,
-  menuItems,
-  screens,
-}: HeaderProps) {
+export function Header({ ulbData, userDisplayName, clientIp, menuItems }: HeaderProps) {
   const t = useTranslations('common');
   const tLogin = useTranslations('login');
   const router = useRouter();
@@ -133,11 +126,31 @@ export function Header({
   const showLocalCouncilName = locale !== 'en' && Boolean(localName);
 
   const headerDetails = t('app.assessmentSystem');
-  const activeScreenContext = useMemo(
-    () => resolveActiveScreenContext(screens, pathname),
-    [screens, pathname]
-  );
-  const departmentName = activeScreenContext?.departmentName || t('app.departmentName');
+
+  const deptContext = useMemo(() => {
+    return resolveDepartmentContext({
+      pathname,
+      menuItems,
+    });
+  }, [pathname, menuItems]);
+
+  const departmentDisplayName = useMemo(() => {
+    const rawDeptName = deptContext?.departmentName?.trim();
+    if (!rawDeptName) return t('app.departmentName');
+
+    const lower = rawDeptName.toLowerCase();
+    if (lower.includes('rts') || lower.includes('right to service')) {
+      if (locale === 'mr') return 'लोकसेवा हक्क विभाग';
+      if (locale === 'hi') return 'लोक सेवा अधिकार विभाग';
+      return 'RTS Department';
+    }
+
+    if (lower.includes('property') || lower.includes('ptis')) {
+      return t('app.departmentName');
+    }
+
+    return rawDeptName;
+  }, [deptContext?.departmentName, locale, t]);
 
   const activeMenuName = useMemo(() => {
     if (!menuItems || menuItems.length === 0) return null;
@@ -274,9 +287,9 @@ export function Header({
           className="pointer-events-none absolute inset-0 hidden sm:block opacity-30"
           style={{ contain: 'layout style paint' }}
         >
-          {/* <div className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
+          <div className="absolute left-[15%] top-4 h-16 w-16 rounded-full bg-orange-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
           <div className="absolute left-[50%] top-2 h-20 w-20 rounded-full bg-blue-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
-          <div className="absolute right-[15%] top-6 h-20 w-20 rounded-full bg-purple-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" /> */}
+          <div className="absolute right-[15%] top-6 h-20 w-20 rounded-full bg-purple-400 blur-xl motion-safe:animate-pulse motion-reduce:animate-none" />
         </div>
 
         <div className="relative flex h-full w-full items-center justify-between gap-3 overflow-visible px-4 md:px-6">
@@ -312,7 +325,7 @@ export function Header({
               ) : null}
 
               <p className="mt-1 flex flex-wrap gap-1 text-[10px] sm:text-xs md:text-sm text-gray-200">
-                <span>{departmentName}</span>
+                <span>{departmentDisplayName}</span>
                 <span className="hidden sm:inline-block text-yellow-400">|</span>
                 <span className="font-semibold text-yellow-300">{activeMenuName || headerDetails}</span>
               </p>

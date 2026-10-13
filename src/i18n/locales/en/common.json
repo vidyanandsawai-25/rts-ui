@@ -391,5 +391,10 @@
     "units": "Units",
     "ready": "Ready",
     "confirmTerminate": "Are you sure you want to terminate this tax calculation?"
-  }
+  },
+  "refresh": "Refresh",
+  "search": "Search",
+  "filter": "Filter",
+  "previous": "Previous",
+  "next": "Next"
 }

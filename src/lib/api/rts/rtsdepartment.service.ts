@@ -11,6 +11,7 @@ function buildUrl(params: RtsDepartmentQueryParams = {}): string {
   if (params.PageNumber !== undefined) searchParams.set("PageNumber", String(params.PageNumber));
   if (params.PageSize !== undefined) searchParams.set("PageSize", String(params.PageSize));
   if (params.SearchTerm) searchParams.set("SearchTerm", params.SearchTerm);
+  if (params.IsActive !== undefined) searchParams.set("IsActive", String(params.IsActive));
 
   const query = searchParams.toString();
   return `/RTSDepartment${query ? `?${query}` : ""}`;
@@ -36,10 +37,13 @@ export async function getRtsDepartmentsPaged(
   return getRtsDepartments(params);
 }
 
-export async function getAllRtsDepartments(): Promise<RtsDepartmentApiItem[]> {
+export async function getAllRtsDepartments(
+  params: RtsDepartmentQueryParams = {}
+): Promise<RtsDepartmentApiItem[]> {
   const response = await getRtsDepartments({
     PageNumber: 1,
     PageSize: -1,
+    ...params,
   });
 
   return response.items;

@@ -13,6 +13,7 @@ import {
   XCircle,
   AlertTriangle,
   RotateCcw,
+  Scale,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -33,6 +34,7 @@ import {
 import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import PrintableCertificateModal from "./PrintableCertificateModal";
+import CitizenAppealModal from "./CitizenAppealModal";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
@@ -213,6 +215,7 @@ export default function ApplicationAndTrackingDrawer({
   const [paymentInfo, setPaymentInfo] = useState<PaymentStatusResult | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [showAppealModal, setShowAppealModal] = useState(false);
   const [isOpeningResubmit, setIsOpeningResubmit] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const getSearchErrorMessage = useCallback(
@@ -782,6 +785,16 @@ export default function ApplicationAndTrackingDrawer({
                             <strong>नामंजूर करण्याचे कारण / शेरा:</strong> {detail.remark}
                           </div>
                         )}
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowAppealModal(true)}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 rounded-lg shadow-md shadow-red-600/20 transition-all cursor-pointer"
+                          >
+                            <Scale className="w-3.5 h-3.5" />
+                            {locale === "mr" ? "अपील दाखल करा (File Appeal)" : "File Appeal under RTS Act"}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -872,6 +885,15 @@ export default function ApplicationAndTrackingDrawer({
           applicationNo={selectedApplication.applicationNo}
           certificateType={detail?.certificateType}
           isManualCertificate={detail?.certificateType === 2}
+        />
+      )}
+
+      {showAppealModal && (
+        <CitizenAppealModal
+          isOpen={showAppealModal}
+          onClose={() => setShowAppealModal(false)}
+          initialApplicationNo={selectedApplication?.applicationNo || searchValue}
+          locale={locale}
         />
       )}
 

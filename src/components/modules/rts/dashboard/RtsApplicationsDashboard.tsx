@@ -127,10 +127,12 @@ export default function RtsApplicationsDashboard({
         value: "All",
         label: lang === "en" ? "All departments" : "सर्व विभाग",
       },
-      ...masters.departments.map((department) => ({
-        value: department.id,
-        label: department.name,
-      })),
+      ...masters.departments
+        .filter((department) => (department as any).isActive !== false)
+        .map((department) => ({
+          value: department.id,
+          label: department.name,
+        })),
     ],
     [lang, masters.departments]
   );
