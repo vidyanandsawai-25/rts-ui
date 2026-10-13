@@ -33,10 +33,6 @@ import type {
   RtsMisDashboardData,
   RtsMisDashboardModuleName,
 } from '@/types/rts/rtsmisdashboard.types';
-import {
-  localizeDepartmentName,
-  localizeServiceName,
-} from '@/lib/utils/rts/rts-mis-localization';
 
 interface DashboardProps {
   misDashboardData: RtsMisDashboardData;
@@ -144,6 +140,14 @@ function getDisplayLocale(locale: string): string {
   if (locale === 'mr') return 'mr-IN-u-nu-deva';
   if (locale === 'hi') return 'hi-IN-u-nu-deva';
   return 'en-IN';
+}
+
+/**
+ * Hindi and Marathi share the localized value returned by the MIS backend.
+ * English (and any unsupported locale) deliberately retains the canonical name.
+ */
+function getLocalizedName(name: string, localName: string | null | undefined, locale: string): string {
+  return (locale === 'hi' || locale === 'mr') && localName?.trim() ? localName.trim() : name;
 }
 
 function getPaginationTokens(currentPage: number, totalPages: number): PaginationToken[] {
@@ -398,7 +402,7 @@ export default function RtsMisDashboard({
         const rawName =
           department.departmentName?.trim() ||
           t('misDashboard.departmentFallback', { number: index + 1 });
-        const name = localizeDepartmentName(rawName, locale);
+        const name = getLocalizedName(rawName, department.departmentNameLocal, locale);
         const departmentId =
           department.departmentId ?? initialDepartmentIdsByName.get(getDepartmentNameKey(rawName));
         const id = String(
@@ -565,7 +569,7 @@ export default function RtsMisDashboard({
         const services = (response.serviceWiseData ?? []).map(
           (service, index): ServiceRow => {
             const rawName = service.serviceName;
-            const name = localizeServiceName(rawName, locale);
+            const name = getLocalizedName(rawName, service.serviceNameLocal, locale);
             return {
               srNo: index + 1,
               id: `${department.id}-${createIdentifier(rawName, String(index + 1))}`,

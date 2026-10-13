@@ -4,13 +4,18 @@ import type {
   RtsApplicationDashboardDepartmentItem,
 } from './rtsapplicationdashboard.types';
 
-// Compatibility aliases for existing MIS consumers. The application-dashboard
-// contract itself is defined in rtsapplicationdashboard.types.ts.
+// The application item contract is shared with the application dashboard.
+// MIS service/department rows add their localized display-name fields here.
 export type RtsMisDashboardApplicationItem = RtsApplicationDashboardApplicationItem;
-export type RtsMisDashboardDepartmentItem = RtsApplicationDashboardDepartmentItem;
+export interface RtsMisDashboardDepartmentItem extends RtsApplicationDashboardDepartmentItem {
+  /** Marathi/Hindi display name supplied by the MIS backend. */
+  departmentNameLocal?: string | null;
+}
 
 export interface RtsMisDashboardServiceItem {
   serviceName: string;
+  /** Marathi/Hindi display name supplied by the MIS backend. */
+  serviceNameLocal?: string | null;
   departmentId?: number;
   departmentName?: string;
   totalApplications: number | null;
