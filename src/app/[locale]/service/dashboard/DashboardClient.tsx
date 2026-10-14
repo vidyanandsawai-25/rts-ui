@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import DepartmentCarouselClient from "@/components/modules/rts/citizen/DepartmentCarsoulClient";
-import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtsmisdashboard.types";
+import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
 import type { CitizenDashboardPagination, CitizenDashboardRouteState } from './actions';
 

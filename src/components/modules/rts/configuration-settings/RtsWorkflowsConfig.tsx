@@ -17,6 +17,7 @@ import {
   TextArea,
   ToggleSwitch,
 } from '@/components/common';
+import { useConfirm } from '@/components/common/ConfirmProvider';
 import type { Column } from '@/components/common/MasterTable';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -216,6 +217,7 @@ export default function RtsWorkflowsConfig({
   setWorkflowActive,
 }: RtsWorkflowsConfigProps) {
   const t = useTranslations('rts');
+  const { confirm } = useConfirm();
   const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
   const router = useRouter();
@@ -498,12 +500,33 @@ export default function RtsWorkflowsConfig({
 
   const handleRemoveStage = (index: number) => {
     if (stages.length <= 1) {
-      toast.error('At least one stage is required.');
+      toast.error(t('workflowMaster.atLeastOneStageRequired'));
       return;
     }
     setStages((prev) =>
       prev.filter((_, i) => i !== index).map((s, idx) => ({ ...s, stageOrder: idx + 1 }))
     );
+  };
+
+  const requestRemoveStage = (index: number) => {
+    const stage = stages[index];
+    if (!stage) return;
+
+    if (stages.length <= 1) {
+      toast.error(t('workflowMaster.atLeastOneStageRequired'));
+      return;
+    }
+
+    confirm({
+      variant: 'delete',
+      title: t('workflowMaster.removeStageConfirmationTitle'),
+      description: t('workflowMaster.removeStageConfirmationDescription', {
+        stage: stage.stageName || t('workflowMaster.stageNumber', { order: stage.stageOrder }),
+      }),
+      confirmText: t('workflowMaster.removeStage'),
+      meta: { id: stage.id, name: stage.stageName },
+      onConfirm: () => handleRemoveStage(index),
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -931,7 +954,7 @@ export default function RtsWorkflowsConfig({
                     </span>
                     <StageConfigCard
                       stage={stage}
-                      onRemove={() => handleRemoveStage(index)}
+                      onRemove={() => requestRemoveStage(index)}
                       onManageUsers={() => openStageUsersDrawer(stage)}
                       onChange={(updated) =>
                         setStages((previous) =>

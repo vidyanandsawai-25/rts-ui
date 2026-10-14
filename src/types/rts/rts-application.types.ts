@@ -100,6 +100,22 @@ export interface RtsApplicationFieldValuePayload {
   documentGuid?: string | null;
 }
 
+/**
+ * A field value submitted while resubmitting a reverted RTS application.
+ * The update endpoint uses audit fields from UpdateBaseDtos rather than the
+ * create-only `createdBy` field.
+ */
+export interface UpdateRtsApplicationFieldValuePayload {
+  isActive?: boolean;
+  updatedBy?: number;
+  fieldDefinitionId: number;
+  textValue?: string | null;
+  numberValue?: number | null;
+  dateValue?: string | null;
+  booleanValue?: boolean | null;
+  documentGuid?: string | null;
+}
+
 export interface CreateRtsApplicationPayload {
   isActive?: boolean;
   createdBy?: number;
@@ -117,6 +133,38 @@ export interface CreateRtsApplicationPayload {
   remark?: string | null;
   fieldValues: RtsApplicationFieldValuePayload[];
   tdToken?: string | null;
+}
+
+/** Request body for PUT /api/RTSApplication/{id}. */
+export interface UpdateRtsApplicationPayload {
+  isActive?: boolean;
+  updatedBy?: number;
+  serviceId: number;
+  approvalFlowId: number;
+  currentApprovalFlowStageId: number;
+  currentStageOrder: number;
+  applicantName?: string | null;
+  applicantMobileNo?: string | null;
+  userId?: number | null;
+  sessionId?: string | null;
+  applicationStatus: string;
+  remark?: string | null;
+  fieldValues: UpdateRtsApplicationFieldValuePayload[];
+}
+
+/**
+ * Persisted workflow values supplied by the resubmit page. The update API
+ * remains authoritative for the application workflow; these values complete
+ * its request contract without deriving them in the browser.
+ */
+export interface RtsApplicationResubmitContext {
+  serviceId: number;
+  approvalFlowId: number;
+  currentApprovalFlowStageId: number;
+  currentStageOrder: number;
+  userId?: number | null;
+  applicationStatus: string;
+  sessionId?: string | null;
 }
 
 export interface CreateRtsApplicationFieldValueResponse {
@@ -142,12 +190,34 @@ export interface CreateRtsApplicationResponseItem {
   applicationNo: string;
   applicationStatus: string;
   fieldValues: CreateRtsApplicationFieldValueResponse[];
+  paymentTransactionId?: number | null;
+  paymentRequiredFee?: number;
+  paymentStatus?: string | null;
+}
+
+export interface UpdateRtsApplicationResponseItem extends CreateRtsApplicationResponseItem {
+  applicantName?: string | null;
+  applicantMobileNo?: string | null;
+  approvalFlowId?: number;
+  currentApprovalFlowStageId?: number;
+  currentStageOrder?: number;
+  userId?: number | null;
+  remark?: string | null;
 }
 
 export interface CreateRtsApplicationResponse {
   success: boolean;
   message: string;
   items: CreateRtsApplicationResponseItem;
+  errors: unknown;
+  correlationId: string | null;
+}
+
+/** API envelope returned by PUT /api/RTSApplication/{id}. */
+export interface UpdateRtsApplicationResponse {
+  success: boolean;
+  message: string;
+  items: UpdateRtsApplicationResponseItem;
   errors: unknown;
   correlationId: string | null;
 }

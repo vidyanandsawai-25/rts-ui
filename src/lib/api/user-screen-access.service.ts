@@ -19,9 +19,12 @@ class UserScreenAccessService {
     // Fetching screens for user...
  
  
-    const response = await apiClient.get<unknown>(`/users/access?UserId=${userId}&PageSize=1000`, {
-      headers: authHeaders(token),
-    });
+    const response = await apiClient.get<unknown>(
+      `/users/access?UserId=${userId}&IsActive=true&PageSize=100`,
+      {
+        headers: authHeaders(token),
+      }
+    );
  
     if (response.success && response.data) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,7 +53,6 @@ class UserScreenAccessService {
     });
   }
 }
- 
+
 export const userScreenAccessService = new UserScreenAccessService();
- 
- 
+

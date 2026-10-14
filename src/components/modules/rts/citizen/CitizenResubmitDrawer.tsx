@@ -367,6 +367,7 @@ export default function CitizenResubmitDrawer({
       const res = await citizenResubmitApplicationAction(
         applicationId,
         citizenRemark || "Application corrected and resubmitted by citizen",
+        serviceId ?? 0,
         payload
       );
 

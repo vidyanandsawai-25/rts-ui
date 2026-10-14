@@ -133,14 +133,14 @@ export default function RtsApplicationNoteSheetModal({
     return null;
   })();
 
-  const serviceFees =
-    (data?.verification?.serviceFees !== null && data?.verification?.serviceFees !== undefined && data?.verification.serviceFees > 0)
-      ? data.verification.serviceFees
+  const payableFee =
+    (data?.verification?.payableFee !== null && data?.verification?.payableFee !== undefined && data?.verification.payableFee > 0)
+      ? data.verification.payableFee
       : extractedFeeFromHistory !== null
       ? extractedFeeFromHistory
-      : (record as any)?.serviceFees ?? (record as any)?.amountPaid ?? (record as any)?.fees ?? null;
+      : (record as any)?.amountPaid ?? (record as any)?.fees ?? null;
 
-  const feesRequired = data?.verification?.feesRequired ?? (serviceFees !== null && serviceFees > 0) ?? false;
+  const feesRequired = data?.verification?.hasPaymentTransaction === true && (payableFee ?? 0) > 0;
 
   // Extract applicant name from dynamic fields if not in record
   const applicantField = data?.details?.applicationDetails?.find((f) => {
@@ -549,9 +549,9 @@ export default function RtsApplicationNoteSheetModal({
                 <div className="p-1.5">
                   <span className="text-slate-500 text-[8.5px] uppercase font-bold block">शासकीय शुल्क (Fee):</span>
                   <span className="font-bold text-emerald-800 text-[10.5px]">
-                    {serviceFees !== null && serviceFees > 0 ? (
+                    {payableFee !== null && payableFee > 0 ? (
                       <span>
-                        ₹ {serviceFees.toLocaleString(locale === 'mr' ? 'mr-IN' : 'en-IN')}
+                        ₹ {payableFee.toLocaleString(locale === 'mr' ? 'mr-IN' : 'en-IN')}
                         {paymentHistoryItem ? ' (Paid)' : ''}
                       </span>
                     ) : feesRequired ? (

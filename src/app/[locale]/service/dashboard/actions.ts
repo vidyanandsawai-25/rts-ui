@@ -13,6 +13,7 @@ import { apiClient } from "@/services/api.service";
 import { getDashboardDepartments } from "@/lib/api/dashboard";
 import { getRtsCitizenDashboardData } from "@/lib/api/rts/rtscitizendashboard.service";
 import { getApprovalApplicationsPaged } from "@/lib/api/rts/rts-application-approval.service";
+import { updateRtsApplication } from "@/lib/api/rts/rtsapplication.service";
 import {
   resolveExternalServiceNavigation,
   type ExternalServiceNavigationResult,
@@ -881,6 +882,7 @@ export async function getServiceDetailsModalInfoAction(serviceId: number, locale
 export async function citizenResubmitApplicationAction(
   applicationId: number,
   remark: string,
+  serviceId: number,
   fieldValues: Array<{
     fieldDefinitionId: number;
     textValue?: string | null;
@@ -895,13 +897,18 @@ export async function citizenResubmitApplicationAction(
   }
 
   try {
-    const { verifyAndCorrectApproval } = await import("@/lib/api/rts/rts-application-approval.service");
-    const result = await verifyAndCorrectApproval(applicationId, {
+    const result = await updateRtsApplication(applicationId, {
       isActive: true,
       updatedBy: 0,
+      serviceId,
+      // The application service retains the persisted workflow values; these
+      // satisfy its request contract without exposing workflow control here.
+      approvalFlowId: 0,
+      currentApprovalFlowStageId: 0,
+      currentStageOrder: 0,
       remark: remark?.trim() || "Application corrected and resubmitted by citizen",
-      status: "Corrected",
-      fieldValue: fieldValues.map((field) => ({
+      applicationStatus: "Reverted",
+      fieldValues: fieldValues.map((field) => ({
         fieldDefinitionId: field.fieldDefinitionId,
         textValue: field.textValue ?? null,
         numberValue: field.numberValue ?? null,
@@ -915,7 +922,7 @@ export async function citizenResubmitApplicationAction(
 
     return {
       success: true,
-      message: result?.message || "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे!",
+      message: result.message || "आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे!",
     };
   } catch (error) {
     console.error("citizenResubmitApplicationAction error:", error);

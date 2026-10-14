@@ -5,12 +5,16 @@ import type {
   CreateRtsApplicationPayload,
   CreateRtsApplicationResponse,
   CreateRtsApplicationResponseItem,
+  UpdateRtsApplicationPayload,
+  UpdateRtsApplicationResponse,
 } from '@/types/rts/rts-application.types';
 
 export type {
   CreateRtsApplicationPayload,
   CreateRtsApplicationResponse,
   CreateRtsApplicationResponseItem,
+  UpdateRtsApplicationPayload,
+  UpdateRtsApplicationResponse,
 } from '@/types/rts/rts-application.types';
 
 /** Creates a citizen RTS application after documents have been uploaded. */
@@ -23,6 +27,33 @@ export async function createRtsApplication(
 
   if (!response.success || !response.data) {
     throw new Error(response.error || 'Failed to create RTS application');
+  }
+
+  return response.data;
+}
+
+/**
+ * Resubmits an RTS application through PUT /api/RTSApplication/{id}.
+ * The backend accepts updates only when the application is in the reverted flow.
+ */
+export async function updateRtsApplication(
+  id: number,
+  payload: UpdateRtsApplicationPayload
+): Promise<UpdateRtsApplicationResponse> {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('A valid RTS application ID is required for update');
+  }
+
+  const response = await apiClient.put<UpdateRtsApplicationResponse>(
+    `/RTSApplication/${id}`,
+    payload,
+    { cache: 'no-store' }
+  );
+
+  if (!response.success || !response.data?.success || !response.data.items) {
+    throw new Error(
+      response.error || response.data?.message || `Failed to update RTS application ${id}`
+    );
   }
 
   return response.data;

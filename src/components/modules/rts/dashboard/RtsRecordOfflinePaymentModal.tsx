@@ -12,7 +12,7 @@ interface RtsRecordOfflinePaymentModalProps {
   applicationId: number;
   applicationNo: string;
   serviceName?: string;
-  serviceFees?: number | null;
+  payableFee?: number | null;
   applicantName?: string;
   onSuccess: (receipt: PaymentReceiptResult) => void;
 }
@@ -32,13 +32,13 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
   applicationId,
   applicationNo,
   serviceName,
-  serviceFees,
+  payableFee,
   applicantName,
   onSuccess,
 }) => {
-  const defaultAmount = typeof serviceFees === 'number' && serviceFees >= 0 ? serviceFees : 0;
+  const defaultAmount = typeof payableFee === 'number' && payableFee >= 0 ? payableFee : 0;
   const [paymentMode, setPaymentMode] = useState<string>('Cash');
-  const [amount, setAmount] = useState<number>(defaultAmount);
+  const [amount] = useState<number>(defaultAmount);
   const [instrumentNo, setInstrumentNo] = useState<string>('');
   const [instrumentDate, setInstrumentDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [bankName, setBankName] = useState<string>('');
@@ -184,9 +184,10 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
               min={1}
               step={1}
               value={amount.toString()}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              placeholder="रक्कम टाका"
-              className="text-xs font-bold text-emerald-800"
+              readOnly
+              aria-readonly="true"
+              title="Amount is locked to the application's payable fee snapshot."
+              className="text-xs font-bold text-emerald-800 bg-slate-50"
             />
           </div>
         </div>

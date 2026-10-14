@@ -1,0 +1,19 @@
+import RtsUserManagement from '@/components/modules/rts/configuration/rts-user/RtsUserManagement';
+import { getRtsUserMasterAction } from './actions';
+import type { AccessSearchParams } from '@/types/rts/access-management.types';
+
+export const dynamic = 'force-dynamic';
+export default async function RtsUserPage({
+  searchParams,
+}: {
+  searchParams: Promise<AccessSearchParams>;
+}) {
+  const result = await getRtsUserMasterAction(await searchParams);
+  if (!result.success)
+    return (
+      <div role="alert" className="m-5 rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+        {result.error}
+      </div>
+    );
+  return <RtsUserManagement {...result.data} />;
+}

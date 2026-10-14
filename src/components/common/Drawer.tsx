@@ -34,7 +34,6 @@ export function Drawer({
   children,
   footer,
   hideHeader = false,
-  className,
   bodyClassName,
   zIndex,
 }: DrawerProps) {

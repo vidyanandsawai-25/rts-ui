@@ -382,6 +382,20 @@ export default function RtsMastersConfig({ masters }: MasterConfigProps) {
             desc: locale === "mr" ? "टेम्पलेट स्टुडिओ" : "Certificate Studio",
             color: "text-rose-600 bg-rose-50/80 border-rose-200 hover:border-rose-400 hover:bg-rose-50",
           },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-user`,
+            label: locale === "mr" ? "वापरकर्ता व्यवस्थापन" : "User Management",
+            icon: UserCheck,
+            desc: locale === "mr" ? "विभाग, मॉड्यूल व भूमिका" : "Departments, Modules & Roles",
+            color: "text-blue-600 bg-blue-50/80 border-blue-200 hover:border-blue-400 hover:bg-blue-50",
+          },
+          {
+            href: `/${locale}/rts/configuration-settings/rts-screen`,
+            label: locale === "mr" ? "स्क्रीन वाटप" : "Screen Allocation",
+            icon: Sliders,
+            desc: locale === "mr" ? "स्क्रीन गट व भूमिका प्रवेश" : "Screen Groups & Role Permissions",
+            color: "text-indigo-600 bg-indigo-50/80 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50",
+          },
         ].map((item) => {
           const Icon = item.icon;
           return (

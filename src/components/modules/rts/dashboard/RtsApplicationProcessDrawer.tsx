@@ -745,6 +745,9 @@ export default function RtsApplicationProcessDrawer({
                   (() => {
                     const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
                     const isManual = certType === 2 || Boolean(verification?.isManualCertificate);
+                    const canManageCertificate =
+                      Boolean(verification?.canApprove) &&
+                      Boolean(verification?.canIssueCertificate);
 
                     // 1. Certificate already exists -> View Certificate
                     if (hasCertificate) {
@@ -762,8 +765,9 @@ export default function RtsApplicationProcessDrawer({
                       );
                     }
 
-                    // 2. Manual Certificate (Type 2) -> Upload Certificate
-                    if (isManual) {
+                    // 2. Manual Certificate (Type 2) -> Upload Certificate.
+                    // Certificate actions require both approval and certificate permissions.
+                    if (isManual && canManageCertificate) {
                       return (
                         <Button
                           type="button"
@@ -786,8 +790,8 @@ export default function RtsApplicationProcessDrawer({
                       );
                     }
 
-                    // 3. Digital Certificate (Type 1) -> Issue Certificate (if authorized)
-                    if (Boolean(verification?.canIssueCertificate) || Boolean(verification?.isFinalStage)) {
+                    // 3. Digital Certificate (Type 1) -> Issue Certificate.
+                    if (canManageCertificate) {
                       return (
                         <Button
                           type="button"

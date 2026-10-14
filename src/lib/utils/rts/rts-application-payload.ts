@@ -1,4 +1,8 @@
-import type { CreateRtsApplicationPayload } from "@/types/rts/rts-application.types";
+import type {
+  CreateRtsApplicationPayload,
+  RtsApplicationResubmitContext,
+  UpdateRtsApplicationPayload,
+} from "@/types/rts/rts-application.types";
 
 export interface BuildRtsApplicationPayloadParams {
   formData: Record<string, unknown>;
@@ -13,6 +17,16 @@ export interface BuildRtsApplicationPayloadParams {
   documentGuidByFieldDefinitionId?: Record<string, string>;
   textValueByFieldDefinitionId?: Record<string, string>;
   tdToken?: string | null;
+}
+
+export interface BuildRtsApplicationUpdatePayloadParams {
+  formData: Record<string, unknown>;
+  steps: Array<{ fields?: Array<Record<string, unknown>> }>;
+  resubmitContext: RtsApplicationResubmitContext;
+  updatedBy?: number;
+  remark?: string | null;
+  documentGuidByFieldDefinitionId?: Record<string, string>;
+  textValueByFieldDefinitionId?: Record<string, string>;
 }
 
 export type ApplicantContactResolution = {
@@ -102,32 +116,6 @@ export function resolveApplicantContact(
   return { applicantName, applicantMobileNo, missing };
 }
 
-function getFieldOptions(field: Record<string, unknown>) {
-  const options = field.options;
-  return Array.isArray(options) ? options as Array<Record<string, unknown>> : [];
-}
-
-function getOptionLabelText(field: Record<string, unknown>, value: unknown): string | null {
-  const normalizedValue = String(value ?? "");
-  if (!normalizedValue) return null;
-
-  const matchedOption = getFieldOptions(field).find(
-    (option) => String(option?.value ?? "") === normalizedValue
-  );
-
-  return (
-    toLabelText(matchedOption?.label) ??
-    toLabelText(matchedOption?.value) ??
-    normalizedValue
-  );
-}
-
-function getSelectedOptionLabels(field: Record<string, unknown>, values: unknown[]): string[] {
-  return values
-    .map((value) => getOptionLabelText(field, value))
-    .filter((label): label is string => Boolean(label));
-}
-
 function toNumberValue(value: unknown): number | null {
   if (value === undefined || value === null || value === "") return null;
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -183,13 +171,20 @@ export function buildRtsApplicationPayload({
   const fieldValues = (steps || [])
     .flatMap((step) => (step.fields || []) as Array<Record<string, unknown>>)
     .map((field) => {
+      const fieldType = String(field.type || "").toLowerCase();
+      const fieldDefinitionId = readFieldDefinitionId(field);
+      // Presentation-only and unmapped fields must never enter the application
+      // payload: allocation and fee rules can only evaluate persisted service
+      // field definitions.
+      if (fieldType === "label" || fieldType === "hidden" || fieldDefinitionId <= 0) {
+        return null;
+      }
+
       const fieldId = String(field.id || "");
       const value = fieldId ? formData[fieldId] : undefined;
 
       if (isEmptyValue(value)) return null;
 
-      const fieldType = String(field.type || "").toLowerCase();
-      const fieldDefinitionId = readFieldDefinitionId(field);
       const fieldValue: CreateRtsApplicationPayload["fieldValues"][number] = {
         isActive: true,
         createdBy,
@@ -204,8 +199,11 @@ export function buildRtsApplicationPayload({
 
       if (fieldType === "checkbox") {
         if (Array.isArray(value)) {
-          const labels = getSelectedOptionLabels(field, value);
-          fieldValue.textValue = labels.length ? JSON.stringify(labels) : null;
+          // Rule expected values are stored from the field option's `value`.
+          // Persist the same values, rather than the display labels, so a
+          // predicate matches equally on submit, resubmit, and fee preview.
+          const values = value.map((item) => toTextValue(item)).filter(Boolean);
+          fieldValue.textValue = values.length ? JSON.stringify(values) : null;
         } else {
           fieldValue.booleanValue = Boolean(value);
         }
@@ -228,7 +226,7 @@ export function buildRtsApplicationPayload({
         fieldValue.dateValue = toDateValue(value);
         fieldValue.textValue = fieldValue.dateValue ? null : toTextValue(value);
       } else if (fieldType === "radio") {
-        fieldValue.textValue = getOptionLabelText(field, value);
+        fieldValue.textValue = toTextValue(value);
       } else {
         fieldValue.textValue = toTextValue(value);
       }
@@ -255,5 +253,102 @@ export function buildRtsApplicationPayload({
     remark: "",
     fieldValues,
     tdToken,
+  };
+}
+
+/**
+ * Builds a resubmit payload for every supplied dynamic field. Unlike initial
+ * submission, empty values are retained as null so a corrected application can
+ * explicitly clear a stored value.
+ */
+export function buildRtsApplicationUpdatePayload({
+  formData,
+  steps,
+  resubmitContext,
+  updatedBy = 0,
+  remark = null,
+  documentGuidByFieldDefinitionId = {},
+  textValueByFieldDefinitionId = {},
+}: BuildRtsApplicationUpdatePayloadParams): UpdateRtsApplicationPayload {
+  const applicantContact = resolveApplicantContact(formData, steps);
+  if (applicantContact.missing.length) {
+    const missingLabels = applicantContact.missing
+      .map((field) => (field === 'applicantName' ? 'name' : 'mobile number'))
+      .join(' and ');
+    throw new Error(`Unable to resolve required applicant ${missingLabels} from the configured form fields.`);
+  }
+
+  const fieldValues = (steps || [])
+    .flatMap((step) => (step.fields || []) as Array<Record<string, unknown>>)
+    .map((field) => {
+      const fieldType = String(field.type || '').toLowerCase();
+      if (fieldType === 'label' || fieldType === 'hidden') return null;
+
+      const fieldDefinitionId = readFieldDefinitionId(field);
+      if (fieldDefinitionId <= 0) return null;
+
+      const fieldId = String(field.id || '');
+      const value = fieldId ? formData[fieldId] : undefined;
+      const fieldValue: UpdateRtsApplicationPayload['fieldValues'][number] = {
+        isActive: true,
+        updatedBy,
+        fieldDefinitionId,
+        textValue: null,
+        numberValue: null,
+        dateValue: null,
+        booleanValue: null,
+        documentGuid: null,
+      };
+
+      if (fieldType === 'checkbox') {
+        if (Array.isArray(value)) {
+          // Keep option values aligned with the value saved by the rule editor.
+          const values = value.map((item) => toTextValue(item)).filter(Boolean);
+          fieldValue.textValue = values.length ? JSON.stringify(values) : null;
+        } else if (value !== undefined && value !== null && value !== '') {
+          fieldValue.booleanValue = Boolean(value);
+        }
+      } else if (fieldType === 'file') {
+        fieldValue.documentGuid = documentGuidByFieldDefinitionId[String(fieldDefinitionId)] ?? null;
+      } else if (fieldType === 'filelatlog') {
+        fieldValue.documentGuid = documentGuidByFieldDefinitionId[String(fieldDefinitionId)] ?? null;
+        fieldValue.textValue = textValueByFieldDefinitionId[String(fieldDefinitionId)] ?? null;
+      } else if (fieldType === 'number' || fieldType === 'decimal' || fieldType === 'year') {
+        const numeric = toNumberValue(value);
+        fieldValue.numberValue = numeric;
+        fieldValue.textValue = numeric == null ? toTextValue(value) : null;
+      } else if (
+        fieldType === 'date' ||
+        fieldType === 'time' ||
+        fieldType === 'datetime' ||
+        fieldType === 'datetime-local' ||
+        fieldType === 'month'
+      ) {
+        fieldValue.dateValue = toDateValue(value);
+        fieldValue.textValue = fieldValue.dateValue ? null : toTextValue(value);
+      } else if (fieldType === 'radio') {
+        fieldValue.textValue = toTextValue(value);
+      } else {
+        fieldValue.textValue = toTextValue(value);
+      }
+
+      return fieldValue;
+    })
+    .filter(Boolean) as UpdateRtsApplicationPayload['fieldValues'];
+
+  return {
+    isActive: true,
+    updatedBy,
+    serviceId: resubmitContext.serviceId,
+    approvalFlowId: resubmitContext.approvalFlowId,
+    currentApprovalFlowStageId: resubmitContext.currentApprovalFlowStageId,
+    currentStageOrder: resubmitContext.currentStageOrder,
+    applicantName: applicantContact.applicantName,
+    applicantMobileNo: applicantContact.applicantMobileNo,
+    userId: resubmitContext.userId ?? null,
+    sessionId: resubmitContext.sessionId ?? null,
+    applicationStatus: resubmitContext.applicationStatus,
+    remark,
+    fieldValues,
   };
 }
