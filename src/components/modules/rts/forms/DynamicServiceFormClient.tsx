@@ -61,6 +61,7 @@ import { PaymentCheckoutModal } from '@/components/modules/rts/citizen/PaymentCh
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 import { evaluateRtsFeeAction } from '@/app/[locale]/service/[serviceId]/actions';
+import { initializePendingPaymentAction } from '@/app/[locale]/service/payment/actions';
 import type { RtsFeeEvaluationResult } from '@/types/rts/rts-rulemaster.types';
 import type { RtsApplicationResubmitContext } from '@/types/rts/rts-application.types';
 
@@ -1489,6 +1490,27 @@ export default function DynamicServiceFormClient({
 
       const response = await submitApplicationAction(submitBundle);
 
+      // The payment service evaluates the saved application values again, so the
+      // pending snapshot always uses the authoritative rule/service fee rather
+      // than the estimate displayed before submission. For zero-fee applications
+      // it intentionally creates no payment transaction.
+      let initializedPayment = null;
+      const submittedApplicationId = Number(response?.items?.id);
+      if (Number.isFinite(submittedApplicationId) && submittedApplicationId > 0) {
+        try {
+          const paymentInitialization = await initializePendingPaymentAction(submittedApplicationId);
+          if (paymentInitialization.success) {
+            initializedPayment = paymentInitialization.data ?? null;
+          } else {
+            console.error('Failed to initialize the pending payment snapshot:', paymentInitialization.error);
+          }
+        } catch (paymentInitializationError) {
+          // Submission has already succeeded. The citizen dashboard can retry the
+          // idempotent initialization endpoint when it loads the application.
+          console.error('Failed to initialize the pending payment snapshot:', paymentInitializationError);
+        }
+      }
+
       // Clear draft on successful submit
       if (applicationId) {
         localStorage.removeItem(`rtsDraft:${applicationId}:${serviceId}`);
@@ -1561,8 +1583,11 @@ export default function DynamicServiceFormClient({
       existingData[newId] = newApplication;
       localStorage.setItem('rtsApplications', JSON.stringify(existingData));
 
-      const rawAppId = Number(response?.items?.id) || parseInt(newId.replace(/\D/g, ''), 10) || 1;
-      const appFees = Math.max(0, Number(response?.items?.paymentRequiredFee ?? 0));
+      const rawAppId = submittedApplicationId || parseInt(newId.replace(/\D/g, ''), 10) || 1;
+      const appFees = Math.max(
+        0,
+        Number(initializedPayment?.requiredFee ?? response?.items?.paymentRequiredFee ?? 0)
+      );
 
       if (appFees > 0) {
         MySwal.fire({
