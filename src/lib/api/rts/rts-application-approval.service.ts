@@ -15,6 +15,7 @@ import type {
   RtsApplicationViewDetailsItem,
   RtsApprovalApplicationListApiResponse,
   RtsApprovalApplicationListItem,
+  RtsStageDocumentItem,
 } from '@/types/rts/application-approval.types';
 import type { GetRtsApplicationApprovalListParams } from '@/types/rts/rts-application.types';
 import {
@@ -380,4 +381,101 @@ export async function revertApprovalApplication(
 
   assertApprovalSuccess(response.data, `Failed to revert application ${id}`);
   return response.data;
+}
+
+/**
+ * 11. GET /api/RTSApplicationApproval/{applicationId}/stage-documents
+ * Fetches all scrutiny stage documents uploaded for an application.
+ */
+export async function getRtsStageDocuments(
+  applicationId: number | string
+): Promise<RtsStageDocumentItem[]> {
+  try {
+    const response = await apiClient.get<RtsStageDocumentItem[]>(
+      `/RTSApplicationApproval/${encodeURIComponent(String(applicationId))}/stage-documents`,
+      { cache: 'no-store' }
+    );
+
+    if (!response.success || !response.data) {
+      return [];
+    }
+
+    const items = getApprovalItems(response.data as ApprovalSuccessEnvelope);
+    if (Array.isArray(items)) {
+      return items as RtsStageDocumentItem[];
+    }
+    if (Array.isArray(response.data)) {
+      return response.data as RtsStageDocumentItem[];
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 12. POST /api/RTSApplicationApproval/{applicationId}/stage-documents
+ * Uploads a scrutiny stage document.
+ */
+export async function uploadRtsStageDocument(
+  applicationId: number | string,
+  formData: FormData
+): Promise<RtsStageDocumentItem> {
+  const { getAppConfig } = await import('@/config/app.config');
+  const { cookies } = await import('next/headers');
+  const { serverFetch } = await import('@/lib/utils/server-fetch');
+
+  const baseUrl = getAppConfig().api.baseUrl?.trim();
+  if (!baseUrl) throw new Error('API base URL is not configured');
+
+  const cookieStore = await cookies();
+  const headers: Record<string, string> = {
+    Accept: 'application/json, text/plain, */*',
+  };
+
+  const token = cookieStore.get('auth_token')?.value;
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const csrf = cookieStore.get('csrf_token')?.value;
+  if (csrf) headers['X-CSRF-Token'] = csrf;
+
+  const cookieStr = cookieStore
+    .getAll()
+    .filter((cookie) =>
+      /auth_token|refresh_token|session_id|csrf_token|\.AspNetCore\.Antiforgery/.test(cookie.name)
+    )
+    .map(
+      (cookie) =>
+        `${cookie.name.replace(/[^\x00-\x7F]/g, '')}=${cookie.value.replace(/[^\x00-\x7F]/g, '')}`
+    )
+    .join('; ');
+
+  if (cookieStr) headers.Cookie = cookieStr;
+
+  const response = await serverFetch(
+    `${baseUrl.replace(/\/$/, '')}/RTSApplicationApproval/${encodeURIComponent(String(applicationId))}/stage-documents`,
+    {
+      method: 'POST',
+      headers,
+      body: formData,
+      cache: 'no-store',
+    }
+  );
+
+  const text = await response.text();
+  let data: { success?: boolean; items?: RtsStageDocumentItem; message?: string; error?: string };
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
+
+  if (!response.ok || !data.items) {
+    const message =
+      data.message || data.error || `Stage document upload failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return data.items;
 }

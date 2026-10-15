@@ -18,7 +18,6 @@ import {
   Eye,
   Check,
   X,
-  Printer,
   CreditCard,
   ShieldCheck,
   AlertOctagon,
@@ -35,6 +34,7 @@ import {
   Modal,
   Label,
 } from '@/components/common';
+import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import {
   getPendingClearancePaymentsAction,
   getClearanceStatsAction,
@@ -44,6 +44,8 @@ import {
   uploadBulkClearanceAction,
   getBanksAction,
   getCancellationLogsAction,
+  getPaymentReceiptAction,
+  getPaymentReceiptByNoAction,
 } from '@/app/[locale]/service/payment/actions';
 import type {
   PendingClearanceItem,
@@ -52,6 +54,7 @@ import type {
   BulkClearanceResponse,
   RTSBankLookup,
   ReceiptCancellationLog,
+  PaymentReceiptResult,
 } from '@/lib/api/rts/rtspayment.service';
 
 interface RtsPaymentSettlementDashboardProps {
@@ -154,9 +157,9 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
   const [isUploading, setIsUploading] = useState(false);
   const [bulkResult, setBulkResult] = useState<BulkClearanceResponse | null>(null);
 
-  // 5. Digital Receipt View Modal
-  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
-  const [receiptItem, setReceiptItem] = useState<PendingClearanceItem | null>(null);
+  // 5. Official Citizen Digital Receipt View Modal
+  const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [loadingReceiptId, setLoadingReceiptId] = useState<number | null>(null);
 
   // 6. Cancellation Audit Trail Modal
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
@@ -360,10 +363,64 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     }
   };
 
-  // 4. Handle Digital Receipt View
-  const handleOpenReceipt = (item: PendingClearanceItem) => {
-    setReceiptItem(item);
-    setIsReceiptOpen(true);
+  // 4. Handle Digital Receipt View - Show Exact Citizen Official Receipt
+  const handleOpenReceipt = async (item: PendingClearanceItem) => {
+    setLoadingReceiptId(item.transactionId);
+    try {
+      let res;
+      if (item.receiptNo) {
+        res = await getPaymentReceiptByNoAction(item.receiptNo);
+      }
+      if (!res?.success || !res?.data) {
+        res = await getPaymentReceiptAction(item.applicationId);
+      }
+
+      if (res?.success && res?.data) {
+        if (item.isReceiptCancelled) {
+          res.data.paymentStatus = 'CANCELLED';
+        }
+        setReceiptModalData(res.data);
+      } else {
+        // Fallback: construct full official PaymentReceiptResult from item
+        const fallbackReceipt: PaymentReceiptResult = {
+          transactionId: item.transactionId,
+          applicationId: item.applicationId,
+          applicationNo: item.applicationNo,
+          serviceName: item.serviceName,
+          serviceNameLocal: item.serviceNameLocal || item.serviceName,
+          departmentName: item.departmentName,
+          departmentNameLocal: item.departmentNameLocal || item.departmentName,
+          amount: item.totalAmount,
+          baseAmount: item.totalAmount,
+          lateFeeAmount: 0,
+          discountAmount: 0,
+          amountInWords: '',
+          amountInWordsLocal: `${item.totalAmount} रुपये फक्त`,
+          currency: item.currency || 'INR',
+          paymentGateway: item.paymentMode === 'CASH' ? 'CFC Municipal Counter' : (item.paymentMode || 'Counter'),
+          gatewayPaymentId: item.instrumentNo || item.bankRefNo || '',
+          transactionNo: item.transactionNo || `TXN${item.transactionId}`,
+          bankRefNo: item.bankRefNo,
+          bankName: item.bankName,
+          instrumentNo: item.instrumentNo,
+          receiptNo: item.receiptNo || `REC/RTS/${item.transactionId}`,
+          paymentDate: item.paymentDate || item.receiptDate || new Date().toISOString(),
+          paymentStatus: item.isReceiptCancelled ? 'CANCELLED' : (item.paymentStatus || 'SUCCESS'),
+          paymentMode: item.paymentMode,
+          channel: 'CFC Municipal Counter (नागरी सुविधा केंद्र काऊंटर)',
+          customerName: item.citizenName || 'Applicant',
+          customerMobile: item.citizenMobile,
+          ulbName: 'AKOLA MUNICIPAL CORPORATION',
+          ulbNameLocal: 'अकोला महानगरपालिका, अकोला',
+          ulbLogo: '/images/org_logo.png',
+        };
+        setReceiptModalData(fallbackReceipt);
+      }
+    } catch {
+      toast.error('पावती लोड करताना त्रुटी आली.');
+    } finally {
+      setLoadingReceiptId(null);
+    }
   };
 
   // 5. Handle Audit Logs
@@ -981,14 +1038,18 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
                       <td className="py-3.5 px-4 text-center font-mono">
                         {item.receiptNo ? (
                           <div>
-                            <span
-                              className={`font-bold ${item.receiptNo.startsWith('PROV/')
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReceipt(item)}
+                              disabled={loadingReceiptId === item.transactionId}
+                              className={`font-bold hover:underline cursor-pointer transition text-center ${item.receiptNo.startsWith('PROV/')
                                   ? 'text-amber-700'
                                   : 'text-emerald-700'
                                 }`}
+                              title={t('paymentSettlement.buttons.viewReceipt')}
                             >
                               {item.receiptNo}
-                            </span>
+                            </button>
                             {item.receiptDate && (
                               <div className="text-[10px] text-slate-400">
                                 {new Date(item.receiptDate).toLocaleDateString(displayLocale)}
@@ -1029,10 +1090,15 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
                             <>
                               <button
                                 onClick={() => handleOpenReceipt(item)}
-                                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition"
+                                disabled={loadingReceiptId === item.transactionId}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer disabled:opacity-50"
                                 title={t('paymentSettlement.buttons.viewReceipt')}
                               >
-                                <Eye className="h-3.5 w-3.5 text-blue-600" />
+                                {loadingReceiptId === item.transactionId ? (
+                                  <RefreshCw className="h-3.5 w-3.5 text-blue-600 animate-spin" />
+                                ) : (
+                                  <Eye className="h-3.5 w-3.5 text-blue-600" />
+                                )}
                                 {t('paymentSettlement.buttons.viewReceipt')}
                               </button>
 
@@ -1051,10 +1117,15 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
                             <>
                               <button
                                 onClick={() => handleOpenReceipt(item)}
-                                className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-700 hover:bg-rose-100 transition"
+                                disabled={loadingReceiptId === item.transactionId}
+                                className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-700 hover:bg-rose-100 transition cursor-pointer disabled:opacity-50"
                                 title={t('paymentSettlement.buttons.viewReceipt')}
                               >
-                                <Eye className="h-3.5 w-3.5" />
+                                {loadingReceiptId === item.transactionId ? (
+                                  <RefreshCw className="h-3.5 w-3.5 text-rose-600 animate-spin" />
+                                ) : (
+                                  <Eye className="h-3.5 w-3.5" />
+                                )}
                                 {t('paymentSettlement.buttons.viewReceipt')}
                               </button>
 
@@ -1511,104 +1582,13 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
         </div>
       </Modal>
 
-      {/* 9. Official Digital Receipt Modal */}
-      <Modal
-        open={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
-        maxWidth="md"
-        title={
-          <div className="flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-[#173B73]" />
-            <span className="font-bold text-slate-900">{t('paymentSettlement.modals.receiptTitle')}</span>
-          </div>
-        }
-      >
-        <div className="space-y-4 pt-2 text-xs">
-          {receiptItem && (
-            <div className="relative rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
-              {/* CANCELLED Watermark Overlay */}
-              {receiptItem.isReceiptCancelled && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <div className="transform -rotate-45 border-4 border-rose-600 px-8 py-3 text-3xl font-black tracking-widest text-rose-600/60 uppercase">
-                    CANCELLED / रद्द
-                  </div>
-                </div>
-              )}
-
-              {/* Receipt Header */}
-              <div className="text-center border-b border-slate-200 pb-3">
-                <h2 className="text-base font-extrabold text-[#173B73]">
-                  {isMr ? 'अकोला महानगरपालिका' : 'AKOLA MUNICIPAL CORPORATION'}
-                </h2>
-                <p className="text-[11px] text-slate-500">
-                  {isMr ? 'महाराष्ट्र लोकसेवा हक्क अधिनियम अंतर्गत अधिकृत पावती' : 'Maharashtra Right to Public Services Act - Official Fee Receipt'}
-                </p>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 font-mono text-xs font-bold text-slate-800">
-                  {receiptItem.receiptNo}
-                </div>
-              </div>
-
-              {/* Receipt Details */}
-              <div className="grid grid-cols-2 gap-3 py-3 border-b border-slate-100 text-xs">
-                <div>
-                  <span className="text-slate-400 block text-[10px]">{t('paymentSettlement.table.applicationNo')}:</span>
-                  <span className="font-mono font-bold text-slate-900">{receiptItem.applicationNo}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">{t('paymentSettlement.fields.clearanceDate')}:</span>
-                  <span className="font-bold text-slate-900">
-                    {receiptItem.receiptDate
-                      ? new Date(receiptItem.receiptDate).toLocaleDateString(displayLocale)
-                      : '-'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">{t('paymentSettlement.table.applicant')}:</span>
-                  <span className="font-bold text-slate-900">{receiptItem.citizenName}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">{t('paymentSettlement.table.service')}:</span>
-                  <span className="font-bold text-slate-900">{receiptItem.serviceName}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">{t('paymentSettlement.table.mode')}:</span>
-                  <span className="font-bold text-slate-900">{receiptItem.paymentMode}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">{t('paymentSettlement.table.instrument')}:</span>
-                  <span className="font-mono font-bold text-slate-900">{receiptItem.instrumentNo || '-'}</span>
-                </div>
-              </div>
-
-              {/* Amount Box */}
-              <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl mt-3">
-                <span className="font-bold text-slate-700 text-xs">Total Amount Paid / एकूण शुल्क:</span>
-                <span className="text-lg font-black text-emerald-800 font-mono">
-                  {formatCurrency(receiptItem.totalAmount)}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={() => setIsReceiptOpen(false)}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              {t('paymentSettlement.buttons.close')}
-            </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="rounded-xl bg-[#173B73] px-5 py-2 text-xs font-bold text-white shadow-md hover:bg-[#122e5a] inline-flex items-center gap-1.5"
-            >
-              <Printer className="h-4 w-4" />
-              {t('paymentSettlement.buttons.print')}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      {/* 9. Official Citizen Payment Receipt Modal */}
+      {receiptModalData && (
+        <PaymentReceiptModal
+          receipt={receiptModalData}
+          onClose={() => setReceiptModalData(null)}
+        />
+      )}
 
       {/* 10. Cancellation Audit Trail Modal */}
       <Modal

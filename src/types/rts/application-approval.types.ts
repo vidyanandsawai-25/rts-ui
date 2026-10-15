@@ -208,6 +208,7 @@ export interface RtsApplicationVerificationItem {
   canIssueCertificate: boolean;
   isManualCertificate: boolean;
   canViewCertificate: boolean;
+  canUploadDocument?: boolean;
   certificateType?: number;
   isCertificateRequired?: boolean;
   serviceId?: number | null;
@@ -222,6 +223,21 @@ export interface RtsApplicationVerificationItem {
 
 export type RtsApplicationVerificationApiResponse =
   RtsApplicationApprovalSuccessResponse<RtsApplicationVerificationItem>;
+
+export interface RtsStageDocumentItem {
+  bindingId: number;
+  documentId: number;
+  documentGuid: string;
+  documentTitle?: string | null;
+  fileName?: string | null;
+  originalFileName?: string | null;
+  fileSizeBytes: number;
+  remarks?: string | null;
+  uploadedByUserId: number;
+  uploadedByUserName?: string | null;
+  uploadedByFullName?: string | null;
+  uploadedDate?: string | null;
+}
 
 export interface RtsApplicationApprovalFieldValuePayload {
   isActive: boolean;

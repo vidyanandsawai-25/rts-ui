@@ -50,6 +50,7 @@ export interface StageConfigItem {
   canReject: boolean;
   canReturn: boolean;
   canPay: boolean;
+  canUploadDocument?: boolean;
   isFinalStage: boolean;
   userAllocationCount?: number;
 }
@@ -84,6 +85,7 @@ const actionPermissions = [
   { field: 'canApprove', label: 'approve' },
   { field: 'canReturn', label: 'canReturn' },
   { field: 'canReject', label: 'reject' },
+  { field: 'canUploadDocument', label: 'uploadDocs' },
 ] as const;
 
 const viewPermissions = [
@@ -257,6 +259,7 @@ export default function RtsWorkflowsConfig({
       canReject: false,
       canReturn: true,
       canPay: false,
+      canUploadDocument: false,
       isFinalStage: false,
     },
     {
@@ -272,6 +275,7 @@ export default function RtsWorkflowsConfig({
       canReject: true,
       canReturn: true,
       canPay: false,
+      canUploadDocument: false,
       isFinalStage: true,
     },
   ]);
@@ -493,6 +497,7 @@ export default function RtsWorkflowsConfig({
         canReject: false,
         canReturn: true,
         canPay: false,
+        canUploadDocument: false,
         isFinalStage: false,
       },
     ]);

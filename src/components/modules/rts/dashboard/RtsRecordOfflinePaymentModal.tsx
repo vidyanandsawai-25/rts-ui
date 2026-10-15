@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { IndianRupee, Receipt, AlertCircle, CreditCard } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { IndianRupee, Receipt, AlertCircle, CreditCard, Lock } from 'lucide-react';
 import { Modal, Button, Input, TextArea, Label } from '@/components/common';
-import { recordOfflinePaymentAction } from '@/app/[locale]/service/payment/actions';
-import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
+import { recordOfflinePaymentAction, getBanksAction } from '@/app/[locale]/service/payment/actions';
+import type { PaymentReceiptResult, RTSBankLookup } from '@/lib/api/rts/rtspayment.service';
 
 interface RtsRecordOfflinePaymentModalProps {
   open: boolean;
@@ -35,21 +35,43 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
   payableFee,
   applicantName,
   onSuccess,
-}) => {
+  const isFeeFixed = typeof payableFee === 'number' && payableFee > 0;
   const defaultAmount = typeof payableFee === 'number' && payableFee >= 0 ? payableFee : 0;
   const [paymentMode, setPaymentMode] = useState<string>('Cash');
-  const [amount] = useState<number>(defaultAmount);
+  const [amount, setAmount] = useState<number>(defaultAmount);
   const [instrumentNo, setInstrumentNo] = useState<string>('');
   const [instrumentDate, setInstrumentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [banks, setBanks] = useState<RTSBankLookup[]>([]);
+  const [selectedBankId, setSelectedBankId] = useState<number | undefined>(undefined);
   const [bankName, setBankName] = useState<string>('');
+  const [isOtherBank, setIsOtherBank] = useState<boolean>(false);
   const [remarks, setRemarks] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof payableFee === 'number' && payableFee >= 0) {
+      setAmount(payableFee);
+    }
+  }, [payableFee, open]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getBanksAction().then((res) => {
+      if (isMounted && res.success && res.data && res.data.length > 0) {
+        setBanks(res.data);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setErrorMessage(null);
 
     if (amount <= 0) {
@@ -70,11 +92,13 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
         amount,
         instrumentNo: instrumentNo.trim() || undefined,
         instrumentDate: paymentMode !== 'Cash' ? instrumentDate : undefined,
+        bankId: selectedBankId,
         bankName: bankName.trim() || undefined,
         remarks: remarks.trim() || undefined,
       });
 
       if (res.success && res.data) {
+        onClose();
         onSuccess(res.data);
       } else {
         setErrorMessage(res.error || 'ऑफलाइन शुल्क नोंदणी अयशस्वी झाली.');
@@ -176,19 +200,47 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
 
           {/* Amount */}
           <div>
-            <Label className="mb-1 block text-xs font-bold text-slate-700">
-              शुल्क रक्कम (Amount ₹) <span className="text-rose-500">*</span>
-            </Label>
+            <div className="flex items-center justify-between mb-1">
+              <Label className="block text-xs font-bold text-slate-700">
+                शुल्क रक्कम (Amount ₹) <span className="text-rose-500">*</span>
+              </Label>
+              {isFeeFixed && (
+                <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                  <Lock className="w-2.5 h-2.5 text-amber-600" />
+                  शासकीय निश्चित शुल्क (Locked)
+                </span>
+              )}
+            </div>
             <Input
               type="number"
               min={1}
               step={1}
-              value={amount.toString()}
-              readOnly
-              aria-readonly="true"
-              title="Amount is locked to the application's payable fee snapshot."
-              className="text-xs font-bold text-emerald-800 bg-slate-50"
+              value={amount > 0 ? amount.toString() : ''}
+              onChange={(e) => {
+                if (!isFeeFixed) {
+                  setAmount(Number(e.target.value));
+                }
+              }}
+              readOnly={isFeeFixed}
+              aria-readonly={isFeeFixed}
+              title={isFeeFixed ? "Amount is locked to the official government fee." : undefined}
+              placeholder="रक्कम टाका"
+              className={`text-xs font-bold ${
+                isFeeFixed
+                  ? 'bg-slate-100 text-emerald-900 border-slate-300 cursor-not-allowed select-none'
+                  : 'text-emerald-800'
+              }`}
             />
+            {isFeeFixed ? (
+              <p className="mt-1 text-[11px] font-medium text-slate-500 flex items-center gap-1">
+                <span>🔒</span>
+                <span>या सेवेचे शुल्क शासकीय नियमांनुसार निश्चित आहे, बदलता येणार नाही.</span>
+              </p>
+            ) : (
+              <p className="mt-1 text-[11px] font-medium text-slate-500">
+                लागू असलेले शुल्क रक्कम टाका.
+              </p>
+            )}
           </div>
         </div>
 
@@ -228,12 +280,56 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
                 <Label className="mb-1 block text-[11px] font-semibold text-slate-600">
                   बँकेचे नाव (Bank Name)
                 </Label>
-                <Input
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                  placeholder="उदा. SBI, Bank of Maharashtra"
-                  className="text-xs"
-                />
+                {banks.length > 0 ? (
+                  <div className="space-y-1.5">
+                    <select
+                      value={isOtherBank ? 'OTHER' : (selectedBankId ? String(selectedBankId) : '')}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'OTHER') {
+                          setIsOtherBank(true);
+                          setSelectedBankId(undefined);
+                          setBankName('');
+                        } else if (!val) {
+                          setIsOtherBank(false);
+                          setSelectedBankId(undefined);
+                          setBankName('');
+                        } else {
+                          setIsOtherBank(false);
+                          const bId = Number(val);
+                          setSelectedBankId(bId);
+                          const found = banks.find((b) => b.id === bId);
+                          setBankName(found?.bankName || '');
+                        }
+                      }}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">-- बँक निवडा (Select Bank) --</option>
+                      {banks.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.bankName} {b.bankCode ? `(${b.bankCode})` : ''}
+                        </option>
+                      ))}
+                      <option value="OTHER">इतर बँक (Other Bank - Type manually)</option>
+                    </select>
+                    {isOtherBank && (
+                      <Input
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                        placeholder="बँकेचे नाव लिहा (Type Bank Name)"
+                        className="text-xs"
+                        autoFocus
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <Input
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    placeholder="उदा. SBI, Bank of Maharashtra"
+                    className="text-xs"
+                  />
+                )}
               </div>
             </div>
           </div>

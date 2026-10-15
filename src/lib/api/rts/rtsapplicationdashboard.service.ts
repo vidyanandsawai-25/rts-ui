@@ -52,35 +52,78 @@ function getOneSolutionBaseUrl(): string {
 export async function getRtsApplicationDashboardData(
   payload: RtsApplicationDashboardRequestInput = {}
 ): Promise<RtsApplicationDashboardResponse> {
-  const endpointUrl =
-    process.env.RTS_APPLICATION_DASHBOARD_URL?.trim() ||
-    `${getOneSolutionBaseUrl()}/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetApplicationDashboardData`;
+  try {
+    let endpointUrl: string;
+    try {
+      endpointUrl =
+        process.env.RTS_APPLICATION_DASHBOARD_URL?.trim() ||
+        `${getOneSolutionBaseUrl()}/PropertyTaxMicroservice/PropertyTaxApi/AapleSarkar/GetApplicationDashboardData`;
+    } catch {
+      return {
+        status: false,
+        message: 'External OneSolution base URL is not configured.',
+        data: {
+          totalRecords: 0,
+          dashboardCardCount: [],
+          applicationDahboardData: [],
+          pageSize: null,
+          pageNumber: null,
+        },
+      };
+    }
 
-  const requestPayload: RtsApplicationDashboardRequest = {
-    UpicId: payload.UpicId?.trim() || null,
-    ApplicationNo: payload.ApplicationNo?.trim() || null,
-    ApplicationStatus: payload.ApplicationStatus?.trim() || null,
-    DepartmentName: payload.DepartmentName?.trim() || null,
-    ServiceId: payload.ServiceId ?? null,
-    FromDate: payload.FromDate?.trim() || null,
-    ToDate: payload.ToDate?.trim() || null,
-    PageNumber: payload.PageNumber ?? null,
-    PageSize: payload.PageSize ?? null,
-  };
+    const requestPayload: RtsApplicationDashboardRequest = {
+      UpicId: payload.UpicId?.trim() || null,
+      ApplicationNo: payload.ApplicationNo?.trim() || null,
+      ApplicationStatus: payload.ApplicationStatus?.trim() || null,
+      DepartmentName: payload.DepartmentName?.trim() || null,
+      ServiceId: payload.ServiceId ?? null,
+      FromDate: payload.FromDate?.trim() || null,
+      ToDate: payload.ToDate?.trim() || null,
+      PageNumber: payload.PageNumber ?? null,
+      PageSize: payload.PageSize ?? null,
+    };
 
-  const response = await fetch(endpointUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(requestPayload),
-    cache: 'no-store',
-  });
+    const response = await fetch(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(requestPayload),
+      cache: 'no-store',
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch application dashboard data: ${response.status}`);
+    if (!response.ok) {
+      console.warn(
+        `[RTS Dashboard] External dashboard endpoint returned ${response.status} (${endpointUrl}). Falling back to local data.`
+      );
+      return {
+        status: false,
+        message: `External endpoint returned ${response.status}`,
+        data: {
+          totalRecords: 0,
+          dashboardCardCount: [],
+          applicationDahboardData: [],
+          pageSize: null,
+          pageNumber: null,
+        },
+      };
+    }
+
+    return (await response.json()) as RtsApplicationDashboardResponse;
+  } catch (err) {
+    console.warn('[RTS Dashboard] Failed to fetch external application dashboard data:', err);
+    return {
+      status: false,
+      message: err instanceof Error ? err.message : 'Failed to fetch dashboard data',
+      data: {
+        totalRecords: 0,
+        dashboardCardCount: [],
+        applicationDahboardData: [],
+        pageSize: null,
+        pageNumber: null,
+      },
+    };
   }
-
-  return (await response.json()) as RtsApplicationDashboardResponse;
 }

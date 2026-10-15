@@ -12,6 +12,8 @@ import {
   Layers,
   Banknote,
   CheckCircle2,
+  Ban,
+  XCircle,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/common';
@@ -58,6 +60,16 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
     (receipt.paymentMode && /cash|cheque|dd|pos|challan/i.test(receipt.paymentMode)) ||
     (receipt.paymentGateway && /counter|offline/i.test(receipt.paymentGateway)) ||
     Boolean(receipt.counterOfficerName);
+
+  const isCancelled =
+    receipt.paymentStatus?.toUpperCase() === 'CANCELLED' ||
+    receipt.paymentStatus?.toUpperCase() === 'RECEIPT CANCELLED';
+  const isBounced = receipt.paymentStatus?.toUpperCase() === 'BOUNCED';
+  const statusBadgeBg = isCancelled ? '#dc2626' : (isBounced ? '#ea580c' : '#059669');
+  const statusBadgeBorder = isCancelled ? '#f87171' : (isBounced ? '#fb923c' : '#34d399');
+  const statusBadgeText = isCancelled
+    ? '✖ पावती रद्द (CANCELLED)'
+    : (isBounced ? '✖ धनादेश परत (BOUNCED)' : '✔ शुल्क प्राप्त');
 
   const channelText = isOffline ? 'नागरी सुविधा केंद्र (CFC काऊंटर)' : 'ऑनलाइन नागरिक पोर्टल';
   const paymentModeText = isOffline ? 'रोख (Cash)' : (receipt.paymentMode || 'ऑनलाइन / UPI');
@@ -199,7 +211,7 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
             margin-top: 1px;
           }
           .status-badge {
-            background: #059669;
+            background: ${statusBadgeBg};
             color: #ffffff;
             padding: 5px 10px;
             border-radius: 6px;
@@ -207,7 +219,7 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
             font-size: 11px;
             letter-spacing: 0.5px;
             text-align: center;
-            border: 1px solid #34d399;
+            border: 1px solid ${statusBadgeBorder};
           }
           .service-banner {
             background: #f1f5f9;
@@ -381,6 +393,11 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
       <body>
         <div class="receipt-container">
           <div class="watermark-bg"></div>
+          ${isCancelled ? `
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); border: 5px solid #dc2626; padding: 12px 36px; font-size: 32px; font-weight: 900; color: #dc2626; opacity: 0.65; z-index: 10; pointer-events: none; letter-spacing: 3px; background: rgba(255,255,255,0.7); text-align: center;">
+            CANCELLED / पावती रद्द
+          </div>
+          ` : ''}
           <div class="receipt-content">
             <div class="receipt-header">
               <div class="header-left">
@@ -399,7 +416,7 @@ export function printReceiptElement(receipt: PaymentReceiptResult) {
                   <div class="qr-label">पडताळणी QR</div>
                 </div>
                 <div class="status-badge">
-                  <div>✔ शुल्क प्राप्त</div>
+                  <div>${statusBadgeText}</div>
                 </div>
               </div>
             </div>
@@ -597,6 +614,11 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const qrUrl = `${origin}/mr/service/verify-certificate/${encodeURIComponent(receipt.applicationNo || '')}`;
 
+  const isCancelled =
+    receipt.paymentStatus?.toUpperCase() === 'CANCELLED' ||
+    receipt.paymentStatus?.toUpperCase() === 'RECEIPT CANCELLED';
+  const isBounced = receipt.paymentStatus?.toUpperCase() === 'BOUNCED';
+
   return (
     <div
       className={`relative w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-[#0F3675] ${className}`}
@@ -611,6 +633,15 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
           backgroundSize: '300px 300px',
         }}
       />
+
+      {/* CANCELLED Watermark Overlay */}
+      {isCancelled && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div className="transform -rotate-45 border-4 border-rose-600 px-8 py-3 text-3xl font-black tracking-widest text-rose-600 uppercase bg-white/80 backdrop-blur-[1px] shadow-lg rounded-xl">
+            CANCELLED / पावती रद्द
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10">
         {/* Header Banner - Official Municipal Identity */}
@@ -641,10 +672,22 @@ export const RTSPaymentReceipt: React.FC<RTSPaymentReceiptProps> = ({
             </div>
 
             <div className="flex flex-col items-end gap-1">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-black bg-emerald-600 text-white border border-emerald-400 shadow-xs">
-                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span>शुल्क प्राप्त</span>
-              </span>
+              {isCancelled ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-black bg-rose-600 text-white border border-rose-400 shadow-xs">
+                  <Ban className="w-3.5 h-3.5 shrink-0" />
+                  <span>पावती रद्द / CANCELLED</span>
+                </span>
+              ) : isBounced ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-black bg-orange-600 text-white border border-orange-400 shadow-xs">
+                  <XCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>धनादेश परत / BOUNCED</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-black bg-emerald-600 text-white border border-emerald-400 shadow-xs">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                  <span>शुल्क प्राप्त</span>
+                </span>
+              )}
             </div>
           </div>
         </div>

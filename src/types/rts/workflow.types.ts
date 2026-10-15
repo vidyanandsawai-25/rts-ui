@@ -28,6 +28,7 @@ export interface RtsApprovalFlowStageApiItem {
   canReject: boolean;
   canReturn: boolean;
   canPay: boolean;
+  canUploadDocument?: boolean;
   isFinalStage: boolean;
   isActive?: boolean;
   userName?: string | null;

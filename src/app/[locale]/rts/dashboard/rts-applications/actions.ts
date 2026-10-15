@@ -40,6 +40,7 @@ import type {
   RtsApprovalApplicationListItem,
   RtsApplicationVerificationItem,
   RtsApplicationViewDetailsItem,
+  RtsStageDocumentItem,
 } from '@/types/rts/application-approval.types';
 import { computeOverdueDays, computeRemainingDays } from '@/lib/utils/rts/application-grid';
 import type {
@@ -113,6 +114,62 @@ export async function uploadManualCertificateDocumentAction(formData: FormData):
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unable to upload the manual certificate.',
+    };
+  }
+}
+
+export async function getRtsStageDocumentsAction(
+  applicationId: number
+): Promise<{ success: boolean; data: RtsStageDocumentItem[]; error?: string }> {
+  try {
+    const { getRtsStageDocuments } = await import('@/lib/api/rts/rts-application-approval.service');
+    const docs = await getRtsStageDocuments(applicationId);
+    return { success: true, data: docs };
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Failed to fetch stage documents.',
+    };
+  }
+}
+
+export async function uploadRtsStageDocumentAction(
+  formData: FormData
+): Promise<{ success: boolean; document?: RtsStageDocumentItem; error?: string }> {
+  try {
+    const applicationIdRaw = formData.get('applicationId');
+    const applicationId = Number(applicationIdRaw);
+    if (!applicationId || isNaN(applicationId) || applicationId <= 0) {
+      return { success: false, error: 'Valid application ID is required.' };
+    }
+
+    const file = formData.get('file');
+    if (!(file instanceof File) || file.size <= 0) {
+      return { success: false, error: 'Select a document file before uploading.' };
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      return { success: false, error: 'The document file must be 20 MB or smaller.' };
+    }
+
+    const cookieStore = await cookies();
+    const currentUserId = getCurrentApprovalOfficerUserId(cookieStore);
+    if (currentUserId && !formData.has('uploadedBy')) {
+      formData.set('uploadedBy', String(currentUserId));
+    }
+
+    const { uploadRtsStageDocument } = await import('@/lib/api/rts/rts-application-approval.service');
+    const result = await uploadRtsStageDocument(applicationId, formData);
+
+    return {
+      success: true,
+      document: result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unable to upload the stage document.',
     };
   }
 }

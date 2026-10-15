@@ -59,6 +59,7 @@ export type WorkflowStageItem = {
   canReject: boolean;
   canReturn: boolean;
   canPay: boolean;
+  canUploadDocument?: boolean;
   isFinalStage: boolean;
   userAllocationCount?: number;
 };
@@ -423,6 +424,7 @@ export async function saveWorkflowWithStagesAction(data: {
         canReject: stage.canReject,
         canReturn: stage.canReturn,
         canPay: stage.canPay,
+        canUploadDocument: Boolean(stage.canUploadDocument),
         isFinalStage: stage.isFinalStage,
       };
       if (stage.id) await updateApprovalFlowStage(stage.id, payload);

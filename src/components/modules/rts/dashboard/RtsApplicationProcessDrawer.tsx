@@ -45,11 +45,13 @@ import RtsApplicationNoteSheetModal from '@/components/modules/rts/dashboard/Rts
 import RtsCertificateApprovalModal from '@/components/modules/rts/dashboard/RtsCertificateApprovalModal';
 import RtsManualCertificateUploadModal from '@/components/modules/rts/dashboard/RtsManualCertificateUploadModal';
 import PrintableCertificateModal from '@/components/modules/rts/citizen/PrintableCertificateModal';
+import RtsApplicationStageDocumentsModal from '@/components/modules/rts/dashboard/RtsApplicationStageDocumentsModal';
 import { RtsRecordOfflinePaymentModal } from '@/components/modules/rts/dashboard/RtsRecordOfflinePaymentModal';
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import { getPaymentReceiptAction } from '@/app/[locale]/service/payment/actions';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 import {
+  getRtsStageDocumentsAction,
   rejectApprovalApplicationAction,
   revertApprovalApplicationAction,
   verifyAndCorrectApprovalAction,
@@ -252,6 +254,8 @@ export default function RtsApplicationProcessDrawer({
     getInitialFieldValues(data)
   );
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
+  const [isStageDocsModalOpen, setIsStageDocsModalOpen] = useState(false);
+  const [stageDocsCount, setStageDocsCount] = useState<number>(0);
   const [isOfflinePaymentModalOpen, setIsOfflinePaymentModalOpen] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
   const [isReceiptLoading, setIsReceiptLoading] = useState(false);
@@ -420,6 +424,19 @@ export default function RtsApplicationProcessDrawer({
   const headerStatus = verification?.applicationStatus || record?.applicationStatus || '';
   const headerStage = verification?.stageName || (loading ? t('loading') : t('processTitle'));
   const headerApplicationNo = verification?.applicationNo || record?.appId || '';
+
+  useEffect(() => {
+    if (open && applicationId) {
+      getRtsStageDocumentsAction(applicationId)
+        .then((res) => {
+          if (res.success && res.data) {
+            setStageDocsCount(res.data.length);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [open, applicationId]);
+
   const activeDocument =
     documents[Math.min(activeDocumentIndex, Math.max(documents.length - 1, 0))] ?? null;
   const isFieldDataChanged = Object.keys(editedFieldValues).some(
@@ -848,6 +865,22 @@ export default function RtsApplicationProcessDrawer({
                     className="rounded-lg px-3 text-xs font-bold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
                   >
                     पावती पहा (Receipt)
+                  </Button>
+                )}
+
+                {/* Stage Scrutiny Documents */}
+                {(Boolean(verification?.canUploadDocument) || stageDocsCount > 0) && (
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="secondary"
+                    icon={Paperclip}
+                    onClick={() => setIsStageDocsModalOpen(true)}
+                    className="rounded-lg px-3 text-xs font-bold text-indigo-800 border-indigo-300 bg-indigo-50 hover:bg-indigo-100"
+                  >
+                    {verification?.canUploadDocument
+                      ? `कागदपत्रे अपलोड / पहा ${stageDocsCount > 0 ? `(${stageDocsCount})` : ''}`
+                      : `कागदपत्रे पहा (${stageDocsCount})`}
                   </Button>
                 )}
               </div>
@@ -1630,6 +1663,21 @@ export default function RtsApplicationProcessDrawer({
           applicationNo={headerApplicationNo}
           certificateType={data?.details?.certificateType}
           isManualCertificate={Boolean(verification?.isManualCertificate || data?.details?.certificateType === 2)}
+        />
+      )}
+
+      {isStageDocsModalOpen && applicationId && (
+        <RtsApplicationStageDocumentsModal
+          isOpen={isStageDocsModalOpen}
+          onClose={() => setIsStageDocsModalOpen(false)}
+          applicationId={applicationId}
+          applicationNo={headerApplicationNo}
+          applicantName={applicantName}
+          canUpload={Boolean(verification?.canUploadDocument)}
+          onDocumentUploaded={() => {
+            setStageDocsCount((c) => c + 1);
+            onRefresh?.();
+          }}
         />
       )}
     </>

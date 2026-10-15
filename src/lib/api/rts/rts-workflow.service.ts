@@ -94,6 +94,7 @@ export interface SaveApprovalFlowStagePayload {
   canReject: boolean;
   canReturn: boolean;
   canPay: boolean;
+  canUploadDocument?: boolean;
   isFinalStage: boolean;
 }
 
