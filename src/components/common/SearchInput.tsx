@@ -14,7 +14,7 @@ interface SearchInputProps {
   onEnter?: () => void;
   tabIndex?: number;
   inputRef?: React.RefObject<HTMLInputElement | null>;
-
+  ariaLabel?: string;
 }
 
 export function SearchInput({
@@ -27,7 +27,8 @@ export function SearchInput({
   onKeyDown,
   onEnter,
   tabIndex,
-  inputRef
+  inputRef,
+  ariaLabel
 }: SearchInputProps) {
   return (
     <div className={cn("relative mb-4 w-[300px]", className)}>
@@ -39,6 +40,7 @@ export function SearchInput({
       {/* INPUT */}
       <input
         type="text"
+        aria-label={ariaLabel}
         ref={inputRef}
         value={value}
         placeholder={placeholder}

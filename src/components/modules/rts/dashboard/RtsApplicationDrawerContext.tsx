@@ -165,8 +165,8 @@ function ApplicationDrawerContent({ record, data, onOpenApplication, onOpenDocum
                 {locale === 'mr' ? 'शासकीय शुल्क' : 'Service Fee'}
               </span>
               <span className="font-extrabold text-slate-900 block truncate">
-                {data?.verification?.feesRequired || (data?.verification?.serviceFees ?? 0) > 0
-                  ? `₹${data?.verification?.serviceFees ?? 0}`
+                {(data?.verification?.payableFee ?? 0) > 0
+                  ? `₹${data?.verification?.payableFee ?? 0}`
                   : (locale === 'mr' ? 'लागू नाही' : 'Not Required')}
               </span>
             </div>
@@ -180,7 +180,7 @@ function ApplicationDrawerContent({ record, data, onOpenApplication, onOpenDocum
                     <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                     {locale === 'mr' ? 'भरलेले' : 'Paid'}
                   </span>
-                ) : data?.verification?.feesRequired || (data?.verification?.serviceFees ?? 0) > 0 ? (
+                ) : (data?.verification?.payableFee ?? 0) > 0 ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                     <IndianRupee className="w-3 h-3 text-amber-600 shrink-0" />
                     {locale === 'mr' ? 'प्रलंबित' : 'Pending'}

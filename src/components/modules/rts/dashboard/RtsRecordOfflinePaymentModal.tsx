@@ -35,6 +35,7 @@ export const RtsRecordOfflinePaymentModal: React.FC<RtsRecordOfflinePaymentModal
   payableFee,
   applicantName,
   onSuccess,
+}) => {
   const isFeeFixed = typeof payableFee === 'number' && payableFee > 0;
   const defaultAmount = typeof payableFee === 'number' && payableFee >= 0 ? payableFee : 0;
   const [paymentMode, setPaymentMode] = useState<string>('Cash');

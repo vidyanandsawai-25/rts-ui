@@ -178,7 +178,7 @@ function StageConfigCard({
               className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 [&>div]:justify-between [&_span]:!text-[11px]"
             >
               <ToggleSwitch
-                checked={stage[permission.field]}
+                checked={Boolean(stage[permission.field])}
                 onChange={(checked) => onChange({ ...stage, [permission.field]: checked })}
                 label={t(permission.label)}
                 showPopup={false}
