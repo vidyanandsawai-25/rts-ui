@@ -103,7 +103,7 @@
     "empty": "No rules found for this service.",
     "legacyTitle": "Legacy or unsupported rules",
     "legacyDescription": "These existing action types are shown for review. They cannot be edited in this screen.",
-    "createdActive": "New rules are created active by the API. You can change status after creation.",
+    "createdActive": "This rule will be active as soon as you save it.",
     "metadataHint": "Priority and cumulative settings are stored now; application evaluation will be added later.",
     "networkError": "The request could not complete. Please retry."
   },
