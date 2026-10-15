@@ -1528,6 +1528,7 @@
     "stageNameLabel": "चरण का नाम",
     "slaDaysLabel": "SLA सीमा (दिन)",
     "verifyDocs": "दस्तावेज़ सत्यापित करें",
+    "uploadDocs": "दस्तावेज़ अपलोड करें",
     "approve": "अनुमोदित करें",
     "reject": "अस्वीकार करें",
     "finalStage": "अंतिम चरण",
