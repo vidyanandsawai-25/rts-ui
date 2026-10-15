@@ -7,6 +7,8 @@
 export interface RTSAppealTypeDto {
   id: number;
   appealTypeName: string;
+  appealTypeNameLocal?: string;
+  description?: string;
   code: string;
   isActive: boolean;
   createdDate?: string;
@@ -157,9 +159,17 @@ export interface RTSAppealProcessDetailsDto {
   appealStatus: string;
   appealType?: string;
   appealTypeName?: string;
+  appealTypeNameLocal?: string;
   reasonForComplaint?: string;
   delayJustification?: string;
   filingDate?: string;
+  hearingDate?: string | null;
+  hearingNoticeRemarks?: string | null;
+  orderType?: string | null;
+  serviceDeliveryDueDate?: string | null;
+  penaltyAmount?: number | null;
+  penaltyRemarks?: string | null;
+  orderDocumentPath?: string | null;
   actionRemarks?: string;
   actionDate?: string | null;
   actionByName?: string | null;
@@ -182,7 +192,15 @@ export interface RTSAppealProcessDetailsDto {
 export interface ProcessRTSAppealActionDto {
   appealId: number;
   action: 'Approve' | 'Reject' | 'Return' | 'Allowed' | 'Dismissed';
-  remarks: string;
+  remark?: string;
+  remarks?: string;
+  hearingDate?: string | null;
+  hearingNoticeRemarks?: string | null;
+  orderType?: string | null;
+  serviceDeliveryDueDate?: string | null;
+  penaltyAmount?: number | null;
+  penaltyRemarks?: string | null;
+  orderDocumentPath?: string | null;
 }
 
 export interface RTSAppealQueryParameters {
