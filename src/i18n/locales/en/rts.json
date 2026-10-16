@@ -1952,9 +1952,12 @@
       "auditTitle": "Receipt Cancellation Audit Trail"
     },
     "fields": {
+      "paymentMode": "Payment Mode",
+      "bank": "Bank",
+      "selectMode": "-- Select Payment Mode --",
+      "selectBank": "-- Select Bank --",
       "clearanceDate": "Clearance / Deposit Date",
       "clearingBank": "Clearing Bank Account",
-      "selectBank": "Select Bank",
       "bankRef": "Bank Reference / UTR No.",
       "bankRefPlaceholder": "Enter bank reference / UTR number...",
       "remarks": "Officer Remarks",

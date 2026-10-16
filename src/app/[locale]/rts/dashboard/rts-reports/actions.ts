@@ -4,9 +4,11 @@ import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
 import {
   getBanks,
+  getPaymentModes,
   getPendingClearancePayments,
   type PendingClearanceItem,
   type PendingClearanceQuery,
+  type RTSPaymentModeLookup,
 } from '@/lib/api/rts/rtspayment.service';
 import { getApprovalApplicationsPaged } from '@/lib/api/rts/rts-application-approval.service';
 import type { RtsApprovalApplicationListItem } from '@/types/rts/application-approval.types';
@@ -31,13 +33,14 @@ export interface RtsReportsFilterOptions {
   departments: Array<{ id: number; departmentName: string; departmentNameLocal?: string | null }>;
   services: Array<{ id: number; serviceName: string; serviceNameLocal?: string | null; departmentId?: number }>;
   banks: Array<{ id: number; bankName: string; ifscCode?: string }>;
+  paymentModes: Array<{ id: number; modeCode: string; modeNameEn: string; modeNameMr: string }>;
 }
 
 /**
  * 1. Load initial lookups for filter bars
  */
 export async function getRtsReportsLookupsAction(): Promise<RtsReportsFilterOptions> {
-  const [departments, services, banks] = await Promise.all([
+  const [departments, services, banks, modes] = await Promise.all([
     getAllRtsDepartments().catch((err) => {
       console.error('Error fetching departments for reports:', err);
       return [];
@@ -48,6 +51,10 @@ export async function getRtsReportsLookupsAction(): Promise<RtsReportsFilterOpti
     }),
     getBanks().catch((err) => {
       console.error('Error fetching banks for reports:', err);
+      return [];
+    }),
+    getPaymentModes().catch((err) => {
+      console.error('Error fetching payment modes for reports:', err);
       return [];
     }),
   ]);
@@ -68,6 +75,12 @@ export async function getRtsReportsLookupsAction(): Promise<RtsReportsFilterOpti
       id: b.id,
       bankName: b.bankName,
       ifscCode: b.ifscCode,
+    })),
+    paymentModes: (modes || []).map((m) => ({
+      id: m.id,
+      modeCode: m.modeCode,
+      modeNameEn: m.modeNameEn,
+      modeNameMr: m.modeNameMr,
     })),
   };
 }

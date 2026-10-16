@@ -262,6 +262,8 @@ export interface ApprovePaymentPayload {
   clearanceDate?: string;
   bankRefNo?: string;
   remarks?: string;
+  paymentModeId?: number;
+  bankId?: number;
 }
 
 export interface DisapprovePaymentPayload {
@@ -421,6 +423,24 @@ export async function getCancellationLogs(applicationId?: number, transactionId?
     if (applicationId) params.append("applicationId", applicationId.toString());
     if (transactionId) params.append("transactionId", transactionId.toString());
     const res = await apiClient.get<ApiResponseWrapper<ReceiptCancellationLog[]>>(`/RTSPayment/cancellation-logs?${params.toString()}`);
+    return res.data?.items || [];
+  } catch {
+    return [];
+  }
+}
+
+export interface RTSPaymentModeLookup {
+  id: number;
+  modeCode: string;
+  modeNameEn: string;
+  modeNameMr: string;
+  iconName?: string;
+  isActive: boolean;
+}
+
+export async function getPaymentModes(): Promise<RTSPaymentModeLookup[]> {
+  try {
+    const res = await apiClient.get<ApiResponseWrapper<RTSPaymentModeLookup[]>>("/RTSPayment/payment-modes");
     return res.data?.items || [];
   } catch {
     return [];

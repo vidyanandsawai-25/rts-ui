@@ -16,6 +16,7 @@ import {
   uploadBulkClearance,
   getBanks,
   getCancellationLogs,
+  getPaymentModes,
   type CreatePaymentOrderPayload,
   type PaymentOrderResult,
   type VerifyPaymentPayload,
@@ -23,6 +24,7 @@ import {
   type RecordOfflinePaymentPayload,
   type PaymentReceiptResult,
   type PaymentStatusResult,
+  type RTSPaymentModeLookup,
   type PendingClearanceQuery,
   type PendingClearanceItem,
   type PendingClearanceStats,
@@ -250,6 +252,22 @@ export async function getCancellationLogsAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Failed to fetch cancellation audit logs."
+    };
+  }
+}
+
+export async function getPaymentModesAction(): Promise<{
+  success: boolean;
+  data?: RTSPaymentModeLookup[];
+  error?: string;
+}> {
+  try {
+    const data = await getPaymentModes();
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch payment mode lookup."
     };
   }
 }

@@ -1961,9 +1961,12 @@
       "auditTitle": "पावती रद्द शासकीय लेखापरीक्षण इतिहास"
     },
     "fields": {
+      "paymentMode": "पेमेंट पद्धत",
+      "bank": "बँक",
+      "selectMode": "-- पेमेंट पद्धत निवडा --",
+      "selectBank": "-- बँक निवडा --",
       "clearanceDate": "वटणावळ / जमा दिनांक",
       "clearingBank": "जमा बँक खाते",
-      "selectBank": "बँक निवडा",
       "bankRef": "बँक संदर्भ / UTR क्रमांक",
       "bankRefPlaceholder": "बँक UTR किंवा व्यवहार संदर्भ क्रमांक प्रविष्ट करा...",
       "remarks": "अधिकारी शेरा",
