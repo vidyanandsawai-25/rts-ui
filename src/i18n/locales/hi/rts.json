@@ -1961,6 +1961,8 @@
       "clearanceDate": "समाशोधन / जमा दिनांक",
       "clearingBank": "जमा बैंक खाता",
       "selectBank": "बैंक चुनें",
+      "bankRef": "बैंक संदर्भ / यूटीआर क्रमांक",
+      "bankRefPlaceholder": "बैंक यूटीआर या संदर्भ क्रमांक दर्ज करें...",
       "remarks": "अधिकारी टिप्पणी",
       "remarksPlaceholder": "यहाँ टिप्पणी दर्ज करें...",
       "bounceReason": "चेक अनादर का कारण",

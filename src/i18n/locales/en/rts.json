@@ -1955,6 +1955,8 @@
       "clearanceDate": "Clearance / Deposit Date",
       "clearingBank": "Clearing Bank Account",
       "selectBank": "Select Bank",
+      "bankRef": "Bank Reference / UTR No.",
+      "bankRefPlaceholder": "Enter bank reference / UTR number...",
       "remarks": "Officer Remarks",
       "remarksPlaceholder": "Enter remarks...",
       "bounceReason": "Reason for Bounce / Rejection",

@@ -1350,11 +1350,11 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
 
             <div className="space-y-1">
               <Label className="text-xs font-semibold text-slate-700">
-                {t('paymentSettlement.fields.remarks')}
+                {t('paymentSettlement.fields.bankRef')}
               </Label>
               <input
                 type="text"
-                placeholder={t('paymentSettlement.fields.remarksPlaceholder')}
+                placeholder={t('paymentSettlement.fields.bankRefPlaceholder')}
                 value={bankRefNo}
                 onChange={(e) => setBankRefNo(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
