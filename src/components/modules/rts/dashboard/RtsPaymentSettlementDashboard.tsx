@@ -235,6 +235,46 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     loadData();
   }, [loadData]);
 
+  // Compute payment modes relevant to the active tab
+  const availablePaymentModes = useMemo(() => {
+    if (activeTab === 'PENDING_CLEARANCE') {
+      return [
+        { value: 'CHEQUE', label: t('paymentSettlement.filters.cheque') },
+        { value: 'DD', label: t('paymentSettlement.filters.dd') },
+      ];
+    }
+    if (activeTab === 'PENDING') {
+      return [
+        { value: 'ONLINE', label: t('paymentSettlement.filters.online') },
+      ];
+    }
+    if (activeTab === 'BOUNCED') {
+      return [
+        { value: 'CHEQUE', label: t('paymentSettlement.filters.cheque') },
+        { value: 'DD', label: t('paymentSettlement.filters.dd') },
+      ];
+    }
+    // For SUCCESS, CANCELLED, and ALL: allow all modes (Cash, Cheque, DD, Online)
+    return [
+      { value: 'CASH', label: t('paymentSettlement.filters.cash') },
+      { value: 'CHEQUE', label: t('paymentSettlement.filters.cheque') },
+      { value: 'DD', label: t('paymentSettlement.filters.dd') },
+      { value: 'ONLINE', label: t('paymentSettlement.filters.online') },
+    ];
+  }, [activeTab, t]);
+
+  const handleTabChange = useCallback((newTabId: string) => {
+    setActiveTab(newTabId);
+    setPageNumber(1);
+    setSelectedMode((prevMode) => {
+      if (prevMode === 'ALL') return prevMode;
+      if (newTabId === 'PENDING_CLEARANCE' && prevMode !== 'CHEQUE' && prevMode !== 'DD') return 'ALL';
+      if (newTabId === 'PENDING' && prevMode !== 'ONLINE') return 'ALL';
+      if (newTabId === 'BOUNCED' && prevMode !== 'CHEQUE' && prevMode !== 'DD') return 'ALL';
+      return prevMode;
+    });
+  }, []);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPageNumber(1);
@@ -692,9 +732,10 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
             <button
               type="button"
               onClick={() => {
-                setActiveTab(metric.tabId);
-                setSelectedMode(metric.mode);
-                setPageNumber(1);
+                handleTabChange(metric.tabId);
+                if (metric.mode !== 'ALL') {
+                  setSelectedMode(metric.mode);
+                }
               }}
               className="flex w-full items-center justify-between px-3.5 py-4 text-left"
             >
@@ -734,10 +775,7 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setPageNumber(1);
-              }}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${activeTab === tab.id
                   ? 'bg-[#173B73] text-white shadow-sm'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
@@ -791,10 +829,11 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
               className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 focus:border-[#173B73] focus:outline-none focus:ring-1 focus:ring-[#173B73]"
             >
               <option value="ALL">{t('paymentSettlement.filters.allModes')}</option>
-              <option value="CHEQUE">{t('paymentSettlement.filters.cheque')}</option>
-              <option value="DD">{t('paymentSettlement.filters.dd')}</option>
-              <option value="ONLINE">{t('paymentSettlement.filters.online')}</option>
-              <option value="CASH">{t('paymentSettlement.filters.cash')}</option>
+              {availablePaymentModes.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -916,9 +955,13 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
                 sortedItems.map((item, index) => {
                   const isSuccess = item.paymentStatus?.toUpperCase() === 'SUCCESS';
                   const isBounced = item.paymentStatus?.toUpperCase() === 'BOUNCED';
+                  const isCashMode =
+                    item.paymentMode?.toUpperCase() === 'CASH' ||
+                    item.paymentMode === 'रोख';
                   const isPendingClearance =
-                    item.paymentStatus?.toUpperCase() === 'PENDING_CLEARANCE' ||
-                    item.paymentStatus?.toUpperCase() === 'PENDING';
+                    !isCashMode &&
+                    (item.paymentStatus?.toUpperCase() === 'PENDING_CLEARANCE' ||
+                      item.paymentStatus?.toUpperCase() === 'PENDING');
                   const isCancelled = item.isReceiptCancelled;
 
                   return (
@@ -1442,6 +1485,18 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
               </div>
             </div>
           </div>
+
+          {(selectedItem?.paymentMode?.toUpperCase() === 'CASH' || selectedItem?.paymentMode === 'रोख') && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-amber-800">
+                <AlertOctagon className="h-4 w-4 shrink-0 text-amber-700" />
+                <span>रोख (Cash) पावती रद्द करण्याची सूचना</span>
+              </div>
+              <p className="text-[11px] text-amber-800 leading-relaxed">
+                सदर पावती रद्द केल्यास अर्ज पुन्हा <strong>&quot;Payment Pending&quot;</strong> स्थितीवर जाईल. नागरिकाकडून घेतलेली रोख रक्कम नियमानुसार परत केल्याची नोंद शेऱ्यामध्ये नमूद करावी.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-3">
             <div className="space-y-1">

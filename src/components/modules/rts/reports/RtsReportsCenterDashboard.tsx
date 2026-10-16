@@ -727,8 +727,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
         </div>
       </Card>
 
-      {/* 2. Report Domain Switcher (5 Major Report Categories - 100% localized) */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+      {/* 2. Report Domain Switcher (6 Major Report Categories - 100% localized) */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         {[
           {
             id: 'COLLECTIONS' as ReportDomain,
