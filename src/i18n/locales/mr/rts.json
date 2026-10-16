@@ -2007,7 +2007,9 @@
       "settlement": "बँक वटणावळ",
       "settlementSub": "बँक क्लिअरन्स व ऑडिट",
       "departmentSummary": "विभागनिहाय सारांश",
-      "departmentSummarySub": "विभाग व सेवा सारांश"
+      "departmentSummarySub": "विभाग व सेवा सारांश",
+      "appeals": "अपील नोंदवही व अहवाल",
+      "appealsSub": "१ ली व २ री अपीले, तक्रारीचा आधार व निकाल"
     },
     "kpi": {
       "totalRecords": "एकूण नोंदी",

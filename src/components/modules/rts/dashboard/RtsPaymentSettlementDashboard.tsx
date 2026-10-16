@@ -56,6 +56,10 @@ import type {
   ReceiptCancellationLog,
   PaymentReceiptResult,
 } from '@/lib/api/rts/rtspayment.service';
+import {
+  exportRtsPaymentSettlement,
+  type ReportExportFormat,
+} from '@/lib/utils/rts/report-engine/rtsDomainReports';
 
 interface RtsPaymentSettlementDashboardProps {
   locale: string;
@@ -165,6 +169,9 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [auditLogs, setAuditLogs] = useState<ReceiptCancellationLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+
+  // 7. Settlement Export State
+  const [isExporting, setIsExporting] = useState(false);
 
   // Bounce Reasons list
   const bounceReasonsList = useMemo(
@@ -508,6 +515,37 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     }
   };
 
+  // 7. Settlement Export Handler (Excel / CSV)
+  const handleExportSettlement = (format: ReportExportFormat) => {
+    if (items.length === 0) {
+      toast.warning(t('paymentSettlement.table.empty'));
+      return;
+    }
+    setIsExporting(true);
+    try {
+      exportRtsPaymentSettlement(sortedItems, {
+        format,
+        appliedFilters: {
+          Tab: activeTab,
+          'Payment Mode': selectedMode !== 'ALL' ? selectedMode : 'All Modes',
+          Bank: selectedBankName !== 'ALL' ? selectedBankName : 'All Banks',
+          'Date Range': fromDate ? `${fromDate} to ${toDate || 'Present'}` : 'All Dates',
+          Search: searchText || undefined,
+        },
+      });
+      toast.success(
+        isMr
+          ? `${sortedItems.length} नोंदी यशस्वीरीत्या एक्सपोर्ट केल्या!`
+          : `Exported ${sortedItems.length} records successfully!`
+      );
+    } catch (err) {
+      console.error('Settlement export failed:', err);
+      toast.error(isMr ? 'एक्सपोर्ट करताना त्रुटी आली.' : 'Failed to export settlement list.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // KPI Metrics list matching RTS Dashboard format
   const kpiCards = useMemo(
     () => [
@@ -708,6 +746,28 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
           >
             <Upload className="h-4 w-4" />
             {t('paymentSettlement.buttons.bulkUpload')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleExportSettlement('excel')}
+            disabled={isExporting || items.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-50"
+            title="Export filtered records to Excel"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-emerald-700" />
+            <span>Excel</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleExportSettlement('csv')}
+            disabled={isExporting || items.length === 0}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+            title="Export filtered records to CSV"
+          >
+            <Download className="h-4 w-4 text-slate-500" />
+            <span>CSV</span>
           </button>
 
           <button

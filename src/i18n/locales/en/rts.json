@@ -1998,7 +1998,9 @@
       "settlement": "Payment Settlement",
       "settlementSub": "Bank Clearance & Audit",
       "departmentSummary": "Department MIS Summary",
-      "departmentSummarySub": "Department & Service Analytics"
+      "departmentSummarySub": "Department & Service Analytics",
+      "appeals": "Appeals Register",
+      "appealsSub": "1st & 2nd Appeals, Grounds & Disposal Orders"
     },
     "kpi": {
       "totalRecords": "Total Entries",

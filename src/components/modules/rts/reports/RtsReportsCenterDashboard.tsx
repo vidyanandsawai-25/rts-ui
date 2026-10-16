@@ -70,7 +70,6 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
   const [, startTransition] = useTransition();
   const t = useTranslations('rts.reportsCenter');
   const isMr = locale === 'mr';
-  const isHi = locale === 'hi';
   const numLocale = isMr ? 'mr-IN' : 'en-IN';
 
   // 1. Report Domain Selection
@@ -777,8 +776,8 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
           },
           {
             id: 'APPEALS' as ReportDomain,
-            label: isMr ? 'अपील नोंदवही व अहवाल' : isHi ? 'अपील पंजी व रिपोर्ट' : 'Appeals Register',
-            sub: isMr ? '१ ली व २ री अपीले, तक्रारीचा आधार व निकाल' : isHi ? 'प्रथम व द्वितीय अपील, शिकायत व निर्णय' : '1st & 2nd Appeals, Grounds & Orders',
+            label: t('tabs.appeals'),
+            sub: t('tabs.appealsSub'),
             icon: Scale,
             badge: activeDomain === 'APPEALS' ? totalCount : null,
             color: 'text-amber-800 bg-amber-50 border-amber-300',
@@ -1200,7 +1199,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-extrabold text-slate-800">
-              {t('table.livePreview')} {domainColumnsMap[activeDomain] ? t(`tabs.${activeDomain === 'COLLECTIONS' ? 'collections' : activeDomain === 'APPLICATIONS' ? 'applications' : activeDomain === 'SLA_COMPLIANCE' ? 'sla' : activeDomain === 'SETTLEMENT' ? 'settlement' : 'departmentSummary'}`) : ''}
+              {t('table.livePreview')} {domainColumnsMap[activeDomain] ? t(`tabs.${activeDomain === 'COLLECTIONS' ? 'collections' : activeDomain === 'APPLICATIONS' ? 'applications' : activeDomain === 'SLA_COMPLIANCE' ? 'sla' : activeDomain === 'SETTLEMENT' ? 'settlement' : activeDomain === 'APPEALS' ? 'appeals' : 'departmentSummary'}`) : ''}
             </span>
             <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-mono font-bold text-slate-700">
               {t('table.recordsCount', { count: (totalCount ?? 0).toLocaleString(numLocale) })}

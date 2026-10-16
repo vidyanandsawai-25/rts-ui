@@ -2004,7 +2004,9 @@
       "settlement": "बैंक सेटलमेंट",
       "settlementSub": "बैंक क्लीयरेंस व ऑडिट",
       "departmentSummary": "विभागवार सारांश",
-      "departmentSummarySub": "विभाग एवं सेवा सारांश"
+      "departmentSummarySub": "विभाग एवं सेवा सारांश",
+      "appeals": "अपील पंजी व रिपोर्ट",
+      "appealsSub": "प्रथम व द्वितीय अपील, शिकायत व निर्णय"
     },
     "kpi": {
       "totalRecords": "कुल रिकॉर्ड्स",
