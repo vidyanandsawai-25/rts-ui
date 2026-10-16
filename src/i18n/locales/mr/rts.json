@@ -116,7 +116,11 @@
         "baseFee": "मूळ शुल्क",
         "serviceDefaultFee": "सेवेचे डीफॉल्ट शुल्क",
         "addonFee": "अतिरिक्त शुल्क",
-        "totalFee": "देय एकूण शुल्क"
+        "totalFee": "देय एकूण शुल्क",
+        "feeDetails": "शुल्क तपशील",
+        "appliedRules": "तुमच्या तपशीलांवर आधारित शुल्क",
+        "basedOn": "आधार",
+        "standardServiceCharge": "मानक सेवा शुल्क"
       },
       "confirm": "होय, सादर करा",
       "cancel": "रद्द करा"

@@ -451,7 +451,6 @@ export default function DepartmentCarsoulClient({
                     const hasExternalServiceUrl = !!(matchedService as any)?.serviceUrl;
                     const isExternalPortalApp = hasExternalServiceUrl || !matchedService;
                     const paymentDataUnavailable = app.paymentStatus === undefined;
-                    const hasPaymentTransaction = app.hasPaymentTransaction === true;
                     const payableFee = Number(app.payableFee ?? 0);
                     const paymentStatus = app.paymentStatus?.trim().toUpperCase();
                     const isPaidExplicitly =
@@ -528,7 +527,7 @@ export default function DepartmentCarsoulClient({
                             <span className="text-slate-400 font-bold text-sm tracking-widest pl-2">—</span>
                           ) : paymentDataUnavailable ? (
                             <span className="text-slate-400 font-bold text-sm tracking-widest pl-2">—</span>
-                          ) : !hasPaymentTransaction || payableFee <= 0 ? (
+                          ) : payableFee <= 0 ? (
                             <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
                               {lang === "mr" ? "विनामूल्य" : lang === "hi" ? "निःशुल्क" : "Free"}
                             </span>

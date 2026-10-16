@@ -116,7 +116,11 @@
         "baseFee": "Base fee",
         "serviceDefaultFee": "Service default fee",
         "addonFee": "Add-on fee",
-        "totalFee": "Total fee to pay"
+        "totalFee": "Total fee to pay",
+        "feeDetails": "Fee details",
+        "appliedRules": "Charges based on your details",
+        "basedOn": "Based on",
+        "standardServiceCharge": "Standard service charge"
       },
       "confirm": "Yes, Submit",
       "cancel": "Cancel"

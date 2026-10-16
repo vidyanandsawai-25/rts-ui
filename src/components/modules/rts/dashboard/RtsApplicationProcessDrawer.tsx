@@ -69,6 +69,7 @@ import {
 } from '@/lib/utils/rts/approval-officer-access';
 import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import { getApplicationFieldDisplayLabel } from '@/lib/utils/rts/application-field-label';
+import { getPaymentDemandStatus } from '@/lib/utils/rts/payment-demand-status';
 import {
   parseFileLatLogCaptureMetadata,
   type FileLatLogCaptureMetadata,
@@ -330,17 +331,19 @@ export default function RtsApplicationProcessDrawer({
     }
   }, [verification]);
 
-  const effectiveIsPaid = isPaidLocal ?? verification?.isPaid ?? false;
   const effectiveReceiptNo = receiptNoLocal ?? verification?.receiptNo ?? null;
-  const payableFee = Number(verification?.payableFee ?? 0);
-  const hasOutstandingPayment = Boolean(
-    verification?.hasPaymentTransaction && payableFee > 0 && !effectiveIsPaid
-  );
+  const { payableFee, isFreeService, isPaymentSuccessful, hasOutstandingPayment } = getPaymentDemandStatus({
+    payableFee: verification?.payableFee,
+    localIsPaid: isPaidLocal,
+    apiIsPaid: verification?.isPaid,
+    paymentStatus: verification?.paymentStatus,
+  });
   const isPaymentAfterApproval = Boolean(verification?.isPaymentAfterApproval);
-  const isFreeService = Boolean(
-    verification &&
-    (!verification.hasPaymentTransaction || payableFee <= 0)
-  );
+  // Standard services must be paid before an officer can advance the workflow.
+  // Services explicitly configured for payment after approval remain unblocked
+  // until they reach their approved-payment step.
+  const isPreApprovalPaymentBlocked =
+    hasOutstandingPayment && !isPaymentAfterApproval;
 
   const isApproved = Boolean(
     verification?.applicationStatus?.toLowerCase() === 'approved' ||
@@ -355,14 +358,14 @@ export default function RtsApplicationProcessDrawer({
     certType !== 0;
 
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
-  // Once workflow approval is complete, counter payment and certificate issue
-  // are controlled by their stage capabilities, not by the completed stage's
-  // assigned officer. A signed-in dashboard officer is still required.
+  // Once workflow approval is complete for a payment-after-approval service,
+  // any signed-in dashboard officer may record the outstanding payment. This
+  // deliberately does not depend on the completed stage's CanPay permission.
   const hasPostApprovalOfficerAccess = isPositiveApprovalOfficerId(data?.currentUserId);
   const canRecordPaymentFromStatusCard = Boolean(
     hasOutstandingPayment &&
       (isPaymentAfterApproval
-        ? isApproved && verification?.canPay && hasPostApprovalOfficerAccess
+        ? isApproved && hasPostApprovalOfficerAccess
         : verification?.canPay && hasOfficerAccess)
   );
   const isCertificateBlockedByPayment = isPaymentAfterApproval && hasOutstandingPayment;
@@ -572,6 +575,14 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
+    if (
+      isPreApprovalPaymentBlocked &&
+      (actionKey === 'canVerifyDocument' || actionKey === 'canApprove')
+    ) {
+      toast.error(t('paymentRequiredBeforeApproval'));
+      return;
+    }
+
     if (!officerRemark.trim()) {
       toast.error(t('remarkRequired'));
       return;
@@ -696,6 +707,9 @@ export default function RtsApplicationProcessDrawer({
                   const isEditLockedWorkflowAction = isEditing;
                   const isVerificationBlockedByCitizenResubmission =
                     action.key === 'canVerifyDocument' && isRevertedToCitizen;
+                  const isBlockedByPreApprovalPayment =
+                    isPreApprovalPaymentBlocked &&
+                    (action.key === 'canVerifyDocument' || action.key === 'canApprove');
 
                   const actionLabel =
                     action.key === 'canApprove'
@@ -715,7 +729,8 @@ export default function RtsApplicationProcessDrawer({
                         isSubmittingDecision ||
                         !hasOfficerAccess ||
                         isEditLockedWorkflowAction ||
-                        isVerificationBlockedByCitizenResubmission
+                        isVerificationBlockedByCitizenResubmission ||
+                        isBlockedByPreApprovalPayment
                       }
                       title={
                         !hasOfficerAccess
@@ -724,6 +739,8 @@ export default function RtsApplicationProcessDrawer({
                             ? t('finishEditBeforeWorkflowAction')
                             : isVerificationBlockedByCitizenResubmission
                               ? t('verificationUnavailableWhileReverted')
+                              : isBlockedByPreApprovalPayment
+                                ? t('paymentRequiredBeforeApproval')
                               : undefined
                       }
                       onClick={() => {
@@ -855,7 +872,7 @@ export default function RtsApplicationProcessDrawer({
                 )}
 
                 {/* Payment Receipt: Visible to ALL officers once payment is recorded */}
-                {Boolean(effectiveIsPaid || verification?.receiptNo) && (
+                {Boolean(isPaymentSuccessful || verification?.receiptNo) && (
                   <Button
                     type="button"
                     size="xs"
@@ -1195,7 +1212,7 @@ export default function RtsApplicationProcessDrawer({
                             </div>
                           </div>
                         </section>
-                      ) : effectiveIsPaid ? (
+                      ) : isPaymentSuccessful ? (
                         <section className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 p-3.5 shadow-sm">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
