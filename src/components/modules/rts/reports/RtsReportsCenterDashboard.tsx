@@ -110,6 +110,7 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
     departments: [],
     services: [],
     banks: [],
+    paymentModes: [],
   });
 
   // Load Filter Lookups on Mount
@@ -1089,10 +1090,11 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                   className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="ALL">{t('filters.allModes')}</option>
-                  <option value="CASH">{t('paymentModes.cash')}</option>
-                  <option value="CHEQUE">{t('paymentModes.cheque')}</option>
-                  <option value="DD">{t('paymentModes.dd')}</option>
-                  <option value="ONLINE">{t('paymentModes.online')}</option>
+                  {(lookups.paymentModes || []).map((pm) => (
+                    <option key={pm.id} value={pm.modeCode}>
+                      {isMr ? (pm.modeNameMr || pm.modeNameEn) : pm.modeNameEn}
+                    </option>
+                  ))}
                 </select>
               </div>
             ) : (
@@ -1321,7 +1323,12 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         )}
                         {visibleColumns[activeDomain].includes('applicationNo') && (
                           <td className="px-3 py-2.5 font-mono font-bold text-slate-800">
-                            {item.applicationNo || '—'}
+                            <div>{item.applicationNo || '—'}</div>
+                            {item.demandNo && (
+                              <div className="text-[10px] text-teal-700 font-medium">
+                                {item.demandNo}
+                              </div>
+                            )}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('citizenName') && (

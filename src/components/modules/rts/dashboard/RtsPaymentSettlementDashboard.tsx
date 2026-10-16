@@ -46,13 +46,16 @@ import {
   getCancellationLogsAction,
   getPaymentReceiptAction,
   getPaymentReceiptByNoAction,
+  getPaymentModesAction,
 } from '@/app/[locale]/service/payment/actions';
+import { getUlbDataFromCookies } from '@/lib/utils/cookie';
 import type {
   PendingClearanceItem,
   PendingClearanceStats,
   PendingClearanceQuery,
   BulkClearanceResponse,
   RTSBankLookup,
+  RTSPaymentModeLookup,
   ReceiptCancellationLog,
   PaymentReceiptResult,
 } from '@/lib/api/rts/rtspayment.service';
@@ -132,6 +135,7 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
 
   // Lookup data
   const [banks, setBanks] = useState<RTSBankLookup[]>([]);
+  const [paymentModes, setPaymentModes] = useState<RTSPaymentModeLookup[]>([]);
 
   // Modals States
   const [selectedItem, setSelectedItem] = useState<PendingClearanceItem | null>(null);
@@ -143,17 +147,19 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
   );
   const [bankRefNo, setBankRefNo] = useState<string>('');
   const [actionRemarks, setActionRemarks] = useState<string>('');
+  const [approvePaymentModeId, setApprovePaymentModeId] = useState<number | undefined>(undefined);
+  const [approveBankId, setApproveBankId] = useState<number | undefined>(undefined);
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
 
   // 2. Disapprove / Bounce Modal
   const [isDisapproveOpen, setIsDisapproveOpen] = useState(false);
   const [selectedBounceReason, setSelectedBounceReason] = useState<string>('');
-  const [bouncePenalty, setBouncePenalty] = useState<number>(500);
+  const [bouncePenalty, setBouncePenalty] = useState<number>(0);
 
   // 3. Cancel Receipt Modal
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>('');
-  const [cancelledByOfficer, setCancelledByOfficer] = useState<string>('Account Officer');
+  const [cancelledByOfficer, setCancelledByOfficer] = useState<string>('');
 
   // 4. Bulk Excel Modal
   const [isBulkOpen, setIsBulkOpen] = useState(false);
@@ -187,19 +193,25 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     [t]
   );
 
-  // Load Banks Lookup on Mount
+  // Load Dynamic Lookups (Banks and Payment Modes) on Mount
   useEffect(() => {
-    async function fetchBanks() {
+    async function fetchLookups() {
       try {
-        const res = await getBanksAction();
-        if (res.success && res.data) {
-          setBanks(res.data);
+        const [banksRes, modesRes] = await Promise.all([
+          getBanksAction(),
+          getPaymentModesAction(),
+        ]);
+        if (banksRes.success && banksRes.data) {
+          setBanks(banksRes.data);
+        }
+        if (modesRes.success && modesRes.data) {
+          setPaymentModes(modesRes.data);
         }
       } catch (err) {
-        console.error('Failed to load banks lookup:', err);
+        console.error('Failed to load settlement lookups:', err);
       }
     }
-    fetchBanks();
+    fetchLookups();
   }, []);
 
   // Fetch Stats & Grid Data
@@ -242,44 +254,33 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     loadData();
   }, [loadData]);
 
-  // Compute payment modes relevant to the active tab
+  // Dynamic payment modes derived from database lookup
   const availablePaymentModes = useMemo(() => {
-    if (activeTab === 'PENDING_CLEARANCE') {
-      return [
-        { value: 'CHEQUE', label: t('paymentSettlement.filters.cheque') },
-        { value: 'DD', label: t('paymentSettlement.filters.dd') },
-      ];
+    if (!paymentModes || paymentModes.length === 0) return [];
+    const isMr = locale === 'mr';
+    const mapped = paymentModes.map((m) => ({
+      value: m.modeCode,
+      label: isMr ? (m.modeNameMr || m.modeNameEn) : m.modeNameEn,
+      code: m.modeCode.toUpperCase(),
+    }));
+
+    if (activeTab === 'PENDING_CLEARANCE' || activeTab === 'BOUNCED') {
+      return mapped.filter((m) =>
+        !['CASH', 'UPI', 'NETBANKING', 'CREDIT_CARD', 'DEBIT_CARD', 'WALLET'].includes(m.code)
+      );
     }
     if (activeTab === 'PENDING') {
-      return [
-        { value: 'ONLINE', label: t('paymentSettlement.filters.online') },
-      ];
+      return mapped.filter((m) =>
+        ['ONLINE', 'UPI', 'NETBANKING', 'CREDIT_CARD', 'DEBIT_CARD', 'WALLET'].includes(m.code)
+      );
     }
-    if (activeTab === 'BOUNCED') {
-      return [
-        { value: 'CHEQUE', label: t('paymentSettlement.filters.cheque') },
-        { value: 'DD', label: t('paymentSettlement.filters.dd') },
-      ];
-    }
-    // For SUCCESS, CANCELLED, and ALL: allow all modes (Cash, Cheque, DD, Online)
-    return [
-      { value: 'CASH', label: t('paymentSettlement.filters.cash') },
-      { value: 'CHEQUE', label: t('paymentSettlement.filters.cheque') },
-      { value: 'DD', label: t('paymentSettlement.filters.dd') },
-      { value: 'ONLINE', label: t('paymentSettlement.filters.online') },
-    ];
-  }, [activeTab, t]);
+    return mapped;
+  }, [paymentModes, activeTab, locale]);
 
   const handleTabChange = useCallback((newTabId: string) => {
     setActiveTab(newTabId);
     setPageNumber(1);
-    setSelectedMode((prevMode) => {
-      if (prevMode === 'ALL') return prevMode;
-      if (newTabId === 'PENDING_CLEARANCE' && prevMode !== 'CHEQUE' && prevMode !== 'DD') return 'ALL';
-      if (newTabId === 'PENDING' && prevMode !== 'ONLINE') return 'ALL';
-      if (newTabId === 'BOUNCED' && prevMode !== 'CHEQUE' && prevMode !== 'DD') return 'ALL';
-      return prevMode;
-    });
+    setSelectedMode('ALL');
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -303,6 +304,11 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
     setClearanceDate(new Date().toISOString().split('T')[0]);
     setBankRefNo(item.bankRefNo || '');
     setActionRemarks('');
+    const matchedMode = paymentModes.find(
+      (m) => m.modeCode.toUpperCase() === (item.paymentMode || '').toUpperCase()
+    );
+    setApprovePaymentModeId(matchedMode?.id);
+    setApproveBankId(item.bankId);
     setIsApproveOpen(true);
   };
 
@@ -315,6 +321,8 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
         clearanceDate: clearanceDate,
         bankRefNo: bankRefNo || undefined,
         remarks: actionRemarks || undefined,
+        paymentModeId: approvePaymentModeId,
+        bankId: approveBankId,
       });
 
       if (res.success) {
@@ -335,7 +343,7 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
   const handleOpenDisapprove = (item: PendingClearanceItem) => {
     setSelectedItem(item);
     setSelectedBounceReason(bounceReasonsList[0] || '');
-    setBouncePenalty(500);
+    setBouncePenalty(0);
     setActionRemarks('');
     setIsDisapproveOpen(true);
   };
@@ -377,7 +385,7 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
   const handleOpenCancel = (item: PendingClearanceItem) => {
     setSelectedItem(item);
     setCancelReason('');
-    setCancelledByOfficer('Account Officer');
+    setCancelledByOfficer('');
     setIsCancelOpen(true);
   };
 
@@ -457,9 +465,9 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
           channel: 'CFC Municipal Counter (नागरी सुविधा केंद्र काऊंटर)',
           customerName: item.citizenName || 'Applicant',
           customerMobile: item.citizenMobile,
-          ulbName: 'AKOLA MUNICIPAL CORPORATION',
-          ulbNameLocal: 'अकोला महानगरपालिका, अकोला',
-          ulbLogo: '/images/org_logo.png',
+          ulbName: getUlbDataFromCookies().ulbName || '',
+          ulbNameLocal: getUlbDataFromCookies().ulbNameLocal || '',
+          ulbLogo: getUlbDataFromCookies().ulbLogo || '/images/org_logo.png',
         };
         setReceiptModalData(fallbackReceipt);
       }
@@ -1035,10 +1043,22 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
                         {numberFormatter.format((pageNumber - 1) * pageSize + index + 1)}
                       </td>
 
-                      {/* App No */}
+                      {/* App No & Lineage */}
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-[#173B73] font-mono text-[13px]">
                           {item.applicationNo}
+                        </div>
+                        <div className="flex flex-col gap-0.5 mt-0.5">
+                          {item.demandNo && (
+                            <span className="text-[10px] text-teal-700 font-mono font-medium" title={isMr ? "फी मागणी क्र." : "Fee Demand No."}>
+                              {item.demandNo}
+                            </span>
+                          )}
+                          {item.transactionNo && (
+                            <span className="text-[10px] text-slate-500 font-mono" title={isMr ? "व्यवहार क्र." : "Transaction No."}>
+                              {item.transactionNo}
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -1336,6 +1356,44 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
 
           {/* Form Fields */}
           <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-slate-700">
+                  {t('paymentSettlement.fields.paymentMode')}
+                </Label>
+                <select
+                  value={approvePaymentModeId ?? ''}
+                  onChange={(e) => setApprovePaymentModeId(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                >
+                  <option value="">{t('paymentSettlement.fields.selectMode')}</option>
+                  {paymentModes.map((pm) => (
+                    <option key={pm.id} value={pm.id}>
+                      {locale === 'mr' ? (pm.modeNameMr || pm.modeNameEn) : pm.modeNameEn}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-slate-700">
+                  {t('paymentSettlement.fields.bank')}
+                </Label>
+                <select
+                  value={approveBankId ?? ''}
+                  onChange={(e) => setApproveBankId(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                >
+                  <option value="">{t('paymentSettlement.fields.selectBank')}</option>
+                  {banks.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.bankName} {b.branchName ? `(${b.branchName})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div className="space-y-1">
               <Label className="text-xs font-semibold text-slate-700">
                 {t('paymentSettlement.fields.clearanceDate')} *
