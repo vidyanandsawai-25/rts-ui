@@ -8,6 +8,7 @@ import {
 import type { AdminApplicationGridRow } from '@/app/[locale]/rts/dashboard/rts-applications/actions';
 import type { PendingClearanceItem as PendingClearanceItemDto } from '@/lib/api/rts/rtspayment.service';
 import type { RTSAppealDashboardDetailsDto } from '@/types/rts/appeal.types';
+import { getUlbDataFromCookies } from '@/lib/utils/cookie';
 
 export type ReportExportFormat = 'excel' | 'csv' | 'pdf';
 
@@ -450,7 +451,7 @@ export function exportRtsCollections(
     fileName: options.fileName || `RTS_Collection_Report_${new Date().toISOString().slice(0, 10)}`,
     metadata: {
       title: 'RTS Municipal Revenue & Fee Collection Register (महसूल संकलन अहवाल)',
-      subtitle: 'Akola Municipal Corporation - Revenue Settlement & Counter Cash/Online Receipts',
+      subtitle: `${getUlbDataFromCookies().ulbName || 'Municipal Corporation'} - Revenue Settlement & Counter Cash/Online Receipts`,
       department: options.departmentName,
       generatedBy: options.officerName || 'Chief Accounts Officer',
       appliedFilters: options.appliedFilters,
