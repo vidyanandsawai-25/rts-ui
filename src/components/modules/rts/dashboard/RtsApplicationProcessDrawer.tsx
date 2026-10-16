@@ -330,12 +330,19 @@ export default function RtsApplicationProcessDrawer({
   const effectiveIsPaid = isPaidLocal ?? verification?.isPaid ?? false;
   const effectiveReceiptNo = receiptNoLocal ?? verification?.receiptNo ?? null;
   const payableFee = Number(verification?.payableFee ?? 0);
+  const hasFeeRequirement = Boolean(
+    verification?.hasPaymentTransaction ||
+    verification?.feesRequired ||
+    payableFee > 0
+  );
   const hasOutstandingPayment = Boolean(
-    verification?.hasPaymentTransaction && payableFee > 0 && !effectiveIsPaid
+    hasFeeRequirement && payableFee > 0 && !effectiveIsPaid
   );
   const isFreeService = Boolean(
     verification &&
-    (!verification.hasPaymentTransaction || payableFee <= 0)
+    !hasOutstandingPayment &&
+    !effectiveIsPaid &&
+    payableFee <= 0
   );
 
   const isApproved = Boolean(

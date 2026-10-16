@@ -140,7 +140,11 @@ export default function RtsApplicationNoteSheetModal({
       ? extractedFeeFromHistory
       : (record as any)?.amountPaid ?? (record as any)?.fees ?? null;
 
-  const feesRequired = data?.verification?.hasPaymentTransaction === true && (payableFee ?? 0) > 0;
+  const feesRequired =
+    (data?.verification?.feesRequired === true ||
+      data?.verification?.hasPaymentTransaction === true ||
+      (payableFee ?? 0) > 0) &&
+    (payableFee ?? 0) > 0;
 
   // Extract applicant name from dynamic fields if not in record
   const applicantField = data?.details?.applicationDetails?.find((f) => {

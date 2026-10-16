@@ -451,8 +451,8 @@ export default function DepartmentCarsoulClient({
                     const hasExternalServiceUrl = !!(matchedService as any)?.serviceUrl;
                     const isExternalPortalApp = hasExternalServiceUrl || !matchedService;
                     const paymentDataUnavailable = app.paymentStatus === undefined;
-                    const hasPaymentTransaction = app.hasPaymentTransaction === true;
                     const payableFee = Number(app.payableFee ?? 0);
+                    const hasPaymentTransaction = app.hasPaymentTransaction === true || payableFee > 0;
                     const paymentStatus = app.paymentStatus?.trim().toUpperCase();
                     const isPaidExplicitly =
                       paidAppMap[app.applicationNo] === true ||
