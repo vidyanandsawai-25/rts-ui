@@ -209,10 +209,13 @@ export interface RtsApplicationVerificationItem {
   isManualCertificate: boolean;
   canViewCertificate: boolean;
   canUploadDocument?: boolean;
+  isPaymentAfterApproval?: boolean;
   certificateType?: number;
   isCertificateRequired?: boolean;
   serviceId?: number | null;
   serviceName?: string | null;
+  serviceFees?: number | null;
+  feesRequired?: boolean;
   paymentTransactionId?: number | null;
   payableFee?: number | null;
   hasPaymentTransaction?: boolean;

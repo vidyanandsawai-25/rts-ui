@@ -102,6 +102,30 @@ export interface PaymentStatusResult {
   gatewayPaymentId?: string | null;
 }
 
+export interface CreatePaymentDemandPayload {
+  applicationId: number;
+  amountOverride?: number;
+  remarks?: string;
+}
+
+export interface PaymentDemandResult {
+  id: number;
+  demandNo: string;
+  applicationId: number;
+  applicationNo: string;
+  serviceId: number;
+  departmentId: number;
+  baseAmount: number;
+  lateFeeAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  currency: string;
+  demandStatus: string;
+  ruleDetailsJson?: string | null;
+  remarks?: string | null;
+  createdDate: string;
+}
+
 export interface ApiResponseWrapper<T> {
   success: boolean;
   message: string;
@@ -187,6 +211,19 @@ export async function getPaymentStatuses(applicationNos: string[]): Promise<Paym
   );
   if (!res.data?.success || !Array.isArray(res.data.items)) {
     throw new Error(res.data?.message || res.error || 'Failed to load payment statuses');
+  }
+  return res.data.items;
+}
+
+export async function createPaymentDemand(
+  payload: CreatePaymentDemandPayload
+): Promise<PaymentDemandResult> {
+  const res = await apiClient.post<ApiResponseWrapper<PaymentDemandResult>>(
+    '/RTSPayment/demand',
+    payload
+  );
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || 'Failed to create payment demand');
   }
   return res.data.items;
 }

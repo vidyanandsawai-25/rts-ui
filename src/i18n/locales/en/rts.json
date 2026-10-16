@@ -831,6 +831,8 @@
       "noGovernmentFeeRequired": "No government fee is required for this service.",
       "governmentFeePending": "Government Fee Pending: ₹{amount}",
       "paymentRequiredToProceed": "Payment is required for application processing to proceed.",
+      "paymentRequiredBeforeApproval": "The citizen can pay online or at the CFC counter. Final approval is unavailable until the fee is paid.",
+      "paymentRequiredAfterApproval": "The citizen can pay online or at the CFC counter after the application is approved.",
       "governmentFeePaid": "Government Fee Paid: ₹{amount}",
       "receiptNumber": "Receipt No.: {receiptNo}",
       "officialReceiptAvailable": "Official municipal e-receipt is available.",

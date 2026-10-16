@@ -63,7 +63,10 @@ import {
   getAdminRtsDocumentDownloadUrl,
   getAdminRtsDocumentViewUrl,
 } from '@/lib/api/rts/rtsdocument.client';
-import { hasApprovalOfficerAccess } from '@/lib/utils/rts/approval-officer-access';
+import {
+  hasApprovalOfficerAccess,
+  isPositiveApprovalOfficerId,
+} from '@/lib/utils/rts/approval-officer-access';
 import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import { getApplicationFieldDisplayLabel } from '@/lib/utils/rts/application-field-label';
 import {
@@ -333,6 +336,7 @@ export default function RtsApplicationProcessDrawer({
   const hasOutstandingPayment = Boolean(
     verification?.hasPaymentTransaction && payableFee > 0 && !effectiveIsPaid
   );
+  const isPaymentAfterApproval = Boolean(verification?.isPaymentAfterApproval);
   const isFreeService = Boolean(
     verification &&
     (!verification.hasPaymentTransaction || payableFee <= 0)
@@ -351,6 +355,17 @@ export default function RtsApplicationProcessDrawer({
     certType !== 0;
 
   const hasOfficerAccess = hasApprovalOfficerAccess(data?.currentUserId, verification?.officerId);
+  // Once workflow approval is complete, counter payment and certificate issue
+  // are controlled by their stage capabilities, not by the completed stage's
+  // assigned officer. A signed-in dashboard officer is still required.
+  const hasPostApprovalOfficerAccess = isPositiveApprovalOfficerId(data?.currentUserId);
+  const canRecordPaymentFromStatusCard = Boolean(
+    hasOutstandingPayment &&
+      (isPaymentAfterApproval
+        ? isApproved && verification?.canPay && hasPostApprovalOfficerAccess
+        : verification?.canPay && hasOfficerAccess)
+  );
+  const isCertificateBlockedByPayment = isPaymentAfterApproval && hasOutstandingPayment;
 
   const openCertificateIssueModal = () => {
     const isManual = certType === 2 || Boolean(verification?.isManualCertificate);
@@ -366,9 +381,9 @@ export default function RtsApplicationProcessDrawer({
     verification && hasOfficerAccess && !isApproved
       ? ACTIONS.filter((action) => {
           if (action.key === 'canPay') {
-            // If already paid, DO NOT show "Record Payment" button!
-            if (effectiveIsPaid) return false;
-            return Boolean(verification.canPay || hasOutstandingPayment);
+            // Payment is rendered from the payment status card so it always
+            // reflects the outstanding amount and the CanPay permission.
+            return false;
           }
           return Boolean(verification[action.key]);
         })
@@ -557,13 +572,6 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
-    if (actionKey === 'canApprove' && hasOutstandingPayment) {
-      toast.warning(
-        `नागरिकाचे शासकीय शुल्क (₹${payableFee}) प्रलंबित असल्याने अर्ज मंजूर करता येणार नाही. प्रथम शुल्क जमा करणे आवश्यक आहे.`
-      );
-      return;
-    }
-
     if (!officerRemark.trim()) {
       toast.error(t('remarkRequired'));
       return;
@@ -686,17 +694,11 @@ export default function RtsApplicationProcessDrawer({
               <div className="flex flex-wrap items-center justify-start gap-2">
                 {availableActions.map((action) => {
                   const isEditLockedWorkflowAction = isEditing;
-                  const isApproveBlockedByFee =
-                    (action.key === 'canApprove' || action.key === 'canVerifyDocument') &&
-                    hasOutstandingPayment;
-                  const isRecordPaymentDisabled = action.key === 'canPay' && isFreeService;
                   const isVerificationBlockedByCitizenResubmission =
                     action.key === 'canVerifyDocument' && isRevertedToCitizen;
 
                   const actionLabel =
-                    action.key === 'canPay'
-                      ? 'शुल्क स्वीकारा (Record Payment)'
-                      : action.key === 'canApprove'
+                    action.key === 'canApprove'
                         ? verification?.isFinalStage
                           ? 'अंतिम मंजूर करा (Approve)'
                           : 'पुढील टप्प्यावर पाठवा (Forward)'
@@ -713,8 +715,6 @@ export default function RtsApplicationProcessDrawer({
                         isSubmittingDecision ||
                         !hasOfficerAccess ||
                         isEditLockedWorkflowAction ||
-                        isApproveBlockedByFee ||
-                        isRecordPaymentDisabled ||
                         isVerificationBlockedByCitizenResubmission
                       }
                       title={
@@ -724,11 +724,7 @@ export default function RtsApplicationProcessDrawer({
                             ? t('finishEditBeforeWorkflowAction')
                             : isVerificationBlockedByCitizenResubmission
                               ? t('verificationUnavailableWhileReverted')
-                              : isApproveBlockedByFee
-                                ? 'शासकीय शुल्क प्रलंबित असल्याने कार्यवाही / मंजुरी करता येत नाही. प्रथम शुल्क स्वीकारा.'
-                                : isRecordPaymentDisabled
-                                  ? t('recordPaymentNotRequired')
-                                  : undefined
+                              : undefined
                       }
                       onClick={() => {
                         if (action.key === 'canPay') {
@@ -763,8 +759,7 @@ export default function RtsApplicationProcessDrawer({
                     const hasCertificate = Boolean(data?.details?.issuedCertificateGuid);
                     const isManual = certType === 2 || Boolean(verification?.isManualCertificate);
                     const canManageCertificate =
-                      Boolean(verification?.canApprove) &&
-                      Boolean(verification?.canIssueCertificate);
+                      hasPostApprovalOfficerAccess && Boolean(verification?.canIssueCertificate);
 
                     // 1. Certificate already exists -> View Certificate
                     if (hasCertificate) {
@@ -782,8 +777,14 @@ export default function RtsApplicationProcessDrawer({
                       );
                     }
 
+                    // Payment-after-approval services issue the certificate only once
+                    // their payable transaction is successful. Zero-fee services are
+                    // never blocked because hasOutstandingPayment is false.
+                    if (isCertificateBlockedByPayment) {
+                      return null;
+                    }
+
                     // 2. Manual Certificate (Type 2) -> Upload Certificate.
-                    // Certificate actions require both approval and certificate permissions.
                     if (isManual && canManageCertificate) {
                       return (
                         <Button
@@ -791,9 +792,9 @@ export default function RtsApplicationProcessDrawer({
                           size="xs"
                           variant="primary"
                           icon={Upload}
-                          disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                          disabled={isSubmittingDecision || !hasPostApprovalOfficerAccess || isEditing}
                           title={
-                            !hasOfficerAccess
+                            !hasPostApprovalOfficerAccess
                               ? t('officerAccessDenied')
                               : isEditing
                                 ? t('finishEditBeforeWorkflowAction')
@@ -815,9 +816,9 @@ export default function RtsApplicationProcessDrawer({
                           size="xs"
                           variant="success"
                           icon={Sparkles}
-                          disabled={isSubmittingDecision || !hasOfficerAccess || isEditing}
+                          disabled={isSubmittingDecision || !hasPostApprovalOfficerAccess || isEditing}
                           title={
-                            !hasOfficerAccess
+                            !hasPostApprovalOfficerAccess
                               ? t('officerAccessDenied')
                               : isEditing
                                 ? t('finishEditBeforeWorkflowAction')
@@ -1235,18 +1236,21 @@ export default function RtsApplicationProcessDrawer({
                                   शासकीय शुल्क प्रलंबित: ₹{payableFee}
                                 </p>
                                 <p className="text-[11px] font-medium text-amber-700 leading-relaxed">
-                                  नागरिकाने ऑनलाइन भरावे किंवा CFC काऊंटरवर जमा करावे. शुल्क
-                                  भरल्याशिवाय अंतिम मंजुरी देता येणार नाही.
+                                  {isPaymentAfterApproval
+                                    ? t('paymentRequiredAfterApproval')
+                                    : t('paymentRequiredBeforeApproval')}
                                 </p>
                               </div>
                             </div>
-                            {hasOfficerAccess && (
+                            {canRecordPaymentFromStatusCard && (
                               <div className="pt-1 flex justify-end">
                                 <Button
                                   type="button"
                                   size="xs"
                                   variant="primary"
                                   icon={IndianRupee}
+                                  disabled={isSubmittingDecision || isEditing}
+                                  title={isEditing ? t('finishEditBeforeWorkflowAction') : undefined}
                                   onClick={() => setIsOfflinePaymentModalOpen(true)}
                                   className="rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 font-bold shadow-xs"
                                 >

@@ -61,7 +61,7 @@ import { PaymentCheckoutModal } from '@/components/modules/rts/citizen/PaymentCh
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 import { evaluateRtsFeeAction } from '@/app/[locale]/service/[serviceId]/actions';
-import { initializePendingPaymentAction } from '@/app/[locale]/service/payment/actions';
+import { createPaymentDemandAction } from '@/app/[locale]/service/payment/actions';
 import type { RtsFeeEvaluationResult } from '@/types/rts/rts-rulemaster.types';
 import type { RtsApplicationResubmitContext } from '@/types/rts/rts-application.types';
 
@@ -1490,24 +1490,23 @@ export default function DynamicServiceFormClient({
 
       const response = await submitApplicationAction(submitBundle);
 
-      // The payment service evaluates the saved application values again, so the
-      // pending snapshot always uses the authoritative rule/service fee rather
-      // than the estimate displayed before submission. For zero-fee applications
-      // it intentionally creates no payment transaction.
-      let initializedPayment = null;
+      // The payment-demand service evaluates the saved application values again,
+      // making the stored statutory demand authoritative without creating a
+      // payment transaction before the citizen actually starts payment.
+      let createdPaymentDemand = null;
       const submittedApplicationId = Number(response?.items?.id);
       if (Number.isFinite(submittedApplicationId) && submittedApplicationId > 0) {
         try {
-          const paymentInitialization = await initializePendingPaymentAction(submittedApplicationId);
-          if (paymentInitialization.success) {
-            initializedPayment = paymentInitialization.data ?? null;
+          const demandCreation = await createPaymentDemandAction({ applicationId: submittedApplicationId });
+          if (demandCreation.success) {
+            createdPaymentDemand = demandCreation.data ?? null;
           } else {
-            console.error('Failed to initialize the pending payment snapshot:', paymentInitialization.error);
+            console.error('Failed to create the payment demand:', demandCreation.error);
           }
-        } catch (paymentInitializationError) {
-          // Submission has already succeeded. The citizen dashboard can retry the
-          // idempotent initialization endpoint when it loads the application.
-          console.error('Failed to initialize the pending payment snapshot:', paymentInitializationError);
+        } catch (paymentDemandError) {
+          // Submission has already succeeded. The citizen dashboard can create
+          // the idempotent demand when it next loads the application.
+          console.error('Failed to create the payment demand:', paymentDemandError);
         }
       }
 
@@ -1586,7 +1585,7 @@ export default function DynamicServiceFormClient({
       const rawAppId = submittedApplicationId || parseInt(newId.replace(/\D/g, ''), 10) || 1;
       const appFees = Math.max(
         0,
-        Number(initializedPayment?.requiredFee ?? response?.items?.paymentRequiredFee ?? 0)
+        Number(createdPaymentDemand?.totalAmount ?? response?.items?.paymentRequiredFee ?? 0)
       );
 
       if (appFees > 0) {

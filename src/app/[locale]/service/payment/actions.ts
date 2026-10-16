@@ -7,6 +7,7 @@ import {
   getPaymentReceipt,
   getPaymentReceiptByNo,
   getPaymentStatus,
+  createPaymentDemand,
   initializePendingPayment,
   getPendingClearancePayments,
   getClearanceStats,
@@ -23,6 +24,8 @@ import {
   type RecordOfflinePaymentPayload,
   type PaymentReceiptResult,
   type PaymentStatusResult,
+  type CreatePaymentDemandPayload,
+  type PaymentDemandResult,
   type PendingClearanceQuery,
   type PendingClearanceItem,
   type PendingClearanceStats,
@@ -115,6 +118,20 @@ export async function getPaymentStatusAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Failed to fetch payment status."
+    };
+  }
+}
+
+export async function createPaymentDemandAction(
+  payload: CreatePaymentDemandPayload
+): Promise<{ success: boolean; data?: PaymentDemandResult; error?: string }> {
+  try {
+    const data = await createPaymentDemand(payload);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to create payment demand.'
     };
   }
 }

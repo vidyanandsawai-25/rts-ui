@@ -834,6 +834,8 @@
       "noGovernmentFeeRequired": "या सेवेसाठी कोणतेही शासकीय शुल्क आवश्यक नाही.",
       "governmentFeePending": "शासकीय सेवा शुल्क प्रलंबित: ₹{amount}",
       "paymentRequiredToProceed": "अर्जावर पुढील प्रक्रिया सुरू करण्यासाठी शुल्क भरणे आवश्यक आहे.",
+      "paymentRequiredBeforeApproval": "नागरिकाने ऑनलाइन भरावे किंवा CFC काऊंटरवर जमा करावे. शुल्क भरल्याशिवाय अंतिम मंजुरी देता येणार नाही.",
+      "paymentRequiredAfterApproval": "अर्ज मंजूर झाल्यानंतर नागरिकाने ऑनलाइन भरावे किंवा CFC काऊंटरवर जमा करावे.",
       "governmentFeePaid": "शासकीय सेवा शुल्क प्राप्त: ₹{amount}",
       "receiptNumber": "पावती क्र.: {receiptNo}",
       "officialReceiptAvailable": "अधिकृत शासकीय ई-पावती उपलब्ध आहे.",

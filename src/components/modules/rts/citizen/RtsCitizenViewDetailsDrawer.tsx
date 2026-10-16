@@ -23,7 +23,6 @@ import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentRec
 import {
   getPaymentReceiptAction,
   getPaymentStatusAction,
-  initializePendingPaymentAction,
 } from "@/app/[locale]/service/payment/actions";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { Language } from "@/types/language.type";
@@ -175,11 +174,6 @@ export default function RtsCitizenViewDetailsDrawer({
         if (status === undefined) {
           const response = await getPaymentStatusAction(applicationId);
           status = response.success ? response.data ?? null : null;
-        }
-
-        if (status && !status.hasPaymentTransaction) {
-          const initialized = await initializePendingPaymentAction(applicationId);
-          status = initialized.success ? initialized.data ?? status : status;
         }
 
         if (!cancelled) setPaymentStatus(status ?? null);

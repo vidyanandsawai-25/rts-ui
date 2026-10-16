@@ -831,6 +831,8 @@
       "noGovernmentFeeRequired": "इस सेवा के लिए कोई सरकारी शुल्क आवश्यक नहीं है।",
       "governmentFeePending": "सरकारी शुल्क लंबित: ₹{amount}",
       "paymentRequiredToProceed": "आवेदन पर आगे की प्रक्रिया के लिए शुल्क का भुगतान अनिवार्य है।",
+      "paymentRequiredBeforeApproval": "नागरिक ऑनलाइन भुगतान कर सकता है या CFC काउंटर पर जमा कर सकता है। शुल्क का भुगतान होने तक अंतिम स्वीकृति उपलब्ध नहीं है।",
+      "paymentRequiredAfterApproval": "आवेदन स्वीकृत होने के बाद नागरिक ऑनलाइन भुगतान कर सकता है या CFC काउंटर पर जमा कर सकता है।",
       "governmentFeePaid": "सरकारी शुल्क प्राप्त: ₹{amount}",
       "receiptNumber": "रसीद क्रमांक: {receiptNo}",
       "officialReceiptAvailable": "आधिकारिक सरकारी ई-रसीद उपलब्ध है।",
