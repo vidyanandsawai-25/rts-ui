@@ -662,7 +662,7 @@ export async function getApplicationDetailAction(
         applicationStatus: mappedOverallStatus,
         paymentStatus: effectiveIsPaid
           ? 'Paid'
-          : verification?.hasPaymentTransaction && Number(verification.payableFee ?? 0) > 0
+          : (verification?.hasPaymentTransaction || Number(verification?.payableFee ?? 0) > 0)
             ? 'Pending'
             : 'NotRequired',
         currentStage:
@@ -1933,7 +1933,7 @@ export async function getCertificatePreviewAction(
         officerData.ReceiptNo ||
         (verification?.isPaid || paymentReceipt
           ? `REC-${applicationNo}`
-          : !verification?.hasPaymentTransaction || Number(verification.payableFee ?? 0) <= 0
+          : (!verification?.hasPaymentTransaction && Number(verification?.payableFee ?? 0) <= 0)
             ? 'शुल्क लागू नाही (विनामूल्य)'
             : '—');
 
@@ -2392,7 +2392,7 @@ export async function getIssuedCertificateAction(applicationNo: string) {
             officerInputsData.ReceiptNo ||
             (verification?.isPaid || paymentReceipt
               ? `REC-${result.applicationNo}`
-              : !verification?.hasPaymentTransaction || Number(verification.payableFee ?? 0) <= 0
+              : (!verification?.hasPaymentTransaction && Number(verification?.payableFee ?? 0) <= 0)
                 ? 'शुल्क लागू नाही (विनामूल्य)'
                 : '—');
 
