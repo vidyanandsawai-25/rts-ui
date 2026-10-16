@@ -48,8 +48,33 @@ export interface VerifyPaymentResult {
   paymentStatus?: string;
 }
 
+export interface PaymentDemandResult {
+  id: number;
+  demandNo: string;
+  applicationId: number;
+  applicationNo: string;
+  serviceId: number;
+  departmentId: number;
+  baseAmount: number;
+  lateFeeAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  currency: string;
+  demandStatus: string;
+  ruleDetailsJson?: string;
+  remarks?: string;
+  createdDate: string;
+}
+
+export interface CreatePaymentDemandPayload {
+  applicationId: number;
+  amountOverride?: number;
+  remarks?: string;
+}
+
 export interface PaymentReceiptResult {
   transactionId: number;
+  demandNo?: string;
   applicationId: number;
   applicationNo: string;
   serviceName: string;
@@ -87,6 +112,7 @@ export interface PaymentReceiptResult {
 
 export interface PaymentStatusResult {
   transactionId?: number | null;
+  demandNo?: string | null;
   applicationId: number;
   applicationNo: string;
   serviceName: string;
@@ -201,6 +227,24 @@ export async function initializePendingPayment(applicationId: number): Promise<P
   }
   return res.data.items;
 }
+
+export async function createOrUpdatePaymentDemand(payload: CreatePaymentDemandPayload): Promise<PaymentDemandResult> {
+  const res = await apiClient.post<ApiResponseWrapper<PaymentDemandResult>>("/RTSPayment/demand", payload);
+  if (!res.data?.success || !res.data?.items) {
+    throw new Error(res.data?.message || res.error || "Failed to create payment demand");
+  }
+  return res.data.items;
+}
+
+export async function getPaymentDemand(applicationId: number): Promise<PaymentDemandResult | null> {
+  try {
+    const res = await apiClient.get<ApiResponseWrapper<PaymentDemandResult>>(`/RTSPayment/demand/${applicationId}`);
+    return res.data?.items || null;
+  } catch {
+    return null;
+  }
+}
+
 export interface PendingClearanceQuery {
   paymentMode?: string;
   statusCode?: string;
@@ -216,6 +260,7 @@ export interface PendingClearanceQuery {
 export interface PendingClearanceItem {
   transactionId: number;
   transactionNo: string;
+  demandNo?: string;
   applicationId: number;
   applicationNo: string;
   citizenName?: string;
@@ -389,6 +434,7 @@ export interface RTSBankLookup {
 
 export interface ReceiptCancellationLog {
   id: number;
+  demandId?: number;
   transactionId: number;
   applicationId: number;
   receiptNumber: string;

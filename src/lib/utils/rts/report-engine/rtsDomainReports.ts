@@ -225,6 +225,20 @@ export function exportRtsPaymentSettlement(
       formatter: (val) => String(val || '—'),
     },
     {
+      header: 'Demand No.',
+      key: 'demandNo',
+      width: 18,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Transaction No.',
+      key: 'transactionNo',
+      width: 22,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
       header: 'Receipt No.',
       key: 'receiptNo',
       width: 18,
@@ -382,6 +396,13 @@ export function exportRtsCollections(
     {
       header: 'Application No.',
       key: 'applicationNo',
+      width: 18,
+      align: 'left',
+      formatter: (val) => String(val || '—'),
+    },
+    {
+      header: 'Demand No.',
+      key: 'demandNo',
       width: 18,
       align: 'left',
       formatter: (val) => String(val || '—'),

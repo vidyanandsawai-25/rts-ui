@@ -1323,7 +1323,12 @@ export default function RtsReportsCenterDashboard({ locale = 'mr' }: { locale?: 
                         )}
                         {visibleColumns[activeDomain].includes('applicationNo') && (
                           <td className="px-3 py-2.5 font-mono font-bold text-slate-800">
-                            {item.applicationNo || '—'}
+                            <div>{item.applicationNo || '—'}</div>
+                            {item.demandNo && (
+                              <div className="text-[10px] text-teal-700 font-medium">
+                                {item.demandNo}
+                              </div>
+                            )}
                           </td>
                         )}
                         {visibleColumns[activeDomain].includes('citizenName') && (

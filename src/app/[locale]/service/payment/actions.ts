@@ -17,6 +17,8 @@ import {
   getBanks,
   getCancellationLogs,
   getPaymentModes,
+  createOrUpdatePaymentDemand,
+  getPaymentDemand,
   type CreatePaymentOrderPayload,
   type PaymentOrderResult,
   type VerifyPaymentPayload,
@@ -24,6 +26,8 @@ import {
   type RecordOfflinePaymentPayload,
   type PaymentReceiptResult,
   type PaymentStatusResult,
+  type PaymentDemandResult,
+  type CreatePaymentDemandPayload,
   type RTSPaymentModeLookup,
   type PendingClearanceQuery,
   type PendingClearanceItem,
@@ -271,4 +275,33 @@ export async function getPaymentModesAction(): Promise<{
     };
   }
 }
+
+export async function createOrUpdatePaymentDemandAction(
+  payload: CreatePaymentDemandPayload
+): Promise<{ success: boolean; data?: PaymentDemandResult; error?: string }> {
+  try {
+    const data = await createOrUpdatePaymentDemand(payload);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to create or update payment demand."
+    };
+  }
+}
+
+export async function getPaymentDemandAction(
+  applicationId: number
+): Promise<{ success: boolean; data?: PaymentDemandResult | null; error?: string }> {
+  try {
+    const data = await getPaymentDemand(applicationId);
+    return { success: true, data };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to fetch payment demand."
+    };
+  }
+}
+
 

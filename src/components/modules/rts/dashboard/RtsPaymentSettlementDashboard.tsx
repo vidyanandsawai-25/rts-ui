@@ -1043,10 +1043,22 @@ export const RtsPaymentSettlementDashboard: React.FC<RtsPaymentSettlementDashboa
                         {numberFormatter.format((pageNumber - 1) * pageSize + index + 1)}
                       </td>
 
-                      {/* App No */}
+                      {/* App No & Lineage */}
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-[#173B73] font-mono text-[13px]">
                           {item.applicationNo}
+                        </div>
+                        <div className="flex flex-col gap-0.5 mt-0.5">
+                          {item.demandNo && (
+                            <span className="text-[10px] text-teal-700 font-mono font-medium" title={isMr ? "फी मागणी क्र." : "Fee Demand No."}>
+                              {item.demandNo}
+                            </span>
+                          )}
+                          {item.transactionNo && (
+                            <span className="text-[10px] text-slate-500 font-mono" title={isMr ? "व्यवहार क्र." : "Transaction No."}>
+                              {item.transactionNo}
+                            </span>
+                          )}
                         </div>
                       </td>
 

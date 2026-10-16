@@ -87,7 +87,7 @@ export function exportRtsReportToExcel<T>(config: RtsReportConfig<T>): void {
 
   // 1. Organization Header Row
   const { ulbName, ulbNameLocal } = getDynamicUlbInfo();
-  const orgTitle = `${ulbName.toUpperCase()} — RIGHT TO PUBLIC SERVICES (RTS)`;
+  const orgTitle = `${ulbName.toUpperCase()} (${ulbNameLocal}) — RIGHT TO PUBLIC SERVICES (RTS)`;
   rows.push([orgTitle]);
   merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } });
 
@@ -268,7 +268,7 @@ export function exportRtsReportToCsv<T>(config: RtsReportConfig<T>): void {
 
   // Metadata comments / header
   const { ulbName, ulbNameLocal } = getDynamicUlbInfo();
-  lines.push(`"${ulbName.toUpperCase()} — RIGHT TO PUBLIC SERVICES (RTS)"`);
+  lines.push(`"${ulbName.toUpperCase()} (${ulbNameLocal}) — RIGHT TO PUBLIC SERVICES (RTS)"`);
   lines.push(`"${metadata.title.replace(/"/g, '""')}"`);
   if (metadata.subtitle || metadata.department) {
     lines.push(`"${[metadata.department, metadata.subtitle].filter(Boolean).join(' - ').replace(/"/g, '""')}"`);
@@ -322,6 +322,7 @@ export function exportRtsReportToCsv<T>(config: RtsReportConfig<T>): void {
  */
 export function exportRtsReportToPdf<T>(config: RtsReportConfig<T>): void {
   const { metadata, columns, data } = config;
+  const { ulbName, ulbNameLocal } = getDynamicUlbInfo();
 
   const genDate = metadata.generatedAt || new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 
