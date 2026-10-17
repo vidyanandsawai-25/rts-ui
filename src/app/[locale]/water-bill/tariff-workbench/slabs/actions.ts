@@ -20,9 +20,7 @@ import type { TariffSlabData } from '@/types/water-bill/tariff-workbench/tariffW
 const SLABS_PATH = '/[locale]/water-bill/tariff-workbench/slabs';
 const PARENT_WORKBENCH_PATH = '/[locale]/water-bill/tariff-workbench';
 
-export type { TariffSlabData, TariffSlabPagedResponse };
-
-export interface TariffSlabLookupOption {
+interface TariffSlabLookupOption {
   value: string;
   label: string;
 }

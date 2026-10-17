@@ -8,7 +8,6 @@ import {
   getPendingClearancePayments,
   type PendingClearanceItem,
   type PendingClearanceQuery,
-  type RTSPaymentModeLookup,
 } from '@/lib/api/rts/rtspayment.service';
 import { getApprovalApplicationsPaged } from '@/lib/api/rts/rts-application-approval.service';
 import type { RtsApprovalApplicationListItem } from '@/types/rts/application-approval.types';

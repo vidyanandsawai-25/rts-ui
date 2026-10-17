@@ -21,9 +21,7 @@ import type { TariffChargeData } from '@/types/water-bill/tariff-workbench/tarif
 const CHARGE_DETAILS_PATH = '/[locale]/water-bill/tariff-workbench/charge-details';
 const PARENT_WORKBENCH_PATH = '/[locale]/water-bill/tariff-workbench';
 
-export type { TariffChargeData, TariffChargePagedResponse };
-
-export interface TariffChargeLookupOption {
+interface TariffChargeLookupOption {
   value: string;
   label: string;
 }
