@@ -261,6 +261,7 @@ export default async function ServiceFormPage({ params, searchParams }: ServiceP
           isLoggedIn={isLoggedIn}
           serviceFees={rtsService?.fees ?? 0}
           feesRequired={Boolean(rtsService?.feesRequired || rtsService?.isFeesRequired || (rtsService?.fees && rtsService.fees > 0))}
+          isPaymentAfterApproval={rtsService?.isPaymentAfterApproval === true}
           isResubmitMode={isResubmitMode}
           resubmitApplicationId={resubmitAppId}
           resubmitApplicationNo={resolvedSearchParams?.applicationNo}

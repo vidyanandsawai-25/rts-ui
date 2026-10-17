@@ -83,6 +83,7 @@ export async function createRtsService(payload: {
   fees?: number;
   feesRequired?: boolean;
   isFeesRequired?: boolean;
+  isPaymentAfterApproval?: boolean;
   certificateType?: number;
   isCertificateRequired?: boolean;
   isSmsEnabled?: boolean;
@@ -119,6 +120,7 @@ export async function updateRtsService(
     fees?: number;
     feesRequired?: boolean;
     isFeesRequired?: boolean;
+    isPaymentAfterApproval?: boolean;
     certificateType?: number;
     isCertificateRequired?: boolean;
     isSmsEnabled?: boolean;

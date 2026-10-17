@@ -7,7 +7,7 @@ import {
   getRtsApplicationDashboardData,
   type RtsApplicationDashboardRequestInput,
 } from '@/lib/api/rts/rtsapplicationdashboard.service';
-import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
+import { getAllRtsServices, getRtsServiceById } from '@/lib/api/rts/rtsservices.service';
 import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
 import { getAllRtsFieldDefinitions } from '@/lib/api/rts/rtsfielddefinition.service';
 import { getRtsApplicationByNo } from '@/lib/api/rts/rtsapplication.service';
@@ -69,6 +69,31 @@ export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiIt
   } catch (error) {
     console.error('Failed to fetch RTS application services:', error);
     return [];
+  }
+}
+
+/**
+ * Returns only the payment-timing setting needed by citizen payment actions.
+ * The RTS service API remains server-only and is never called from the browser.
+ */
+export async function getRtsServicePaymentTimingAction(
+  serviceId: number
+): Promise<{ success: boolean; isPaymentAfterApproval?: boolean; error?: string }> {
+  if (!Number.isInteger(serviceId) || serviceId <= 0) {
+    return { success: false, error: 'A valid RTS service ID is required.' };
+  }
+
+  try {
+    const service = await getRtsServiceById(serviceId);
+    return {
+      success: true,
+      isPaymentAfterApproval: service.isPaymentAfterApproval === true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to load the RTS service payment setting.',
+    };
   }
 }
 

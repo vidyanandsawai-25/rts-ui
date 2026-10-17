@@ -6,7 +6,11 @@ import { Award, Download, FileText, GitCommit, Paperclip, CreditCard, Printer, C
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 
-import { getApplicationDetailAction, type RtsApplicationDetailData } from "@/app/[locale]/rts/dashboard/rts-applications/actions";
+import {
+  getApplicationDetailAction,
+  getRtsServicePaymentTimingAction,
+  type RtsApplicationDetailData,
+} from "@/app/[locale]/rts/dashboard/rts-applications/actions";
 import { resolveCitizenResubmitNavigationAction } from "@/app/[locale]/service/dashboard/actions";
 import { ApprovalStagesTimeline } from "@/components/modules/rts";
 import RtsApplicationDocumentView from "@/components/modules/rts/dashboard/RtsApplicationDocumentView";
@@ -82,6 +86,7 @@ export default function RtsCitizenViewDetailsDrawer({
   const tCommon = useTranslations("common");
   const [detail, setDetail] = useState<RtsApplicationDetailData | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResult | null>(null);
+  const [isPaymentAfterApproval, setIsPaymentAfterApproval] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOpeningResubmit, setIsOpeningResubmit] = useState(false);
@@ -189,6 +194,34 @@ export default function RtsCitizenViewDetailsDrawer({
     };
   }, [applicationNumber, paymentStatusData]);
 
+  useEffect(() => {
+    const detailMatchesApplication =
+      detail?.applicationNo?.trim().toLowerCase() === applicationNumber?.trim().toLowerCase();
+    const serviceId = Number(
+      detailData?.serviceId ?? (detailMatchesApplication ? detail?.serviceId : undefined)
+    );
+    if (!Number.isInteger(serviceId) || serviceId <= 0) {
+      setIsPaymentAfterApproval(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsPaymentAfterApproval(null);
+
+    const loadPaymentTiming = async () => {
+      const response = await getRtsServicePaymentTimingAction(serviceId);
+      if (!cancelled) {
+        // A failed configuration lookup must not expose an early payment action.
+        setIsPaymentAfterApproval(response.success ? response.isPaymentAfterApproval === true : null);
+      }
+    };
+
+    void loadPaymentTiming();
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationNumber, detail?.applicationNo, detail?.serviceId, detailData?.serviceId]);
+
   if (!application) return null;
 
   const resolvedDetail = detailData ?? detail;
@@ -197,6 +230,9 @@ export default function RtsCitizenViewDetailsDrawer({
       : paymentStatusData ?? null;
   const isLoadingDetails = detailData ? false : loading;
   const normalizedStatus = normalizeStatus(application.status);
+  const canOpenPayment =
+    isPaymentAfterApproval === false ||
+    (isPaymentAfterApproval === true && normalizedStatus === "approved");
   const appServiceName = (application?.serviceName || "").trim().toLowerCase();
   const appServiceNameLocal = (application?.serviceNameLocal || "").trim().toLowerCase();
   const matchedService = departments
@@ -428,22 +464,24 @@ export default function RtsCitizenViewDetailsDrawer({
                         </p>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      size="xs"
-                      variant="primary"
-                      icon={CreditCard}
-                      onClick={() => {
-                        if (onOpenPayment) {
-                          onOpenPayment(applicationNumber!);
-                        } else {
-                          setIsCheckoutOpen(true);
-                        }
-                      }}
-                      className="rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 px-3"
-                    >
-                      {t("payFeeNow")}
-                    </Button>
+                    {canOpenPayment && (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="primary"
+                        icon={CreditCard}
+                        onClick={() => {
+                          if (onOpenPayment) {
+                            onOpenPayment(applicationNumber!);
+                          } else {
+                            setIsCheckoutOpen(true);
+                          }
+                        }}
+                        className="rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 px-3"
+                      >
+                        {t("payFeeNow")}
+                      </Button>
+                    )}
                   </div>
                 </section>
               ) : (
@@ -669,7 +707,7 @@ export default function RtsCitizenViewDetailsDrawer({
         />
       )}
 
-      {isCheckoutOpen && applicationNumber && (
+      {isCheckoutOpen && canOpenPayment && applicationNumber && (
         <PaymentCheckoutModal
           applicationId={parseInt(applicationNumber.replace(/\D/g, ""), 10) || 1}
           applicationNo={applicationNumber}

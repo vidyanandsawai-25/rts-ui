@@ -95,6 +95,7 @@ interface ServiceFormProps {
   isLoggedIn?: boolean;
   serviceFees?: number;
   feesRequired?: boolean;
+  isPaymentAfterApproval?: boolean;
   isResubmitMode?: boolean;
   resubmitApplicationId?: number;
   resubmitApplicationNo?: string;
@@ -168,6 +169,7 @@ export default function DynamicServiceFormClient({
   isLoggedIn = false,
   serviceFees,
   feesRequired,
+  isPaymentAfterApproval = false,
   isResubmitMode = false,
   resubmitApplicationId,
   resubmitApplicationNo,
@@ -1635,6 +1637,7 @@ export default function DynamicServiceFormClient({
       );
 
       if (appFees > 0) {
+        const canPayImmediately = !isPaymentAfterApproval;
         MySwal.fire({
           icon: 'success',
           title:
@@ -1651,7 +1654,7 @@ export default function DynamicServiceFormClient({
                  <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
                    Statutory Government Fee: ₹${appFees}.00
                  </div>
-                 <p class="text-xs text-gray-500 font-medium">Please proceed to pay the statutory fee now or pay later from your citizen dashboard.</p>
+                 <p class="text-xs text-gray-500 font-medium">${canPayImmediately ? 'Please proceed to pay the statutory fee now or pay later from your citizen dashboard.' : 'Payment will be available after your application is approved.'}</p>
                </div>`
               : language === 'hi'
                 ? `<div class="space-y-3 p-2 text-center">
@@ -1660,7 +1663,7 @@ export default function DynamicServiceFormClient({
                    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
                      शासकीय सेवा शुल्क: ₹${appFees}.00
                    </div>
-                   <p class="text-xs text-gray-500 font-medium">कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।</p>
+                   <p class="text-xs text-gray-500 font-medium">${canPayImmediately ? 'कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।' : 'आवेदन स्वीकृत होने के बाद भुगतान उपलब्ध होगा।'}</p>
                  </div>`
                 : `<div class="space-y-3 p-2 text-center">
                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
@@ -1668,15 +1671,21 @@ export default function DynamicServiceFormClient({
                    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
                      शासकीय सेवा शुल्क: ₹${appFees}.00
                    </div>
-                   <p class="text-xs text-gray-500 font-medium">कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.</p>
+                   <p class="text-xs text-gray-500 font-medium">${canPayImmediately ? 'कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.' : 'अर्ज मंजूर झाल्यानंतर शुल्क भरण्याचा पर्याय उपलब्ध होईल.'}</p>
                  </div>`,
-          showCancelButton: true,
+          showCancelButton: canPayImmediately,
           confirmButtonText:
-            language === 'en'
-              ? '💳 Pay Government Fee Now'
-              : language === 'hi'
-                ? '💳 अभी शुल्क भरें'
-                : '💳 आताच शुल्क भरा',
+            canPayImmediately
+              ? language === 'en'
+                ? '💳 Pay Government Fee Now'
+                : language === 'hi'
+                  ? '💳 अभी शुल्क भरें'
+                  : '💳 आताच शुल्क भरा'
+              : language === 'en'
+                ? '🔍 Track Application'
+                : language === 'hi'
+                  ? '🔍 आवेदन ट्रैक करें'
+                  : '🔍 अर्ज ट्रॅक करा',
           cancelButtonText:
             language === 'en'
               ? '🔍 Track Application'
@@ -1689,7 +1698,7 @@ export default function DynamicServiceFormClient({
           color: darkMode ? '#ffffff' : '#000000',
           customClass: { popup: 'rounded-xl shadow-xl border border-teal-500/20' },
         }).then((swalRes) => {
-          if (swalRes.isConfirmed) {
+          if (canPayImmediately && swalRes.isConfirmed) {
             setCheckoutAppInfo({
               applicationId: rawAppId,
               applicationNo: newId,
@@ -1972,17 +1981,19 @@ export default function DynamicServiceFormClient({
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-              <Button
-                onClick={() => setShowSuccessPaymentModal(true)}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg py-3 font-bold cursor-pointer"
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                {language === 'en'
-                  ? 'Pay Government Fee Now'
-                  : language === 'hi'
-                    ? 'शासकीय शुल्क अभी भरें'
-                    : 'आताच शासकीय शुल्क भरा'}
-              </Button>
+              {!isPaymentAfterApproval && (
+                <Button
+                  onClick={() => setShowSuccessPaymentModal(true)}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg py-3 font-bold cursor-pointer"
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  {language === 'en'
+                    ? 'Pay Government Fee Now'
+                    : language === 'hi'
+                      ? 'शासकीय शुल्क अभी भरें'
+                      : 'आताच शासकीय शुल्क भरा'}
+                </Button>
+              )}
 
               <Button
                 onClick={() => copyToClipboard(successTrackingId)}
@@ -2033,7 +2044,7 @@ export default function DynamicServiceFormClient({
           </div>
         </div>
 
-        {showSuccessPaymentModal && (
+        {showSuccessPaymentModal && !isPaymentAfterApproval && (
           <PaymentCheckoutModal
             applicationId={parseInt(successTrackingId.replace(/\D/g, ''), 10) || 1}
             applicationNo={successTrackingId}
@@ -2424,7 +2435,7 @@ export default function DynamicServiceFormClient({
         </div>
       </div>
 
-      {showSuccessPaymentModal && checkoutAppInfo && (
+      {showSuccessPaymentModal && !isPaymentAfterApproval && checkoutAppInfo && (
         <PaymentCheckoutModal
           applicationId={checkoutAppInfo.applicationId}
           applicationNo={checkoutAppInfo.applicationNo}

@@ -34,6 +34,8 @@ export interface RtsServiceApiItem {
   fees?: number | null;
   feesRequired?: boolean | null;
   isFeesRequired?: boolean | null;
+  /** True when payment is collected only after the application is approved. */
+  isPaymentAfterApproval?: boolean | null;
   certificateType?: number | null;
   isCertificateRequired?: boolean | null;
   isSmsEnabled?: boolean | null;
