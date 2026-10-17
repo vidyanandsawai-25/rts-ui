@@ -20,7 +20,7 @@ export async function fetchCitizenPropertiesFromApi(
   try {
     const rawBaseUrl =
       process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
-      process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL?.trim();
+      process.env.AKOLA_ONESOLUTION_BASE_URL?.trim();
     if (!rawBaseUrl) {
       throw new Error(
         'AKOLA_ONESOLUTION_BASE_URL is not configured in environment variables. Please check your .env file.'

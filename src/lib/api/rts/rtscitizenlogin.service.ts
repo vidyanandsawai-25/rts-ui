@@ -8,7 +8,7 @@ export type CitizenLoginPropertyOption = {
 function getOneSolutionBaseUrl(): string {
   const url =
     process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
-    process.env.AKOLA_CITIZEN_PROPERTY_DETAILS_API_URL?.trim();
+    process.env.AKOLA_ONESOLUTION_BASE_URL?.trim();
 
   if (!url) {
     throw new Error(

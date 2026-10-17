@@ -10,7 +10,7 @@ import type {
 function getOneSolutionBaseUrl(): string {
   const url =
     process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
-    process.env.RTS_MIS_DASHBOARD_BASE_URL?.trim();
+    process.env.AKOLA_ONESOLUTION_BASE_URL?.trim();
 
   if (!url) {
     throw new Error(

@@ -61,7 +61,10 @@ import { PaymentCheckoutModal } from '@/components/modules/rts/citizen/PaymentCh
 import { PaymentReceiptModal } from '@/components/modules/rts/citizen/PaymentReceiptModal';
 import type { PaymentReceiptResult } from '@/lib/api/rts/rtspayment.service';
 import { evaluateRtsFeeAction } from '@/app/[locale]/service/[serviceId]/actions';
-import { createPaymentDemandAction } from '@/app/[locale]/service/payment/actions';
+import {
+  createPaymentDemandAction,
+  getPaymentStatusAction,
+} from '@/app/[locale]/service/payment/actions';
 import type { RtsFeeEvaluationResult } from '@/types/rts/rts-rulemaster.types';
 import type { RtsApplicationResubmitContext } from '@/types/rts/rts-application.types';
 
@@ -1448,6 +1451,31 @@ export default function DynamicServiceFormClient({
         );
 
         if (res.success) {
+          // Keep a collected fee immutable. For an unpaid application, refresh the
+          // demand after the corrected values have been saved so fee rules are
+          // evaluated against the resubmitted form values.
+          try {
+            const paymentStatus = await getPaymentStatusAction(resubmitApplicationId);
+            const statusCode = paymentStatus.data?.paymentStatus?.trim().toUpperCase();
+            const isPaid = paymentStatus.data?.isPaid === true || statusCode === 'SUCCESS';
+
+            if (paymentStatus.success && paymentStatus.data && !isPaid) {
+              const demandUpdate = await createPaymentDemandAction({
+                applicationId: resubmitApplicationId,
+              });
+
+              if (!demandUpdate.success) {
+                console.error('Failed to refresh the payment demand after resubmission:', demandUpdate.error);
+              }
+            } else if (!paymentStatus.success || !paymentStatus.data) {
+              console.error('Unable to confirm payment status after resubmission:', paymentStatus.error);
+            }
+          } catch (paymentStatusError) {
+            // The resubmission has already succeeded. Do not present it as failed
+            // if the non-critical demand refresh cannot be completed.
+            console.error('Failed to refresh the payment demand after resubmission:', paymentStatusError);
+          }
+
           const appNo = res.items?.applicationNo?.trim() || resubmitApplicationNo || `RTS${resubmitApplicationId}`;
           await MySwal.fire({
             icon: 'success',

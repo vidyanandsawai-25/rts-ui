@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/rts/rtsapplicationdashboard.service';
 import { getAllRtsServices } from '@/lib/api/rts/rtsservices.service';
 import { getAllRtsDepartments } from '@/lib/api/rts/rtsdepartment.service';
+import { getAllRtsFieldDefinitions } from '@/lib/api/rts/rtsfielddefinition.service';
 import { getRtsApplicationByNo } from '@/lib/api/rts/rtsapplication.service';
 import {
   getApplicationDashboardCards,
@@ -49,6 +50,7 @@ import type {
 } from '@/types/rts/rtsmisdashboard.types';
 import type { RtsCitizenDashboardResponse } from '@/types/rts/rtscitizendashboard.types';
 import type { RtsServiceApiItem } from '@/types/rts/service.types';
+import type { RtsFieldDefinitionApiItem } from '@/types/rts/field-definition.types';
 import type {
   ApplicationWorkflowState,
   RtsApplicationOverallStatus,
@@ -67,6 +69,31 @@ export async function getRtsApplicationServicesAction(): Promise<RtsServiceApiIt
   } catch (error) {
     console.error('Failed to fetch RTS application services:', error);
     return [];
+  }
+}
+
+export async function getRtsServiceFieldDefinitionsAction(
+  serviceId: number,
+  departmentId?: number
+): Promise<{ success: boolean; data: RtsFieldDefinitionApiItem[]; error?: string }> {
+  if (!Number.isInteger(serviceId) || serviceId <= 0) {
+    return { success: false, data: [], error: 'Valid service ID is required.' };
+  }
+
+  try {
+    const data = await getAllRtsFieldDefinitions({
+      ServiceId: serviceId,
+      ...(Number.isInteger(departmentId) && Number(departmentId) > 0
+        ? { DepartmentId: Number(departmentId) }
+        : {}),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      data: [],
+      error: error instanceof Error ? error.message : 'Failed to load field definitions.',
+    };
   }
 }
 

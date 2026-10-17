@@ -61,8 +61,8 @@ export interface PaymentDemandResult {
   totalAmount: number;
   currency: string;
   demandStatus: string;
-  ruleDetailsJson?: string;
-  remarks?: string;
+  ruleDetailsJson?: string | null;
+  remarks?: string | null;
   createdDate: string;
 }
 
@@ -119,6 +119,7 @@ export interface PaymentStatusResult {
   requiredFee: number;
   isFeeRequired: boolean;
   hasPaymentTransaction?: boolean;
+  isPaid?: boolean;
   paymentStatus: string;
   statusNameEn?: string | null;
   statusNameMr?: string | null;
@@ -126,30 +127,6 @@ export interface PaymentStatusResult {
   receiptNo?: string | null;
   paymentDate?: string | null;
   gatewayPaymentId?: string | null;
-}
-
-export interface CreatePaymentDemandPayload {
-  applicationId: number;
-  amountOverride?: number;
-  remarks?: string;
-}
-
-export interface PaymentDemandResult {
-  id: number;
-  demandNo: string;
-  applicationId: number;
-  applicationNo: string;
-  serviceId: number;
-  departmentId: number;
-  baseAmount: number;
-  lateFeeAmount: number;
-  discountAmount: number;
-  totalAmount: number;
-  currency: string;
-  demandStatus: string;
-  ruleDetailsJson?: string | null;
-  remarks?: string | null;
-  createdDate: string;
 }
 
 export interface ApiResponseWrapper<T> {
