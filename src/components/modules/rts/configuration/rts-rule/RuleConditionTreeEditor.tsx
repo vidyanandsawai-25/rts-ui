@@ -21,7 +21,37 @@ type DateParts = { day: string; month: string; year: string };
 type DateTimeParts = DateParts & { time: string };
 const DATE_PARTS_PREFIX = 'DATE_PARTS:';
 const DATETIME_PARTS_PREFIX = 'DATETIME_PARTS:';
+const DATE_AGE_DAYS_PREFIX = 'DATE_AGE_DAYS:';
 const equalityOperators = new Set(['=', '!=']);
+const dateAgeDaysOperators = new Set([
+  'DATE_AGE_DAYS_LT',
+  'DATE_AGE_DAYS_LTE',
+  'DATE_AGE_DAYS_GT',
+  'DATE_AGE_DAYS_GTE',
+  'DATE_AGE_DAYS_BETWEEN',
+]);
+
+type DateAgeDays = { minimum: string; maximum: string };
+
+function isDateAgeDaysOperator(value: string | null | undefined) {
+  return dateAgeDaysOperators.has(value ?? '');
+}
+
+function dateAgeDaysFromExpectedValue(value: string | null | undefined): DateAgeDays {
+  const raw = value?.trim() ?? '';
+  if (!raw.startsWith(DATE_AGE_DAYS_PREFIX)) return { minimum: '', maximum: '' };
+  const [minimum = '', maximum = ''] = raw.slice(DATE_AGE_DAYS_PREFIX.length).split(':');
+  return { minimum, maximum };
+}
+
+function dateAgeDaysToExpectedValue(days: DateAgeDays, isRange: boolean): string {
+  const minimum = days.minimum.trim();
+  const maximum = days.maximum.trim();
+  if (!minimum && (!isRange || !maximum)) return '';
+  return isRange
+    ? `${DATE_AGE_DAYS_PREFIX}${minimum}:${maximum}`
+    : `${DATE_AGE_DAYS_PREFIX}${minimum}`;
+}
 
 function datePartsFromExpectedValue(value: string | null | undefined): DateParts {
   const raw = value?.trim() ?? '';
@@ -325,9 +355,12 @@ function NodeEditor({
   const monthField = temporalType === 'month';
   const numericField = selectedField && ['number', 'decimal', 'amount', 'year'].includes(selectedField.fieldType.toLowerCase());
   const usesPartialDateParts = dateTimeField && isEqualityOperator(node.comparisonOperator);
-  const dateUsesRangeOperator = dateField && !isEqualityOperator(node.comparisonOperator);
+  const dateAgeDaysOperator = dateField && isDateAgeDaysOperator(node.comparisonOperator);
+  const dateAgeDaysRange = node.comparisonOperator === 'DATE_AGE_DAYS_BETWEEN';
+  const dateUsesRangeOperator = dateField && !isEqualityOperator(node.comparisonOperator) && !dateAgeDaysOperator;
   const dateParts = datePartsFromExpectedValue(node.expectedValue);
   const dateTimeParts = dateTimePartsFromExpectedValue(node.expectedValue);
+  const dateAgeDays = dateAgeDaysFromExpectedValue(node.expectedValue);
   const updateDatePart = (part: keyof DateParts, value: string) =>
     onChange(path, (current) => ({
       ...current,
@@ -346,6 +379,14 @@ function NodeEditor({
         [part]: value,
       }),
     }));
+  const updateDateAgeDays = (part: keyof DateAgeDays, value: string) =>
+    onChange(path, (current) => ({
+      ...current,
+      expectedValue: dateAgeDaysToExpectedValue(
+        { ...dateAgeDaysFromExpectedValue(current.expectedValue), [part]: value },
+        current.comparisonOperator === 'DATE_AGE_DAYS_BETWEEN'
+      ),
+    }));
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -362,7 +403,7 @@ function NodeEditor({
       </div>
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_160px_minmax(0,1fr)]">
         <div className="space-y-1"><Label className="text-xs font-semibold">Field</Label><Select className={selectClass} selectSize="sm" value={String(node.fieldDefinitionId ?? '')} options={[{ label: 'Select field', value: '' }, ...fields.map(ruleFieldOption)]} onChange={(_, value) => onChange(path, (current) => ({ ...current, fieldDefinitionId: Number(value) || null, comparisonOperator: '=', expectedValue: '' }))} /></div>
-        <div className="space-y-1"><Label className="text-xs font-semibold">Operator</Label><Select className={selectClass} selectSize="sm" value={node.comparisonOperator ?? '='} options={operators.map((operator) => ({ label: operatorLabel(operator), value: operator }))} onChange={(_, value) => onChange(path, (current) => ({ ...current, comparisonOperator: value }))} /></div>
+        <div className="space-y-1"><Label className="text-xs font-semibold">Operator</Label><Select className={selectClass} selectSize="sm" value={node.comparisonOperator ?? '='} options={operators.map((operator) => ({ label: operatorLabel(operator), value: operator }))} onChange={(_, value) => onChange(path, (current) => ({ ...current, comparisonOperator: value, expectedValue: isDateAgeDaysOperator(current.comparisonOperator) !== isDateAgeDaysOperator(value) ? '' : current.expectedValue }))} /></div>
         <div className="space-y-1">
           <Label className="text-xs font-semibold">Expected value</Label>
           {choiceField && options.length ? (
@@ -373,6 +414,36 @@ function NodeEditor({
               options={[{ label: 'Expected value', value: '' }, ...options.map((option) => ({ label: option.label, value: option.value }))]}
               onChange={(_, value) => onChange(path, (current) => ({ ...current, expectedValue: value }))}
             />
+          ) : dateAgeDaysOperator ? (
+            <>
+              <div className={`grid gap-2 ${dateAgeDaysRange ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <Input
+                  className={inputClass}
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder={dateAgeDaysRange ? 'Minimum days' : 'Days'}
+                  aria-label={dateAgeDaysRange ? 'Minimum days since date' : 'Days since date'}
+                  value={dateAgeDays.minimum}
+                  onChange={(event) => updateDateAgeDays('minimum', event.target.value)}
+                />
+                {dateAgeDaysRange && (
+                  <Input
+                    className={inputClass}
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Maximum days"
+                    aria-label="Maximum days since date"
+                    value={dateAgeDays.maximum}
+                    onChange={(event) => updateDateAgeDays('maximum', event.target.value)}
+                  />
+                )}
+              </div>
+              <p className="text-[11px] leading-4 text-slate-500">
+                The application date is compared with today. Future dates do not match this condition.
+              </p>
+            </>
           ) : dateField ? (
             <>
               <div className="grid grid-cols-3 gap-2">

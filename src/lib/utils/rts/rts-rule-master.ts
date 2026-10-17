@@ -57,6 +57,16 @@ export function splitRules(rules: RtsRuleMasterRule[]) {
 
 export function operatorsForField(fieldType: string): string[] {
   const type = fieldType.trim().toLowerCase();
+  if (type === 'date') {
+    return [
+      '=', '!=', '>', '>=', '<', '<=',
+      'DATE_AGE_DAYS_LT',
+      'DATE_AGE_DAYS_LTE',
+      'DATE_AGE_DAYS_GT',
+      'DATE_AGE_DAYS_GTE',
+      'DATE_AGE_DAYS_BETWEEN',
+    ];
+  }
   // Equality for date/datetime supports optional components (day, month, year,
   // and time for datetime). Ordered comparisons switch the editor to a complete
   // native date/datetime input, so the comparison remains unambiguous.
@@ -77,6 +87,11 @@ export function operatorLabel(operator: string | null | undefined): string {
     '<': 'Less than',
     '<=': 'Less than or equal to',
     CONTAINS: 'Contains',
+    DATE_AGE_DAYS_LT: 'Days since date — less than',
+    DATE_AGE_DAYS_LTE: 'Days since date — at most',
+    DATE_AGE_DAYS_GT: 'Days since date — more than',
+    DATE_AGE_DAYS_GTE: 'Days since date — at least',
+    DATE_AGE_DAYS_BETWEEN: 'Days since date — between',
   };
 
   return labels[operator ?? ''] ?? operator ?? '—';

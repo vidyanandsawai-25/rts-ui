@@ -30,30 +30,18 @@ function sumDepartmentCounts(
   );
 }
 
-/** Returns public landing totals from both MIS modules' department summaries. */
+/** Returns public landing totals from the RTS module's department summaries. */
 export async function getCitizenLandingApplicationCountsAction(): Promise<CitizenLandingApplicationCounts | null> {
-  const responses = await Promise.allSettled(
-    (['RTS', 'AapleSarkar'] as const).map((moduleName) =>
-      getRtsMisDashboardData({
-        Flag: 'admin',
-        DeparmentId: REQUIRED_DEPARTMENT_ID,
-        DeparmentName: REQUIRED_DEPARTMENT_NAME,
-        ModuleName: moduleName,
-      })
-    )
-  );
+  try {
+    const response = await getRtsMisDashboardData({
+      Flag: 'admin',
+      DeparmentId: REQUIRED_DEPARTMENT_ID,
+      DeparmentName: REQUIRED_DEPARTMENT_NAME,
+      ModuleName: 'RTS',
+    });
 
-  let hasSuccessfulResponse = false;
-  const totals = responses.reduce<CitizenLandingApplicationCounts>((combined, response) => {
-    if (response.status !== 'fulfilled' || response.value.status !== true) return combined;
-
-    hasSuccessfulResponse = true;
-    const counts = sumDepartmentCounts(response.value.data?.departmentWiseData);
-    return {
-      received: combined.received + counts.received,
-      delivered: combined.delivered + counts.delivered,
-    };
-  }, { received: 0, delivered: 0 });
-
-  return hasSuccessfulResponse ? totals : null;
+    return response.status ? sumDepartmentCounts(response.data?.departmentWiseData) : null;
+  } catch {
+    return null;
+  }
 }
