@@ -3,7 +3,11 @@
 import { cookies } from 'next/headers';
 import { getUserIdFromCookies } from '@/lib/utils/auth-session';
 import { createRtsApplication, updateRtsApplication } from '@/lib/api/rts/rtsapplication.service';
-import { uploadRtsDocument } from '@/lib/api/rts/rtsdocument.service';
+import {
+  RtsDocumentUploadError,
+  uploadRtsDocument,
+  type RtsDocumentUploadErrorCode,
+} from '@/lib/api/rts/rtsdocument.service';
 import { getRtsServiceById } from '@/lib/api/rts/rtsservices.service';
 import { evaluateRtsFee } from '@/lib/api/rts/rtsRulemater.service';
 import { buildRtsApplicationPayload } from '@/lib/utils/rts/rts-application-payload';
@@ -39,6 +43,55 @@ interface SubmitRtsApplicationActionInput {
   tokenTD?: string | null;
 }
 
+/**
+ * Returned failures are intentional: Server Action exceptions can be redacted
+ * by Next.js, while this shape lets the citizen form distinguish an attachment
+ * problem from a failed application submission without exposing backend details.
+ */
+export type SubmitRtsApplicationActionResult =
+  | CreateRtsApplicationResponse
+  | {
+      success: false;
+      message: string;
+      items: null;
+      errors: null;
+      correlationId: null;
+      failureType: 'document-upload' | 'application-submit';
+      errorCode?: RtsDocumentUploadErrorCode;
+      documentLabel?: string;
+    };
+
+function documentUploadFailure(
+  error: unknown,
+  documentLabel: string
+): SubmitRtsApplicationActionResult {
+  const uploadError = error instanceof RtsDocumentUploadError ? error : null;
+  const safeMessage = uploadError?.message ?? 'The document could not be uploaded. Please try again.';
+
+  return {
+    success: false,
+    message: documentLabel ? `${documentLabel}: ${safeMessage}` : safeMessage,
+    items: null,
+    errors: null,
+    correlationId: null,
+    failureType: 'document-upload',
+    errorCode: uploadError?.code,
+    documentLabel: documentLabel || undefined,
+  };
+}
+
+function applicationSubmitFailure(): SubmitRtsApplicationActionResult {
+  return {
+    success: false,
+    message:
+      'We could not submit your application right now. Your form has not been submitted. Please try again shortly.',
+    items: null,
+    errors: null,
+    correlationId: null,
+    failureType: 'application-submit',
+  };
+}
+
 function readCitizenOwnerIdFromCookieValue(profileCookie?: string): number | undefined {
   if (!profileCookie) return undefined;
 
@@ -71,7 +124,7 @@ export async function evaluateRtsFeeAction(
 
 export async function submitRtsApplicationAction(
   formData: FormData
-): Promise<CreateRtsApplicationResponse> {
+): Promise<SubmitRtsApplicationActionResult> {
   const cookieStore = await cookies();
   const serializedInput = formData.get('submitInput');
   if (typeof serializedInput !== 'string' || !serializedInput.trim()) {
@@ -111,11 +164,16 @@ export async function submitRtsApplicationAction(
       continue;
     }
 
-    const uploadResult = await uploadRtsDocument({
-      file,
-      documentType: fileField.fieldLabel || fileField.fieldName,
-      isPrimaryDocument: true,
-    });
+    let uploadResult;
+    try {
+      uploadResult = await uploadRtsDocument({
+        file,
+        documentType: fileField.fieldLabel || fileField.fieldName,
+        isPrimaryDocument: true,
+      });
+    } catch (error) {
+      return documentUploadFailure(error, fileField.fieldLabel || fileField.fieldName || file.name);
+    }
 
     documentGuidByFieldDefinitionId[String(fileField.fieldDefinitionId)] =
       uploadResult.documentGuid;
@@ -142,7 +200,12 @@ export async function submitRtsApplicationAction(
     tdToken,
   });
 
-  const result = await createRtsApplication(payload);
+  let result: CreateRtsApplicationResponse;
+  try {
+    result = await createRtsApplication(payload);
+  } catch {
+    return applicationSubmitFailure();
+  }
 
   if (tdToken) {
     try {
@@ -170,7 +233,10 @@ export async function uploadRtsResubmitDocumentAction(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'The replacement document could not be uploaded.',
+      error:
+        error instanceof RtsDocumentUploadError
+          ? error.message
+          : 'The replacement document could not be uploaded. Please try again.',
     };
   }
 }

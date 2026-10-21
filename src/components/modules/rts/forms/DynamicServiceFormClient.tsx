@@ -1280,6 +1280,46 @@ export default function DynamicServiceFormClient({
     }
   };
 
+  const getSubmissionFailureMessage = (result?: any) => {
+    const isDocumentFailure = result?.failureType === 'document-upload';
+
+    if (isDocumentFailure) {
+      return {
+        title:
+          language === 'en'
+            ? 'Document Upload Failed'
+            : language === 'hi'
+              ? 'दस्तावेज़ अपलोड नहीं हुआ'
+              : 'कागदपत्र अपलोड झाले नाही',
+        text:
+          typeof result?.message === 'string' && result.message.trim()
+            ? result.message
+            : language === 'en'
+              ? 'One of the documents could not be uploaded. Please check the file and try again.'
+              : language === 'hi'
+                ? 'एक दस्तावेज़ अपलोड नहीं हो सका। कृपया फ़ाइल जांचें और पुनः प्रयास करें।'
+                : 'एक कागदपत्र अपलोड करता आले नाही. कृपया फाइल तपासा आणि पुन्हा प्रयत्न करा.',
+      };
+    }
+
+    return {
+      title:
+        language === 'en'
+          ? 'Submit Failed'
+          : language === 'hi'
+            ? 'सबमिट असफल'
+            : 'अर्ज सादर झाला नाही',
+      text:
+        typeof result?.message === 'string' && result.message.trim()
+          ? result.message
+          : language === 'en'
+            ? 'We could not submit your application right now. Please try again shortly.'
+            : language === 'hi'
+              ? 'अभी आवेदन सबमिट नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।'
+              : 'सध्या अर्ज सादर करता आला नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.',
+    };
+  };
+
   const ensureApplicationId = (): number => {
     let applicationId = currentApplicationId;
 
@@ -1526,10 +1566,32 @@ export default function DynamicServiceFormClient({
       const submitBundle = buildSubmitFormData();
 
       if (!submitApplicationAction) {
-        throw new Error('submitApplicationAction is missing');
+        const failure = getSubmissionFailureMessage();
+        await MySwal.fire({
+          icon: 'error',
+          title: failure.title,
+          text: failure.text,
+          confirmButtonColor: '#ef4444',
+          background: darkMode ? '#1f2937' : '#ffffff',
+          color: darkMode ? '#ffffff' : '#000000',
+        });
+        return;
       }
 
       const response = await submitApplicationAction(submitBundle);
+
+      if (!response?.success || !response?.items) {
+        const failure = getSubmissionFailureMessage(response);
+        await MySwal.fire({
+          icon: 'error',
+          title: failure.title,
+          text: failure.text,
+          confirmButtonColor: '#ef4444',
+          background: darkMode ? '#1f2937' : '#ffffff',
+          color: darkMode ? '#ffffff' : '#000000',
+        });
+        return;
+      }
 
       // The payment-demand service evaluates the saved application values again,
       // making the stored statutory demand authoritative without creating a
@@ -1738,13 +1800,13 @@ export default function DynamicServiceFormClient({
           }
         });
       }
-    } catch (err: any) {
-      const apiErr = parseBackendError(err);
-
+    } catch {
+      console.error('RTS application submission failed.');
+      const failure = getSubmissionFailureMessage();
       MySwal.fire({
         icon: 'error',
-        title: language === 'en' ? 'Submit Failed' : 'सबमिट असफल',
-        text: apiErr?.message || err?.message || 'Failed to submit application',
+        title: failure.title,
+        text: failure.text,
         confirmButtonColor: '#ef4444',
         background: darkMode ? '#1f2937' : '#ffffff',
         color: darkMode ? '#ffffff' : '#000000',
