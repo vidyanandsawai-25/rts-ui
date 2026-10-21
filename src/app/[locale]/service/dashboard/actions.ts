@@ -88,6 +88,7 @@ async function attachPaymentSnapshots(
         ...application,
         paymentTransactionId: status.transactionId ?? null,
         payableFee: status.requiredFee,
+        isPaymentAfterApproval: status.isPaymentAfterApproval === true,
         hasPaymentTransaction: status.hasPaymentTransaction === true,
         paymentStatus: status.paymentStatus,
         receiptNo: status.receiptNo ?? null,

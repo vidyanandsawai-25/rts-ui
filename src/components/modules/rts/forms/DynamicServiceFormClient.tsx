@@ -66,6 +66,7 @@ import {
   getPaymentStatusAction,
 } from '@/app/[locale]/service/payment/actions';
 import type { RtsFeeEvaluationResult } from '@/types/rts/rts-rulemaster.types';
+import { buildFeeBreakdownLines, escapeFeeBreakdownHtml, type FeeBreakdownField } from '@/lib/utils/rts/fee-breakdown';
 import type { RtsApplicationResubmitContext } from '@/types/rts/rts-application.types';
 
 const MySwal = withReactContent(Swal);
@@ -126,19 +127,6 @@ function serializeFormValue(value: any) {
 
   const text = String(value).trim();
   return text === '' ? null : text;
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(
-    /[&<>"]/g,
-    (character) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-      })[character] || character
-  );
 }
 
 function getLocalizedLabelText(label: any, language: string): string {
@@ -224,8 +212,8 @@ export default function DynamicServiceFormClient({
     [serviceId, apiItems]
   );
   const baseSteps = useMemo(() => apiConfig?.steps || [], [apiConfig]);
-  const feeFieldLabelsByDefinitionId = useMemo(() => {
-    const labels = new Map<number, string>();
+  const feeFieldsByDefinitionId = useMemo(() => {
+    const fields = new Map<number, FeeBreakdownField>();
 
     for (const step of baseSteps) {
       for (const field of step.fields || []) {
@@ -235,12 +223,17 @@ export default function DynamicServiceFormClient({
         const label = getLocalizedLabelText(field?.label, language);
 
         if (Number.isSafeInteger(fieldDefinitionId) && fieldDefinitionId > 0 && label) {
-          labels.set(fieldDefinitionId, label);
+          const options: Record<string, string> = {};
+          for (const option of field.options || []) {
+            const value = String(option.value ?? '').trim();
+            if (value) options[value.toLowerCase()] = getLocalizedLabelText(option.label, language) || value;
+          }
+          fields.set(fieldDefinitionId, { label, options });
         }
       }
     }
 
-    return labels;
+    return fields;
   }, [baseSteps, language]);
 
   // This is an estimate only. Payment creation evaluates persisted values again
@@ -1820,62 +1813,44 @@ export default function DynamicServiceFormClient({
         ? t('confirmation.fee.serviceDefaultFee')
         : t('confirmation.fee.baseFee');
     const money = (amount: number) => `₹${amount.toFixed(2)}`;
-    const matchedFeeRules = (feeEstimate?.matchedRules ?? []).filter(
-      (rule) => toNonNegativeAmount(rule.amount) > 0
+    const breakdownLines = buildFeeBreakdownLines(
+      feeEstimate,
+      defaultServiceFee,
+      feeFieldsByDefinitionId,
+      language,
+      (key, values) => t(`confirmation.fee.${key}`, values)
     );
-    const feeConditionRows = matchedFeeRules
-      .filter((rule) => Boolean(rule.conditionField || rule.expectedValue))
-      .map((rule) => {
-        const fieldName =
-          feeFieldLabelsByDefinitionId.get(Number(rule.conditionFieldDefinitionId)) ||
-          rule.conditionField?.trim() ||
-          t('confirmation.fee.standardServiceCharge');
-        const expectedValue = rule.expectedValue?.trim();
-
-        return `<li class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-2 text-left">
-          <div class="flex items-center justify-between gap-2.5">
-            <div class="min-w-0">
-              <p class="truncate text-xs font-semibold text-slate-800">${escapeHtml(fieldName)}</p>
-              ${expectedValue ? `<p class="mt-0.5 truncate text-[11px] text-slate-500">${escapeHtml(t('confirmation.fee.basedOn'))}: ${escapeHtml(expectedValue)}</p>` : ''}
-            </div>
-            <span class="shrink-0 text-xs font-extrabold text-slate-900">${money(toNonNegativeAmount(rule.amount))}</span>
-          </div>
-        </li>`;
-      })
-      .join('');
+    const breakdownRows = breakdownLines.map((line) => `<li class="py-2.5 first:pt-0 last:pb-0">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0 text-left">
+          <p class="break-words text-xs font-semibold leading-snug text-slate-800">${escapeFeeBreakdownHtml(line.label)}</p>
+          ${line.details.map((detail) => `<p class="mt-1 break-words text-[11px] leading-snug text-slate-600">${escapeFeeBreakdownHtml(detail)}</p>`).join('')}
+        </div>
+        <span class="shrink-0 text-xs font-extrabold text-slate-900">${money(toNonNegativeAmount(line.amount))}</span>
+      </div>
+    </li>`).join('');
     const feeBillHtml =
       totalFee > 0
-        ? `<section class="overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm">
-            <div class="border-b border-slate-100 bg-slate-50 px-3 py-1.5">
-              <p class="text-[11px] font-extrabold uppercase tracking-wide text-slate-700">${escapeHtml(t('confirmation.fee.feeDetails'))}</p>
+        ? `<section class="rounded-xl border border-slate-200 bg-white text-left shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-t-xl border-b border-slate-100 bg-slate-50 px-3 py-2">
+              <p class="text-[11px] font-extrabold uppercase tracking-wide text-slate-700">${escapeFeeBreakdownHtml(t('confirmation.fee.feeDetails'))}</p>
+              <p class="text-[11px] font-medium text-slate-600">${escapeFeeBreakdownHtml(baseFeeLabel)} ${money(baseFee)} · ${escapeFeeBreakdownHtml(t('confirmation.fee.addonFee'))} ${money(addonFee)}</p>
             </div>
-            <div class="space-y-2.5 p-2.5">
-              <div class="grid grid-cols-2 gap-2">
-                <div class="rounded-lg border border-blue-100 bg-blue-50 p-2.5">
-                  <p class="text-[11px] font-semibold uppercase tracking-wide text-blue-700">${escapeHtml(baseFeeLabel)}</p>
-                  <p class="mt-0.5 text-base font-bold text-slate-900">${money(baseFee)}</p>
-                </div>
-                <div class="rounded-lg border border-violet-100 bg-violet-50 p-2.5">
-                  <p class="text-[11px] font-semibold uppercase tracking-wide text-violet-700">${escapeHtml(t('confirmation.fee.addonFee'))}</p>
-                  <p class="mt-0.5 text-base font-bold text-slate-900">${money(addonFee)}</p>
-                </div>
-              </div>
-              ${feeConditionRows ? `<div><p class="mb-1.5 text-[11px] font-extrabold uppercase tracking-wide text-slate-600">${escapeHtml(t('confirmation.fee.appliedRules'))}</p><ul class="max-h-32 space-y-1.5 overflow-y-auto pr-1">${feeConditionRows}</ul></div>` : ''}
-              <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
-                <span class="text-sm font-semibold text-emerald-800">${escapeHtml(t('confirmation.fee.totalFee'))}</span>
-                <span class="float-right text-base font-extrabold text-emerald-900">${money(totalFee)}</span>
-              </div>
-            </div>
-          </section>`
+            <ul class="divide-y divide-slate-100 px-3 py-1">${breakdownRows}</ul>
+          </section>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-left">
+            <span class="text-sm font-semibold text-emerald-800">${escapeFeeBreakdownHtml(t('confirmation.fee.totalFee'))}</span>
+            <span class="shrink-0 text-base font-extrabold text-emerald-900">${money(totalFee)}</span>
+          </div>`
         : '';
 
     const confirmation = await MySwal.fire({
       icon: 'question',
       title: t('confirmation.title'),
-      html: `<div class="max-h-[55vh] space-y-3 overflow-y-auto px-0.5 text-center">
-        <strong class="block px-2 text-base leading-relaxed">${escapeHtml(t('confirmation.serviceName'))}: ${escapeHtml(serviceTitle)}</strong>
+      html: `<div class="max-h-[60vh] space-y-3 overflow-y-auto px-0.5 text-center">
+        <strong class="block px-2 text-base leading-relaxed">${escapeFeeBreakdownHtml(t('confirmation.serviceName'))}: ${escapeFeeBreakdownHtml(serviceTitle)}</strong>
         ${feeBillHtml}
-        <p class="text-sm text-slate-600">${escapeHtml(t('confirmation.description'))}</p>
+        <p class="text-sm text-slate-600">${escapeFeeBreakdownHtml(t('confirmation.description'))}</p>
       </div>`,
       showCancelButton: true,
       confirmButtonText: t('confirmation.confirm'),

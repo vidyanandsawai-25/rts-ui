@@ -11,6 +11,7 @@ export interface RtsCitizenDashboardApplicationItem {
   remark?: string | null;
   paymentTransactionId?: number | null;
   payableFee?: number | null;
+  isPaymentAfterApproval?: boolean;
   hasPaymentTransaction?: boolean;
   paymentStatus?: string | null;
   receiptNo?: string | null;

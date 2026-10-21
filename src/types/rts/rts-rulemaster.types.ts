@@ -22,12 +22,25 @@ export interface RtsFeeMatchedRule {
   conditionFieldDefinitionId: number | null;
   conditionField: string | null;
   expectedValue: string | null;
+  rateAmount?: number | null;
+  quantityFieldDefinitionId?: number | null;
+  quantityValue?: number | null;
+  percentageBaseAmount?: number | null;
+  matchedConditions?: RtsFeeMatchedCondition[];
   amount: number;
   priority: number;
 }
 
+export interface RtsFeeMatchedCondition {
+  fieldDefinitionId: number;
+  comparisonOperator: string;
+  actualValue: string;
+  expectedValue: string;
+}
+
 export interface RtsFeeEvaluationResult {
   serviceId: number;
+  evaluationDate?: string;
   staticServiceFee: number;
   baseFee: number;
   addonFee: number;

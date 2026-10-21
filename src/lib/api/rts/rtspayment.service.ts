@@ -118,6 +118,7 @@ export interface PaymentStatusResult {
   serviceName: string;
   requiredFee: number;
   isFeeRequired: boolean;
+  isPaymentAfterApproval?: boolean;
   hasPaymentTransaction?: boolean;
   isPaid?: boolean;
   paymentStatus: string;

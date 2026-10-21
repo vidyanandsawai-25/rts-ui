@@ -5,6 +5,22 @@ export type PaymentDemandStatusInput = {
   paymentStatus?: string | null;
 };
 
+export type PaymentActionAvailabilityInput = {
+  isPaymentAfterApproval?: boolean | null;
+  isApplicationApproved?: boolean | null;
+};
+
+/**
+ * Deferred-payment services expose their demand before approval, but citizens
+ * can start checkout only once the final application status is Approved.
+ */
+export function isPaymentActionAvailable({
+  isPaymentAfterApproval,
+  isApplicationApproved,
+}: PaymentActionAvailabilityInput): boolean {
+  return !isPaymentAfterApproval || Boolean(isApplicationApproved);
+}
+
 /**
  * A demand is payable before a payment transaction exists. Transaction presence
  * is therefore deliberately excluded from the free/pending/paid card state.

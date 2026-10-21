@@ -29,6 +29,7 @@ import RtsCitizenViewDetailsDrawer from "@/components/modules/rts/citizen/RtsCit
 import { PaymentCheckoutModal } from "@/components/modules/rts/citizen/PaymentCheckoutModal";
 import { PaymentReceiptModal } from "@/components/modules/rts/citizen/PaymentReceiptModal";
 import { getPaymentReceiptAction } from "@/app/[locale]/service/payment/actions";
+import { isPaymentActionAvailable } from "@/lib/utils/rts/payment-demand-status";
 import type {
   CitizenDashboardPagination,
   CitizenDashboardRouteState,
@@ -461,6 +462,10 @@ export default function DepartmentCarsoulClient({
                       app.status?.toLowerCase().includes("payment completed") ||
                       app.status?.toLowerCase().includes("paid") ||
                       app.status?.toLowerCase().includes("शुल्क प्राप्त");
+                    const canPayNow = isPaymentActionAvailable({
+                      isPaymentAfterApproval: app.isPaymentAfterApproval,
+                      isApplicationApproved: isAppApproved,
+                    });
 
                     const propLabel = t('propertyNumber').replace(/[:\.]\s*$/, '');
                     const upicLabel = t('upicNumber').replace(/[:\.]\s*$/, '');
@@ -554,14 +559,20 @@ export default function DepartmentCarsoulClient({
                                 <Clock className="h-3.5 w-3.5 text-amber-600" />
                                 {lang === "mr" ? "बाकी" : lang === "hi" ? "लंबित" : "Pending"}
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => openPayment(app.applicationNo)}
-                                className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs transition-all hover:bg-emerald-700"
-                              >
-                                <CreditCard className="h-3.5 w-3.5" />
-                                {lang === "mr" ? `शुल्क भरा (₹${payableFee})` : lang === "hi" ? `शुल्क भरें (₹${payableFee})` : `Pay Fee (₹${payableFee})`}
-                              </button>
+                              {canPayNow ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openPayment(app.applicationNo)}
+                                  className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs transition-all hover:bg-emerald-700"
+                                >
+                                  <CreditCard className="h-3.5 w-3.5" />
+                                  {lang === "mr" ? `शुल्क भरा (₹${payableFee})` : lang === "hi" ? `शुल्क भरें (₹${payableFee})` : `Pay Fee (₹${payableFee})`}
+                                </button>
+                              ) : (
+                                <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700">
+                                  {lang === "mr" ? `शुल्क: ₹${payableFee}` : lang === "hi" ? `शुल्क: ₹${payableFee}` : `Fee: ₹${payableFee}`}
+                                </span>
+                              )}
                             </div>
                           )}
                         </td>
