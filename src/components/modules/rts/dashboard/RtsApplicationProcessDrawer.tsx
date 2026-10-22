@@ -69,7 +69,10 @@ import {
 } from '@/lib/utils/rts/approval-officer-access';
 import { getRtsApplicationStatusBadgeProps } from '@/lib/utils/rts/application-status-badge';
 import { getApplicationFieldDisplayLabel } from '@/lib/utils/rts/application-field-label';
-import { getPaymentDemandStatus } from '@/lib/utils/rts/payment-demand-status';
+import {
+  getPaymentDemandStatus,
+  isWorkflowActionBlockedByPayment,
+} from '@/lib/utils/rts/payment-demand-status';
 import {
   parseFileLatLogCaptureMetadata,
   type FileLatLogCaptureMetadata,
@@ -339,11 +342,20 @@ export default function RtsApplicationProcessDrawer({
     paymentStatus: verification?.paymentStatus,
   });
   const isPaymentAfterApproval = Boolean(verification?.isPaymentAfterApproval);
-  // Standard services must be paid before an officer can advance the workflow.
-  // Services explicitly configured for payment after approval remain unblocked
-  // until they reach their approved-payment step.
-  const isPreApprovalPaymentBlocked =
-    hasOutstandingPayment && !isPaymentAfterApproval;
+  const isVerificationBlockedByPreApprovalPayment = isWorkflowActionBlockedByPayment({
+    hasOutstandingPayment,
+    isPaymentAfterApproval,
+    currentStageCanPay: verification?.canPay,
+    isFinalStage: verification?.isFinalStage,
+    action: 'verify',
+  });
+  const isApprovalBlockedByPreApprovalPayment = isWorkflowActionBlockedByPayment({
+    hasOutstandingPayment,
+    isPaymentAfterApproval,
+    currentStageCanPay: verification?.canPay,
+    isFinalStage: verification?.isFinalStage,
+    action: 'approve',
+  });
 
   const isApproved = Boolean(
     verification?.applicationStatus?.toLowerCase() === 'approved' ||
@@ -575,10 +587,11 @@ export default function RtsApplicationProcessDrawer({
       return;
     }
 
-    if (
-      isPreApprovalPaymentBlocked &&
-      (actionKey === 'canVerifyDocument' || actionKey === 'canApprove')
-    ) {
+    const isBlockedByPreApprovalPayment =
+      (actionKey === 'canVerifyDocument' && isVerificationBlockedByPreApprovalPayment) ||
+      (actionKey === 'canApprove' && isApprovalBlockedByPreApprovalPayment);
+
+    if (isBlockedByPreApprovalPayment) {
       toast.error(t('paymentRequiredBeforeApproval'));
       return;
     }
@@ -708,8 +721,9 @@ export default function RtsApplicationProcessDrawer({
                   const isVerificationBlockedByCitizenResubmission =
                     action.key === 'canVerifyDocument' && isRevertedToCitizen;
                   const isBlockedByPreApprovalPayment =
-                    isPreApprovalPaymentBlocked &&
-                    (action.key === 'canVerifyDocument' || action.key === 'canApprove');
+                    (action.key === 'canVerifyDocument' &&
+                      isVerificationBlockedByPreApprovalPayment) ||
+                    (action.key === 'canApprove' && isApprovalBlockedByPreApprovalPayment);
 
                   const actionLabel =
                     action.key === 'canApprove'

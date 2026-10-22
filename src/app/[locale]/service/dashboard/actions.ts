@@ -42,6 +42,15 @@ export type CitizenDashboardData = DashboardData & {
   pagination: CitizenDashboardPagination;
 };
 
+/** The slow, citizen-specific part of the dashboard. Kept separate so the page shell can render first. */
+export type CitizenDashboardApplicationsData = Omit<CitizenDashboardData, 'departments'> & {
+  error?: string;
+};
+
+export type CitizenDashboardApplicationsResponse = CitizenDashboardApplicationsData & {
+  routeState: CitizenDashboardRouteState;
+};
+
 export type CitizenDashboardPagination = {
   pageNumber: number;
   pageSize: number;
@@ -383,14 +392,32 @@ export async function getCitizenDashboardData(
   requestedPageNumber?: number,
   cuidParam?: string
 ): Promise<CitizenDashboardData> {
-  const pageNumber = normalizeCitizenDashboardPageNumber(requestedPageNumber);
-  const emptyPagination = createCitizenDashboardPagination(pageNumber, 0);
   let departments: DepartmentDTO[] = [];
   try {
     departments = await getDashboardDepartments();
   } catch (err) {
     console.error("Failed to fetch dashboard departments:", err);
   }
+
+  const { error: _error, ...applications } = await getCitizenDashboardApplicationsData(
+    requestedPageNumber,
+    cuidParam
+  );
+
+  return { departments, ...applications };
+}
+
+/**
+ * Loads only the potentially slow application timeline. This is intentionally
+ * independent of department/service lookup so the dashboard shell is usable
+ * while the external citizen-dashboard endpoint responds.
+ */
+async function getCitizenDashboardApplicationsData(
+  requestedPageNumber?: number,
+  cuidParam?: string
+): Promise<CitizenDashboardApplicationsData> {
+  const pageNumber = normalizeCitizenDashboardPageNumber(requestedPageNumber);
+  const emptyPagination = createCitizenDashboardPagination(pageNumber, 0);
 
   const cookieStore = await cookies();
   const profileCookie = cookieStore.get("rts_citizen_profile")?.value;
@@ -440,7 +467,6 @@ export async function getCitizenDashboardData(
         );
 
         return {
-          departments,
           upicId: cuidCookie,
           userApplications: await attachPaymentSnapshots(userApplications),
           pagination: {
@@ -453,39 +479,71 @@ export async function getCitizenDashboardData(
       }
     } catch (asErr) {
       console.error("Failed to load Aaple Sarkar citizen applications:", asErr);
+      return {
+        userApplications: [],
+        pagination: emptyPagination,
+        error: "Unable to load your applications right now.",
+      };
     }
+
+    return {
+      upicId: cuidCookie,
+      userApplications: [],
+      pagination: emptyPagination,
+      error: "Unable to load your applications right now.",
+    };
   }
 
   // 2. Standard RTS citizen profile flow
   try {
     if (!profileCookie) {
-      return { departments, userApplications: [], pagination: emptyPagination };
+      return { userApplications: [], pagination: emptyPagination };
     }
 
     const profile = JSON.parse(profileCookie) as CitizenProfileCookie;
     const upicId = profile.upicId?.trim();
     if (!upicId) {
-      return { departments, userApplications: [], pagination: emptyPagination };
+      return { userApplications: [], pagination: emptyPagination };
     }
 
     const response = await getRtsCitizenDashboardData({
       UpicId: upicId,
       pageNumber,
       pageSize: CITIZEN_DASHBOARD_PAGE_SIZE,
-    }).catch(() => null);
-    const sourceApplications = response?.status ? response.data.result ?? [] : [];
+    });
+    const sourceApplications = response.status ? response.data.result ?? [] : [];
     const userApplications = await attachPaymentSnapshots(sourceApplications);
 
     return {
-      departments,
       upicId,
       userApplications,
       pagination: createCitizenDashboardPagination(pageNumber, userApplications.length),
     };
   } catch (error) {
     console.error("Failed to load citizen dashboard data:", error);
-    return { departments, userApplications: [], pagination: emptyPagination };
+    return {
+      userApplications: [],
+      pagination: emptyPagination,
+      error: "Unable to load your applications right now.",
+    };
   }
+}
+
+/**
+ * Client-triggered dashboard timeline load. It runs after the dashboard shell
+ * is visible, avoiding a slow upstream application API from blocking the page.
+ */
+export async function getCitizenDashboardApplicationsAction(
+  requestedPageNumber?: number,
+  cuidParam?: string,
+  routeInput: CitizenDashboardRouteInput = {}
+): Promise<CitizenDashboardApplicationsResponse> {
+  const applications = await getCitizenDashboardApplicationsData(requestedPageNumber, cuidParam);
+  const routeState = applications.error
+    ? emptyCitizenDashboardRouteState
+    : await getCitizenDashboardRouteState(applications.userApplications, routeInput);
+
+  return { ...applications, routeState };
 }
 
 /** Loads the logged-in citizen's MIS applications from the server-only profile cookie or Aaple Sarkar CUID. */

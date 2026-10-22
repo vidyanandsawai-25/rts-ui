@@ -2,7 +2,7 @@ import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { CitizenLayout } from '@/components/layout';
 import DashboardClient from './DashboardClient';
-import { getCitizenDashboardData, getCitizenDashboardRouteState } from './actions';
+import { getDashboardData } from './actions';
 import { fetchLoginBrandingAction } from '@/app/[locale]/login/actions';
 
 interface DashboardPageProps {
@@ -41,24 +41,19 @@ export default async function ServiceDashboardPage({ params, searchParams }: Das
     typeof value === 'string' ? value : undefined;
   const requestedPageNumber = Number.parseInt(getQueryValue(query.pageNumber) ?? '', 10);
   const cuid = getQueryValue(query.CUID) || getQueryValue(query.cuid);
-  const { departments, userApplications, upicId, pagination } = await getCitizenDashboardData(
-    requestedPageNumber,
-    cuid
-  );
-  const routeState = await getCitizenDashboardRouteState(userApplications, {
-    details: getQueryValue(query.details),
-    payment: getQueryValue(query.payment),
-    receipt: getQueryValue(query.receipt),
-  });
+  const { departments } = await getDashboardData();
 
   return (
     <CitizenLayout>
       <DashboardClient
         departments={departments}
-        userApplications={userApplications}
-        upicId={upicId}
-        pagination={pagination}
-        routeState={routeState}
+        requestedPageNumber={requestedPageNumber}
+        cuid={cuid}
+        routeInput={{
+          details: getQueryValue(query.details),
+          payment: getQueryValue(query.payment),
+          receipt: getQueryValue(query.receipt),
+        }}
       />
     </CitizenLayout>
   );

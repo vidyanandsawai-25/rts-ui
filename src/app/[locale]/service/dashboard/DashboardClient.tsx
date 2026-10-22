@@ -1,27 +1,60 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import DepartmentCarouselClient from "@/components/modules/rts/citizen/DepartmentCarsoulClient";
-import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
 import type { DepartmentDTO } from "@/types/rts-citizen.types";
-import type { CitizenDashboardPagination, CitizenDashboardRouteState } from './actions';
+import {
+  getCitizenDashboardApplicationsAction,
+  type CitizenDashboardApplicationsResponse,
+} from './actions';
 
 type DashboardClientProps = {
   departments: DepartmentDTO[];
-  userApplications: RtsMisDashboardUserApplicationItem[];
-  upicId?: string;
-  pagination: CitizenDashboardPagination;
-  routeState: CitizenDashboardRouteState;
+  requestedPageNumber?: number;
+  cuid?: string;
+  routeInput: {
+    details?: string;
+    payment?: string;
+    receipt?: string;
+  };
 };
 
 export default function DashboardClient({
   departments,
-  userApplications,
-  upicId,
-  pagination,
-  routeState,
+  requestedPageNumber,
+  cuid,
+  routeInput,
 }: DashboardClientProps) {
   const searchParams = useSearchParams();
+  const [requestVersion, setRequestVersion] = useState(0);
+  const [applications, setApplications] = useState<CitizenDashboardApplicationsResponse | null>(null);
+  const [isApplicationsLoading, setIsApplicationsLoading] = useState(true);
+
+  useEffect(() => {
+    let isCurrent = true;
+    setIsApplicationsLoading(true);
+
+    void getCitizenDashboardApplicationsAction(requestedPageNumber, cuid, routeInput)
+      .then((result) => {
+        if (!isCurrent) return;
+        setApplications(result);
+        setIsApplicationsLoading(false);
+      })
+      .catch(() => {
+        if (!isCurrent) return;
+        setApplications(null);
+        setIsApplicationsLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [cuid, requestedPageNumber, requestVersion, routeInput]);
+
+  const retryApplications = () => {
+    setRequestVersion((version) => version + 1);
+  };
   const redirectError = searchParams.get("serviceRedirectError");
   const redirectErrorMessage =
     redirectError === "missing-upic"
@@ -42,10 +75,24 @@ export default function DashboardClient({
         )}
         <DepartmentCarouselClient
           departments={departments}
-          userApplications={userApplications}
-          upicId={upicId}
-          pagination={pagination}
-          routeState={routeState}
+          userApplications={applications?.userApplications ?? []}
+          upicId={applications?.upicId}
+          pagination={applications?.pagination ?? {
+            pageNumber: Number.isInteger(requestedPageNumber) && requestedPageNumber! > 0 ? requestedPageNumber! : 1,
+            pageSize: 50,
+            hasPreviousPage: false,
+            hasNextPage: false,
+          }}
+          routeState={applications?.routeState ?? {
+            detailApplication: null,
+            detail: null,
+            paymentStatus: null,
+            paymentApplication: null,
+            receipt: null,
+          }}
+          applicationsLoadState={isApplicationsLoading ? 'loading' : applications?.error ? 'error' : 'ready'}
+          applicationsLoadError={applications?.error}
+          onRetryApplications={retryApplications}
         />
       </div>
     </main>

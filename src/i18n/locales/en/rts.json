@@ -146,6 +146,84 @@
       "confirm": "Yes, Submit",
       "cancel": "Cancel"
     },
+      "draft": {
+        "restore": {
+          "title": "Restore draft?",
+          "description": "We found a draft saved on {date}. Would you like to restore it?",
+          "confirm": "Yes, restore",
+          "cancel": "No, start fresh",
+          "success": "Draft restored"
+        },
+        "saved": "Draft saved",
+        "savedDescription": "Your progress has been saved locally."
+      },
+      "errors": {
+        "genericTitle": "Something went wrong",
+        "incompleteForm": "Incomplete form",
+        "incompleteFormDescription": "Please fill all required fields highlighted in red.",
+        "documentUploadFailed": "Document upload failed",
+        "documentWithLabel": "{label}: {message}",
+        "documentUnsupportedFileType": "This file type is not supported. Upload a PDF, image, Word, Excel, PowerPoint, or text file.",
+        "documentTooLarge": "This file is too large to upload. Please choose a smaller file and try again.",
+        "documentRateLimited": "Too many upload attempts were made. Please wait a few minutes and try again.",
+        "documentTimeout": "The document upload took too long. Please check your connection and try again.",
+        "documentNotAuthorized": "Your session cannot upload this document. Please sign in again and retry.",
+        "documentServiceUnavailable": "Document upload is temporarily unavailable. Please try again shortly.",
+        "documentUploadFallback": "The document could not be uploaded. Please try again.",
+        "replacementDocumentUploadFailed": "The replacement document could not be uploaded. Please try again.",
+        "submitFailed": "Submit failed",
+        "submitFailedDescription": "We could not submit your application right now. Your form has not been submitted. Please try again shortly.",
+        "applicantDetailsRequired": "Applicant details required",
+        "applicantDetailsDescription": "Complete the {fields} field before submitting."
+      },
+      "resubmit": {
+        "successTitle": "Application resubmitted!",
+        "successDescription": "Your application has been updated and resubmitted successfully.",
+        "failedTitle": "Resubmission failed",
+        "failedDescription": "We could not resubmit your application. Please try again shortly."
+      },
+      "submission": {
+        "successTitle": "Application submitted!",
+        "trackingId": "Application tracking ID",
+        "governmentFee": "Statutory government fee: ₹{amount}",
+        "payNowOrLater": "Please pay the statutory fee now or later from your citizen dashboard.",
+        "paymentAfterApproval": "Payment will be available after your application is approved."
+      },
+      "success": {
+        "title": "Application submitted successfully!",
+        "description": "Your application has been received and is under review.",
+        "saveTrackingId": "Save this ID to track status.",
+        "notificationNotice": "You will receive SMS and email notifications about your application status. Processing will be completed within 15 working days."
+      },
+      "actions": {
+        "back": "Back",
+        "backToServices": "Back to services",
+        "copyTrackingId": "Copy tracking ID",
+        "payGovernmentFee": "Pay government fee now",
+        "resubmitting": "Resubmitting...",
+        "saveDraft": "Save draft",
+        "submitApplication": "Submit application",
+        "submitting": "Submitting...",
+        "trackApplication": "Track application",
+        "updateAndResubmit": "Update and resubmit application",
+        "viewAndTrack": "View application and track status"
+      },
+      "sections": {
+        "title": "Form sections",
+        "pendingAction": "Pending action",
+        "section": "Section {number}"
+      },
+      "correction": {
+        "officerRemark": "Officer remark / reason for correction:",
+        "actionRequired": "Action required",
+        "description": "Correct the required details or re-upload the documents as instructed above, then select Update and resubmit application."
+      },
+      "feedback": {
+        "copied": "Copied!",
+        "payableGovernmentFee": "Payable government fee:",
+        "standardServiceFee": "(standard service fee)",
+        "estimateConfirmedAtPayment": "Estimate will be confirmed at payment."
+      },
     "map": {
       "placeholder": "Paste Google Maps link",
       "helper": "Use your device location or paste a Google Maps link.",
@@ -1213,7 +1291,10 @@
     "dashboard": "Dashboard",
     "searchResults": "Search Results",
     "servicesFound": "Services Found",
-    "availableServices": "Available Services"
+    "availableServices": "Available Services",
+    "loadingApplications": "Loading your applications...",
+    "applicationsLoadFailed": "We could not load your applications right now.",
+    "retryApplications": "Try again"
   },
   "applicationDetails": {
     "unknownService": "Unknown service",

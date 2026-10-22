@@ -10,6 +10,16 @@ export type PaymentActionAvailabilityInput = {
   isApplicationApproved?: boolean | null;
 };
 
+export type WorkflowPaymentAction = 'verify' | 'approve';
+
+export type WorkflowPaymentGuardInput = {
+  hasOutstandingPayment?: boolean | null;
+  isPaymentAfterApproval?: boolean | null;
+  currentStageCanPay?: boolean | null;
+  isFinalStage?: boolean | null;
+  action: WorkflowPaymentAction;
+};
+
 /**
  * Deferred-payment services expose their demand before approval, but citizens
  * can start checkout only once the final application status is Approved.
@@ -19,6 +29,27 @@ export function isPaymentActionAvailable({
   isApplicationApproved,
 }: PaymentActionAvailabilityInput): boolean {
   return !isPaymentAfterApproval || Boolean(isApplicationApproved);
+}
+
+/**
+ * Mirrors the server-side payment checkpoint rule. Earlier non-payment stages
+ * may advance an unpaid application; configured payment stages cannot. Final
+ * approval remains blocked for an unpaid standard service.
+ */
+export function isWorkflowActionBlockedByPayment({
+  hasOutstandingPayment,
+  isPaymentAfterApproval,
+  currentStageCanPay,
+  isFinalStage,
+  action,
+}: WorkflowPaymentGuardInput): boolean {
+  if (!hasOutstandingPayment || isPaymentAfterApproval) {
+    return false;
+  }
+
+  return action === 'verify'
+    ? Boolean(currentStageCanPay)
+    : Boolean(currentStageCanPay || isFinalStage);
 }
 
 /**

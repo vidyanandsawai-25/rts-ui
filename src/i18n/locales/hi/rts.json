@@ -146,6 +146,84 @@
       "confirm": "हाँ, जमा करें",
       "cancel": "रद्द करें"
     },
+      "draft": {
+        "restore": {
+          "title": "ड्राफ्ट पुनर्स्थापित करें?",
+          "description": "हमें {date} को सहेजा गया एक ड्राफ्ट मिला। क्या आप इसे पुनर्स्थापित करना चाहेंगे?",
+          "confirm": "हाँ, पुनर्स्थापित करें",
+          "cancel": "नहीं, नया शुरू करें",
+          "success": "ड्राफ्ट पुनर्स्थापित हो गया"
+        },
+        "saved": "ड्राफ्ट सहेजा गया",
+        "savedDescription": "आपकी प्रगति इस डिवाइस पर सहेजी गई है।"
+      },
+      "errors": {
+        "genericTitle": "कुछ गलत हो गया",
+        "incompleteForm": "फॉर्म अधूरा है",
+        "incompleteFormDescription": "कृपया लाल रंग में चिह्नित सभी आवश्यक फ़ील्ड भरें।",
+        "documentUploadFailed": "दस्तावेज़ अपलोड नहीं हुआ",
+        "documentWithLabel": "{label}: {message}",
+        "documentUnsupportedFileType": "यह फ़ाइल प्रकार समर्थित नहीं है। PDF, छवि, Word, Excel, PowerPoint या टेक्स्ट फ़ाइल अपलोड करें।",
+        "documentTooLarge": "यह फ़ाइल अपलोड करने के लिए बहुत बड़ी है। कृपया छोटी फ़ाइल चुनें और पुनः प्रयास करें।",
+        "documentRateLimited": "बहुत अधिक अपलोड प्रयास किए गए। कृपया कुछ मिनट प्रतीक्षा करें और पुनः प्रयास करें।",
+        "documentTimeout": "दस्तावेज़ अपलोड होने में बहुत समय लगा। कृपया अपना कनेक्शन जाँचें और पुनः प्रयास करें।",
+        "documentNotAuthorized": "आपका सत्र इस दस्तावेज़ को अपलोड नहीं कर सकता। कृपया फिर से साइन इन करें और पुनः प्रयास करें।",
+        "documentServiceUnavailable": "दस्तावेज़ अपलोड सेवा अस्थायी रूप से उपलब्ध नहीं है। कृपया थोड़ी देर बाद प्रयास करें।",
+        "documentUploadFallback": "दस्तावेज़ अपलोड नहीं हो सका। कृपया पुनः प्रयास करें।",
+        "replacementDocumentUploadFailed": "बदला गया दस्तावेज़ अपलोड नहीं हो सका। कृपया पुनः प्रयास करें।",
+        "submitFailed": "सबमिट असफल",
+        "submitFailedDescription": "अभी आपका आवेदन सबमिट नहीं हो सका। आपका फॉर्म सबमिट नहीं हुआ है। कृपया थोड़ी देर बाद पुनः प्रयास करें।",
+        "applicantDetailsRequired": "आवेदक विवरण आवश्यक है",
+        "applicantDetailsDescription": "सबमिट करने से पहले {fields} फ़ील्ड भरें।"
+      },
+      "resubmit": {
+        "successTitle": "आवेदन फिर से जमा हो गया!",
+        "successDescription": "आपका आवेदन अपडेट होकर सफलतापूर्वक फिर से जमा हो गया है।",
+        "failedTitle": "पुनः सबमिट असफल",
+        "failedDescription": "आपका आवेदन फिर से जमा नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।"
+      },
+      "submission": {
+        "successTitle": "आवेदन जमा हो गया!",
+        "trackingId": "आवेदन ट्रैकिंग आईडी",
+        "governmentFee": "शासकीय सेवा शुल्क: ₹{amount}",
+        "payNowOrLater": "कृपया शासकीय शुल्क अभी भरें या बाद में नागरिक डैशबोर्ड से भुगतान करें।",
+        "paymentAfterApproval": "आवेदन स्वीकृत होने के बाद भुगतान उपलब्ध होगा।"
+      },
+      "success": {
+        "title": "आवेदन सफलतापूर्वक जमा हुआ!",
+        "description": "आपका आवेदन प्राप्त हो गया है और समीक्षा में है।",
+        "saveTrackingId": "स्थिति ट्रैक करने के लिए यह आईडी सहेजें।",
+        "notificationNotice": "आपको आवेदन की स्थिति के बारे में SMS और ईमेल सूचनाएं मिलेंगी। प्रक्रिया 15 कार्य दिवसों के भीतर पूरी होगी।"
+      },
+      "actions": {
+        "back": "पीछे",
+        "backToServices": "सेवाओं पर वापस जाएं",
+        "copyTrackingId": "ट्रैकिंग आईडी कॉपी करें",
+        "payGovernmentFee": "शासकीय शुल्क अभी भरें",
+        "resubmitting": "फिर से जमा हो रहा है...",
+        "saveDraft": "ड्राफ्ट सहेजें",
+        "submitApplication": "आवेदन जमा करें",
+        "submitting": "सबमिट हो रहा है...",
+        "trackApplication": "आवेदन ट्रैक करें",
+        "updateAndResubmit": "अपडेट करके फिर से जमा करें",
+        "viewAndTrack": "आवेदन देखें और स्थिति ट्रैक करें"
+      },
+      "sections": {
+        "title": "फॉर्म अनुभाग",
+        "pendingAction": "कार्रवाई लंबित",
+        "section": "अनुभाग {number}"
+      },
+      "correction": {
+        "officerRemark": "अधिकारी की टिप्पणी / सुधार का कारण:",
+        "actionRequired": "कार्रवाई आवश्यक",
+        "description": "ऊपर दिए गए निर्देशों के अनुसार आवश्यक विवरण सुधारें या दस्तावेज़ फिर से अपलोड करें, फिर अपडेट करके फिर से जमा करें चुनें।"
+      },
+      "feedback": {
+        "copied": "कॉपी किया गया!",
+        "payableGovernmentFee": "देय शासकीय शुल्क:",
+        "standardServiceFee": "(मानक सेवा शुल्क)",
+        "estimateConfirmedAtPayment": "भुगतान के समय अनुमान की पुष्टि की जाएगी।"
+      },
     "map": {
       "placeholder": "Google Maps लिंक पेस्ट करें",
       "helper": "अपने डिवाइस का स्थान उपयोग करें या Google Maps लिंक पेस्ट करें।",
@@ -1219,7 +1297,10 @@
     "dashboard": "डैशबोर्ड",
     "searchResults": "खोज परिणाम",
     "servicesFound": "सेवाएं मिलीं",
-    "availableServices": "उपलब्ध सेवाएं"
+    "availableServices": "उपलब्ध सेवाएं",
+    "loadingApplications": "आपके आवेदन लोड हो रहे हैं...",
+    "applicationsLoadFailed": "अभी आपके आवेदन लोड नहीं किए जा सके।",
+    "retryApplications": "फिर से प्रयास करें"
   },
   "applicationDetails": {
     "unknownService": "अज्ञात सेवा",

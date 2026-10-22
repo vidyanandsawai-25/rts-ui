@@ -146,6 +146,84 @@
       "confirm": "होय, सादर करा",
       "cancel": "रद्द करा"
     },
+      "draft": {
+        "restore": {
+          "title": "मसुदा पुनर्संचयित करायचा आहे का?",
+          "description": "आम्हाला {date} रोजी जतन केलेला मसुदा सापडला. आपण तो पुनर्संचयित करू इच्छिता का?",
+          "confirm": "होय, पुनर्संचयित करा",
+          "cancel": "नाही, नवीन सुरू करा",
+          "success": "मसुदा पुनर्संचयित झाला"
+        },
+        "saved": "मसुदा जतन केला",
+        "savedDescription": "तुमची प्रगती या डिव्हाइसवर जतन केली आहे।"
+      },
+      "errors": {
+        "genericTitle": "काहीतरी चूक झाली",
+        "incompleteForm": "अर्ज अपूर्ण आहे",
+        "incompleteFormDescription": "कृपया लाल रंगाने दर्शवलेली सर्व आवश्यक फील्ड भरा।",
+        "documentUploadFailed": "कागदपत्र अपलोड झाले नाही",
+        "documentWithLabel": "{label}: {message}",
+        "documentUnsupportedFileType": "ही फाइल प्रकार समर्थित नाही. PDF, प्रतिमा, Word, Excel, PowerPoint किंवा मजकूर फाइल अपलोड करा।",
+        "documentTooLarge": "ही फाइल अपलोड करण्यासाठी खूप मोठी आहे. कृपया लहान फाइल निवडा आणि पुन्हा प्रयत्न करा।",
+        "documentRateLimited": "खूप जास्त अपलोड प्रयत्न झाले. कृपया काही मिनिटे थांबा आणि पुन्हा प्रयत्न करा।",
+        "documentTimeout": "कागदपत्र अपलोड होण्यास खूप वेळ लागला. कृपया इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा।",
+        "documentNotAuthorized": "तुमच्या सत्राला हे कागदपत्र अपलोड करण्याची परवानगी नाही. कृपया पुन्हा साइन इन करा आणि प्रयत्न करा।",
+        "documentServiceUnavailable": "कागदपत्र अपलोड सेवा तात्पुरती उपलब्ध नाही. कृपया थोड्या वेळाने प्रयत्न करा।",
+        "documentUploadFallback": "कागदपत्र अपलोड करता आले नाही. कृपया पुन्हा प्रयत्न करा।",
+        "replacementDocumentUploadFailed": "बदलीचे कागदपत्र अपलोड करता आले नाही. कृपया पुन्हा प्रयत्न करा।",
+        "submitFailed": "अर्ज सादर झाला नाही",
+        "submitFailedDescription": "सध्या अर्ज सादर करता आला नाही. तुमचा अर्ज सादर झालेला नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा।",
+        "applicantDetailsRequired": "अर्जदाराचा तपशील आवश्यक आहे",
+        "applicantDetailsDescription": "सादर करण्यापूर्वी {fields} फील्ड भरा।"
+      },
+      "resubmit": {
+        "successTitle": "अर्ज पुन्हा सादर झाला!",
+        "successDescription": "तुमचा अर्ज अद्यतनित करून यशस्वीरित्या पुन्हा सादर केला आहे।",
+        "failedTitle": "पुन्हा सादर करणे अयशस्वी",
+        "failedDescription": "तुमचा अर्ज पुन्हा सादर करता आला नाही. कृपया थोड्या वेळाने प्रयत्न करा।"
+      },
+      "submission": {
+        "successTitle": "अर्ज सादर झाला!",
+        "trackingId": "अर्ज ट्रॅकिंग आयडी",
+        "governmentFee": "शासकीय सेवा शुल्क: ₹{amount}",
+        "payNowOrLater": "कृपया शासकीय शुल्क आता भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा।",
+        "paymentAfterApproval": "अर्ज मंजूर झाल्यानंतर शुल्क भरण्याचा पर्याय उपलब्ध होईल।"
+      },
+      "success": {
+        "title": "अर्ज यशस्वीरित्या सादर झाला!",
+        "description": "तुमचा अर्ज प्राप्त झाला आहे आणि तो तपासणीअंतर्गत आहे।",
+        "saveTrackingId": "स्थिती ट्रॅक करण्यासाठी हा आयडी जतन करा।",
+        "notificationNotice": "तुम्हाला अर्जाच्या स्थितीबाबत SMS आणि ईमेल सूचना मिळतील. प्रक्रिया 15 कार्य दिवसांत पूर्ण होईल।"
+      },
+      "actions": {
+        "back": "मागे",
+        "backToServices": "सेवांकडे परत जा",
+        "copyTrackingId": "ट्रॅकिंग आयडी कॉपी करा",
+        "payGovernmentFee": "शासकीय शुल्क आता भरा",
+        "resubmitting": "पुन्हा सादर होत आहे...",
+        "saveDraft": "मसुदा जतन करा",
+        "submitApplication": "अर्ज सादर करा",
+        "submitting": "सादर होत आहे...",
+        "trackApplication": "अर्ज ट्रॅक करा",
+        "updateAndResubmit": "दुरुस्ती करून पुन्हा सादर करा",
+        "viewAndTrack": "अर्ज पहा आणि स्थिती ट्रॅक करा"
+      },
+      "sections": {
+        "title": "अर्जाचे विभाग",
+        "pendingAction": "कृती प्रलंबित",
+        "section": "विभाग {number}"
+      },
+      "correction": {
+        "officerRemark": "अधिकाऱ्याचा शेरा / दुरुस्तीचे कारण:",
+        "actionRequired": "कृती आवश्यक",
+        "description": "वरील सूचनेनुसार आवश्यक तपशील दुरुस्त करा किंवा कागदपत्रे पुन्हा अपलोड करा, नंतर दुरुस्ती करून पुन्हा सादर करा निवडा।"
+      },
+      "feedback": {
+        "copied": "कॉपी केले!",
+        "payableGovernmentFee": "देय शासकीय शुल्क:",
+        "standardServiceFee": "(मानक सेवा शुल्क)",
+        "estimateConfirmedAtPayment": "अंदाजाची पुष्टी भरण्याच्या वेळी केली जाईल।"
+      },
     "map": {
       "placeholder": "Google Maps लिंक पेस्ट करा",
       "helper": "तुमच्या डिव्हाइसचे ठिकाण वापरा किंवा Google Maps लिंक पेस्ट करा.",
@@ -1222,7 +1300,10 @@
     "dashboard": "डॅशबोर्ड",
     "searchResults": "शोध परिणाम",
     "servicesFound": "सेवा सापडल्या",
-    "availableServices": "उपलब्ध सेवा"
+    "availableServices": "उपलब्ध सेवा",
+    "loadingApplications": "तुमचे अर्ज लोड होत आहेत...",
+    "applicationsLoadFailed": "तुमचे अर्ज सध्या लोड करता आले नाहीत.",
+    "retryApplications": "पुन्हा प्रयत्न करा"
   },
   "applicationDetails": {
     "unknownService": "अज्ञात सेवा",

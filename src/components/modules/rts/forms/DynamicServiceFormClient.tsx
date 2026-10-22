@@ -368,32 +368,12 @@ export default function DynamicServiceFormClient({
       if (foundData && foundKey) {
         const formattedDate = new Date(foundData.savedAt).toLocaleString();
         MySwal.fire({
-          title:
-            language === 'en'
-              ? 'Restore Draft?'
-              : language === 'hi'
-                ? 'ड्राफ्ट पुनर्स्थापित करें?'
-                : 'मसुदा पुनर्संचयित करायचा?',
-          text:
-            language === 'en'
-              ? `We found a draft saved on ${formattedDate}. Would you like to restore it?`
-              : language === 'hi'
-                ? `हमें ${formattedDate} पर सहेजा गया एक ड्राफ्ट मिला। क्या आप इसे पुनर्स्थापित करना चाहेंगे?`
-                : `आम्हाला ${formattedDate} रोजी जतन केलेला मसुदा सापडला. आपण तो पुनर्संचयित करू इच्छिता?`,
+          title: t('draft.restore.title'),
+          text: t('draft.restore.description', { date: formattedDate }),
           icon: 'question',
           showCancelButton: true,
-          confirmButtonText:
-            language === 'en'
-              ? 'Yes, Restore'
-              : language === 'hi'
-                ? 'हाँ, पुनर्स्थापित करें'
-                : 'होय, पुनर्संचयित करा',
-          cancelButtonText:
-            language === 'en'
-              ? 'No, Start Fresh'
-              : language === 'hi'
-                ? 'नहीं, नया शुरू करें'
-                : 'नाही, नवीन सुरू करा',
+          confirmButtonText: t('draft.restore.confirm'),
+          cancelButtonText: t('draft.restore.cancel'),
           confirmButtonColor: '#0d9488',
           cancelButtonColor: '#ef4444',
           background: darkMode ? '#1f2937' : '#ffffff',
@@ -411,8 +391,7 @@ export default function DynamicServiceFormClient({
             }
             MySwal.fire({
               icon: 'success',
-              title:
-                language === 'en' ? 'Restored' : language === 'hi' ? 'पुनर्स्थापित' : 'पुनर्संचयित',
+              title: t('draft.restore.success'),
               timer: 1500,
               showConfirmButton: false,
               background: darkMode ? '#1f2937' : '#ffffff',
@@ -1284,39 +1263,29 @@ export default function DynamicServiceFormClient({
     const isDocumentFailure = result?.failureType === 'document-upload';
 
     if (isDocumentFailure) {
+      const uploadErrorKeys: Record<string, string> = {
+        'unsupported-file-type': 'errors.documentUnsupportedFileType',
+        'file-too-large': 'errors.documentTooLarge',
+        'upload-rate-limited': 'errors.documentRateLimited',
+        'upload-timeout': 'errors.documentTimeout',
+        'upload-not-authorized': 'errors.documentNotAuthorized',
+        'document-service-unavailable': 'errors.documentServiceUnavailable',
+        'document-upload-failed': 'errors.documentUploadFallback',
+      };
+      const messageKey = uploadErrorKeys[String(result?.errorCode)] ?? 'errors.documentUploadFallback';
+      const message = t(messageKey);
+
       return {
-        title:
-          language === 'en'
-            ? 'Document Upload Failed'
-            : language === 'hi'
-              ? 'दस्तावेज़ अपलोड नहीं हुआ'
-              : 'कागदपत्र अपलोड झाले नाही',
-        text:
-          typeof result?.message === 'string' && result.message.trim()
-            ? result.message
-            : language === 'en'
-              ? 'One of the documents could not be uploaded. Please check the file and try again.'
-              : language === 'hi'
-                ? 'एक दस्तावेज़ अपलोड नहीं हो सका। कृपया फ़ाइल जांचें और पुनः प्रयास करें।'
-                : 'एक कागदपत्र अपलोड करता आले नाही. कृपया फाइल तपासा आणि पुन्हा प्रयत्न करा.',
+        title: t('errors.documentUploadFailed'),
+        text: result?.documentLabel
+          ? t('errors.documentWithLabel', { label: result.documentLabel, message })
+          : message,
       };
     }
 
     return {
-      title:
-        language === 'en'
-          ? 'Submit Failed'
-          : language === 'hi'
-            ? 'सबमिट असफल'
-            : 'अर्ज सादर झाला नाही',
-      text:
-        typeof result?.message === 'string' && result.message.trim()
-          ? result.message
-          : language === 'en'
-            ? 'We could not submit your application right now. Please try again shortly.'
-            : language === 'hi'
-              ? 'अभी आवेदन सबमिट नहीं हो सका। कृपया थोड़ी देर बाद पुनः प्रयास करें।'
-              : 'सध्या अर्ज सादर करता आला नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.',
+      title: t('errors.submitFailed'),
+      text: t('errors.submitFailedDescription'),
     };
   };
 
@@ -1353,8 +1322,8 @@ export default function DynamicServiceFormClient({
 
       MySwal.fire({
         icon: 'success',
-        title: 'Draft Saved',
-        text: 'Your progress has been saved locally.',
+        title: t('draft.saved'),
+        text: t('draft.savedDescription'),
         timer: 2000,
         showConfirmButton: false,
         background: darkMode ? '#1f2937' : '#ffffff',
@@ -1380,7 +1349,7 @@ export default function DynamicServiceFormClient({
 
     MySwal.fire({
       icon: 'success',
-      title: 'Copied!',
+      title: t('feedback.copied'),
       timer: 1000,
       showConfirmButton: false,
       toast: true,
@@ -1398,11 +1367,8 @@ export default function DynamicServiceFormClient({
 
       MySwal.fire({
         icon: 'error',
-        title: language === 'en' ? 'Incomplete Form' : 'अपूर्ण फॉर्म',
-        text:
-          language === 'en'
-            ? 'Please fill all required fields highlighted in red.'
-            : 'कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।',
+        title: t('errors.incompleteForm'),
+        text: t('errors.incompleteFormDescription'),
         confirmButtonColor: '#ef4444',
         background: darkMode ? '#1f2937' : '#ffffff',
         color: darkMode ? '#ffffff' : '#000000',
@@ -1449,10 +1415,7 @@ export default function DynamicServiceFormClient({
                 documentGuidByFieldDefinitionId[String(fieldDefId)] = upRes.documentGuid;
               } else {
                 throw new Error(
-                  upRes.error ||
-                    (language === 'en'
-                      ? 'The replacement document could not be uploaded.'
-                      : 'नवीन कागदपत्र अपलोड करता आले नाही.')
+                  upRes.error || t('errors.replacementDocumentUploadFailed')
                 );
               }
             } else if (fileLatLogValue && getFileLatLogDocumentGuid(fileLatLogValue)) {
@@ -1514,16 +1477,9 @@ export default function DynamicServiceFormClient({
           const appNo = res.items?.applicationNo?.trim() || resubmitApplicationNo || `RTS${resubmitApplicationId}`;
           await MySwal.fire({
             icon: 'success',
-            title: language === 'en' ? 'Application Resubmitted!' : 'अर्ज पुन्हा सादर झाला!',
-            text:
-              res.message ||
-              (language === 'en'
-                ? 'Your application has been updated and resubmitted successfully.'
-                : 'आपला अर्ज दुरुस्त करून यशस्वीरित्या पुन्हा सादर करण्यात आला आहे.'),
-            confirmButtonText:
-              language === 'en'
-                ? '🔍 View Application & Track Status'
-                : '🔍 अर्ज व ट्रॅकिंग स्थिती पहा',
+            title: t('resubmit.successTitle'),
+            text: t('resubmit.successDescription'),
+            confirmButtonText: `🔍 ${t('actions.viewAndTrack')}`,
             confirmButtonColor: '#059669',
             background: darkMode ? '#1f2937' : '#ffffff',
             color: darkMode ? '#ffffff' : '#000000',
@@ -1537,8 +1493,8 @@ export default function DynamicServiceFormClient({
         } else {
           MySwal.fire({
             icon: 'error',
-            title: language === 'en' ? 'Resubmit Failed' : 'पुन्हा सादर करणे अयशस्वी',
-            text: res.message || 'Failed to resubmit application.',
+            title: t('resubmit.failedTitle'),
+            text: t('resubmit.failedDescription'),
             confirmButtonColor: '#ef4444',
             background: darkMode ? '#1f2937' : '#ffffff',
             color: darkMode ? '#ffffff' : '#000000',
@@ -1547,8 +1503,8 @@ export default function DynamicServiceFormClient({
       } catch (err: any) {
         MySwal.fire({
           icon: 'error',
-          title: language === 'en' ? 'Error' : 'त्रुटी',
-          text: err?.message || 'An unexpected error occurred.',
+          title: t('errors.genericTitle'),
+          text: t('resubmit.failedDescription'),
           confirmButtonColor: '#ef4444',
         });
       } finally {
@@ -1693,60 +1649,28 @@ export default function DynamicServiceFormClient({
 
       if (appFees > 0) {
         const canPayImmediately = !isPaymentAfterApproval;
+        const safeApplicationNo = escapeFeeBreakdownHtml(newId);
+        const formattedFee = new Intl.NumberFormat(locale, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(appFees);
         MySwal.fire({
           icon: 'success',
-          title:
-            language === 'en'
-              ? 'Application Submitted!'
-              : language === 'hi'
-                ? 'आवेदन सबमिट हुआ!'
-                : 'अर्ज यशस्वीरित्या सादर झाला!',
-          html:
-            language === 'en'
-              ? `<div class="space-y-3 p-2 text-center">
-                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Application Tracking ID</p>
-                 <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+          title: t('submission.successTitle'),
+          html: `<div class="space-y-3 p-2 text-center">
+                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${escapeFeeBreakdownHtml(t('submission.trackingId'))}</p>
+                 <p class="text-2xl font-mono font-black text-teal-600">${safeApplicationNo}</p>
                  <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
-                   Statutory Government Fee: ₹${appFees}.00
+                   ${escapeFeeBreakdownHtml(t('submission.governmentFee', { amount: formattedFee }))}
                  </div>
-                 <p class="text-xs text-gray-500 font-medium">${canPayImmediately ? 'Please proceed to pay the statutory fee now or pay later from your citizen dashboard.' : 'Payment will be available after your application is approved.'}</p>
-               </div>`
-              : language === 'hi'
-                ? `<div class="space-y-3 p-2 text-center">
-                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">आवेदन ट्रैकिंग आईडी</p>
-                   <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
-                   <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
-                     शासकीय सेवा शुल्क: ₹${appFees}.00
-                   </div>
-                   <p class="text-xs text-gray-500 font-medium">${canPayImmediately ? 'कृपया अभी शुल्क का भुगतान करें या बाद में नागरिक डैशबोर्ड से करें।' : 'आवेदन स्वीकृत होने के बाद भुगतान उपलब्ध होगा।'}</p>
-                 </div>`
-                : `<div class="space-y-3 p-2 text-center">
-                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">अर्ज ट्रॅकिंग आयडी</p>
-                   <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
-                   <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-900 font-semibold">
-                     शासकीय सेवा शुल्क: ₹${appFees}.00
-                   </div>
-                   <p class="text-xs text-gray-500 font-medium">${canPayImmediately ? 'कृपया आताच ऑनलाइन शुल्क भरा किंवा नंतर नागरिक डॅशबोर्डवरून भरा.' : 'अर्ज मंजूर झाल्यानंतर शुल्क भरण्याचा पर्याय उपलब्ध होईल.'}</p>
-                 </div>`,
+                 <p class="text-xs text-gray-500 font-medium">${escapeFeeBreakdownHtml(t(canPayImmediately ? 'submission.payNowOrLater' : 'submission.paymentAfterApproval'))}</p>
+               </div>`,
           showCancelButton: canPayImmediately,
           confirmButtonText:
             canPayImmediately
-              ? language === 'en'
-                ? '💳 Pay Government Fee Now'
-                : language === 'hi'
-                  ? '💳 अभी शुल्क भरें'
-                  : '💳 आताच शुल्क भरा'
-              : language === 'en'
-                ? '🔍 Track Application'
-                : language === 'hi'
-                  ? '🔍 आवेदन ट्रैक करें'
-                  : '🔍 अर्ज ट्रॅक करा',
-          cancelButtonText:
-            language === 'en'
-              ? '🔍 Track Application'
-              : language === 'hi'
-                ? '🔍 आवेदन ट्रैक करें'
-                : '🔍 अर्ज ट्रॅक करा',
+              ? `💳 ${t('actions.payGovernmentFee')}`
+              : `🔍 ${t('actions.trackApplication')}`,
+          cancelButtonText: `🔍 ${t('actions.trackApplication')}`,
           confirmButtonColor: '#059669',
           cancelButtonColor: '#2563eb',
           background: darkMode ? '#1f2937' : '#ffffff',
@@ -1774,20 +1698,12 @@ export default function DynamicServiceFormClient({
       } else {
         MySwal.fire({
           icon: 'success',
-          title:
-            language === 'en'
-              ? 'Application Submitted!'
-              : language === 'hi'
-                ? 'आवेदन सबमिट हुआ!'
-                : 'अर्ज यशस्वीरित्या सादर झाला!',
+          title: t('submission.successTitle'),
           html: `<div class="space-y-3 p-2 text-center">
-                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${language === 'en' ? 'Application Tracking ID' : 'अर्ज ट्रॅकिंग आयडी'}</p>
-                   <p class="text-2xl font-mono font-black text-teal-600">${newId}</p>
+                   <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${escapeFeeBreakdownHtml(t('submission.trackingId'))}</p>
+                   <p class="text-2xl font-mono font-black text-teal-600">${escapeFeeBreakdownHtml(newId)}</p>
                  </div>`,
-          confirmButtonText:
-            language === 'en'
-              ? '🔍 View Application & Track Status'
-              : '🔍 अर्ज व ट्रॅकिंग स्थिती पहा',
+          confirmButtonText: `🔍 ${t('actions.viewAndTrack')}`,
           confirmButtonColor: '#059669',
           background: darkMode ? '#1f2937' : '#ffffff',
           color: darkMode ? '#ffffff' : '#000000',
@@ -1828,11 +1744,8 @@ export default function DynamicServiceFormClient({
 
       MySwal.fire({
         icon: 'error',
-        title: language === 'en' ? 'Incomplete Form' : 'अपूर्ण फॉर्म',
-        text:
-          language === 'en'
-            ? 'Please fill all required fields highlighted in red.'
-            : 'कृपया लाल रंग में हाइलाइट किए गए सभी आवश्यक फ़ील्ड भरें।',
+        title: t('errors.incompleteForm'),
+        text: t('errors.incompleteFormDescription'),
         confirmButtonColor: '#ef4444',
         background: darkMode ? '#1f2937' : '#ffffff',
         color: darkMode ? '#ffffff' : '#000000',
@@ -1850,11 +1763,8 @@ export default function DynamicServiceFormClient({
 
       MySwal.fire({
         icon: 'error',
-        title: language === 'en' ? 'Applicant details required' : 'आवेदक विवरण आवश्यक है',
-        text:
-          language === 'en'
-            ? `The configured form must include a filled ${missingLabels} field before submission.`
-            : `सबमिट करने से पहले ${missingLabels} फ़ील्ड भरना आवश्यक है।`,
+        title: t('errors.applicantDetailsRequired'),
+        text: t('errors.applicantDetailsDescription', { fields: missingLabels }),
         confirmButtonColor: '#ef4444',
         background: darkMode ? '#1f2937' : '#ffffff',
         color: darkMode ? '#ffffff' : '#000000',
@@ -1896,7 +1806,7 @@ export default function DynamicServiceFormClient({
         ? `<section class="rounded-xl border border-slate-200 bg-white text-left shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-t-xl border-b border-slate-100 bg-slate-50 px-3 py-2">
               <p class="text-[11px] font-extrabold uppercase tracking-wide text-slate-700">${escapeFeeBreakdownHtml(t('confirmation.fee.feeDetails'))}</p>
-              <p class="text-[11px] font-medium text-slate-600">${escapeFeeBreakdownHtml(baseFeeLabel)} ${money(baseFee)} · ${escapeFeeBreakdownHtml(t('confirmation.fee.addonFee'))} ${money(addonFee)}</p>
+              
             </div>
             <ul class="divide-y divide-slate-100 px-3 py-1">${breakdownRows}</ul>
           </section>
@@ -1962,19 +1872,11 @@ export default function DynamicServiceFormClient({
 
             <div className="space-y-2">
               <h2 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                {language === 'en'
-                  ? 'Application Submitted Successfully!'
-                  : language === 'hi'
-                    ? 'आवेदन सफलतापूर्वक जमा हुआ!'
-                    : 'अर्ज यशस्वीरित्या सबमिट झाला!'}
+                {t('success.title')}
               </h2>
 
               <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {language === 'en'
-                  ? 'Your application has been received and is under review.'
-                  : language === 'hi'
-                    ? 'आपका आवेदन प्राप्त हुआ है और समीक्षाधीन है।'
-                    : 'तुमचा अर्ज प्राप्त झाला आहे आणि तपासणीत आहे.'}
+                {t('success.description')}
               </p>
             </div>
 
@@ -1991,7 +1893,7 @@ export default function DynamicServiceFormClient({
                       darkMode ? 'text-gray-300' : 'text-gray-600'
                     }`}
                   >
-                    {language === 'en' ? 'Application Tracking ID' : 'ट्रैकिंग आईडी'}
+                    {t('submission.trackingId')}
                   </span>
                 </div>
 
@@ -2004,9 +1906,7 @@ export default function DynamicServiceFormClient({
                 </div>
 
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {language === 'en'
-                    ? 'Save this ID to track status'
-                    : 'स्थिति ट्रैक करने के लिए सहेजें'}
+                  {t('success.saveTrackingId')}
                 </p>
                 {successApplicationStatus ? (
                   <p
@@ -2024,11 +1924,7 @@ export default function DynamicServiceFormClient({
                   className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg py-3 font-bold cursor-pointer"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
-                  {language === 'en'
-                    ? 'Pay Government Fee Now'
-                    : language === 'hi'
-                      ? 'शासकीय शुल्क अभी भरें'
-                      : 'आताच शासकीय शुल्क भरा'}
+                  {t('actions.payGovernmentFee')}
                 </Button>
               )}
 
@@ -2037,7 +1933,7 @@ export default function DynamicServiceFormClient({
                 className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-lg py-3 cursor-pointer"
               >
                 <Download className="w-4 h-4 mr-2" />
-                {language === 'en' ? 'Copy Tracking ID' : 'आईडी कॉपी करें'}
+                {t('actions.copyTrackingId')}
               </Button>
 
               <Button
@@ -2056,11 +1952,7 @@ export default function DynamicServiceFormClient({
                 } py-3 cursor-pointer`}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {language === 'en'
-                  ? 'Back to Services'
-                  : language === 'hi'
-                    ? 'वापस जाएं'
-                    : 'सेवांकडे परत जा'}
+                {t('actions.backToServices')}
               </Button>
             </div>
 
@@ -2073,9 +1965,7 @@ export default function DynamicServiceFormClient({
                 className={`w-5 h-5 flex-shrink-0 mt-0.5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}
               />
               <p className={`text-sm ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                {language === 'en'
-                  ? 'You will receive SMS and email notifications regarding your application status. The processing will be completed within 15 working days.'
-                  : 'आपको अपने आवेदन की स्थिति के बारे में एसएमएस और ईमेल सूचनाएं प्राप्त होंगी।'}
+                {t('success.notificationNotice')}
               </p>
             </div>
           </div>
@@ -2129,7 +2019,7 @@ export default function DynamicServiceFormClient({
               >
                 <ArrowLeft className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">
-                  {language === 'en' ? 'Back' : language === 'hi' ? 'पीछे' : 'मागे'}
+                  {t('actions.back')}
                 </span>
               </button>
             </div>
@@ -2195,11 +2085,7 @@ export default function DynamicServiceFormClient({
               darkMode ? 'text-gray-400' : 'text-gray-500'
             }`}
           >
-            {language === 'en'
-              ? 'Form Sections'
-              : language === 'hi'
-                ? 'फॉर्म अनुभाग'
-                : 'फॉर्म विभाग'}
+            {t('sections.title')}
           </h3>
 
           <nav className="space-y-1 lg:space-y-1.5">
@@ -2259,7 +2145,7 @@ export default function DynamicServiceFormClient({
                     <div
                       className={`text-[9px] lg:text-[10px] ${isErr ? 'text-red-500' : 'text-gray-500'}`}
                     >
-                      {isErr ? 'Pending Action' : language === 'en' ? 'Section' : 'खंड'} {index + 1}
+                      {isErr ? t('sections.pendingAction') : t('sections.section', { number: index + 1 })}
                     </div>
                   </div>
                 </button>
@@ -2278,12 +2164,10 @@ export default function DynamicServiceFormClient({
                 <div className="space-y-1.5 min-w-0 flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-black uppercase tracking-wide text-orange-950">
-                      {language === 'en'
-                        ? 'Officer Remark / Reason for Correction:'
-                        : 'अधिकाऱ्याचा शेरा / दुरुस्तीचे कारण:'}
+                      {t('correction.officerRemark')}
                     </h3>
                     <span className="text-[10px] font-bold text-orange-800 bg-orange-200/80 px-2 py-0.5 rounded-full">
-                      {language === 'en' ? 'Action Required' : 'तातडीने पूर्तता आवश्यक'}
+                      {t('correction.actionRequired')}
                     </span>
                   </div>
                   {officerRemark && (
@@ -2292,9 +2176,7 @@ export default function DynamicServiceFormClient({
                     </div>
                   )}
                   <p className="text-[11px] font-medium text-orange-900 leading-relaxed">
-                    {language === 'en'
-                      ? "Please correct the required details or re-upload the documents as instructed above, then click 'Update & Resubmit Application'."
-                      : "कृपया वरील सूचनेनुसार आवश्यक त्या फील्ड्समध्ये दुरुस्ती करा किंवा कागदपत्रे पुन्हा अपलोड करून खालील 'दुरुस्ती करून पुन्हा सादर करा' बटणावर क्लिक करा."}
+                    {t('correction.description')}
                   </p>
                 </div>
               </div>
@@ -2408,15 +2290,15 @@ export default function DynamicServiceFormClient({
         <div className="w-full px-4 sm:px-6 py-2">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-900">
-              <span className="font-medium">Payable government fee: </span>
+                <span className="font-medium">{t('feedback.payableGovernmentFee')} </span>
               <span className="font-bold">
                 ₹{Number(feeEstimate?.payableAmount ?? serviceFees ?? 0).toFixed(2)}
               </span>
               {feeEstimate?.usedServiceFeeFallback && (
-                <span className="ml-1 text-emerald-700">(standard service fee)</span>
+                <span className="ml-1 text-emerald-700">{t('feedback.standardServiceFee')}</span>
               )}
               {feeEstimateError && (
-                <span className="ml-1 text-amber-700">Estimate will be confirmed at payment.</span>
+                <span className="ml-1 text-amber-700">{t('feedback.estimateConfirmedAtPayment')}</span>
               )}
             </div>
             <div className="flex flex-row justify-end items-center gap-2 sm:gap-3">
@@ -2430,7 +2312,7 @@ export default function DynamicServiceFormClient({
                 }`}
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
-                {language === 'en' ? 'Save Draft' : 'सहेजें'}
+                {t('actions.saveDraft')}
               </button>
 
               <button
@@ -2446,23 +2328,13 @@ export default function DynamicServiceFormClient({
                 {isSubmitting ? (
                   <span className="flex items-center">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    {isResubmitMode
-                      ? language === 'en'
-                        ? 'Resubmitting...'
-                        : 'सादर होत आहे...'
-                      : 'Submitting...'}
+                    {isResubmitMode ? t('actions.resubmitting') : t('actions.submitting')}
                   </span>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4 mr-1.5" />
                     <span>
-                      {isResubmitMode
-                        ? language === 'en'
-                          ? 'Update & Resubmit Application'
-                          : 'दुरुस्ती करून पुन्हा सादर करा'
-                        : language === 'en'
-                          ? 'Submit Application'
-                          : 'जमा करें'}
+                      {isResubmitMode ? t('actions.updateAndResubmit') : t('actions.submitApplication')}
                     </span>
                   </>
                 )}

@@ -4,6 +4,8 @@ import type {
   RtsCitizenDashboardResponse,
 } from '@/types/rts/rtscitizendashboard.types';
 
+const CITIZEN_DASHBOARD_REQUEST_TIMEOUT_MS = 15_000;
+
 function getOneSolutionBaseUrl(): string {
   const baseUrl =
     process.env.AKOLA_ONESOLUTION_BASE_URL?.trim() ||
@@ -44,6 +46,9 @@ export async function getRtsCitizenDashboardData(
     },
     body: JSON.stringify(requestPayload),
     cache: 'no-store',
+    // The dashboard renders independently of this request, but it must still
+    // fail predictably instead of holding a server action open indefinitely.
+    signal: AbortSignal.timeout(CITIZEN_DASHBOARD_REQUEST_TIMEOUT_MS),
   });
 
   if (!response.ok) {
