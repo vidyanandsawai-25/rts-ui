@@ -105,6 +105,8 @@ class ApiClient {
     '/rts-certificate-verification',
     '/rts-service-officers',
     '/AapleSarkar',
+    '/RTSAppeal',
+    '/RTSApplicationApproval',
   ];
 
   constructor() {

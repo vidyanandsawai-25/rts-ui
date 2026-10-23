@@ -430,9 +430,9 @@ export default function RtsAppealsDashboard({ locale }: RtsAppealsDashboardProps
                   </td>
                 </tr>
               ) : (
-                gridItems.map((item) => (
+                gridItems.map((item, idx) => (
                   <tr
-                    key={item.id}
+                    key={item.appealId || item.id || idx}
                     className="hover:bg-blue-50/40 transition duration-150 font-semibold text-slate-700"
                   >
                     <td className="py-3.5 px-4">
@@ -445,8 +445,10 @@ export default function RtsAppealsDashboard({ locale }: RtsAppealsDashboardProps
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="font-bold text-slate-900 block">{item.applicantName || '-'}</span>
-                      {item.mobileNumber && (
-                        <span className="text-[10px] text-slate-400 block font-mono">{item.mobileNumber}</span>
+                      {(item.mobileNumber || (item as any).applicantMobile || (item as any).applicantMobileNo) && (
+                        <span className="text-[10px] text-slate-400 block font-mono">
+                          {item.mobileNumber || (item as any).applicantMobile || (item as any).applicantMobileNo}
+                        </span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 max-w-[200px] truncate" title={item.serviceName}>
@@ -463,13 +465,13 @@ export default function RtsAppealsDashboard({ locale }: RtsAppealsDashboardProps
                             : 'bg-cyan-100 text-cyan-800 border border-cyan-200'
                         }`}
                       >
-                        {item.appealLevelDisplay || (item.appealLevel === 2 ? '2nd Appeal' : '1st Appeal')}
+                        {(item as any).appealLevelLabel || item.appealLevelDisplay || (item.appealLevel === 2 ? '2nd Appeal' : '1st Appeal')}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-1.5">
                         <span className="font-medium text-slate-700">{item.appealTypeName}</span>
-                        {item.isDelayed && (
+                        {(item.isDelayed || (item as any).filingCategory === 'Delayed') && (
                           <span
                             className="rounded-full bg-orange-100 text-orange-800 px-1.5 py-0.2 text-[9px] font-black"
                             title={isMr ? 'विलंब माफी अर्ज दाखल' : 'Condonation of delay filed'}
@@ -521,7 +523,7 @@ export default function RtsAppealsDashboard({ locale }: RtsAppealsDashboardProps
                     <td className="py-3.5 px-4 text-right">
                       <button
                         type="button"
-                        onClick={() => handleOpenAppealDetails(item.id)}
+                        onClick={() => handleOpenAppealDetails(item.appealId || item.id)}
                         className="inline-flex items-center gap-1 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 text-xs font-black shadow-xs transition cursor-pointer"
                       >
                         <Eye className="h-3.5 w-3.5" />

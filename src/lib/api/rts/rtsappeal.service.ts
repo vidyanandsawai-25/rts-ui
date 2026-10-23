@@ -111,7 +111,7 @@ export async function getAppealDashboardCards(): Promise<RTSAppealDashboardCards
   const response = await apiClient.get<ApiItemsResponse<RTSAppealDashboardCardsCountDto>>(
     '/RTSAppeal/dashboard-cards',
     { cache: 'no-store' },
-    true
+    false
   );
 
   if (!response.success || !response.data) {
@@ -151,7 +151,7 @@ export async function getAppealDashboardGrid(
   const response = await apiClient.get<ApiItemsResponse<ApiPagedResult<RTSAppealDashboardDetailsDto>>>(
     endpoint,
     { cache: 'no-store' },
-    true
+    false
   );
 
   if (!response.success || !response.data) {
@@ -175,7 +175,7 @@ export async function getAppealProcessDetails(
   const response = await apiClient.get<ApiItemsResponse<RTSAppealProcessDetailsDto>>(
     `/RTSAppeal/${appealId}/details`,
     { cache: 'no-store' },
-    true
+    false
   );
 
   if (!response.success || !response.data) {
@@ -195,7 +195,7 @@ export async function processAppealAction(
     '/RTSAppeal/process-action',
     payload,
     { cache: 'no-store' },
-    true
+    false
   );
 
   if (!response.success) {

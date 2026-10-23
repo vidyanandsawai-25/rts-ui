@@ -35,6 +35,7 @@ import { PaymentCheckoutModal } from "./PaymentCheckoutModal";
 import { PaymentReceiptModal } from "./PaymentReceiptModal";
 import PrintableCertificateModal from "./PrintableCertificateModal";
 import CitizenAppealModal from "./CitizenAppealModal";
+import { checkCitizenAppealEligibilityAction } from "@/app/[locale]/rts/appeals/actions";
 import type { PaymentReceiptResult, PaymentStatusResult } from "@/lib/api/rts/rtspayment.service";
 import type { RtsApplicationApprovalStage } from "@/types/rts/application-approval.types";
 import type { RtsMisDashboardUserApplicationItem } from "@/types/rts/rtscitizendashboard.types";
@@ -218,6 +219,12 @@ export default function ApplicationAndTrackingDrawer({
   const [showAppealModal, setShowAppealModal] = useState(false);
   const [isOpeningResubmit, setIsOpeningResubmit] = useState(false);
   const [receiptModalData, setReceiptModalData] = useState<PaymentReceiptResult | null>(null);
+  const [appealInfo, setAppealInfo] = useState<{
+    hasAppeal: boolean;
+    appealNo?: string | null;
+    status?: string | null;
+    level?: string | null;
+  } | null>(null);
   const getSearchErrorMessage = useCallback(
     (result?: { reason?: 'not-found' | 'failed' } | null) =>
       result?.reason === 'failed'
@@ -373,6 +380,7 @@ export default function ApplicationAndTrackingDrawer({
     setSelectedApplication(application);
     setDetail(null);
     setPaymentInfo(null);
+    setAppealInfo(null);
     setError("");
     setLoading(true);
 
@@ -384,6 +392,19 @@ export default function ApplicationAndTrackingDrawer({
         }
       }).catch(() => {});
     }
+
+    checkCitizenAppealEligibilityAction(application.applicationNo)
+      .then((res) => {
+        if (res.success && res.data && res.data.existingAppealsCount > 0) {
+          setAppealInfo({
+            hasAppeal: true,
+            appealNo: res.data.firstAppealNo,
+            status: res.data.firstAppealStatus || "Pending",
+            level: res.data.isSecondAppeal ? "2nd Appeal" : "1st Appeal",
+          });
+        }
+      })
+      .catch(() => {});
 
     try {
       const response = await getApplicationDetailAction(application.applicationNo);
@@ -445,6 +466,7 @@ export default function ApplicationAndTrackingDrawer({
     setSelectedApplication(null);
     setDetail(null);
     setPaymentInfo(null);
+    setAppealInfo(null);
     setError("");
     setLoading(false);
     onClose();
@@ -454,6 +476,7 @@ export default function ApplicationAndTrackingDrawer({
     setSelectedApplication(null);
     setDetail(null);
     setPaymentInfo(null);
+    setAppealInfo(null);
     setError("");
     setLoading(false);
   };
@@ -731,6 +754,41 @@ export default function ApplicationAndTrackingDrawer({
                     </div>
                   )
                 )}
+
+                {/* Statutory Appeal Active Alert Banner */}
+                {appealInfo?.hasAppeal && (
+                  <div className="mt-3.5 p-4 rounded-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200 shadow-xs flex flex-col gap-2.5">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-purple-100 text-purple-700 shrink-0 mt-0.5">
+                        <Scale className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-xs font-black text-purple-950 uppercase tracking-wide">
+                            {locale === "mr" ? "अपील दाखल केले आहे (Statutory Appeal Filed)" : "Statutory Appeal Filed"}
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full border border-purple-300 bg-white px-2.5 py-0.5 text-[11px] font-black text-purple-800">
+                            {appealInfo.status === 'Pending' || appealInfo.status === 'Submitted'
+                              ? (locale === 'mr' ? 'प्रलंबित (Pending Review)' : 'Pending Review')
+                              : appealInfo.status}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 text-xs text-purple-900 font-semibold flex flex-wrap items-center gap-2">
+                          <span>{locale === "mr" ? "अपील क्रमांक:" : "Appeal No:"}</span>
+                          <span className="font-mono font-bold bg-white px-2.5 py-1 rounded-md border border-purple-200 text-purple-950 shadow-2xs">
+                            {appealInfo.appealNo}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 text-[11px] text-purple-700 font-medium leading-relaxed">
+                          {locale === "mr"
+                            ? "सदर अर्जावर महाराष्ट्र लोकसेवा हक्क अधिनियमांतर्गत अपील नोंदवले गेले असून प्रथम अपीलीय प्राधिकाऱ्याकडे सुनावणी व छाननी सुरू आहे."
+                            : "A statutory appeal has been registered under MRTSA 2015 and is under active review by the Appellate Authority."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Reverted / Correction Required Alert Banner */}
                 {((selectedApplication.status && (selectedApplication.status.toLowerCase().includes('revert') || selectedApplication.status.toLowerCase().includes('return'))) || (detail?.applicationStatus && (detail.applicationStatus.toLowerCase().includes('revert') || detail.applicationStatus.toLowerCase().includes('return')))) && (
                   <div className="mt-3.5 p-3.5 rounded-xl bg-orange-50/90 border border-orange-200 shadow-sm flex flex-col gap-2">
